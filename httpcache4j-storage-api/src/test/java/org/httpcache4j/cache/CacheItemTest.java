@@ -2,6 +2,7 @@ package org.httpcache4j.cache;
 
 import org.httpcache4j.*;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -9,21 +10,11 @@ public class CacheItemTest {
     private CacheItem item;
     private DateTime storageTime = new DateTime(2008, 10, 12, 15, 0, 0, 0);
     private DateTime now = new DateTime(2008, 10, 12, 15, 10, 0, 0);
-    private boolean constructed = false;
 
     public void setupItem(Headers headers) {
-
-        item = new CacheItem(new HTTPResponse(null, Status.OK, headers)) {
-            @Override
-            protected DateTime getNow() {
-                if (!constructed) {
-                    constructed = true;
-                    return storageTime;
-                } else {
-                    return now;
-                }
-            }
-        };
+        DateTimeUtils.setCurrentMillisFixed(storageTime.getMillis());
+        item = new CacheItem(new HTTPResponse(null, Status.OK, headers));
+        DateTimeUtils.setCurrentMillisFixed(now.getMillis());
     }
 
     @Test

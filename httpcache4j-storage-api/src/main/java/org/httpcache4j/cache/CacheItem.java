@@ -25,12 +25,15 @@ public class CacheItem implements Serializable {
 
     public CacheItem(HTTPResponse response) {
         this.response = response;
-        cachedTime = getNow().toDateTime();
+        cachedTime = new DateTime();
     }
 
     public boolean isStale() {
+        if (response.getPayload() != null && !response.getPayload().isAvailable()) {
+            return true;
+        }
         Headers headers = response.getHeaders();
-        long now = getNow().toDateTime().getMillis();
+        long now = new DateTime().getMillis();
         if (headers.hasHeader(CACHE_CONTROL)) {
             Header ccHeader = headers.getFirstHeader(CACHE_CONTROL);
             Map<String, String> directives = ccHeader.getDirectives();
@@ -40,7 +43,7 @@ public class CacheItem implements Serializable {
                 long age = now - cachedTime.getMillis();
                 long remainingLife = (maxAge * 1000) - age;
                 if (maxAge == -1 || remainingLife <= 0) {
-                    return response.getPayload() == null || response.getPayload().isAvailable();
+                    return true;
                 }
             }
         }
@@ -54,15 +57,11 @@ public class CacheItem implements Serializable {
         if (headers.hasHeader(EXPIRES)) {
             long expiryDate = HTTPUtils.getHeaderAsDate(headers.getFirstHeader(EXPIRES));
             if (expiryDate == -1 || now >= expiryDate) {
-                return response.getPayload() == null || response.getPayload().isAvailable();
+                return true;
             }
         }
 
         return false;
-    }
-
-    protected DateTime getNow() {
-        return new DateTime();
     }
 
 

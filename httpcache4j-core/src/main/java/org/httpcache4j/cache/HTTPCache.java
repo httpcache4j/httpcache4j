@@ -99,7 +99,7 @@ public class HTTPCache {
             HTTPResponse updatedResponse;
             LinkedHashMap<String, List<Header>> headers = new LinkedHashMap<String, List<Header>>(cachedResponse.getHeaders().getHeadersAsMap());
 
-            headers.putAll(washResolvedHeaders(resolvedResponse.getHeaders()).getHeadersAsMap());
+            headers.putAll(removeUnmodifiableHeaders(resolvedResponse.getHeaders()).getHeadersAsMap());
             Headers realHeaders = new Headers(headers);
             updatedResponse = new HTTPResponse(cachedResponse.getPayload(), resolvedResponse.getStatus(), realHeaders);
             Vary vary = determineVariation(updatedResponse, request);
@@ -110,12 +110,14 @@ public class HTTPCache {
             response = resolvedResponse;
         }
         if (item != null && resolvedResponse.getStatus().getCode() == Status.OK.getCode()) {
+            //Success was ok, but we had already a response for this item.
+            //invalidate it so we don't clutter the filesystem.
             storage.invalidate(request.getRequestURI(), item);
         }
         return response;
     }
 
-    private Headers washResolvedHeaders(Headers headers) {
+    private Headers removeUnmodifiableHeaders(Headers headers) {
         Headers washedHeaders = new Headers();
         Set<String> usableHeaders = new HashSet<String>(headers.keySet());
         usableHeaders.removeAll(unmodifiableHeaders);
@@ -165,6 +167,14 @@ public class HTTPCache {
     }
 
     private boolean isCacheableRequest(HTTPRequest request) {
-        return request.getMethod() == HTTPMethod.GET || request.getMethod() == HTTPMethod.HEAD;
+        if (request.getMethod() == HTTPMethod.GET || request.getMethod() == HTTPMethod.HEAD) {
+            if (request.getHeaders().hasHeader(HeaderConstants.CACHE_CONTROL)) {
+                String cacheControlHeaderValue = request.getHeaders().getFirstHeader(HeaderConstants.CACHE_CONTROL).getValue();
+                //If the request tells us that we shouldn't cache the response, then we don't.
+                return !("no-store".equals(cacheControlHeaderValue) || "no-cache".equals(cacheControlHeaderValue));
+            }
+            return true;
+        }
+        return false;
     }
 }
