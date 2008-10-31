@@ -5,14 +5,15 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.*;
 import org.httpcache4j.*;
+import org.httpcache4j.payload.Payload;
 import org.httpcache4j.resolver.PayloadCreator;
 import org.httpcache4j.resolver.ResponseResolver;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
@@ -41,11 +42,12 @@ public class HTTPClientResponseResolver implements ResponseResolver {
         URI requestURI = request.getRequestURI();
         HttpMethod method = getMethod(request.getMethod(), requestURI);
         Headers headers = request.getHeaders();
-        for (Map.Entry<String, List<org.httpcache4j.Header>> headerList : headers) {
-            for (org.httpcache4j.Header header : headerList.getValue()) {
-                method.addRequestHeader(headerList.getKey(), header.getValue());
-            }
-        }
+        addHeaders(headers, method);
+        Headers conditionalHeaders = request.getConditionals().toHeaders();
+        addHeaders(conditionalHeaders, method);
+        Headers preferencesHeaders = request.getPreferences().toHeaders();
+        addHeaders(preferencesHeaders, method);
+
         Challenge challenge = request.getChallenge();
         if (challenge != null) {
             method.setDoAuthentication(true);
@@ -55,13 +57,28 @@ public class HTTPClientResponseResolver implements ResponseResolver {
         return method;
     }
 
+    private void addHeaders(Headers headers, HttpMethod method) {
+        for (Map.Entry<String, List<org.httpcache4j.Header>> entry : headers) {
+            for (org.httpcache4j.Header header : entry.getValue()) {
+                method.addRequestHeader(header.getName(), header.getValue());
+            }
+        }
+    }
+
     private HTTPResponse convertResponse(HttpMethod method) {
         Headers headers = new Headers();
         for (Header header : method.getResponseHeaders()) {
-            // TODO: shall we split the value on ',' before adding it?
             addHeader(headers, header.getName(), header.getValue());
         }
-        return new HTTPResponse(payloadCreator.createPayload(headers, getInputStream(method)), Status.valueOf(method.getStatusCode()), headers);
+        InputStream stream = getInputStream(method);
+        Payload payload;
+        if (stream != null) {
+            payload = payloadCreator.createPayload(headers, stream);
+        } else {
+            payload = null;
+        }
+
+        return new HTTPResponse(payload, Status.valueOf(method.getStatusCode()), headers);
     }
 
     private InputStream getInputStream(HttpMethod method) {
@@ -96,6 +113,4 @@ public class HTTPClientResponseResolver implements ResponseResolver {
                 throw new IllegalArgumentException("Uknown method");
         }
     }
-
-
 }

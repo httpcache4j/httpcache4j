@@ -1,9 +1,9 @@
 package org.httpcache4j.preference;
 
 import org.apache.commons.lang.Validate;
+import org.httpcache4j.HTTPUtils;
 import org.httpcache4j.Header;
 
-import java.util.List;
 import java.util.Arrays;
 
 public abstract class Preference<T> {
@@ -45,7 +45,7 @@ public abstract class Preference<T> {
 
 
     protected Header toHeader() {
-        return toHeader(getHeaderName(), Arrays.<Preference>asList(this));
+        return HTTPUtils.toHeader(getHeaderName(), Arrays.asList(this));
     }
 
     @Override
@@ -66,14 +66,4 @@ public abstract class Preference<T> {
     }
 
     protected abstract String getHeaderName();
-
-    protected static Header toHeader(String headerName, List<Preference> preferences) {
-        StringBuilder builder = new StringBuilder();
-        for (Preference preference : preferences) {
-            builder.append(preference.toString());
-            builder.append(", ");
-        }
-        builder.delete(builder.length() - 2, builder.length()); //remove last comma and space
-        return new Header(headerName, builder.toString());
-    }
 }
