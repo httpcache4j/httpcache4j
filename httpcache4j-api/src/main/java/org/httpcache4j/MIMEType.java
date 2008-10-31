@@ -1,0 +1,98 @@
+/*
+ * Copyright 2005-2007 Noelios Consulting.
+ *
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the "License"). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the license at
+ * http://www.opensource.org/licenses/cddl1.txt See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each file and
+ * include the License file at http://www.opensource.org/licenses/cddl1.txt If
+ * applicable, add the following below this CDDL HEADER, with the fields
+ * enclosed by brackets "[]" replaced with your own identifying information:
+ * Portions Copyright [yyyy] [name of copyright owner]
+ */
+
+package org.httpcache4j;
+
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParameterList;
+import javax.activation.MimeTypeParseException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+
+/**
+ * Media type used in representations and preferences.
+ *
+ * @see <a href="http://en.wikipedia.org/wiki/MIME">MIME types on Wikipedia</a>
+ */
+public final class MIMEType {
+    public static final MIMEType ALL = new MIMEType("*", "*");
+
+    private final MimeType mimeType;
+    private List<Parameter> parameters = new ArrayList<Parameter>();
+
+    public MIMEType(String MIMEType) {
+        MimeType mimeType;
+        try {
+            mimeType = new MimeType(MIMEType);
+        } catch (MimeTypeParseException e) {
+            throw new IllegalArgumentException(e);
+        }
+        this.mimeType = mimeType;
+        convertParamerters(mimeType);
+    }
+
+    public MIMEType(String primaryType, String subType) {
+        MimeType mimeType;
+        try {
+            mimeType = new MimeType(primaryType, subType);
+        } catch (MimeTypeParseException e) {
+            throw new IllegalArgumentException(e);
+        }
+        this.mimeType = mimeType;
+        convertParamerters(mimeType);
+    }
+
+    private void convertParamerters(MimeType mimeType) {
+        MimeTypeParameterList list = mimeType.getParameters();
+        Enumeration names = list.getNames();
+        while (names.hasMoreElements()) {
+            String name = (String) names.nextElement();
+            parameters.add(new Parameter(name, list.get(name)));
+        }
+    }
+
+    public String getSubType() {
+        return mimeType.getSubType();
+    }
+
+    public String getPrimaryType() {
+        return mimeType.getPrimaryType();
+    }
+
+    public boolean match(String MIMEType) {
+        try {
+            return this.mimeType.match(MIMEType);
+        } catch (MimeTypeParseException e) {
+            throw new IllegalArgumentException("Argument is not a mime type", e);
+        }
+    }
+
+    public boolean includes(String mimeType) {
+        throw new UnsupportedOperationException("Implement");
+    }
+
+    public List<Parameter> getParameters() {
+        return parameters;
+    }
+
+    @Override
+    public String toString() {
+        return mimeType.toString();
+    }
+}
