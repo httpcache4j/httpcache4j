@@ -2,6 +2,7 @@ package org.httpcache4j.preference;
 
 import org.httpcache4j.Header;
 import org.httpcache4j.HeaderConstants;
+import org.httpcache4j.HTTPUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,11 +39,11 @@ public class LocalePreferenceTest {
 
     @Test
     public void testMultipleLocales() {
-        List<Preference> preferences = new ArrayList<Preference>(2);
+        List<Preference<Locale>> preferences = new ArrayList<Preference<Locale>>(2);
         for (Locale locale : Arrays.asList(Locale.US, Locale.GERMAN)) {
             preferences.add(new LocalePreference(locale));
         }
         Header expected = new Header(HeaderConstants.ACCEPT_LANGUAGE, Locale.US.getLanguage() + ", " + Locale.GERMAN);
-        Assert.assertEquals(expected, LocalePreference.toHeader(HeaderConstants.ACCEPT_LANGUAGE, preferences));
+        Assert.assertEquals(expected, HTTPUtils.toHeader(HeaderConstants.ACCEPT_LANGUAGE, preferences));
     }
 }

@@ -1,19 +1,23 @@
 package org.httpcache4j.preference;
 
 import org.httpcache4j.MIMEType;
+import org.httpcache4j.Headers;
+import org.httpcache4j.HeaderConstants;
+import org.httpcache4j.HTTPUtils;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Collections;
 
 /**
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
 //TODO: add encoding preference.
 public final class Preferences {
-    private List<LocalePreference> acceptLocales = new ArrayList<LocalePreference>();
-    private List<MIMETypePreference> acceptMIMETypes = new ArrayList<MIMETypePreference>();
-    private List<CharsetPreference> acceptCharset = new ArrayList<CharsetPreference>();
+    private List<Preference<Locale>> acceptLocales = new ArrayList<Preference<Locale>>();
+    private List<Preference<MIMEType>> acceptMIMETypes = new ArrayList<Preference<MIMEType>>();
+    private List<Preference<String>> acceptCharset = new ArrayList<Preference<String>>();
     
 
     public void addLocale(Locale locale) {
@@ -37,5 +41,29 @@ public final class Preferences {
         }
     }
 
+    public List<Preference<Locale>> getAcceptLocales() {
+        return Collections.unmodifiableList(acceptLocales);
+    }
 
+    public List<Preference<MIMEType>> getAcceptMIMETypes() {
+        return Collections.unmodifiableList(acceptMIMETypes);
+    }
+
+    public List<Preference<String>> getAcceptCharset() {
+        return Collections.unmodifiableList(acceptCharset);
+    }
+
+    public Headers toHeaders() {
+        Headers headers = new Headers();
+        if (!getAcceptMIMETypes().isEmpty()) {
+            headers.add(HTTPUtils.toHeader(HeaderConstants.ACCEPT, getAcceptMIMETypes()));
+
+        } else if (!getAcceptLocales().isEmpty()) {
+            headers.add(HTTPUtils.toHeader(HeaderConstants.ACCEPT_LANGUAGE, getAcceptLocales()));
+
+        } else if (!getAcceptCharset().isEmpty()) {
+            headers.add(HTTPUtils.toHeader(HeaderConstants.ACCEPT_CHARSET, getAcceptCharset()));
+        }
+        return headers;
+    }
 }

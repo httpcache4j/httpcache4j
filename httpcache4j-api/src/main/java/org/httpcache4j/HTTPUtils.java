@@ -1,6 +1,7 @@
 package org.httpcache4j;
 
 import static org.httpcache4j.HeaderConstants.*;
+import org.httpcache4j.preference.Preference;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -8,6 +9,7 @@ import org.joda.time.format.DateTimeFormatter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 public class HTTPUtils {
     public static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
@@ -69,4 +71,15 @@ public class HTTPUtils {
                 headers.getFirstHeader(EXPIRES) != null ||
                 headers.getFirstHeader(LAST_MODIFIED) != null;
     }
+
+    public static Header toHeader(String headerName, List<? extends Preference<?>> preferences) {
+        StringBuilder builder = new StringBuilder();
+        for (Preference preference : preferences) {
+            builder.append(preference.toString());
+            builder.append(", ");
+        }
+        builder.delete(builder.length() - 2, builder.length()); //remove last comma and space
+        return new Header(headerName, builder.toString());
+    }
+    
 }
