@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.httpcache4j</groupId>
+    <groupId>org.codehaus.httpcache4j</groupId>
     <artifactId>httpcache4j</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
@@ -73,17 +73,17 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.httpcache4j</groupId>
+                <groupId>org.codehaus.httpcache4j</groupId>
                 <artifactId>httpcache4j-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.httpcache4j</groupId>
+                <groupId>org.codehaus.httpcache4j</groupId>
                 <artifactId>httpcache4j-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.httpcache4j</groupId>
+                <groupId>org.codehaus.httpcache4j</groupId>
                 <artifactId>httpcache4j-storage-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
