@@ -4,7 +4,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
-import org.codehaus.httpcache4j.payload.FilePayload;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,12 +12,21 @@ import java.io.InputStream;
 import java.util.UUID;
 
 /**
+ * Stores the file in "bucket".
+ * 
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public class CleanableFilePayload extends FilePayload implements CleanablePayload {
+public class CleanableFilePayload implements CleanablePayload {
 
-    public CleanableFilePayload(File fileStorageDirectory, InputStream stream, MIMEType mimeType) throws IOException {
-        super(new File(fileStorageDirectory, UUID.randomUUID().toString()), mimeType);
+    private final String fileName;
+    private final FileGenerationManager generationManager;
+    private final MIMEType mimeType;
+
+    public CleanableFilePayload(FileGenerationManager generationManager, InputStream stream, MIMEType mimeType) throws IOException {
+        this.mimeType = mimeType;
+        fileName = UUID.randomUUID().toString();
+        this.generationManager = generationManager;
+        File file = getFile();
         FileOutputStream outputStream = FileUtils.openOutputStream(file);
         try {
             IOUtils.copy(stream, outputStream);
@@ -26,18 +34,38 @@ public class CleanableFilePayload extends FilePayload implements CleanablePayloa
             IOUtils.closeQuietly(outputStream);
             IOUtils.closeQuietly(stream);
         }
+    }
 
+    private File getFile() {
+        return generationManager.getFile(fileName);
+    }
+
+    public MIMEType getMimeType() {
+        return mimeType;
+    }
+
+    public InputStream getInputStream() throws IOException {
+        if (isAvailable()) {
+            File file = getFile();
+            return FileUtils.openInputStream(file);        
+        }
+        return null;
+    }
+
+    public boolean isTransient() {
+        return false;
     }
 
     public void clean() {
         if (isAvailable()) {
-            if (!file.delete()) {
+            if (!getFile().delete()) {
                 throw new HTTPException("No file available for this response...");
             }
         }
     }
 
     public boolean isAvailable() {
-        return super.isAvailable() && file.canWrite();
+        File file = getFile();
+        return file.exists() && file.canRead() && file.canWrite();
     }
 }

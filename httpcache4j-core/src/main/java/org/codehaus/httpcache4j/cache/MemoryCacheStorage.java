@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.HTTPRequest;
@@ -13,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author erha
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
 public class MemoryCacheStorage implements CacheStorage {
 
