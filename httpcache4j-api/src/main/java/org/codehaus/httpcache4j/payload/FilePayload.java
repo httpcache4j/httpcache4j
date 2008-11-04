@@ -9,7 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 public class FilePayload implements Payload {
-    private File file;
+    protected File file;
     private MIMEType mimeType;
 
     public FilePayload(File file, MIMEType mimeType) {
