@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
+import org.codehaus.httpcache4j.payload.FilePayload;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,13 +15,10 @@ import java.util.UUID;
 /**
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public class CleanableFilePayload implements CleanablePayload {
-    private File file;
-    private MIMEType mimeType;
+public class CleanableFilePayload extends FilePayload implements CleanablePayload {
 
     public CleanableFilePayload(File fileStorageDirectory, InputStream stream, MIMEType mimeType) throws IOException {
-        this.mimeType = mimeType;
-        file = new File(fileStorageDirectory, UUID.randomUUID().toString());
+        super(new File(fileStorageDirectory, UUID.randomUUID().toString()), mimeType);
         FileOutputStream outputStream = FileUtils.openOutputStream(file);
         try {
             IOUtils.copy(stream, outputStream);
@@ -29,21 +27,6 @@ public class CleanableFilePayload implements CleanablePayload {
             IOUtils.closeQuietly(stream);
         }
 
-    }
-
-    public MIMEType getMimeType() {
-        return mimeType;
-    }
-
-    public InputStream getInputStream() {
-        if (isAvailable()) {
-            try {
-                return FileUtils.openInputStream(file);
-            } catch (IOException e) {
-                return null;
-            }
-        }
-        return null;
     }
 
     public void clean() {
@@ -55,10 +38,6 @@ public class CleanableFilePayload implements CleanablePayload {
     }
 
     public boolean isAvailable() {
-        return file.exists() && file.canRead() && file.canWrite();
-    }
-
-    public boolean isTransient() {
-        return false;
+        return super.isAvailable() && file.canWrite();
     }
 }
