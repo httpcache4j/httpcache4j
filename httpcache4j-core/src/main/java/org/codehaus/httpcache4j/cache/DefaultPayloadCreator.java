@@ -13,10 +13,10 @@ import java.io.InputStream;
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
 public class DefaultPayloadCreator implements PayloadCreator {
-    private File fileStorageDirectory;
+    private FileGenerationManager fileGenerationManager;
 
     public DefaultPayloadCreator(String fileStorageDirectory) {
-        this.fileStorageDirectory = new File(fileStorageDirectory);
+        fileGenerationManager = new FileGenerationManager(new File(fileStorageDirectory), 10, 100);
     }
 
     public Payload createPayload(Headers headers, InputStream stream) {
@@ -24,7 +24,7 @@ public class DefaultPayloadCreator implements PayloadCreator {
         Header contentTypeHeader = headers.getFirstHeader(HeaderConstants.CONTENT_TYPE);
         if (cacheable) {
             try {
-                return new CleanableFilePayload(fileStorageDirectory, stream, new MIMEType(contentTypeHeader.getValue()));
+                return new CleanableFilePayload(fileGenerationManager, stream, new MIMEType(contentTypeHeader.getValue()));
             } catch (IOException e) {
                 throw new HTTPException("Unable to create reponse storage", e);
             }

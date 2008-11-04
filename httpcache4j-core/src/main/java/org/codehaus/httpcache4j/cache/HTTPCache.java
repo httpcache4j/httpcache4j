@@ -57,7 +57,7 @@ public class HTTPCache {
             if (!isSafeRequest(request)) {
                 storage.invalidate(request.getRequestURI());
             }
-            response = resolve(request);
+            response = resolver.resolve(request);
         } else {
             //request is cacheable
             response = getFromCache(request);
@@ -87,7 +87,7 @@ public class HTTPCache {
 
     private HTTPResponse handleResolve(HTTPRequest request, CacheItem item) {
         HTTPResponse response;
-        HTTPResponse resolvedResponse = resolve(request);
+        HTTPResponse resolvedResponse = resolver.resolve(request);
         if (isCacheableResponse(resolvedResponse)) {
             Vary vary = determineVariation(resolvedResponse, request);
 
@@ -156,10 +156,6 @@ public class HTTPCache {
         if (tag != null && tag != Tag.ALL) {
             request.getConditionals().addIfNoneMatch(tag);
         }
-    }
-
-    private HTTPResponse resolve(HTTPRequest request) {
-        return resolver.resolve(request);
     }
 
     private boolean isSafeRequest(HTTPRequest request) {
