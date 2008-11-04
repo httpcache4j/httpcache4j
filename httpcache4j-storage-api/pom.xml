@@ -4,17 +4,17 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.httpcache4j</groupId>
+        <groupId>org.codehaus.httpcache4j</groupId>
         <artifactId>httpcache4j</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <groupId>org.httpcache4j</groupId>
+    <groupId>org.codehaus.httpcache4j</groupId>
     <artifactId>httpcache4j-storage-api</artifactId>
     <packaging>jar</packaging>
     <name>Java HTTP cache :: Storage API</name>
     <dependencies>
         <dependency>
-            <groupId>org.httpcache4j</groupId>
+            <groupId>org.codehaus.httpcache4j</groupId>
             <artifactId>httpcache4j-api</artifactId>
         </dependency>
     </dependencies>
