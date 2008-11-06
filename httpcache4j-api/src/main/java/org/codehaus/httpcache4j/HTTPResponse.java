@@ -6,9 +6,7 @@ import org.codehaus.httpcache4j.payload.Payload;
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
@@ -19,8 +17,7 @@ public final class HTTPResponse implements Serializable {
     private final Headers headers;
     private Tag ETag;
     private DateTime lastModified;
-    private String charset;
-    private List<HTTPMethod> allowedMethods;
+    private Set<HTTPMethod> allowedMethods;
 
     public HTTPResponse(Payload payload, Status status, Headers headers) {
         Validate.notNull(status, "You must supply a Status");
@@ -28,31 +25,21 @@ public final class HTTPResponse implements Serializable {
         this.status = status;
         this.payload = payload;
         this.headers = headers;
-        MIMEType mimeType = null;
+
         if (headers.hasHeader(ETAG)) {
             ETag = Tag.parse(headers.getFirstHeader(ETAG).getValue());
         }
-        if (headers.hasHeader(CONTENT_TYPE)) {
-            mimeType = new MIMEType(headers.getFirstHeader(CONTENT_TYPE).getValue());
-        }
-        if (headers.hasHeader(CONTENT_TYPE)) {
-            lastModified = HTTPUtils.fromHttpDate(headers.getFirstHeader(CONTENT_TYPE));
+        if (headers.hasHeader(LAST_MODIFIED)) {
+            lastModified = HTTPUtils.fromHttpDate(headers.getFirstHeader(LAST_MODIFIED));
         }
         if (headers.hasHeader(ALLOW)) {
             String value = headers.getFirstHeader(ALLOW).getValue();
             String[] parts = value.split(",");
-            List<HTTPMethod> allowedMethods = new ArrayList<HTTPMethod>();
+            Set<HTTPMethod> allowedMethods = new HashSet<HTTPMethod>();
             for (String part : parts) {
                 allowedMethods.add(HTTPMethod.valueOf(part.trim()));
             }
-            this.allowedMethods = Collections.unmodifiableList(allowedMethods);
-        }
-        if (mimeType != null) {
-            for (Parameter parameter : mimeType.getParameters()) {
-                if ("charset".equals(parameter.getName())) {
-                    charset = parameter.getValue();
-                }
-            }
+            this.allowedMethods = Collections.unmodifiableSet(allowedMethods);
         }
     }
 
@@ -80,11 +67,7 @@ public final class HTTPResponse implements Serializable {
         return lastModified;
     }
 
-    public String getCharset() {
-        return charset;
-    }
-
-    public List<HTTPMethod> getAllowedMethods() {
+    public Set<HTTPMethod> getAllowedMethods() {
         return allowedMethods;
     }
 }
