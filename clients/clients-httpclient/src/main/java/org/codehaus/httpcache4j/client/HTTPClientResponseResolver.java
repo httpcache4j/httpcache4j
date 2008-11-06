@@ -21,6 +21,7 @@ import java.util.Map;
 public class HTTPClientResponseResolver implements ResponseResolver {
     private final HttpClient client;
     private final PayloadCreator payloadCreator;
+    private boolean useRequestChallenge = true;
 
     public HTTPClientResponseResolver(HttpClient client, PayloadCreator payloadCreator) {
         this.client = client;
@@ -38,6 +39,14 @@ public class HTTPClientResponseResolver implements ResponseResolver {
         return null;
     }
 
+    public boolean isUseRequestChallenge() {
+        return useRequestChallenge;
+    }
+
+    public void setUseRequestChallenge(boolean useRequestChallenge) {
+        this.useRequestChallenge = useRequestChallenge;
+    }
+
     private HttpMethod convertRequest(HTTPRequest request) {
         URI requestURI = request.getRequestURI();
         HttpMethod method = getMethod(request.getMethod(), requestURI);
@@ -47,12 +56,13 @@ public class HTTPClientResponseResolver implements ResponseResolver {
         addHeaders(conditionalHeaders, method);
         Headers preferencesHeaders = request.getPreferences().toHeaders();
         addHeaders(preferencesHeaders, method);
-
-        Challenge challenge = request.getChallenge();
-        if (challenge != null) {
-            method.setDoAuthentication(true);
-            Credentials usernamePassword = new UsernamePasswordCredentials(challenge.getIdentifier(), challenge.getPassword() != null ? new String(challenge.getPassword()) : null);
-            client.getState().setCredentials(new AuthScope(requestURI.getHost(), requestURI.getPort(), AuthScope.ANY_REALM), usernamePassword);
+        if (isUseRequestChallenge()) {
+            Challenge challenge = request.getChallenge();
+            if (challenge != null) {
+                method.setDoAuthentication(true);
+                Credentials usernamePassword = new UsernamePasswordCredentials(challenge.getIdentifier(), challenge.getPassword() != null ? new String(challenge.getPassword()) : null);
+                client.getState().setCredentials(new AuthScope(requestURI.getHost(), requestURI.getPort(), AuthScope.ANY_REALM), usernamePassword);
+            }
         }
         return method;
     }
