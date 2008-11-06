@@ -38,7 +38,7 @@ public class Parameter implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Header header = (Header) o;
+        Parameter header = (Parameter) o;
 
         if (name != null ? !name.equals(header.name) : header.name != null) return false;
         if (value != null ? !value.equals(header.value) : header.value != null) return false;
