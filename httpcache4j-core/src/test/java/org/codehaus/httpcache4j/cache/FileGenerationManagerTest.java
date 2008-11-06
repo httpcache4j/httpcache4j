@@ -1,7 +1,7 @@
 package org.codehaus.httpcache4j.cache;
 
-import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
+import org.codehaus.httpcache4j.util.TestUtil;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +15,7 @@ public class FileGenerationManagerTest {
 
     @Before
     public void init() {
-        baseDirectory = PlexusTestCase.getTestFile("target/gen");
+        baseDirectory = TestUtil.getTestFile("target/gen");
     }
 
     @Test
@@ -45,7 +45,7 @@ public class FileGenerationManagerTest {
 
     @Test
     public void testCreateNewGeneration() throws IOException {
-        FileGenerationManager generationManager = new FileGenerationManager(baseDirectory, 3, 1);
+        FileGenerationManager generationManager = new FileGenerationManager(baseDirectory, 2, 1);
         FileGenerationManager.Generation currentGeneration = generationManager.getCurrentGeneration();
         assertEquals("Wrong generation sequence", 1, currentGeneration.getSequence());
         File dir = currentGeneration.getGenerationDirectory();        
@@ -53,6 +53,7 @@ public class FileGenerationManagerTest {
         File.createTempFile("foo", "bar", dir);
         currentGeneration = generationManager.getCurrentGeneration();
         assertEquals("Wrong generation sequence", 2, currentGeneration.getSequence());
+        assertEquals("Wrong number of generations", 2, generationManager.getGenerations().size());
     }
 
     @Test
@@ -60,11 +61,15 @@ public class FileGenerationManagerTest {
         FileGenerationManager generationManager = new FileGenerationManager(baseDirectory, 2, 1);
         FileGenerationManager.Generation currentGeneration = generationManager.getCurrentGeneration();
         assertEquals("Wrong generation sequence", 1, currentGeneration.getSequence());
-        File dir = currentGeneration.getGenerationDirectory();
-        File.createTempFile("foo", "bar", dir);
-        File.createTempFile("foo", "bar", dir);
+        File.createTempFile("foo", "bar", currentGeneration.getGenerationDirectory());
+        File.createTempFile("foo", "bar", currentGeneration.getGenerationDirectory());
         currentGeneration = generationManager.getCurrentGeneration();
+        File.createTempFile("foo", "bar", currentGeneration.getGenerationDirectory());
+        File.createTempFile("foo", "bar", currentGeneration.getGenerationDirectory());
         assertEquals("Wrong generation sequence", 2, currentGeneration.getSequence());
+        assertEquals("Wrong number of generations", 2, generationManager.getGenerations().size());
+        currentGeneration = generationManager.getCurrentGeneration();
+        assertEquals("Wrong generation sequence", 3, currentGeneration.getSequence());
         assertEquals("Wrong number of generations", 2, generationManager.getGenerations().size());
     }
 
