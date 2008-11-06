@@ -85,23 +85,10 @@ public final class Conditionals {
     public Headers toHeaders() {
         Headers headers = new Headers();
         if (match != null) {
-            StringBuilder builder = new StringBuilder();
-            String sep = ", ";
-            for (Tag tag : match) {
-                builder.append(tag.format()).append(sep);
-            }
-            builder.delete(builder.lastIndexOf(sep), builder.length());
-            headers.add(new Header(HeaderConstants.IF_MATCH, builder.toString()));
-
+            headers.add(new Header(HeaderConstants.IF_MATCH, buildTagHeaderValue(match)));
         }
         if (nonMatch != null) {
-            StringBuilder builder = new StringBuilder();
-            String sep = ", ";
-            for (Tag tag : nonMatch) {
-                builder.append(tag.format()).append(sep);
-            }
-            builder.delete(builder.lastIndexOf(sep), builder.length());
-            headers.add(new Header(HeaderConstants.IF_NON_MATCH, builder.toString()));
+            headers.add(new Header(HeaderConstants.IF_NON_MATCH, buildTagHeaderValue(nonMatch)));
         }
         if (modifiedSince != null) {
             headers.add(HTTPUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, modifiedSince));
@@ -111,5 +98,16 @@ public final class Conditionals {
         }
 
         return headers;
+    }
+
+    private String buildTagHeaderValue(List<Tag> match) {
+        StringBuilder builder = new StringBuilder();
+        for (Tag tag : match) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append(tag.format());
+        }
+        return builder.toString();
     }
 }

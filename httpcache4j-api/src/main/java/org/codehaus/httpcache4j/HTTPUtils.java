@@ -75,10 +75,11 @@ public class HTTPUtils {
     public static Header toHeader(String headerName, List<? extends Preference<?>> preferences) {
         StringBuilder builder = new StringBuilder();
         for (Preference preference : preferences) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
             builder.append(preference.toString());
-            builder.append(", ");
         }
-        builder.delete(builder.length() - 2, builder.length()); //remove last comma and space
         return new Header(headerName, builder.toString());
     }
     

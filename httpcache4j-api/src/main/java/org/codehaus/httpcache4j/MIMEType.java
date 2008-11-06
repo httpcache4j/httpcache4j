@@ -32,6 +32,7 @@ import java.util.List;
  */
 public final class MIMEType {
     public static final MIMEType ALL = new MIMEType("*", "*");
+    public static final MIMEType APPLICATION_OCTET_STREAM = new MIMEType("application", "octet-stream");
 
     private final MimeType mimeType;
     private List<Parameter> parameters = new ArrayList<Parameter>();
