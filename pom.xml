@@ -21,7 +21,7 @@
     <repositories>
         <repository>
             <id>codehaus</id>
-            <url>http://snapshots.repository.codehaus.org</url>
+            <url>http://repository.codehaus.org</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -43,7 +43,7 @@
     <pluginRepositories>
         <pluginRepository>
             <id>codehaus</id>
-            <url>http://snapshots.repository.codehaus.org</url>
+            <url>http://repository.codehaus.org</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
