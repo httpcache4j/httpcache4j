@@ -112,6 +112,7 @@ public class HTTPCache {
         if (item != null && resolvedResponse.getStatus().getCode() == Status.OK.getCode()) {
             //Success was ok, but we had already a response for this item.
             //invalidate it so we don't clutter the filesystem.
+            //TODO: This might be fixed by the FileGenerationManager.... examine this.
             storage.invalidate(request.getRequestURI(), item);
         }
         return response;

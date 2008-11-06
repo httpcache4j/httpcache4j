@@ -20,7 +20,7 @@ class FileGenerationManager {
     private FileFilter generationFilter;
 
     public FileGenerationManager(final File baseDirectory, final int numberOfGenerations) {
-        this(baseDirectory, numberOfGenerations, 5);
+        this(baseDirectory, numberOfGenerations, 100);
     }
     
     public FileGenerationManager(final File baseDirectory, final int numberOfGenerations, final int generationSize) {
