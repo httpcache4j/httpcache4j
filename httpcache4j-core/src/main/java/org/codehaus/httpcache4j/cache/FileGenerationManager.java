@@ -17,6 +17,7 @@ class FileGenerationManager {
     private final File baseDirectory;
     private int generationSize;
     private int numberOfGenerations;
+    private FileFilter generationFilter;
 
     public FileGenerationManager(final File baseDirectory, final int numberOfGenerations) {
         this(baseDirectory, numberOfGenerations, 5);
@@ -32,6 +33,7 @@ class FileGenerationManager {
         this.generationSize = generationSize;
         this.numberOfGenerations = numberOfGenerations;
         getGenerations();
+        generationFilter = new AndFileFilter(DirectoryFileFilter.DIRECTORY, new RegexFileFilter("[0-9]*"));
     }
 
     /**
@@ -44,7 +46,7 @@ class FileGenerationManager {
     public List<Generation> getGenerations() {
         final List<Generation> generations = new ArrayList<Generation>();
         //handle existing generations...
-        File[] directories = baseDirectory.listFiles((FileFilter)new AndFileFilter(DirectoryFileFilter.DIRECTORY, new RegexFileFilter("[0-9]*")));
+        File[] directories = baseDirectory.listFiles(generationFilter);
         if (directories.length > 0) {
             for (File directory : directories) {
                 generations.add(new Generation(baseDirectory, Integer.parseInt(directory.getName())));
@@ -130,7 +132,7 @@ class FileGenerationManager {
         }
 
         public int compareTo(Generation generation) {
-            return sequence - generation.sequence;
+            return 1 - (sequence - generation.sequence);
         }
     }
 
