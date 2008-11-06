@@ -13,6 +13,14 @@
     <name>Java HTTP cache :: Clients :: Commons HttpClient</name>
     <description>Responseresolver with Commons HttpClient</description>
 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    
     <dependencies>
         <dependency>
             <groupId>commons-httpclient</groupId>
@@ -24,12 +32,5 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>    
 
 </project>

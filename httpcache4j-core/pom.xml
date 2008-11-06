@@ -12,6 +12,15 @@
     <artifactId>httpcache4j-core</artifactId>
     <packaging>jar</packaging>
     <name>Java HTTP cache :: Core</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>commons-io</groupId>
@@ -32,12 +41,5 @@
             <artifactId>httpcache4j-api</artifactId>
         </dependency>
     </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
-    
+
 </project>

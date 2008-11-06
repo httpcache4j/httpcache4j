@@ -12,12 +12,7 @@
     <artifactId>httpcache4j-storage-api</artifactId>
     <packaging>jar</packaging>
     <name>Java HTTP cache :: Storage API</name>
-    <dependencies>
-        <dependency>
-            <groupId>org.codehaus.httpcache4j</groupId>
-            <artifactId>httpcache4j-api</artifactId>
-        </dependency>
-    </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -25,5 +20,12 @@
             </plugin>
         </plugins>
     </build>
-    
+
+    <dependencies>
+        <dependency>
+            <groupId>org.codehaus.httpcache4j</groupId>
+            <artifactId>httpcache4j-api</artifactId>
+        </dependency>
+    </dependencies>
+
 </project>
