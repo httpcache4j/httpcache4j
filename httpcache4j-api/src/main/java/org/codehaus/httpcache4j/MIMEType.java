@@ -35,7 +35,7 @@ public final class MIMEType {
     public static final MIMEType APPLICATION_OCTET_STREAM = new MIMEType("application", "octet-stream");
 
     private final MimeType mimeType;
-    private List<Parameter> parameters = new ArrayList<Parameter>();
+    private final List<Parameter> parameters = new ArrayList<Parameter>();
 
     public MIMEType(String MIMEType) {
         MimeType mimeType;
@@ -56,7 +56,14 @@ public final class MIMEType {
             throw new IllegalArgumentException(e);
         }
         this.mimeType = mimeType;
-        convertParamerters(mimeType);
+    }
+
+    public void addParameter(String name, String value) {
+        Parameter parameter = new Parameter(name, value);
+        if (parameters.contains(parameter)) {
+            mimeType.setParameter(name, value);
+            parameters.add(parameter);
+        }
     }
 
     private void convertParamerters(MimeType mimeType) {
@@ -76,12 +83,35 @@ public final class MIMEType {
         return mimeType.getPrimaryType();
     }
 
-    public boolean match(String MIMEType) {
+    public boolean matches(String MIMEType) {
         try {
             return this.mimeType.match(MIMEType);
         } catch (MimeTypeParseException e) {
             throw new IllegalArgumentException("Argument is not a mime type", e);
         }
+    }
+
+    public boolean matches(MIMEType MIMEType) {
+        return this.mimeType.match(MIMEType.mimeType);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MIMEType other = (MIMEType) o;
+
+        if (mimeType != null ? !mimeType.match(other.mimeType) : other.mimeType != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mimeType != null ? mimeType.hashCode() : 0;
+        result = 31 * result + (parameters != null ? parameters.hashCode() : 0);
+        return result;
     }
 
     public boolean includes(String mimeType) {
