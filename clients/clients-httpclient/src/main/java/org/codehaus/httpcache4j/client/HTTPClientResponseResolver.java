@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 /**
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
@@ -64,6 +65,12 @@ public class HTTPClientResponseResolver implements ResponseResolver {
                 client.getState().setCredentials(new AuthScope(requestURI.getHost(), requestURI.getPort(), AuthScope.ANY_REALM), usernamePassword);
             }
         }
+        List<Parameter> parameters = request.getParameters();
+        List<NameValuePair> query = new ArrayList<NameValuePair>(parameters.size());
+        for (Parameter parameter : parameters) {
+            query.add(new NameValuePair(parameter.getName(), parameter.getValue()));
+        }
+        method.setQueryString(query.toArray(new NameValuePair[query.size()]));
         return method;
     }
 
