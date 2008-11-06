@@ -17,18 +17,35 @@ public class HTTPRequest {
     private final Headers headers;
     private final List<Parameter> parameters;
     private final HTTPMethod method;
+    private final Conditionals conditionals;
+    private final Preferences preferences;
     private Challenge challenge;
     private Payload payload;
-    private Conditionals conditionals;
-    private Preferences preferences;
 
     public HTTPRequest(URI requestURI, HTTPMethod method) {
         this.method = method;
         this.requestURI = requestURI;
         this.headers = new Headers();
         this.parameters = new ArrayList<Parameter>();
-        conditionals = new Conditionals();
-        preferences = new Preferences();
+        this.conditionals = new Conditionals();
+        this.preferences = new Preferences();
+        String query = requestURI.getQuery();
+        if (query != null) {
+            parseQuery(query);
+        }
+    }
+
+    private void parseQuery(String query) {
+        String[] parts = query.split("&");
+        if (parts.length > 0) {
+            for (String part : parts) {
+                int equalsIndex = part.indexOf('=');
+                if (equalsIndex != -1) {
+                    Parameter param = new Parameter(part.substring(0, equalsIndex), part.substring(equalsIndex + 1));
+                    addParameter(param);
+                }
+            }
+        }
     }
 
     public URI getRequestURI() {
@@ -48,10 +65,20 @@ public class HTTPRequest {
         headers.add(header);
     }
 
+    public void addHeader(String name, String value) {
+        Validate.notEmpty(name, "You may not add a null header");
+        Validate.notNull(value, "You may not add a null header");
+        headers.add(new Header(name, value));
+    }
+
     public void addParameter(Parameter parameter) {
         if (!parameters.contains(parameter)) {
             parameters.add(parameter);
         }
+    }
+
+    public void addParameter(String name, String value) {
+        addParameter(new Parameter(name, value));
     }
 
     public Conditionals getConditionals() {
