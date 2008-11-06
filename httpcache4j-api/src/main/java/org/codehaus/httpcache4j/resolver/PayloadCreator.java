@@ -6,7 +6,9 @@ import org.codehaus.httpcache4j.payload.Payload;
 import java.io.InputStream;
 
 /**
- * Creates a payload from the response
+ * Creates a payload from the response. Most users will want to use the
+ * DefaultPayloadCreator in the core project.
+ * This is expected to be used with the ResponseResolver.
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */

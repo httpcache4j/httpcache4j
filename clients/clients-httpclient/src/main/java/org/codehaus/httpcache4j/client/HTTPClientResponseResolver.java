@@ -8,6 +8,7 @@ import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.resolver.PayloadCreator;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
+import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,16 +18,20 @@ import java.util.Map;
 import java.util.ArrayList;
 
 /**
+ * An implementation of the ResponseResolver using the Commons HTTPClient (http://hc.apache.org/httpclient-3.x/)
+ *
+ * If you need to use SSL, please follow the guide here.
+ * http://hc.apache.org/httpclient-3.x/sslguide.html
+ *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public class HTTPClientResponseResolver implements ResponseResolver {
+public class HTTPClientResponseResolver extends AbstractResponseResolver{
     private final HttpClient client;
-    private final PayloadCreator payloadCreator;
     private boolean useRequestChallenge = true;
 
     public HTTPClientResponseResolver(HttpClient client, PayloadCreator payloadCreator) {
+        super(payloadCreator);
         this.client = client;
-        this.payloadCreator = payloadCreator;
     }
 
     public HTTPResponse resolve(HTTPRequest request) {
@@ -90,7 +95,7 @@ public class HTTPClientResponseResolver implements ResponseResolver {
         InputStream stream = getInputStream(method);
         Payload payload;
         if (stream != null) {
-            payload = payloadCreator.createPayload(headers, stream);
+            payload = getPayloadCreator().createPayload(headers, stream);
         } else {
             payload = null;
         }
