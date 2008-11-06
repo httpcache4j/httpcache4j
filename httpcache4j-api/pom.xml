@@ -11,4 +11,10 @@
     <artifactId>httpcache4j-api</artifactId>
     <packaging>jar</packaging>
     <name>Java HTTP cache :: API</name>
+    <dependencies>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+        </dependency>
+    </dependencies>
 </project>
