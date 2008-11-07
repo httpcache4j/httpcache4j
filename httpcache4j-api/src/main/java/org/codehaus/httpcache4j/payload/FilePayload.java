@@ -1,6 +1,7 @@
 package org.codehaus.httpcache4j.payload;
 
 import org.apache.commons.lang.Validate;
+
 import org.codehaus.httpcache4j.MIMEType;
 
 import java.io.File;
@@ -26,7 +27,8 @@ public class FilePayload implements Payload {
     public InputStream getInputStream() {
         try {
             return new FileInputStream(file);
-        } catch (FileNotFoundException e) {
+        }
+        catch (FileNotFoundException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }

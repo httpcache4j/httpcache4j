@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-
 public class ConditionalsTest {
     private Conditionals conditionals;
 
@@ -31,7 +30,8 @@ public class ConditionalsTest {
         try {
             conditionals.addIfMatch(Tag.parse("\"bar\""));
             fail();
-        } catch (IllegalArgumentException expected) {
+        }
+        catch (IllegalArgumentException expected) {
         }
     }
 
@@ -42,7 +42,8 @@ public class ConditionalsTest {
         try {
             conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
             fail();
-        } catch (IllegalArgumentException expected) {
+        }
+        catch (IllegalArgumentException expected) {
         }
     }
 
@@ -63,7 +64,8 @@ public class ConditionalsTest {
         try {
             conditionals.addIfMatch(Tag.parse("\"bar\""));
             fail();
-        } catch (IllegalArgumentException expected) {
+        }
+        catch (IllegalArgumentException expected) {
         }
     }
 
@@ -93,7 +95,8 @@ public class ConditionalsTest {
         try {
             conditionals.setIfModifiedSince(dateTime);
             fail();
-        } catch (IllegalArgumentException expected) {
+        }
+        catch (IllegalArgumentException expected) {
         }
         assertNull(conditionals.getModifiedSince());
     }
@@ -124,7 +127,8 @@ public class ConditionalsTest {
         try {
             conditionals.setIfUnModifiedSince(dateTime);
             fail();
-        } catch (IllegalArgumentException expected) {
+        }
+        catch (IllegalArgumentException expected) {
         }
         assertNull(conditionals.getUnModifiedSince());
     }
@@ -137,7 +141,8 @@ public class ConditionalsTest {
         try {
             conditionals.setIfModifiedSince(dateTime);
             fail();
-        } catch (IllegalArgumentException expected) {
+        }
+        catch (IllegalArgumentException expected) {
         }
     }
 }

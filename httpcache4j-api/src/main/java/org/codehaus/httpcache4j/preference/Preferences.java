@@ -10,18 +10,15 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Collections;
 
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 //TODO: add encoding preference.
 public final class Preferences {
     private List<Preference<Locale>> acceptLocales = new ArrayList<Preference<Locale>>();
     private List<Preference<MIMEType>> acceptMIMETypes = new ArrayList<Preference<MIMEType>>();
     private List<Preference<String>> acceptCharset = new ArrayList<Preference<String>>();
-    
 
     public void addLocale(Locale locale) {
-        LocalePreference preference = new LocalePreference(locale); 
+        LocalePreference preference = new LocalePreference(locale);
         if (!acceptLocales.contains(preference)) {
             acceptLocales.add(preference);
         }
@@ -58,10 +55,12 @@ public final class Preferences {
         if (!getAcceptMIMETypes().isEmpty()) {
             headers.add(HTTPUtils.toHeader(HeaderConstants.ACCEPT, getAcceptMIMETypes()));
 
-        } else if (!getAcceptLocales().isEmpty()) {
+        }
+        else if (!getAcceptLocales().isEmpty()) {
             headers.add(HTTPUtils.toHeader(HeaderConstants.ACCEPT_LANGUAGE, getAcceptLocales()));
 
-        } else if (!getAcceptCharset().isEmpty()) {
+        }
+        else if (!getAcceptCharset().isEmpty()) {
             headers.add(HTTPUtils.toHeader(HeaderConstants.ACCEPT_CHARSET, getAcceptCharset()));
         }
         return headers;

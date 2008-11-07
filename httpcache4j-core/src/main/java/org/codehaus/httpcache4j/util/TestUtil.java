@@ -8,7 +8,7 @@ import java.io.File;
  * <a href="mailto:jason@maven.org">Jason van Zyl</a>
  * <a href="mailto:trygvis@inamo.no">Trygve Laugst&oslash;l</a>
  * <a href="mailto:michal@codehaus.org">Michal Maczka</a>
- * 
+ *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
 public class TestUtil {

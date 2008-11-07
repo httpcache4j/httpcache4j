@@ -14,7 +14,8 @@ public class InputStreamPayload implements Payload {
         this.mimeType = mimeType;
         if (stream != null) {
             this.stream = new WrappedInputStream(stream);
-        } else {
+        }
+        else {
             this.stream = null;
             available = false;
         }

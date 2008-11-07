@@ -35,13 +35,21 @@ public class Parameter implements Serializable {
     }
 
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         Parameter header = (Parameter) o;
 
-        if (name != null ? !name.equals(header.name) : header.name != null) return false;
-        if (value != null ? !value.equals(header.value) : header.value != null) return false;
+        if (name != null ? !name.equals(header.name) : header.name != null) {
+            return false;
+        }
+        if (value != null ? !value.equals(header.value) : header.value != null) {
+            return false;
+        }
 
         return true;
     }

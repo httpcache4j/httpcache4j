@@ -3,9 +3,7 @@ package org.codehaus.httpcache4j.util;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class LRUHashMap<K, V> extends LinkedHashMap<K, V> {
     private int maxSize;
 

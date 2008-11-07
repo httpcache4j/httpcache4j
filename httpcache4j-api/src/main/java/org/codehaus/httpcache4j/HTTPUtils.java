@@ -2,6 +2,7 @@ package org.codehaus.httpcache4j;
 
 import static org.codehaus.httpcache4j.HeaderConstants.*;
 import org.codehaus.httpcache4j.preference.Preference;
+
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -25,7 +26,8 @@ public class HTTPUtils {
         Date date = null;
         try {
             date = format.parse(header.getValue());
-        } catch (ParseException e) {
+        }
+        catch (ParseException e) {
             //TODO: decide what to do here....
         }
         if (date != null) {
@@ -48,7 +50,8 @@ public class HTTPUtils {
             if (dateTime != null) {
                 return dateTime.getMillis();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
             return -1;
         }
@@ -82,5 +85,5 @@ public class HTTPUtils {
         }
         return new Header(headerName, builder.toString());
     }
-    
+
 }

@@ -3,6 +3,7 @@ package org.codehaus.httpcache4j.preference;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.HeaderConstants;
 import org.codehaus.httpcache4j.HTTPUtils;
+
 import org.junit.Assert;
 import org.junit.Test;
 

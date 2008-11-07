@@ -18,6 +18,7 @@ public interface PayloadCreator {
      *
      * @param headers the headers to determine cacheablity
      * @param stream  the stream to create the payload from.
+     *
      * @return the created payload
      */
     Payload createPayload(Headers headers, InputStream stream);

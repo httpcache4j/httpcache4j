@@ -1,6 +1,5 @@
 package org.codehaus.httpcache4j.preference;
 
-
 import org.codehaus.httpcache4j.HeaderConstants;
 
 import java.util.Locale;

@@ -14,7 +14,6 @@ public class Header extends Parameter {
         parseDirectives(value);
     }
 
-
     private void parseDirectives(String value) {
         List<String> directives = Arrays.asList(value.split(","));
         for (String directive : directives) {

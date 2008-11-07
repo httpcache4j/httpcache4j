@@ -7,13 +7,9 @@ import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
 import java.util.*;
 
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class HTTPCache {
-    /**
-     * Directive to the {@code "Cache-Control"} header
-     */
+    /** Directive to the {@code "Cache-Control"} header */
     public static final String HEADER_DIRECTIVE_MAX_AGE = "max-age";
 
     private static final Set<HTTPMethod> safeMethods;
@@ -58,7 +54,8 @@ public class HTTPCache {
                 storage.invalidate(request.getRequestURI());
             }
             response = resolver.resolve(request);
-        } else {
+        }
+        else {
             //request is cacheable
             response = getFromCache(request);
         }
@@ -76,9 +73,11 @@ public class HTTPCache {
             }
 
             response = handleResolve(request, item);
-        } else if (item != null) {
+        }
+        else if (item != null) {
             response = item.getResponse();
-        } else {
+        }
+        else {
             response = handleResolve(request, null);
         }
 
@@ -93,7 +92,8 @@ public class HTTPCache {
 
             storage.put(request.getRequestURI(), vary, new CacheItem(resolvedResponse));
             response = resolvedResponse;
-        } else if (item != null && resolvedResponse.getStatus().getCode() == Status.NOT_MODIFIED.getCode()) {
+        }
+        else if (item != null && resolvedResponse.getStatus().getCode() == Status.NOT_MODIFIED.getCode()) {
             //replace the cached entry as the entry was not modified
             HTTPResponse cachedResponse = item.getResponse();
             HTTPResponse updatedResponse;
@@ -105,7 +105,8 @@ public class HTTPCache {
             Vary vary = determineVariation(updatedResponse, request);
             storage.put(request.getRequestURI(), vary, new CacheItem(updatedResponse));
             response = updatedResponse;
-        } else {
+        }
+        else {
             //Response was not cacheable
             response = resolvedResponse;
         }

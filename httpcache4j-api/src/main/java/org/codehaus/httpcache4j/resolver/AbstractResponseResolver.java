@@ -4,7 +4,7 @@ import org.apache.commons.lang.Validate;
 
 /**
  * Implementors should implement this instead of using the ResponseResolver interface directly.
- * 
+ *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
 public abstract class AbstractResponseResolver implements ResponseResolver {

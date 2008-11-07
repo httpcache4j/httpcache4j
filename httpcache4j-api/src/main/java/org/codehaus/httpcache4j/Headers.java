@@ -5,9 +5,7 @@ import org.apache.commons.lang.Validate;
 import java.io.Serializable;
 import java.util.*;
 
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public final class Headers implements Serializable, Iterable<Map.Entry<String, List<Header>>> {
     public static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
     private Map<String, List<Header>> headers = new HashMap<String, List<Header>>();
@@ -39,12 +37,10 @@ public final class Headers implements Serializable, Iterable<Map.Entry<String, L
         }
     }
 
-
     public boolean contains(Header header) {
         List<Header> values = headers.get(header.getName());
         return values != null && values.contains(header);
     }
-
 
     public Map<String, List<Header>> getHeadersAsMap() {
         return Collections.unmodifiableMap(headers);

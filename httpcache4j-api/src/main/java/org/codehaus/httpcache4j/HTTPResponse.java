@@ -1,16 +1,16 @@
 package org.codehaus.httpcache4j;
 
 import org.apache.commons.lang.Validate;
+
 import static org.codehaus.httpcache4j.HeaderConstants.*;
 import org.codehaus.httpcache4j.payload.Payload;
+
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.*;
 
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public final class HTTPResponse implements Serializable {
     private final Status status;
     private final Payload payload;

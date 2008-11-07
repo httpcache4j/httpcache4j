@@ -18,10 +18,7 @@
 
 package org.codehaus.httpcache4j;
 
-
-/**
- * Status to return after handling a call.
- */
+/** Status to return after handling a call. */
 public final class Status extends Metadata {
 
     public static final Status CONTINUE = new Status(100, "Continue");
@@ -65,7 +62,6 @@ public final class Status extends Metadata {
     public static final Status GATEWAY_TIMEOUT = new Status(504, "Gateway Timeout");
     public static final Status HTTP_VERSION_NOT_SUPPORTED = new Status(505, "HTTP Version Not Supported");
 
-
     private int code;
 
     public Status(int code, String name) {
@@ -85,9 +81,15 @@ public final class Status extends Metadata {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
 
         Status status = (Status) o;
 
@@ -104,83 +106,122 @@ public final class Status extends Metadata {
     public static Status valueOf(int statusCode) {
         if (CONTINUE.getCode() == statusCode) {
             return CONTINUE;
-        } else if (SWITCHING_PROTOCOLS.getCode() == statusCode) {
+        }
+        else if (SWITCHING_PROTOCOLS.getCode() == statusCode) {
             return SWITCHING_PROTOCOLS;
-        } else if (OK.getCode() == statusCode) {
+        }
+        else if (OK.getCode() == statusCode) {
             return OK;
-        } else if (CREATED.getCode() == statusCode) {
+        }
+        else if (CREATED.getCode() == statusCode) {
             return CREATED;
-        } else if (ACCEPTED.getCode() == statusCode) {
+        }
+        else if (ACCEPTED.getCode() == statusCode) {
             return ACCEPTED;
-        } else if (NON_AUTHORITATIVE_INFORMATION.getCode() == statusCode) {
+        }
+        else if (NON_AUTHORITATIVE_INFORMATION.getCode() == statusCode) {
             return NON_AUTHORITATIVE_INFORMATION;
-        } else if (NO_CONTENT.getCode() == statusCode) {
+        }
+        else if (NO_CONTENT.getCode() == statusCode) {
             return NO_CONTENT;
-        } else if (RESET_CONTENT.getCode() == statusCode) {
+        }
+        else if (RESET_CONTENT.getCode() == statusCode) {
             return RESET_CONTENT;
-        } else if (PARTIAL_CONTENT.getCode() == statusCode) {
+        }
+        else if (PARTIAL_CONTENT.getCode() == statusCode) {
             return PARTIAL_CONTENT;
-        } else if (MULTIPLE_CHOICES.getCode() == statusCode) {
+        }
+        else if (MULTIPLE_CHOICES.getCode() == statusCode) {
             return MULTIPLE_CHOICES;
-        } else if (MOVED_PERMANENTLY.getCode() == statusCode) {
+        }
+        else if (MOVED_PERMANENTLY.getCode() == statusCode) {
             return MOVED_PERMANENTLY;
-        } else if (FOUND.getCode() == statusCode) {
+        }
+        else if (FOUND.getCode() == statusCode) {
             return FOUND;
-        } else if (SEE_OTHER.getCode() == statusCode) {
+        }
+        else if (SEE_OTHER.getCode() == statusCode) {
             return SEE_OTHER;
-        } else if (NOT_MODIFIED.getCode() == statusCode) {
+        }
+        else if (NOT_MODIFIED.getCode() == statusCode) {
             return NOT_MODIFIED;
-        } else if (USE_PROXY.getCode() == statusCode) {
+        }
+        else if (USE_PROXY.getCode() == statusCode) {
             return USE_PROXY;
-        } else if (TEMPORARY_REDIRECT.getCode() == statusCode) {
+        }
+        else if (TEMPORARY_REDIRECT.getCode() == statusCode) {
             return TEMPORARY_REDIRECT;
-        } else if (BAD_REQUEST.getCode() == statusCode) {
+        }
+        else if (BAD_REQUEST.getCode() == statusCode) {
             return BAD_REQUEST;
-        } else if (UNAUTHORIZED.getCode() == statusCode) {
+        }
+        else if (UNAUTHORIZED.getCode() == statusCode) {
             return UNAUTHORIZED;
-        } else if (PAYMENT_REQUIRED.getCode() == statusCode) {
+        }
+        else if (PAYMENT_REQUIRED.getCode() == statusCode) {
             return PAYMENT_REQUIRED;
-        } else if (FORBIDDEN.getCode() == statusCode) {
+        }
+        else if (FORBIDDEN.getCode() == statusCode) {
             return FORBIDDEN;
-        } else if (NOT_FOUND.getCode() == statusCode) {
+        }
+        else if (NOT_FOUND.getCode() == statusCode) {
             return NOT_FOUND;
-        } else if (METHOD_NOT_ALLOWED.getCode() == statusCode) {
+        }
+        else if (METHOD_NOT_ALLOWED.getCode() == statusCode) {
             return METHOD_NOT_ALLOWED;
-        } else if (NOT_ACCEPTABLE.getCode() == statusCode) {
+        }
+        else if (NOT_ACCEPTABLE.getCode() == statusCode) {
             return NOT_ACCEPTABLE;
-        } else if (PROXY_AUTHENTICATION_REQUIRED.getCode() == statusCode) {
+        }
+        else if (PROXY_AUTHENTICATION_REQUIRED.getCode() == statusCode) {
             return PROXY_AUTHENTICATION_REQUIRED;
-        } else if (REQUEST_TIMEOUT.getCode() == statusCode) {
+        }
+        else if (REQUEST_TIMEOUT.getCode() == statusCode) {
             return REQUEST_TIMEOUT;
-        } else if (CONFLICT.getCode() == statusCode) {
+        }
+        else if (CONFLICT.getCode() == statusCode) {
             return CONFLICT;
-        } else if (GONE.getCode() == statusCode) {
+        }
+        else if (GONE.getCode() == statusCode) {
             return GONE;
-        } else if (LENGTH_REQUIRED.getCode() == statusCode) {
+        }
+        else if (LENGTH_REQUIRED.getCode() == statusCode) {
             return LENGTH_REQUIRED;
-        } else if (PRECONDITION_FAILED.getCode() == statusCode) {
+        }
+        else if (PRECONDITION_FAILED.getCode() == statusCode) {
             return PRECONDITION_FAILED;
-        } else if (REQUEST_ENTITY_TOO_LARGE.getCode() == statusCode) {
+        }
+        else if (REQUEST_ENTITY_TOO_LARGE.getCode() == statusCode) {
             return REQUEST_ENTITY_TOO_LARGE;
-        } else if (REQUEST_URI_TOO_LONG.getCode() == statusCode) {
+        }
+        else if (REQUEST_URI_TOO_LONG.getCode() == statusCode) {
             return REQUEST_URI_TOO_LONG;
-        } else if (UNSUPPORTED_MEDIA_TYPE.getCode() == statusCode) {
+        }
+        else if (UNSUPPORTED_MEDIA_TYPE.getCode() == statusCode) {
             return UNSUPPORTED_MEDIA_TYPE;
-        } else if (REQUESTED_RANGE_NOT_SATISFIABLE.getCode() == statusCode) {
+        }
+        else if (REQUESTED_RANGE_NOT_SATISFIABLE.getCode() == statusCode) {
             return REQUESTED_RANGE_NOT_SATISFIABLE;
-        } else if (EXPECTATION_FAILED.getCode() == statusCode) {
+        }
+        else if (EXPECTATION_FAILED.getCode() == statusCode) {
             return EXPECTATION_FAILED;
-        } else if (INTERNAL_SERVER_ERROR.getCode() == statusCode) {
+        }
+        else if (INTERNAL_SERVER_ERROR.getCode() == statusCode) {
             return INTERNAL_SERVER_ERROR;
-        } else if (NOT_IMPLEMENTED.getCode() == statusCode) {
+        }
+        else if (NOT_IMPLEMENTED.getCode() == statusCode) {
             return NOT_IMPLEMENTED;
-        } else if (BAD_GATEWAY.getCode() == statusCode) {
+        }
+        else if (BAD_GATEWAY.getCode() == statusCode) {
             return BAD_GATEWAY;
-        } else if (SERVICE_UNAVAILABLE.getCode() == statusCode) {
+        }
+        else if (SERVICE_UNAVAILABLE.getCode() == statusCode) {
             return SERVICE_UNAVAILABLE;
-        } else if (GATEWAY_TIMEOUT.getCode() == statusCode) {
+        }
+        else if (GATEWAY_TIMEOUT.getCode() == statusCode) {
             return GATEWAY_TIMEOUT;
-        } else if (HTTP_VERSION_NOT_SUPPORTED.getCode() == statusCode) {
+        }
+        else if (HTTP_VERSION_NOT_SUPPORTED.getCode() == statusCode) {
             return HTTP_VERSION_NOT_SUPPORTED;
         }
         throw new IllegalStateException("not a valid HTTP/1.1 status code");

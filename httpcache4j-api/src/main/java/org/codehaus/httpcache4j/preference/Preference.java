@@ -1,6 +1,7 @@
 package org.codehaus.httpcache4j.preference;
 
 import org.apache.commons.lang.Validate;
+
 import org.codehaus.httpcache4j.HTTPUtils;
 import org.codehaus.httpcache4j.Header;
 
@@ -33,7 +34,8 @@ public abstract class Preference<T> {
         StringBuilder headerValue = new StringBuilder();
         if (getQuality() != 1.0) {
             headerValue.append(getStringValue()).append(";q=").append(getQuality());
-        } else {
+        }
+        else {
             headerValue.append(getStringValue());
         }
         return headerValue.toString();
@@ -43,19 +45,24 @@ public abstract class Preference<T> {
         return getPreference().toString();
     }
 
-
     protected Header toHeader() {
         return HTTPUtils.toHeader(getHeaderName(), Arrays.asList(this));
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         Preference that = (Preference) o;
 
-        if (preference != null ? !preference.equals(that.preference) : that.preference != null) return false;
+        if (preference != null ? !preference.equals(that.preference) : that.preference != null) {
+            return false;
+        }
 
         return true;
     }
