@@ -14,8 +14,9 @@ import org.codehaus.httpcache4j.HTTPResponse;
 public interface ResponseResolver {
     /**
      * Resolves the given request into a response.
-     * 
+     *
      * @param request the request to resolve.
+     *
      * @return the raw response from the server.
      */
     HTTPResponse resolve(HTTPRequest request);

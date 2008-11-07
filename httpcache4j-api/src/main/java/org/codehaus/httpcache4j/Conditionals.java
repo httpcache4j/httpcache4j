@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public final class Conditionals {
     private List<Tag> match;
     private List<Tag> nonMatch;
@@ -25,7 +23,8 @@ public final class Conditionals {
         }
         if (!match.contains(Tag.ALL)) {
             match.add(tag);
-        } else {
+        }
+        else {
             throw new IllegalArgumentException("Tag ALL already in the list");
         }
     }
@@ -38,7 +37,8 @@ public final class Conditionals {
         }
         if (!nonMatch.contains(Tag.ALL)) {
             nonMatch.add(tag);
-        } else {
+        }
+        else {
             throw new IllegalArgumentException("Tag ALL already in the list");
         }
 

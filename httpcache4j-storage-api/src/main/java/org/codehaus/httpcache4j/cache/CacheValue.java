@@ -1,15 +1,12 @@
 package org.codehaus.httpcache4j.cache;
 
-
 import org.apache.commons.lang.Validate;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class CacheValue implements Iterable<Map.Entry<Vary, CacheItem>> {
     private Map<Vary, CacheItem> variations = new HashMap<Vary, CacheItem>();
 

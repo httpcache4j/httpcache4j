@@ -4,6 +4,7 @@ import org.apache.commons.lang.Validate;
 import org.apache.commons.io.filefilter.AndFileFilter;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
+
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
 
 import java.io.File;
@@ -22,7 +23,7 @@ class FileGenerationManager {
     public FileGenerationManager(final File baseDirectory, final int numberOfGenerations) {
         this(baseDirectory, numberOfGenerations, 100);
     }
-    
+
     public FileGenerationManager(final File baseDirectory, final int numberOfGenerations, final int generationSize) {
         Validate.isTrue(numberOfGenerations > 0, "You may not create 0 generations");
         Validate.notNull(baseDirectory, "You may not have a null base directory");
@@ -80,6 +81,7 @@ class FileGenerationManager {
 
     /**
      * Returns the most recent created generation
+     *
      * @return the generation with the highest sequence number
      */
     public Generation getCurrentGeneration() {
@@ -94,13 +96,13 @@ class FileGenerationManager {
                 if (candidate.renameTo(target)) {
                     return target;
                 }
-                //TODO: what happens if the candidate does not exist?                
+                //TODO: what happens if the candidate does not exist?
             }
         }
         return target;
     }
 
-    static class Generation implements Comparable<Generation>{
+    static class Generation implements Comparable<Generation> {
         private File generationDirectory;
         private int sequence;
 
@@ -111,7 +113,7 @@ class FileGenerationManager {
             this.generationDirectory = genFile;
             this.sequence = generationNumber;
         }
-        
+
         public synchronized void delete() {
             File[] undeleteableFiles = generationDirectory.listFiles(new DeletingFileFilter());
             if (undeleteableFiles.length == 0) {
@@ -125,7 +127,6 @@ class FileGenerationManager {
         public File getGenerationDirectory() {
             return generationDirectory;
         }
-
 
         public int getSequence() {
             return sequence;

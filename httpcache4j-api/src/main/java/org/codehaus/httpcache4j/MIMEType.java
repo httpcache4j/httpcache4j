@@ -41,7 +41,8 @@ public final class MIMEType {
         MimeType mimeType;
         try {
             mimeType = new MimeType(MIMEType);
-        } catch (MimeTypeParseException e) {
+        }
+        catch (MimeTypeParseException e) {
             throw new IllegalArgumentException(e);
         }
         this.mimeType = mimeType;
@@ -52,7 +53,8 @@ public final class MIMEType {
         MimeType mimeType;
         try {
             mimeType = new MimeType(primaryType, subType);
-        } catch (MimeTypeParseException e) {
+        }
+        catch (MimeTypeParseException e) {
             throw new IllegalArgumentException(e);
         }
         this.mimeType = mimeType;
@@ -86,7 +88,8 @@ public final class MIMEType {
     public boolean matches(String MIMEType) {
         try {
             return this.mimeType.match(MIMEType);
-        } catch (MimeTypeParseException e) {
+        }
+        catch (MimeTypeParseException e) {
             throw new IllegalArgumentException("Argument is not a mime type", e);
         }
     }
@@ -97,12 +100,18 @@ public final class MIMEType {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         MIMEType other = (MIMEType) o;
 
-        if (mimeType != null ? !mimeType.match(other.mimeType) : other.mimeType != null) return false;
+        if (mimeType != null ? !mimeType.match(other.mimeType) : other.mimeType != null) {
+            return false;
+        }
 
         return true;
     }

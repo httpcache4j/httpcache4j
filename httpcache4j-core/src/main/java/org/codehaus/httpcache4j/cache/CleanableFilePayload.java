@@ -2,6 +2,7 @@ package org.codehaus.httpcache4j.cache;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
 
@@ -13,7 +14,7 @@ import java.util.UUID;
 
 /**
  * Stores the file in "bucket".
- * 
+ *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
 public class CleanableFilePayload implements CleanablePayload {
@@ -30,7 +31,8 @@ public class CleanableFilePayload implements CleanablePayload {
         FileOutputStream outputStream = FileUtils.openOutputStream(file);
         try {
             IOUtils.copy(stream, outputStream);
-        } finally {
+        }
+        finally {
             IOUtils.closeQuietly(outputStream);
             IOUtils.closeQuietly(stream);
         }
@@ -47,7 +49,7 @@ public class CleanableFilePayload implements CleanablePayload {
     public InputStream getInputStream() throws IOException {
         if (isAvailable()) {
             File file = getFile();
-            return FileUtils.openInputStream(file);        
+            return FileUtils.openInputStream(file);
         }
         return null;
     }

@@ -4,6 +4,7 @@ import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.*;
+
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.resolver.PayloadCreator;
@@ -19,13 +20,13 @@ import java.util.ArrayList;
 
 /**
  * An implementation of the ResponseResolver using the Commons HTTPClient (http://hc.apache.org/httpclient-3.x/)
- *
+ * <p/>
  * If you need to use SSL, please follow the guide here.
  * http://hc.apache.org/httpclient-3.x/sslguide.html
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public class HTTPClientResponseResolver extends AbstractResponseResolver{
+public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private final HttpClient client;
     private boolean useRequestChallenge = true;
 
@@ -39,7 +40,8 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver{
         try {
             client.executeMethod(method);
             return convertResponse(method);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
         return null;
@@ -96,7 +98,8 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver{
         Payload payload;
         if (stream != null) {
             payload = getPayloadCreator().createPayload(headers, stream);
-        } else {
+        }
+        else {
             payload = null;
         }
 
@@ -106,7 +109,8 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver{
     private InputStream getInputStream(HttpMethod method) {
         try {
             return method.getResponseBodyAsStream();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             return null;
         }
     }

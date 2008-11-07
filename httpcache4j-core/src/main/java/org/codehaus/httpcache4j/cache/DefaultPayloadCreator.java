@@ -9,9 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class DefaultPayloadCreator implements PayloadCreator {
     private FileGenerationManager fileGenerationManager;
 
@@ -25,10 +23,12 @@ public class DefaultPayloadCreator implements PayloadCreator {
         if (cacheable) {
             try {
                 return new CleanableFilePayload(fileGenerationManager, stream, new MIMEType(contentTypeHeader.getValue()));
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 throw new HTTPException("Unable to create reponse storage", e);
             }
-        } else {
+        }
+        else {
             return new InputStreamPayload(stream, new MIMEType(contentTypeHeader.getValue()));
         }
     }

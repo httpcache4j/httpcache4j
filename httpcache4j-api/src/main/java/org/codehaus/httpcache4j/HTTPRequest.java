@@ -1,6 +1,7 @@
 package org.codehaus.httpcache4j;
 
 import org.apache.commons.lang.Validate;
+
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.preference.Preferences;
 
@@ -9,9 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class HTTPRequest {
     private final URI requestURI;
     private final Headers headers;

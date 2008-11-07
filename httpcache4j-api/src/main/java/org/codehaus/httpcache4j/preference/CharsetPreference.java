@@ -2,9 +2,7 @@ package org.codehaus.httpcache4j.preference;
 
 import org.codehaus.httpcache4j.HeaderConstants;
 
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class CharsetPreference extends Preference<String> {
     public CharsetPreference(String preference) {
         super(preference);

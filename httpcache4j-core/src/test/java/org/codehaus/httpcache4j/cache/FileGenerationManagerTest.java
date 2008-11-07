@@ -2,6 +2,7 @@ package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.util.TestUtil;
+
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +41,7 @@ public class FileGenerationManagerTest {
         assertTrue("File did not exist", tempFile.exists());
         File actual = generationManager.getFile(tempFile.getName());
         assertTrue("File did not exist", actual.exists());
-        assertEquals("File was not equal to found file",tempFile, actual);
+        assertEquals("File was not equal to found file", tempFile, actual);
     }
 
     @Test
@@ -48,7 +49,7 @@ public class FileGenerationManagerTest {
         FileGenerationManager generationManager = new FileGenerationManager(baseDirectory, 2, 1);
         FileGenerationManager.Generation currentGeneration = generationManager.getCurrentGeneration();
         assertEquals("Wrong generation sequence", 1, currentGeneration.getSequence());
-        File dir = currentGeneration.getGenerationDirectory();        
+        File dir = currentGeneration.getGenerationDirectory();
         File.createTempFile("foo", "bar", dir);
         File.createTempFile("foo", "bar", dir);
         currentGeneration = generationManager.getCurrentGeneration();
@@ -72,7 +73,6 @@ public class FileGenerationManagerTest {
         assertEquals("Wrong generation sequence", 3, currentGeneration.getSequence());
         assertEquals("Wrong number of generations", 2, generationManager.getGenerations().size());
     }
-
 
     @After
     public void cleanup() {

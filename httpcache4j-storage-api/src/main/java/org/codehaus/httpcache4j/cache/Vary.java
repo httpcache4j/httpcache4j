@@ -1,16 +1,14 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.apache.commons.lang.Validate;
+
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.Header;
 
 import java.io.Serializable;
 import java.util.*;
 
-
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public final class Vary implements Serializable {
     private final Map<String, String> varyHeaders = new HashMap<String, String>();
 
@@ -24,9 +22,7 @@ public final class Vary implements Serializable {
         varyHeaders.putAll(headers);
     }
 
-    /**
-     * @return the header names.
-     */
+    /** @return the header names. */
     public List<String> getVaryHeaderNames() {
         return Collections.unmodifiableList(new ArrayList<String>(varyHeaders.keySet()));
     }
@@ -35,6 +31,7 @@ public final class Vary implements Serializable {
      * Analyses the headers in the given request to figure out if this Variation matches.
      *
      * @param request the request to analyse
+     *
      * @return {@code true} if the request matches the variance. {@code false} if not.
      */
     public boolean matches(final HTTPRequest request) {

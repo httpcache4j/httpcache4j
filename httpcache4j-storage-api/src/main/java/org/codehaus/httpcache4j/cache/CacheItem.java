@@ -1,17 +1,18 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.apache.commons.lang.math.NumberUtils;
+
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.HTTPUtils;
 import org.codehaus.httpcache4j.Header;
 import static org.codehaus.httpcache4j.HeaderConstants.CACHE_CONTROL;
 import static org.codehaus.httpcache4j.HeaderConstants.EXPIRES;
 import org.codehaus.httpcache4j.Headers;
+
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.Map;
-
 
 /**
  * This is an interal class, and should not be subclassed or used by clients.
@@ -52,7 +53,7 @@ public class CacheItem implements Serializable {
          * To mark a response as "already expired," an origin server sends an Expires date that is equal to the Date header value.
          * (See the rules for expiration calculations in section 13.2.4.)
          * To mark a response as "never expires," an origin server sends an Expires date approximately one year from the time the response is sent.
-         * HTTP/1.1 servers SHOULD NOT send Expires dates more than one year in the future. 
+         * HTTP/1.1 servers SHOULD NOT send Expires dates more than one year in the future.
          */
         if (headers.hasHeader(EXPIRES)) {
             long expiryDate = HTTPUtils.getHeaderAsDate(headers.getFirstHeader(EXPIRES));
@@ -64,7 +65,6 @@ public class CacheItem implements Serializable {
         return false;
     }
 
-
     public DateTime getCachedTime() {
         return cachedTime;
     }
@@ -75,13 +75,21 @@ public class CacheItem implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         CacheItem cacheItem = (CacheItem) o;
 
-        if (cachedTime != null ? !cachedTime.equals(cacheItem.cachedTime) : cacheItem.cachedTime != null) return false;
-        if (response != null ? !response.equals(cacheItem.response) : cacheItem.response != null) return false;
+        if (cachedTime != null ? !cachedTime.equals(cacheItem.cachedTime) : cacheItem.cachedTime != null) {
+            return false;
+        }
+        if (response != null ? !response.equals(cacheItem.response) : cacheItem.response != null) {
+            return false;
+        }
 
         return true;
     }

@@ -4,9 +4,7 @@ import org.junit.Test;
 import org.junit.Assert;
 import static org.junit.Assert.*;
 
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class HTTPResponseTest {
     @Test
     public void testNoHeaders() {

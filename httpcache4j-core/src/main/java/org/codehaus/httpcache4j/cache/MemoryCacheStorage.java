@@ -8,9 +8,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class MemoryCacheStorage implements CacheStorage {
 
     private Map<URI, CacheValue> cache;
@@ -26,7 +24,8 @@ public class MemoryCacheStorage implements CacheStorage {
             variations.put(vary, cacheItem);
             value = new CacheValue(variations);
             value.getVariations().put(vary, cacheItem);
-        } else {
+        }
+        else {
             cache.put(requestURI, new CacheValue(Collections.singletonMap(vary, cacheItem)));
         }
     }
@@ -69,7 +68,8 @@ public class MemoryCacheStorage implements CacheStorage {
                 if (payload instanceof CleanablePayload) {
                     ((CleanablePayload) payload).clean();
                 }
-            } else {
+            }
+            else {
                 if (entry.getValue() == item) {
                     found = entry.getKey();
                 }

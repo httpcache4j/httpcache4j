@@ -16,9 +16,9 @@ import java.util.Arrays;
 
 /**
  * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
-* @author last modified by $Author: $
-* @version $Id: $
-*/
+ * @author last modified by $Author: $
+ * @version $Id: $
+ */
 public class DeletingFileFilter implements FileFilter {
     public boolean accept(File pathname) {
         if (pathname.isFile()) {

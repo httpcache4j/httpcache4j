@@ -3,9 +3,7 @@ package org.codehaus.httpcache4j;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
- */
+/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class MIMETypeTest {
 
     @Test
@@ -21,7 +19,8 @@ public class MIMETypeTest {
         try {
             new MIMEType("foobar");
             fail("Expected IllegalArgumentException");
-        } catch (IllegalArgumentException expected) {
+        }
+        catch (IllegalArgumentException expected) {
             //expected
         }
     }
@@ -29,13 +28,13 @@ public class MIMETypeTest {
     @Test
     public void testValidMimeTypeWithParameter() {
         MIMEType type = new MIMEType("foo/bar;charset=UTF-8");
-        assertEquals("Wrong number of parameters",1, type.getParameters().size());
+        assertEquals("Wrong number of parameters", 1, type.getParameters().size());
         Parameter param = type.getParameters().get(0);
         assertEquals("Wrong parameter name", "charset", param.getName());
         assertEquals("Wrong parameter value", "UTF-8", param.getValue());
         MIMEType newType = new MIMEType("foo", "bar");
         newType.addParameter("charset", "UTF-8");
-        assertTrue("New type did not match old type",newType.matches(type));
+        assertTrue("New type did not match old type", newType.matches(type));
     }
 
     @Test
@@ -43,7 +42,8 @@ public class MIMETypeTest {
         try {
             new MIMEType("foo/bar;charset?UTF-8");
             fail("Expected IllegalArgumentException");
-        } catch (IllegalArgumentException expected) {
+        }
+        catch (IllegalArgumentException expected) {
             //expected
         }
 

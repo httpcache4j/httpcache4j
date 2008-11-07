@@ -36,14 +36,10 @@ import java.util.logging.Logger;
  *      Entity Tag Cache Validators</a>
  */
 public final class Tag extends Metadata {
-    /**
-     * Tag matching any other tag, used in call's condition data.
-     */
+    /** Tag matching any other tag, used in call's condition data. */
     public static final Tag ALL = Tag.parse("*");
 
-    /**
-     * The tag weakness.
-     */
+    /** The tag weakness. */
     private boolean weak;
 
     /**
@@ -53,7 +49,9 @@ public final class Tag extends Metadata {
      *                marked as weak and the data following the 'W/' used as the tag;
      *                otherwise it should be surrounded with quotes (e.g.,
      *                "sometag").
+     *
      * @return A new tag instance.
+     *
      * @see <a
      *      href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.11">HTTP
      *      Entity Tags</a>
@@ -71,9 +69,11 @@ public final class Tag extends Metadata {
         if (httpTagCopy.startsWith("\"") && httpTagCopy.endsWith("\"")) {
             result = new Tag(
                     httpTagCopy.substring(1, httpTagCopy.length() - 1), weak);
-        } else if (httpTagCopy.equals("*")) {
+        }
+        else if (httpTagCopy.equals("*")) {
             result = new Tag("*", weak);
-        } else {
+        }
+        else {
             Logger.getLogger(Tag.class.getCanonicalName()).log(Level.WARNING,
                     "Invalid tag format detected: " + httpTagCopy);
         }
@@ -96,6 +96,7 @@ public final class Tag extends Metadata {
      * Indicates if both tags are equal.
      *
      * @param object The object to compare to.
+     *
      * @return True if both tags are equal.
      */
     @Override
@@ -108,6 +109,7 @@ public final class Tag extends Metadata {
      *
      * @param object        The object to compare to.
      * @param checkWeakness the equality test takes care or not of the weakness.
+     *
      * @return True if both tags are equal.
      */
     public boolean equals(final Object object, boolean checkWeakness) {
@@ -123,7 +125,8 @@ public final class Tag extends Metadata {
             if (result) {
                 if (getName() == null) {
                     result = (that.getName() == null);
-                } else {
+                }
+                else {
                     result = getName().equals(that.getName());
                 }
             }
@@ -136,6 +139,7 @@ public final class Tag extends Metadata {
      * Returns tag formatted as an HTTP tag string.
      *
      * @return The formatted HTTP tag string.
+     *
      * @see <a
      *      href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.11">HTTP
      *      Entity Tags</a>
@@ -143,10 +147,12 @@ public final class Tag extends Metadata {
     public String format() {
         if (getName().equals("*")) {
             return "*";
-        } else {
+        }
+        else {
             StringBuilder sb = new StringBuilder();
-            if (isWeak())
+            if (isWeak()) {
                 sb.append("W/");
+            }
             return sb.append('"').append(getName()).append('"').toString();
         }
     }
@@ -169,9 +175,7 @@ public final class Tag extends Metadata {
         return super.getName();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         return format().hashCode();
