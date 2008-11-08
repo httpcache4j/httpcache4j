@@ -23,7 +23,11 @@ public final class Headers implements Serializable, Iterable<Map.Entry<String, L
     }
 
     public Header getFirstHeader(String headerKey) {
-        return headers.get(headerKey).get(0);
+        List<Header> headerList = headers.get(headerKey);
+        if (headerList != null) {
+            return headerList.get(0);
+        }
+        return null;
     }
 
     public void add(Header header) {
