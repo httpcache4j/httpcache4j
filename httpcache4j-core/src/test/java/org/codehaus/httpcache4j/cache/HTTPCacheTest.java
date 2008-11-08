@@ -54,6 +54,30 @@ public class HTTPCacheTest {
         assertEquals(0, cacheStorage.size());
     }
 
+    @Test
+    public void testPOST() {
+        HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.POST);
+        cache.doCachedRequest(request);
+        stub(cacheStorage.size()).toReturn(0);
+        assertEquals(0, cacheStorage.size());
+    }
+
+    @Test
+    public void testTRACE() {
+        HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.TRACE);
+        cache.doCachedRequest(request);
+        stub(cacheStorage.size()).toReturn(0);
+        assertEquals(0, cacheStorage.size());
+    }
+    @Test
+    public void testGetANDTRACE() {
+        doGet(new Headers(), Status.OK, 1);
+        HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.TRACE);
+        cache.doCachedRequest(request);
+        stub(cacheStorage.size()).toReturn(1);
+        assertEquals(1, cacheStorage.size());
+    }
+
     private HTTPResponse doGet(Headers responseHeaders, Status status, int numberItemsInCache) {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.GET);
         stub(responseResolver.resolve(request)).toReturn(new HTTPResponse(mock(Payload.class), status, responseHeaders));
