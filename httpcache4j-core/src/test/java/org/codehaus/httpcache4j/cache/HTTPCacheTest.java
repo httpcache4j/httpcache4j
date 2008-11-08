@@ -35,28 +35,28 @@ public class HTTPCacheTest {
     public void testCacheResponse() {
         Headers responseHeaders = new Headers();
         responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private;max-age=60"));
-        doGet(responseHeaders,  1);
+        doGet(responseHeaders, Status.OK, 1);
     }
 
     @Test
     public void testNoCacheResponse() {
-        doGet(new Headers(), 0);
+        doGet(new Headers(), Status.OK, 0);
     }
 
     @Test
     public void testCacheResponseWithInvalidationPUT() {
         Headers responseHeaders = new Headers();
         responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private;max-age=60"));
-        doGet(responseHeaders, 1);
+        doGet(responseHeaders, Status.OK, 1);
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.PUT);
         cache.doCachedRequest(request);
         stub(cacheStorage.size()).toReturn(0);
         assertEquals(0, cacheStorage.size());
     }
 
-    private HTTPResponse doGet(Headers responseHeaders, int numberItemsInCache) {
+    private HTTPResponse doGet(Headers responseHeaders, Status status, int numberItemsInCache) {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.GET);
-        stub(responseResolver.resolve(request)).toReturn(new HTTPResponse(mock(Payload.class),  Status.OK, responseHeaders));
+        stub(responseResolver.resolve(request)).toReturn(new HTTPResponse(mock(Payload.class), status, responseHeaders));
         HTTPResponse response = cache.doCachedRequest(request);
         stub(cacheStorage.size()).toReturn(numberItemsInCache);
         assertEquals(numberItemsInCache, cacheStorage.size());
