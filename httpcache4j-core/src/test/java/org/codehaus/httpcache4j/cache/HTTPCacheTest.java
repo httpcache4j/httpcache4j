@@ -34,7 +34,7 @@ public class HTTPCacheTest {
     @Test
     public void testCacheResponse() {
         Headers responseHeaders = new Headers();
-        responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private;max-age=60"));
+        responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
         doGet(responseHeaders, Status.OK, 1);
     }
 
@@ -46,7 +46,7 @@ public class HTTPCacheTest {
     @Test
     public void testCacheResponseWithInvalidationPUT() {
         Headers responseHeaders = new Headers();
-        responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private;max-age=60"));
+        responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
         doGet(responseHeaders, Status.OK, 1);
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.PUT);
         cache.doCachedRequest(request);

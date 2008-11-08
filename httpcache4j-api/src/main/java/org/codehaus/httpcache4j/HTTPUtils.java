@@ -6,6 +6,7 @@ import org.codehaus.httpcache4j.preference.Preference;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -66,13 +67,15 @@ public class HTTPUtils {
         if (headers.contains(new Header(CACHE_CONTROL, NO_STORE_HEADER_VALUE)) || headers.contains(new Header(CACHE_CONTROL, NO_CACHE_HEADER_VALUE))) {
             return false;
         }
-        if (headers.contains(new Header(PRAGMA, NO_CACHE_HEADER_VALUE))) {
+        else if (headers.hasHeader(CACHE_CONTROL)){
+            return headers.getFirstHeader(CACHE_CONTROL).getDirectives().containsKey("max-age");
+        }
+        if (headers.contains(new Header(PRAGMA, NO_CACHE_HEADER_VALUE)) || headers.contains(new Header(PRAGMA, NO_STORE_HEADER_VALUE))) {
             return false;
         }
-
-        return headers.getFirstHeader(ETAG) != null ||
-                headers.getFirstHeader(EXPIRES) != null ||
-                headers.getFirstHeader(LAST_MODIFIED) != null;
+        return headers.getFirstHeader(ETAG) != null
+                || headers.getFirstHeader(EXPIRES) != null
+                || headers.getFirstHeader(LAST_MODIFIED) != null;
     }
 
     public static Header toHeader(String headerName, List<? extends Preference<?>> preferences) {
