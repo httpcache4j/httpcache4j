@@ -9,7 +9,6 @@ public class MIMETypeTest {
     @Test
     public void testValidMimeType() {
         MIMEType type = new MIMEType("foo/bar");
-        assertTrue(type.matches("foo/bar"));
         MIMEType newType = new MIMEType("foo", "bar");
         assertEquals(type, newType);
     }
@@ -34,7 +33,7 @@ public class MIMETypeTest {
         assertEquals("Wrong parameter value", "UTF-8", param.getValue());
         MIMEType newType = new MIMEType("foo", "bar");
         newType.addParameter("charset", "UTF-8");
-        assertTrue("New type did not match old type", newType.matches(type));
+        assertEquals("New type did not match old type", newType, type);
     }
 
     @Test
@@ -46,6 +45,28 @@ public class MIMETypeTest {
         catch (IllegalArgumentException expected) {
             //expected
         }
+    }
 
+    @Test
+    public void testIncludes() {
+        MIMEType type = new MIMEType("image/*");
+        MIMEType jpegType = new MIMEType("image/jpg");
+        assertTrue("Image type did not include jpeg type", type.includes(jpegType));
+        type = MIMEType.ALL;
+        assertTrue("All type did not include jpeg type", type.includes(jpegType));
+        type = new MIMEType("image", "jpg");
+        assertTrue("Same type was not the same as jpeg type", type.includes(jpegType));
+        assertTrue("type type did not include null type", type.includes(null));
+    }
+
+    @Test
+    public void testNotIncludes() {
+        MIMEType type = new MIMEType("image/*");
+        MIMEType jpegType = new MIMEType("image/jpg");
+        assertFalse("jpeg type did include ALL image type", jpegType.includes(type));
+        type = MIMEType.ALL;
+        assertFalse("jpeg type included ALL type ", jpegType.includes(type));
+        type = new MIMEType("video/*");
+        assertFalse("jpeg type included ALL video type ", jpegType.includes(type));
     }
 }
