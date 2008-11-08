@@ -18,6 +18,9 @@
 
 package org.codehaus.httpcache4j;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParameterList;
 import javax.activation.MimeTypeParseException;
@@ -62,7 +65,7 @@ public final class MIMEType {
 
     public void addParameter(String name, String value) {
         Parameter parameter = new Parameter(name, value);
-        if (parameters.contains(parameter)) {
+        if (!parameters.contains(parameter)) {
             mimeType.setParameter(name, value);
             parameters.add(parameter);
         }
@@ -85,7 +88,7 @@ public final class MIMEType {
         return mimeType.getPrimaryType();
     }
 
-    public boolean matches(String MIMEType) {
+    private boolean matches(String MIMEType) {
         try {
             return this.mimeType.match(MIMEType);
         }
@@ -94,7 +97,7 @@ public final class MIMEType {
         }
     }
 
-    public boolean matches(MIMEType MIMEType) {
+    private boolean matches(MIMEType MIMEType) {
         return this.mimeType.match(MIMEType.mimeType);
     }
 
@@ -108,8 +111,10 @@ public final class MIMEType {
         }
 
         MIMEType other = (MIMEType) o;
-
-        if (mimeType != null ? !mimeType.match(other.mimeType) : other.mimeType != null) {
+        if (!new EqualsBuilder().append(getPrimaryType(), other.getPrimaryType()).append(getSubType(), other.getSubType()).isEquals()) {
+            return false;
+        }
+        if (parameters != null ? !parameters.equals(other.parameters) : other.parameters != null) {
             return false;
         }
 
@@ -118,13 +123,17 @@ public final class MIMEType {
 
     @Override
     public int hashCode() {
-        int result = mimeType != null ? mimeType.hashCode() : 0;
-        result = 31 * result + (parameters != null ? parameters.hashCode() : 0);
-        return result;
+        return new HashCodeBuilder(0, 31).append(getPrimaryType()).append(getSubType()).toHashCode();
     }
 
-    public boolean includes(String mimeType) {
-        throw new UnsupportedOperationException("Implement");
+    public boolean includes(MIMEType mimeType) {
+        boolean includes = mimeType == null || equals(ALL) || equals(mimeType);
+        if (!includes) {
+            includes = getPrimaryType().equals(mimeType.getPrimaryType())
+                    && (getSubType().equals(mimeType.getSubType()) || getSubType()
+                    .equals("*"));
+        }
+        return includes;
     }
 
     public List<Parameter> getParameters() {
