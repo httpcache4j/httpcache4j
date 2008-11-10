@@ -48,6 +48,10 @@ public class HTTPCache {
     }
 
     public HTTPResponse doCachedRequest(HTTPRequest request) {
+        return doCachedRequest(request, false);
+    }
+
+    public HTTPResponse doCachedRequest(HTTPRequest request, boolean force) {
         HTTPResponse response;
         if (!isCacheableRequest(request)) {
             if (!isSafeRequest(request)) {
@@ -57,25 +61,30 @@ public class HTTPCache {
         }
         else {
             //request is cacheable
-            response = getFromCache(request);
+            response = getFromCache(request, force);
         }
         return response;
     }
 
-    private HTTPResponse getFromCache(HTTPRequest request) {
+    private HTTPResponse getFromCache(HTTPRequest request, final boolean force) {
         HTTPResponse response;
-        CacheItem item = storage.get(request);
-        if (item != null && item.isStale()) {
-            //If the cached value is stale, execute the request and try to cache it.
-            HTTPResponse staleResponse = item.getResponse();
-            if (staleResponse.getHeaders().hasHeader(ETAG)) {
-                addIfNoneMatchHeader(staleResponse.getHeaders().getFirstHeader(ETAG), request);
-            }
+        if (!force) {
+            CacheItem item = storage.get(request);
+            if (item != null && item.isStale()) {
+                //If the cached value is stale, execute the request and try to cache it.
+                HTTPResponse staleResponse = item.getResponse();
+                if (request.getConditionals().getNonMatch().isEmpty() && staleResponse.getHeaders().hasHeader(ETAG)) {
+                    addIfNoneMatchHeader(staleResponse.getHeaders().getFirstHeader(ETAG), request);
+                }
 
-            response = handleResolve(request, item);
-        }
-        else if (item != null) {
-            response = item.getResponse();
+                response = handleResolve(request, item);
+            }
+            else if (item != null) {
+                response = item.getResponse();
+            }
+            else {
+                response = handleResolve(request, null);
+            }
         }
         else {
             response = handleResolve(request, null);

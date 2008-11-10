@@ -119,7 +119,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         headers.add(new org.codehaus.httpcache4j.Header(name, value));
     }
 
-    private HttpMethod getMethod(HTTPMethod method, URI requestURI) {
+    HttpMethod getMethod(HTTPMethod method, URI requestURI) {
         switch (method) {
             case GET:
                 return new GetMethod(requestURI.toString());
