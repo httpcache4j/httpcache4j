@@ -232,6 +232,6 @@ public final class Status extends Metadata {
         else if (HTTP_VERSION_NOT_SUPPORTED.getCode() == statusCode) {
             return HTTP_VERSION_NOT_SUPPORTED;
         }
-        throw new IllegalStateException("not a valid HTTP/1.1 status code");
+        return new Status(statusCode, "Unknown");
     }
 }
