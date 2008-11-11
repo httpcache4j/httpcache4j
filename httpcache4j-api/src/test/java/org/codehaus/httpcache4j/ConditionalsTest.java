@@ -24,6 +24,22 @@ public class ConditionalsTest {
     }
 
     @Test
+    public void testIfMatchWithNullTag() {
+        conditionals.addIfMatch(null);
+        assertEquals(0, conditionals.getMatch().size());
+        conditionals.addIfMatch(Tag.parse("\"bar\""));
+        assertEquals(1, conditionals.getMatch().size());
+    }
+
+    @Test
+    public void testIfNoneMatchWithNullTag() {
+        conditionals.addIfNoneMatch(null);
+        assertEquals(0, conditionals.getMatch().size());
+        conditionals.addIfMatch(Tag.parse("\"bar\""));
+        assertEquals(1, conditionals.getMatch().size());
+    }
+
+    @Test
     public void testIfMatchStar() {
         conditionals.addIfMatch(Tag.parse("*"));
         assertEquals(1, conditionals.getMatch().size());

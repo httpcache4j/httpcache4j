@@ -18,30 +18,33 @@ public final class Conditionals {
     public void addIfMatch(Tag tag) {
         Validate.isTrue(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_MODIFIED_SINCE));
         Validate.isTrue(nonMatch == null || nonMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_NON_MATCH));
-        if (match == null || Tag.ALL.equals(tag)) {
-            match = new ArrayList<Tag>();
-        }
-        if (!match.contains(Tag.ALL) && tag != null) {
-            match.add(tag);
-        }
-        else {
-            throw new IllegalArgumentException("Tag ALL already in the list");
+        if (tag != null) {
+            if (match == null || Tag.ALL.equals(tag)) {
+                match = new ArrayList<Tag>();
+            }
+            if (!match.contains(Tag.ALL)) {
+                match.add(tag);
+            }
+            else {
+                throw new IllegalArgumentException("Tag ALL already in the list");
+            }
         }
     }
 
     public void addIfNoneMatch(Tag tag) {
         Validate.isTrue(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_UNMODIFIED_SINCE));
         Validate.isTrue(match == null || match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_MATCH));
-        if (nonMatch == null || Tag.ALL.equals(tag)) {
-            nonMatch = new ArrayList<Tag>();
+        if (tag != null) {
+            if (nonMatch == null || Tag.ALL.equals(tag)) {
+                nonMatch = new ArrayList<Tag>();
+            }
+            if (!nonMatch.contains(Tag.ALL)) {
+                nonMatch.add(tag);
+            }
+            else {
+                throw new IllegalArgumentException("Tag ALL already in the list");
+            }
         }
-        if (!nonMatch.contains(Tag.ALL) && tag != null) {
-            nonMatch.add(tag);
-        }
-        else {
-            throw new IllegalArgumentException("Tag ALL already in the list");
-        }
-
     }
 
     /**
