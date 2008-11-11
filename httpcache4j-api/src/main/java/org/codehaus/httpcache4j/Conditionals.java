@@ -21,7 +21,7 @@ public final class Conditionals {
         if (match == null || Tag.ALL.equals(tag)) {
             match = new ArrayList<Tag>();
         }
-        if (!match.contains(Tag.ALL)) {
+        if (!match.contains(Tag.ALL) && tag != null) {
             match.add(tag);
         }
         else {
@@ -35,7 +35,7 @@ public final class Conditionals {
         if (nonMatch == null || Tag.ALL.equals(tag)) {
             nonMatch = new ArrayList<Tag>();
         }
-        if (!nonMatch.contains(Tag.ALL)) {
+        if (!nonMatch.contains(Tag.ALL) && tag != null) {
             nonMatch.add(tag);
         }
         else {
@@ -84,11 +84,11 @@ public final class Conditionals {
 
     public Headers toHeaders() {
         Headers headers = new Headers();
-        if (match != null) {
-            headers.add(new Header(HeaderConstants.IF_MATCH, buildTagHeaderValue(match)));
+        if (!getMatch().isEmpty()) {
+            headers.add(new Header(HeaderConstants.IF_MATCH, buildTagHeaderValue(getMatch())));
         }
-        if (nonMatch != null) {
-            headers.add(new Header(HeaderConstants.IF_NON_MATCH, buildTagHeaderValue(nonMatch)));
+        if (!getNonMatch().isEmpty()) {
+            headers.add(new Header(HeaderConstants.IF_NON_MATCH, buildTagHeaderValue(getNonMatch())));
         }
         if (modifiedSince != null) {
             headers.add(HTTPUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, modifiedSince));

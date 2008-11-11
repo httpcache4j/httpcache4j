@@ -5,6 +5,8 @@ import static org.codehaus.httpcache4j.HeaderConstants.ETAG;
 import static org.codehaus.httpcache4j.HeaderConstants.VARY;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
+import org.apache.commons.lang.Validate;
+
 import java.util.*;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
@@ -39,12 +41,33 @@ public class HTTPCache {
         unmodifiableHeaders = Collections.unmodifiableSet(headers);
     }
 
-    private CacheStorage storage;
+    private final CacheStorage storage;
     private ResponseResolver resolver;
 
     public HTTPCache(CacheStorage storage, ResponseResolver resolver) {
+        Validate.notNull(storage, "Cache storage may not be null");
+        Validate.notNull(resolver, "Resolver may not be null");
         this.storage = storage;
         this.resolver = resolver;
+    }
+
+    public HTTPCache(CacheStorage storage) {
+        Validate.notNull(storage, "Cache storage may not be null");
+        this.storage = storage;
+    }
+
+    public void clear() {
+        storage.clear();
+    }
+
+    public void setResolver(final ResponseResolver resolver) {
+        Validate.isTrue(this.resolver == null, "You may not set the response resolver more than once.");
+        Validate.notNull(resolver, "Resolver may not be null");
+        this.resolver = resolver;
+    }
+
+    public CacheStorage getStorage() {
+        return storage;
     }
 
     public HTTPResponse doCachedRequest(HTTPRequest request) {
@@ -96,34 +119,42 @@ public class HTTPCache {
     private HTTPResponse handleResolve(HTTPRequest request, CacheItem item) {
         HTTPResponse response;
         HTTPResponse resolvedResponse = resolver.resolve(request);
-        if (isCacheableResponse(resolvedResponse)) {
-            Vary vary = determineVariation(resolvedResponse, request);
 
-            storage.put(request.getRequestURI(), vary, new CacheItem(resolvedResponse));
-            response = resolvedResponse;
-        }
-        else if (item != null && resolvedResponse.getStatus().getCode() == Status.NOT_MODIFIED.getCode()) {
-            //replace the cached entry as the entry was not modified
-            HTTPResponse cachedResponse = item.getResponse();
-            HTTPResponse updatedResponse;
-            LinkedHashMap<String, List<Header>> headers = new LinkedHashMap<String, List<Header>>(cachedResponse.getHeaders().getHeadersAsMap());
+        try {
+            if (isCacheableResponse(resolvedResponse)) {
+                Vary vary = determineVariation(resolvedResponse, request);
 
-            headers.putAll(removeUnmodifiableHeaders(resolvedResponse.getHeaders()).getHeadersAsMap());
-            Headers realHeaders = new Headers(headers);
-            updatedResponse = new HTTPResponse(cachedResponse.getPayload(), resolvedResponse.getStatus(), realHeaders);
-            Vary vary = determineVariation(updatedResponse, request);
-            storage.put(request.getRequestURI(), vary, new CacheItem(updatedResponse));
-            response = updatedResponse;
+                storage.put(request.getRequestURI(), vary, new CacheItem(resolvedResponse));
+                response = resolvedResponse;
+            }
+            else if (item != null && resolvedResponse.getStatus().getCode() == Status.NOT_MODIFIED.getCode()) {
+                //replace the cached entry as the entry was not modified
+                HTTPResponse cachedResponse = item.getResponse();
+                HTTPResponse updatedResponse;
+                LinkedHashMap<String, List<Header>> headers = new LinkedHashMap<String, List<Header>>(cachedResponse.getHeaders().getHeadersAsMap());
+
+                headers.putAll(removeUnmodifiableHeaders(resolvedResponse.getHeaders()).getHeadersAsMap());
+                Headers realHeaders = new Headers(headers);
+                updatedResponse = new HTTPResponse(cachedResponse.getPayload(), resolvedResponse.getStatus(), realHeaders);
+                Vary vary = determineVariation(updatedResponse, request);
+                storage.put(request.getRequestURI(), vary, new CacheItem(updatedResponse));
+                response = updatedResponse;
+            }
+            else {
+                //Response was not cacheable
+                response = resolvedResponse;
+            }
+            if (item != null && resolvedResponse.getStatus().getCode() == Status.OK.getCode()) {
+                //Success was ok, but we had already a response for this item.
+                //invalidate it so we don't clutter the filesystem.
+                storage.invalidate(request.getRequestURI(), item);
+            }
         }
-        else {
-            //Response was not cacheable
+        catch (HTTPException e) {
+            if (item != null) {
+                storage.invalidate(request.getRequestURI(), item);
+            }
             response = resolvedResponse;
-        }
-        if (item != null && resolvedResponse.getStatus().getCode() == Status.OK.getCode()) {
-            //Success was ok, but we had already a response for this item.
-            //invalidate it so we don't clutter the filesystem.
-            //TODO: This might be fixed by the FileGenerationManager.... examine this.
-            storage.invalidate(request.getRequestURI(), item);
         }
         return response;
     }
