@@ -39,15 +39,15 @@ public final class Preferences {
     }
 
     public List<Preference<Locale>> getAcceptLocales() {
-        return Collections.unmodifiableList(acceptLocales);
+        return acceptLocales;
     }
 
     public List<Preference<MIMEType>> getAcceptMIMETypes() {
-        return Collections.unmodifiableList(acceptMIMETypes);
+        return acceptMIMETypes;
     }
 
     public List<Preference<String>> getAcceptCharset() {
-        return Collections.unmodifiableList(acceptCharset);
+        return acceptCharset;
     }
 
     public Headers toHeaders() {

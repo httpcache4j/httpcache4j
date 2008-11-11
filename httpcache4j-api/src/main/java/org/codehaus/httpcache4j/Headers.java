@@ -30,6 +30,14 @@ public final class Headers implements Serializable, Iterable<Map.Entry<String, L
         return null;
     }
 
+    public String getFirstHeaderValue(String headerKey) {
+        Header header = getFirstHeader(headerKey);
+        if (header != null) {
+            return header.getValue();
+        }
+        return null;
+    }
+
     public void add(Header header) {
         List<Header> list = headers.get(header.getName());
         if (list == null) {
@@ -39,6 +47,10 @@ public final class Headers implements Serializable, Iterable<Map.Entry<String, L
         if (!list.contains(header)) {
             list.add(header);
         }
+    }
+
+    public void add(String key, String value) {
+        add(new Header(key, value));
     }
 
     public boolean contains(Header header) {
@@ -59,8 +71,7 @@ public final class Headers implements Serializable, Iterable<Map.Entry<String, L
     }
 
     public boolean hasHeader(String headerName) {
-        List<Header> values = headers.get(headerName);
-        return values != null;
+        return headers.get(headerName) != null;
     }
 
     public void put(String name, List<Header> headers) {
@@ -69,5 +80,13 @@ public final class Headers implements Serializable, Iterable<Map.Entry<String, L
 
     public void remove(String name) {
         headers.remove(name);
+    }
+
+    public int size() {
+        return headers.size();
+    }
+
+    public boolean isEmpty() {
+        return headers.isEmpty();
     }
 }

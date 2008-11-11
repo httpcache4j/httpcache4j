@@ -10,7 +10,7 @@ public class HTTPResponseTest {
     public void testNoHeaders() {
         Headers headers = new Headers();
         HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
-        assertNull(response.getAllowedMethods());
+        assertEquals(0, response.getAllowedMethods().size());
         assertNull(response.getETag());
         assertNull(response.getLastModified());
         assertNull(response.getPayload());
@@ -22,7 +22,7 @@ public class HTTPResponseTest {
         Headers headers = new Headers();
         headers.add(new Header("ETag", "\"abba\""));
         HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
-        assertNull(response.getAllowedMethods());
+        assertEquals(0, response.getAllowedMethods().size());
         assertNotNull(response.getETag());
         assertEquals(response.getETag().format(), "\"abba\"");
         assertNull(response.getLastModified());
@@ -35,9 +35,20 @@ public class HTTPResponseTest {
         Headers headers = new Headers();
         headers.add(new Header("ETag", "\"abba\""));
         HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
-        assertNull(response.getAllowedMethods());
+        assertEquals(0, response.getAllowedMethods().size());
         assertNotNull(response.getETag());
         assertEquals(response.getETag().format(), "\"abba\"");
+        assertNull(response.getLastModified());
+        assertNull(response.getPayload());
+        assertFalse(response.hasPayload());
+    }
+
+    @Test
+    public void testAllowHeaders() {
+        Headers headers = new Headers();
+        headers.add(HeaderConstants.ALLOW, "GET, POST, OPTIONS");
+        HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
+        assertEquals(3, response.getAllowedMethods().size());
         assertNull(response.getLastModified());
         assertNull(response.getPayload());
         assertFalse(response.hasPayload());
