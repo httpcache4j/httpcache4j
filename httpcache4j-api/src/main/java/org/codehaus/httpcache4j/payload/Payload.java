@@ -19,9 +19,8 @@ public interface Payload {
      *
      * @return the inputstream of the payload, may return {@code null} if the payload is not available.
      *
-     * @throws java.io.IOException if an IOException occurs while the inputstream is constructed
      */
-    public InputStream getInputStream() throws IOException;
+    public InputStream getInputStream() ;
 
     /**
      * Returns {@code true} if the payload is available, IE. If the stream can be read from.

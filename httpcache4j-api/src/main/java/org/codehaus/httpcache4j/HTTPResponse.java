@@ -68,6 +68,6 @@ public final class HTTPResponse implements Serializable {
     }
 
     public Set<HTTPMethod> getAllowedMethods() {
-        return allowedMethods;
+        return allowedMethods != null ? allowedMethods : Collections.<HTTPMethod>emptySet();
     }
 }

@@ -13,11 +13,11 @@ import java.util.List;
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class HTTPRequest {
     private final URI requestURI;
-    private final Headers headers;
     private final List<Parameter> parameters;
     private final HTTPMethod method;
     private final Conditionals conditionals;
     private final Preferences preferences;
+    private Headers headers;
     private Challenge challenge;
     private Payload payload;
 
@@ -32,6 +32,10 @@ public class HTTPRequest {
         if (query != null) {
             parseQuery(query);
         }
+    }
+    
+    public HTTPRequest(URI requestURI) {
+        this(requestURI, HTTPMethod.GET);
     }
 
     private void parseQuery(String query) {
@@ -106,5 +110,14 @@ public class HTTPRequest {
 
     public void setPayload(Payload payload) {
         this.payload = payload;
+    }
+
+    public void setHeaders(final Headers headers) {
+        Validate.notNull(headers, "You may not set null headers");
+        this.headers = headers;
+    }
+
+    public boolean hasPayload() {
+        return payload != null;
     }
 }

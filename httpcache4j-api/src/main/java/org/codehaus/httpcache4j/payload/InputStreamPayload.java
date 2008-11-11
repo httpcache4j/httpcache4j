@@ -2,6 +2,8 @@ package org.codehaus.httpcache4j.payload;
 
 import org.codehaus.httpcache4j.MIMEType;
 
+import org.apache.commons.lang.Validate;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -11,14 +13,9 @@ public class InputStreamPayload implements Payload {
     private boolean available = true;
 
     public InputStreamPayload(InputStream stream, MIMEType mimeType) {
+        Validate.notNull(stream, "Inputstream may not be null");
         this.mimeType = mimeType;
-        if (stream != null) {
-            this.stream = new WrappedInputStream(stream);
-        }
-        else {
-            this.stream = null;
-            available = false;
-        }
+        this.stream = new WrappedInputStream(stream);
     }
 
     public MIMEType getMimeType() {
