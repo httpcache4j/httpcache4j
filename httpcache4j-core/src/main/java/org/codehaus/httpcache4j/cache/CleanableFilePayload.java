@@ -2,6 +2,7 @@ package org.codehaus.httpcache4j.cache;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.Validate;
 
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
@@ -24,6 +25,8 @@ public class CleanableFilePayload implements CleanablePayload {
     private final MIMEType mimeType;
 
     public CleanableFilePayload(FileGenerationManager generationManager, InputStream stream, MIMEType mimeType) throws IOException {
+        Validate.notNull(generationManager, "You may not add a null generation manager");
+        Validate.notNull(stream, "You may not add a null stream");
         this.mimeType = mimeType;
         fileName = UUID.randomUUID().toString();
         this.generationManager = generationManager;
@@ -46,10 +49,15 @@ public class CleanableFilePayload implements CleanablePayload {
         return mimeType;
     }
 
-    public InputStream getInputStream() throws IOException {
+    public InputStream getInputStream() {
         if (isAvailable()) {
             File file = getFile();
-            return FileUtils.openInputStream(file);
+            try {
+                return FileUtils.openInputStream(file);
+            }
+            catch (IOException e) {
+                throw new HTTPException("Could not create file input stream", e);
+            }
         }
         return null;
     }
@@ -59,11 +67,7 @@ public class CleanableFilePayload implements CleanablePayload {
     }
 
     public void clean() {
-        if (isAvailable()) {
-            if (!getFile().delete()) {
-                throw new HTTPException("No file available for this response...");
-            }
-        }
+        generationManager.removeFile(fileName);
     }
 
     public boolean isAvailable() {

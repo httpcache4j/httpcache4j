@@ -11,10 +11,18 @@ import java.util.Map;
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class MemoryCacheStorage implements CacheStorage {
 
-    private Map<URI, CacheValue> cache;
+    protected Map<URI, CacheValue> cache;
 
     public MemoryCacheStorage() {
-        cache = new HashMap<URI, CacheValue>(1000);
+        this(1000);
+    }
+
+    public MemoryCacheStorage(int capacity) {
+        cache = new HashMap<URI, CacheValue>(capacity);
+    }
+
+    protected MemoryCacheStorage(Map<URI, CacheValue> map) {
+        cache = map;
     }
 
     public synchronized void put(URI requestURI, Vary vary, CacheItem cacheItem) {
@@ -60,7 +68,7 @@ public class MemoryCacheStorage implements CacheStorage {
         }
     }
 
-    private void invalidate(CacheValue value, CacheItem item) {
+    protected void invalidate(CacheValue value, CacheItem item) {
         Vary found = null;
         for (Map.Entry<Vary, CacheItem> entry : value) {
             if (item == null) {
@@ -70,7 +78,7 @@ public class MemoryCacheStorage implements CacheStorage {
                 }
             }
             else {
-                if (entry.getValue() == item) {
+                if (entry.getValue().equals(item)) {
                     found = entry.getKey();
                 }
             }
