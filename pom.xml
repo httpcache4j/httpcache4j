@@ -5,7 +5,7 @@
     <groupId>org.codehaus.httpcache4j</groupId>
     <artifactId>httpcache4j</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-RC1</version>
+    <version>1.0-RC2-SNAPSHOT</version>
     <name>Java HTTP cache</name>
     <url>http://httpcache4j.codehaus.org</url>
 
