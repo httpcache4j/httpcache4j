@@ -4,6 +4,7 @@ import org.codehaus.httpcache4j.resolver.PayloadCreator;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPMethod;
 import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.payload.Payload;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -39,33 +40,37 @@ public class HTTPClientResponseResolverTest {
         HTTPResponse response = resolver.resolve(request);
         assertNotNull(response);
         assertEquals(200, response.getStatus().getCode());
-        assertEquals(0, response.getHeaders().getHeadersAsMap().size());
+        assertEquals(0, response.getHeaders().size());
     }
 
     @Test
     public void testResolvePOSTWithNoHeaders() {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.POST);
-        request.setPayload(mock(Payload.class));
+        final Payload payload = mock(Payload.class);
+        request.setPayload(payload);
+        stub(payload.getMimeType()).toReturn(new MIMEType("text/plain"));
         final HttpMethod method = mock(PostMethod.class);
         HTTPClientResponseResolver resolver = createResponseResolver(method, 201, new Header[0]);
 
         HTTPResponse response = resolver.resolve(request);
         assertNotNull(response);
         assertEquals(201, response.getStatus().getCode());
-        assertEquals(0, response.getHeaders().getHeadersAsMap().size());
+        assertEquals(0, response.getHeaders().size());
     }
 
     @Test
     public void testResolvePUTWithNoHeaders() {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.PUT);
-        request.setPayload(mock(Payload.class));
+        final Payload payload = mock(Payload.class);
+        request.setPayload(payload);
+        stub(payload.getMimeType()).toReturn(new MIMEType("text/plain"));
         final HttpMethod method = mock(PostMethod.class);
         HTTPClientResponseResolver resolver = createResponseResolver(method, 200, new Header[0]);
 
         HTTPResponse response = resolver.resolve(request);
         assertNotNull(response);
         assertEquals(200, response.getStatus().getCode());
-        assertEquals(0, response.getHeaders().getHeadersAsMap().size());
+        assertEquals(0, response.getHeaders().size());
     }
 
     private HTTPClientResponseResolver createResponseResolver(final HttpMethod httpMethod, final int statusCode, final Header[] headers) {
