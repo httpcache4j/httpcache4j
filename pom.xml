@@ -5,7 +5,7 @@
     <groupId>org.codehaus.httpcache4j</groupId>
     <artifactId>httpcache4j</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-RC1-SNAPSHOT</version>
+    <version>1.0-RC1</version>
     <name>Java HTTP cache</name>
     <url>http://httpcache4j.codehaus.org</url>
 
@@ -197,9 +197,9 @@
 
 
     <scm>
-       <connection>scm:svn:http://svn.codehaus.org/httpcache4j/trunk/</connection>
-       <developerConnection>scm:svn:https://svn.codehaus.org/httpcache4j/trunk</developerConnection>
-       <url>http://fisheye.codehaus.org/browse/httpcache4j/trunk</url>
+       <connection>scm:svn:http://svn.codehaus.org/httpcache4j/tags/httpcache4j-1.0-RC1</connection>
+       <developerConnection>scm:svn:https://svn.codehaus.org/httpcache4j/tags/httpcache4j-1.0-RC1</developerConnection>
+       <url>http://fisheye.codehaus.org/browse/httpcache4j/tags/httpcache4j-1.0-RC1</url>
      </scm>
 
     <distributionManagement>
