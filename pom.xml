@@ -5,7 +5,7 @@
     <groupId>org.codehaus.httpcache4j</groupId>
     <artifactId>httpcache4j</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-RC1</version>
+    <version>1.0-RC1-SNAPSHOT</version>
     <name>Java HTTP cache</name>
     <url>http://httpcache4j.codehaus.org</url>
 
@@ -67,11 +67,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-idea-plugin</artifactId>
+                <version>2.2</version>
                 <configuration>
                     <downloadSources>true</downloadSources>
                     <downloadJavadocs>true</downloadJavadocs>
                 </configuration>
-                <version>2.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -85,6 +85,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
+                <version>2.0-beta-7</version>
                 <configuration>
                     <preparationGoals>clean install</preparationGoals>
                 </configuration>
@@ -196,9 +197,9 @@
 
 
     <scm>
-       <connection>scm:svn:http://svn.codehaus.org/httpcache4j/tags/httpcache4j-1.0-RC1</connection>
-       <developerConnection>scm:svn:https://svn.codehaus.org/httpcache4j/tags/httpcache4j-1.0-RC1</developerConnection>
-       <url>http://fisheye.codehaus.org/browse/httpcache4j/tags/httpcache4j-1.0-RC1</url>
+       <connection>scm:svn:http://svn.codehaus.org/httpcache4j/trunk/</connection>
+       <developerConnection>scm:svn:https://svn.codehaus.org/httpcache4j/trunk</developerConnection>
+       <url>http://fisheye.codehaus.org/browse/httpcache4j/trunk</url>
      </scm>
 
     <distributionManagement>
