@@ -13,23 +13,28 @@ import java.io.InputStream;
 public class DefaultPayloadCreator implements PayloadCreator {
     private FileGenerationManager fileGenerationManager;
 
-    public DefaultPayloadCreator(String fileStorageDirectory) {
-        fileGenerationManager = new FileGenerationManager(new File(fileStorageDirectory), 10, 100);
+    public DefaultPayloadCreator(final File baseDirectory) {
+        this(baseDirectory, 5, 50);
     }
 
-    public Payload createPayload(Headers headers, InputStream stream) {
+    public DefaultPayloadCreator(final File baseDirectory, int numberOfGenerations, int generationSize) {
+        fileGenerationManager = new FileGenerationManager(baseDirectory, numberOfGenerations, generationSize);
+    }
+
+    public Payload createPayload(final Headers headers, final InputStream stream) {
         boolean cacheable = HTTPUtils.hasCacheableHeaders(headers);
         Header contentTypeHeader = headers.getFirstHeader(HeaderConstants.CONTENT_TYPE);
+        MIMEType type = contentTypeHeader != null ? new MIMEType(contentTypeHeader.getValue()) : MIMEType.APPLICATION_OCTET_STREAM;
         if (cacheable) {
             try {
-                return new CleanableFilePayload(fileGenerationManager, stream, new MIMEType(contentTypeHeader.getValue()));
+                return new CleanableFilePayload(fileGenerationManager, stream, type);
             }
             catch (IOException e) {
                 throw new HTTPException("Unable to create reponse storage", e);
             }
         }
         else {
-            return new InputStreamPayload(stream, new MIMEType(contentTypeHeader.getValue()));
+            return new InputStreamPayload(stream, type);
         }
     }
 
