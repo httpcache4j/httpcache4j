@@ -33,8 +33,8 @@ class FileGenerationManager {
         this.baseDirectory = baseDirectory;
         this.generationSize = generationSize;
         this.numberOfGenerations = numberOfGenerations;
-        getGenerations();
         generationFilter = new AndFileFilter(DirectoryFileFilter.DIRECTORY, new RegexFileFilter("[0-9]*"));
+        getGenerations();
     }
 
     /**
@@ -93,13 +93,30 @@ class FileGenerationManager {
         for (Generation generation : getGenerations()) {
             File candidate = new File(generation.getGenerationDirectory(), fileName);
             if (candidate.exists()) {
-                if (candidate.renameTo(target)) {
-                    return target;
+                //because of; http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4017593
+                if (!target.equals(candidate)) {
+                    target.delete();
+                    if (candidate.renameTo(target)) {
+                        return target;
+                    }
                 }
                 //TODO: what happens if the candidate does not exist?
             }
         }
         return target;
+    }
+    
+    public void removeFile(String fileName) {
+        File target = new File(getCurrentGeneration().getGenerationDirectory(), fileName);
+        if (target.exists()) {
+            target.delete();
+        }
+        for (Generation generation : getGenerations()) {
+            File candidate = new File(generation.getGenerationDirectory(), fileName);
+            if (candidate.exists()) {
+                candidate.delete();
+            }
+        }
     }
 
     static class Generation implements Comparable<Generation> {
