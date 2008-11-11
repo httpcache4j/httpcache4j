@@ -17,6 +17,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * An implementation of the ResponseResolver using the Commons HTTPClient (http://hc.apache.org/httpclient-3.x/)
@@ -58,12 +59,13 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private HttpMethod convertRequest(HTTPRequest request) {
         URI requestURI = request.getRequestURI();
         HttpMethod method = getMethod(request.getMethod(), requestURI);
-        Headers headers = request.getHeaders();
-        addHeaders(headers, method);
+        Headers defaultHeaders = request.getHeaders();
         Headers conditionalHeaders = request.getConditionals().toHeaders();
-        addHeaders(conditionalHeaders, method);
         Headers preferencesHeaders = request.getPreferences().toHeaders();
+        addHeaders(conditionalHeaders, method);
         addHeaders(preferencesHeaders, method);
+        //We don't want to add headers more than once.
+        addHeaders(removePotentialDuplicates(removePotentialDuplicates(defaultHeaders, conditionalHeaders), preferencesHeaders), method);
         if (isUseRequestChallenge()) {
             Challenge challenge = request.getChallenge();
             if (challenge != null) {
@@ -78,13 +80,41 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             query.add(new NameValuePair(parameter.getName(), parameter.getValue()));
         }
         method.setQueryString(query.toArray(new NameValuePair[query.size()]));
+        if (method instanceof EntityEnclosingMethod && request.hasPayload()) {
+            InputStream payload = request.getPayload().getInputStream();
+            EntityEnclosingMethod carrier = (EntityEnclosingMethod) method;
+            if (payload != null) {
+                carrier.setRequestEntity(new InputStreamRequestEntity(payload));
+            }
+            if (!defaultHeaders.hasHeader(HeaderConstants.CONTENT_TYPE)) {
+                carrier.setRequestHeader(HeaderConstants.CONTENT_TYPE, request.getPayload().getMimeType().toString());
+            }
+        }
+
+        method.setDoAuthentication(true);
         return method;
     }
 
+    //TODO: Maybe this should be in the abstract implementation...
+    private Headers removePotentialDuplicates(final Headers headersToRemoveFrom, final Headers headers) {
+        Map<String, List<org.codehaus.httpcache4j.Header>> map = new HashMap<String, List<org.codehaus.httpcache4j.Header>>(headersToRemoveFrom.getHeadersAsMap());
+        for (String key : headers.getHeadersAsMap().keySet()) {
+            if (map.containsKey(key)) {
+                map.remove(key);
+            }
+        }
+        if (map.isEmpty()) {
+            return new Headers();
+        }
+        return new Headers(map);
+    }
+
     private void addHeaders(Headers headers, HttpMethod method) {
-        for (Map.Entry<String, List<org.codehaus.httpcache4j.Header>> entry : headers) {
-            for (org.codehaus.httpcache4j.Header header : entry.getValue()) {
-                method.addRequestHeader(header.getName(), header.getValue());
+        if (!headers.isEmpty()) {
+            for (Map.Entry<String, List<org.codehaus.httpcache4j.Header>> entry : headers) {
+                for (org.codehaus.httpcache4j.Header header : entry.getValue()) {
+                    method.addRequestHeader(header.getName(), header.getValue());
+                }
             }
         }
     }
@@ -92,8 +122,8 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private HTTPResponse convertResponse(HttpMethod method) {
         Headers headers = new Headers();
         for (Header header : method.getResponseHeaders()) {
-            addHeader(headers, header.getName(), header.getValue());
-        }
+            headers.add(header.getName(), header.getValue());
+        }        
         InputStream stream = getInputStream(method);
         Payload payload;
         if (stream != null) {
@@ -113,10 +143,6 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         catch (IOException e) {
             return null;
         }
-    }
-
-    private void addHeader(Headers headers, String name, String value) {
-        headers.add(new org.codehaus.httpcache4j.Header(name, value));
     }
 
     HttpMethod getMethod(HTTPMethod method, URI requestURI) {
