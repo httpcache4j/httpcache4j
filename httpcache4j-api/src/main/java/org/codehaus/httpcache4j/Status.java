@@ -39,7 +39,7 @@ public final class Status extends Metadata {
     public static final Status TEMPORARY_REDIRECT = new Status(307, "Temporary Redirect");
     public static final Status BAD_REQUEST = new Status(400, "Bad Request");
     public static final Status UNAUTHORIZED = new Status(401, "Unauthorized");
-    public static final Status PAYMENT_REQUIRED = new Status(402, "Payment Required");
+    public static final Status PAYMENT_REQUIRED = new Status(402, "Payment Required"); //Reserved for future use!
     public static final Status FORBIDDEN = new Status(403, "Forbidden");
     public static final Status NOT_FOUND = new Status(404, "Not Found");
     public static final Status METHOD_NOT_ALLOWED = new Status(405, "Method Not Allowed");
@@ -77,6 +77,14 @@ public final class Status extends Metadata {
 
     public int getCode() {
         return code;
+    }
+
+    public boolean isClientError() {
+        return code >= 400 && code <= 500;
+    }
+
+    public boolean isServerError() {
+        return code >= 500 && code <= 600;
     }
 
     @Override
