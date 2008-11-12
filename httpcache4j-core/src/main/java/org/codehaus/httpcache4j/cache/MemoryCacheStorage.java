@@ -32,6 +32,7 @@ public class MemoryCacheStorage implements CacheStorage {
             variations.put(vary, cacheItem);
             value = new CacheValue(variations);
             value.getVariations().put(vary, cacheItem);
+            cache.put(requestURI, value);
         }
         else {
             cache.put(requestURI, new CacheValue(Collections.singletonMap(vary, cacheItem)));
