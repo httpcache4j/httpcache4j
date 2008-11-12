@@ -59,8 +59,11 @@ public class MemoryCacheStorageTest {
         URI requestURI = URI.create("foo");
         stub(request.getRequestURI()).toReturn(requestURI);
         CacheItem item = mock(CacheItem.class);
+        HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
+        stub(item.getResponse()).toReturn(response);
+        final CacheItem cacheItem = storage.get(request);
         storage.put(requestURI, new Vary(), item);
-        assertNotSame("Items were the same", storage.get(request), item);
+        assertNotSame("Items were the same", cacheItem, item);
     }
 
     @Test
