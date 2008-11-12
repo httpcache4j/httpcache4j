@@ -8,7 +8,6 @@ import org.apache.commons.httpclient.methods.*;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.resolver.PayloadCreator;
-import org.codehaus.httpcache4j.resolver.ResponseResolver;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
 
 import java.io.IOException;
@@ -27,6 +26,7 @@ import java.util.HashMap;
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
+//TODO: add default user agent. This should maybe only be the cache? Maybe the client type as well. Add support for the client of the cache???
 public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private final HttpClient client;
     private boolean useRequestChallenge = true;
@@ -138,7 +138,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
     private InputStream getInputStream(HttpMethod method) {
         try {
-            return method.getResponseBodyAsStream();
+            return method.getResponseBodyAsStream() != null ? new HttpMethodStream(method) : null;
         }
         catch (IOException e) {
             return null;
@@ -163,6 +163,53 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 return new DeleteMethod(requestURI.toString());
             default:
                 throw new IllegalArgumentException("Uknown method");
+        }
+    }
+
+    private static class HttpMethodStream extends InputStream {
+        private final HttpMethod method;
+        private final InputStream delegate;
+
+        public HttpMethodStream(final HttpMethod method) throws IOException {
+            this.method = method;
+            this.delegate = method.getResponseBodyAsStream();
+        }
+
+        public int read() throws IOException {
+            return delegate.read();
+        }
+
+        public int read(final byte[] b) throws IOException {
+            return delegate.read(b);
+        }
+
+        public int read(final byte[] b, final int off, final int len) throws IOException {
+            return delegate.read(b, off, len);
+        }
+
+        public long skip(final long n) throws IOException {
+            return delegate.skip(n);
+        }
+
+        public int available() throws IOException {
+            return delegate.available();
+        }
+
+        public void close() throws IOException {
+            delegate.close();
+            method.releaseConnection();
+        }
+
+        public void mark(final int readlimit) {
+            delegate.mark(readlimit);
+        }
+
+        public void reset() throws IOException {
+            delegate.reset();
+        }
+
+        public boolean markSupported() {
+            return delegate.markSupported();
         }
     }
 }

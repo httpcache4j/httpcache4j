@@ -10,6 +10,8 @@ import java.util.*;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public final class Vary implements Serializable {
+    public static final String ALL = "*";
+    
     private final Map<String, String> varyHeaders = new HashMap<String, String>();
 
     public Vary() {        
