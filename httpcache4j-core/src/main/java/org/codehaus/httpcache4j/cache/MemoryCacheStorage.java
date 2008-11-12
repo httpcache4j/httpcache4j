@@ -55,7 +55,6 @@ public class MemoryCacheStorage implements CacheStorage {
             CacheValue value = cache.remove(uri);
             invalidate(value, null);
         }
-
     }
 
     public void invalidate(URI requestURI, CacheItem item) {
@@ -69,25 +68,28 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     protected void invalidate(CacheValue value, CacheItem item) {
-        Vary found = null;
-        for (Map.Entry<Vary, CacheItem> entry : value) {
-            if (item == null) {
+        if (item == null) {
+            for (Map.Entry<Vary, CacheItem> entry : value) {
                 Payload payload = entry.getValue().getResponse().getPayload();
                 if (payload instanceof CleanablePayload) {
                     ((CleanablePayload) payload).clean();
                 }
             }
-            else {
+        }
+        else {
+            Vary found = null;
+            for (Map.Entry<Vary, CacheItem> entry : value) {
                 if (entry.getValue().equals(item)) {
                     found = entry.getKey();
                 }
             }
-        }
-        if (found != null) {
-            value.getVariations().remove(found);
-            Payload payload = item.getResponse().getPayload();
-            if (payload instanceof CleanablePayload) {
-                ((CleanablePayload) payload).clean();
+
+            if (found != null) {
+                value.getVariations().remove(found);
+                Payload payload = item.getResponse().getPayload();
+                if (payload instanceof CleanablePayload) {
+                    ((CleanablePayload) payload).clean();
+                }
             }
         }
     }
