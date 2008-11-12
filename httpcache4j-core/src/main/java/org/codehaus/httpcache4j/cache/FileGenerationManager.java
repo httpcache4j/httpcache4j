@@ -133,7 +133,7 @@ class FileGenerationManager {
 
         public synchronized void delete() {
             File[] undeleteableFiles = generationDirectory.listFiles(new DeletingFileFilter());
-            if (undeleteableFiles.length == 0) {
+            if (undeleteableFiles == null || undeleteableFiles.length == 0) {
                 generationDirectory.delete();
             }
             else {
