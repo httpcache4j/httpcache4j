@@ -9,7 +9,20 @@ import org.apache.commons.lang.Validate;
 
 import java.util.*;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/**
+ * TODO:
+ * Support Warning header http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.46
+ * Support detecting empty responses? http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.4
+ * Support Range headers. http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35
+ *
+ */
+
+
+/**
+ * The main HTTPCache class.
+ *
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * */
 public class HTTPCache {
     /** Directive to the {@code "Cache-Control"} header */
     public static final String HEADER_DIRECTIVE_MAX_AGE = "max-age";
@@ -209,7 +222,7 @@ public class HTTPCache {
             if (request.getHeaders().hasHeader(HeaderConstants.CACHE_CONTROL)) {
                 String cacheControlHeaderValue = request.getHeaders().getFirstHeader(HeaderConstants.CACHE_CONTROL).getValue();
                 //If the request tells us that we shouldn't cache the response, then we don't.
-                return !("no-store".equals(cacheControlHeaderValue) || "no-cache".equals(cacheControlHeaderValue));
+                return !(cacheControlHeaderValue.contains("no-store")) || cacheControlHeaderValue.contains("no-cache");
             }
             return true;
         }

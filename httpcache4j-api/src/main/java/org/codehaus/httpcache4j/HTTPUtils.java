@@ -64,11 +64,12 @@ public class HTTPUtils {
         if (headers.contains(new Header(VARY, "*"))) {
             return false;
         }
-        if (headers.contains(new Header(CACHE_CONTROL, NO_STORE_HEADER_VALUE)) || headers.contains(new Header(CACHE_CONTROL, NO_CACHE_HEADER_VALUE))) {
-            return false;
-        }
-        else if (headers.hasHeader(CACHE_CONTROL)){
-            return headers.getFirstHeader(CACHE_CONTROL).getDirectives().containsKey("max-age");
+        if (headers.hasHeader(CACHE_CONTROL)){
+            final Header header = headers.getFirstHeader(CACHE_CONTROL);
+            if (header.getValue().contains(NO_STORE_HEADER_VALUE) || header.getValue().contains(NO_CACHE_HEADER_VALUE)) {
+                return false;
+            }
+            return header.getDirectives().containsKey("max-age");
         }
         if (headers.contains(new Header(PRAGMA, NO_CACHE_HEADER_VALUE)) || headers.contains(new Header(PRAGMA, NO_STORE_HEADER_VALUE))) {
             return false;
