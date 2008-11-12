@@ -26,17 +26,30 @@ public class ConditionalsTest {
     @Test
     public void testIfMatchWithNullTag() {
         conditionals.addIfMatch(null);
-        assertEquals(0, conditionals.getMatch().size());
-        conditionals.addIfMatch(Tag.parse("\"bar\""));
+        assertEquals(1, conditionals.getMatch().size());
+
+        try {
+            conditionals.addIfMatch(Tag.parse("\"bar\""));
+            fail("Expected IllegalArgumentException");
+        }
+        catch (IllegalArgumentException e) {
+            //expected
+        }
         assertEquals(1, conditionals.getMatch().size());
     }
 
     @Test
     public void testIfNoneMatchWithNullTag() {
         conditionals.addIfNoneMatch(null);
-        assertEquals(0, conditionals.getMatch().size());
-        conditionals.addIfMatch(Tag.parse("\"bar\""));
-        assertEquals(1, conditionals.getMatch().size());
+        assertEquals(1, conditionals.getNonMatch().size());
+        try {
+            conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
+            fail("Expected IllegalArgumentException");
+        }
+        catch (IllegalArgumentException e) {
+            //expected
+        }
+        assertEquals(1, conditionals.getNonMatch().size());
     }
 
     @Test
@@ -45,7 +58,7 @@ public class ConditionalsTest {
         assertEquals(1, conditionals.getMatch().size());
         try {
             conditionals.addIfMatch(Tag.parse("\"bar\""));
-            fail();
+            fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException expected) {
         }
@@ -57,7 +70,7 @@ public class ConditionalsTest {
         assertEquals(1, conditionals.getNonMatch().size());
         try {
             conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
-            fail();
+            fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException expected) {
         }
@@ -79,7 +92,7 @@ public class ConditionalsTest {
         assertEquals(1, conditionals.getNonMatch().size());
         try {
             conditionals.addIfMatch(Tag.parse("\"bar\""));
-            fail();
+            fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException expected) {
         }
@@ -110,7 +123,7 @@ public class ConditionalsTest {
         DateTime dateTime = new DateTime();
         try {
             conditionals.setIfModifiedSince(dateTime);
-            fail();
+            fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException expected) {
         }
@@ -142,7 +155,7 @@ public class ConditionalsTest {
         DateTime dateTime = new DateTime();
         try {
             conditionals.setIfUnModifiedSince(dateTime);
-            fail();
+            fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException expected) {
         }
@@ -156,7 +169,7 @@ public class ConditionalsTest {
         assertEquals(dateTime, conditionals.getUnModifiedSince());
         try {
             conditionals.setIfModifiedSince(dateTime);
-            fail();
+            fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException expected) {
         }

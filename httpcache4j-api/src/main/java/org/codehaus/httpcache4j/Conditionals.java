@@ -9,8 +9,8 @@ import java.util.List;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public final class Conditionals {
-    private List<Tag> match;
-    private List<Tag> nonMatch;
+    private final List<Tag> match = new ArrayList<Tag>();
+    private final List<Tag> nonMatch = new ArrayList<Tag>();
     private DateTime modifiedSince;
     private DateTime unModifiedSince;
     private static final String ERROR_MESSAGE = "The combination of %s and %s is undefined by the HTTP specification";
@@ -27,8 +27,8 @@ public final class Conditionals {
         if (tag == null) {
             tag = Tag.ALL;
         }
-        if (match == null || Tag.ALL.equals(tag)) {
-            match = new ArrayList<Tag>();
+        if (Tag.ALL.equals(tag)) {
+            match.clear();
         }
         if (!match.contains(Tag.ALL)) {
             match.add(tag);
@@ -44,7 +44,7 @@ public final class Conditionals {
      * The meaning of "If-None-Match: *" is that the method MUST NOT be performed if the representation selected by
      * the origin server (or by a cache, possibly using the Vary mechanism, see section 14.44) exists,
      * and SHOULD be performed if the representation does not exist.
-     * This feature is intended to be useful in preventing races between PUT operations. 
+     * FThis feature is intended to be useful in preventing races between PUT operations. 
      *
      * @param tag the tag to add, may be null. This means the same as adding {@link Tag#ALL}
      * @throws IllegalArgumentException if ALL is supplied more than once, or you add a null tag more than once.
@@ -52,11 +52,11 @@ public final class Conditionals {
     public void addIfNoneMatch(Tag tag) {
         Validate.isTrue(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_UNMODIFIED_SINCE));
         Validate.isTrue(match == null || match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_MATCH));
-        if (tag != null) {
+        if (tag == null) {
             tag = Tag.ALL;
         }
-        if (nonMatch == null || Tag.ALL.equals(tag)) {
-            nonMatch = new ArrayList<Tag>();
+        if (Tag.ALL.equals(tag)) {
+            nonMatch.clear();
         }
         if (!nonMatch.contains(Tag.ALL)) {
             nonMatch.add(tag);
@@ -89,11 +89,11 @@ public final class Conditionals {
     }
 
     public List<Tag> getMatch() {
-        return match == null ? Collections.<Tag>emptyList() : Collections.unmodifiableList(match);
+        return Collections.unmodifiableList(match);
     }
 
     public List<Tag> getNonMatch() {
-        return nonMatch == null ? Collections.<Tag>emptyList() : Collections.unmodifiableList(nonMatch);
+        return Collections.unmodifiableList(nonMatch);
     }
 
     public DateTime getModifiedSince() {

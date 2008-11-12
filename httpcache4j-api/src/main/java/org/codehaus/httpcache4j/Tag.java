@@ -175,6 +175,11 @@ public final class Tag extends Metadata {
         return super.getName();
     }
 
+    @Override
+    public String toString() {
+        return "opaque tag: " + getName() + " is weak: " + isWeak();
+    }
+
     /** {@inheritDoc} */
     @Override
     public int hashCode() {
