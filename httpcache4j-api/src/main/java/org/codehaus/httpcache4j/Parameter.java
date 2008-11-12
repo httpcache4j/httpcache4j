@@ -1,5 +1,8 @@
 package org.codehaus.httpcache4j;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
+
 import java.io.Serializable;
 
 /**
@@ -12,7 +15,11 @@ public class Parameter implements Serializable {
     protected String value;
 
     public Parameter(String name, String value) {
+        Validate.notEmpty(name, "You may not have an empty parameter name");
         this.name = name;
+        if (StringUtils.isBlank(value)) {
+            value = "";
+        }
         this.value = value;
     }
 
