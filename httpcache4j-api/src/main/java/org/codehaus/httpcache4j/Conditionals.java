@@ -15,35 +15,54 @@ public final class Conditionals {
     private DateTime unModifiedSince;
     private static final String ERROR_MESSAGE = "The combination of %s and %s is undefined by the HTTP specification";
 
+    /**
+     * Adds tags to the If-Match header.
+     *
+     * @param tag the tag to add, may be null. This means the same as adding {@link Tag#ALL}
+     * @throws IllegalArgumentException if ALL is supplied more than once, or you add a null tag more than once.
+     */
     public void addIfMatch(Tag tag) {
         Validate.isTrue(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_MODIFIED_SINCE));
         Validate.isTrue(nonMatch == null || nonMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_NON_MATCH));
-        if (tag != null) {
-            if (match == null || Tag.ALL.equals(tag)) {
-                match = new ArrayList<Tag>();
-            }
-            if (!match.contains(Tag.ALL)) {
-                match.add(tag);
-            }
-            else {
-                throw new IllegalArgumentException("Tag ALL already in the list");
-            }
+        if (tag == null) {
+            tag = Tag.ALL;
+        }
+        if (match == null || Tag.ALL.equals(tag)) {
+            match = new ArrayList<Tag>();
+        }
+        if (!match.contains(Tag.ALL)) {
+            match.add(tag);
+        }
+        else {
+            throw new IllegalArgumentException("Tag ALL already in the list");
         }
     }
 
+    /**
+     * Adds tags to the If-None-Match header.
+     *
+     * The meaning of "If-None-Match: *" is that the method MUST NOT be performed if the representation selected by
+     * the origin server (or by a cache, possibly using the Vary mechanism, see section 14.44) exists,
+     * and SHOULD be performed if the representation does not exist.
+     * This feature is intended to be useful in preventing races between PUT operations. 
+     *
+     * @param tag the tag to add, may be null. This means the same as adding {@link Tag#ALL}
+     * @throws IllegalArgumentException if ALL is supplied more than once, or you add a null tag more than once.
+     */
     public void addIfNoneMatch(Tag tag) {
         Validate.isTrue(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_UNMODIFIED_SINCE));
         Validate.isTrue(match == null || match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_MATCH));
         if (tag != null) {
-            if (nonMatch == null || Tag.ALL.equals(tag)) {
-                nonMatch = new ArrayList<Tag>();
-            }
-            if (!nonMatch.contains(Tag.ALL)) {
-                nonMatch.add(tag);
-            }
-            else {
-                throw new IllegalArgumentException("Tag ALL already in the list");
-            }
+            tag = Tag.ALL;
+        }
+        if (nonMatch == null || Tag.ALL.equals(tag)) {
+            nonMatch = new ArrayList<Tag>();
+        }
+        if (!nonMatch.contains(Tag.ALL)) {
+            nonMatch.add(tag);
+        }
+        else {
+            throw new IllegalArgumentException("Tag ALL already in the list");
         }
     }
 
