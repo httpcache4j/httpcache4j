@@ -35,7 +35,7 @@ public class MemoryCacheStorageTest {
         CacheItem item = mock(CacheItem.class);
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
         stub(item.getResponse()).toReturn(response);
-        storage.put(URI.create("foo"), new Vary(new HashMap<String, String>()), item);
+        storage.put(URI.create("foo"), new Vary(), item);
         assertEquals(1, storage.size());
     }
 
@@ -47,7 +47,7 @@ public class MemoryCacheStorageTest {
         HTTPRequest request = mock(HTTPRequest.class);
         URI requestURI = URI.create("foo");
         stub(request.getRequestURI()).toReturn(requestURI);
-        storage.put(requestURI, new Vary(new HashMap<String, String>()), item);
+        storage.put(requestURI, new Vary(), item);
         assertEquals(1, storage.size());
         CacheItem outItem = storage.get(request);
         assertEquals(item, outItem);
@@ -59,7 +59,7 @@ public class MemoryCacheStorageTest {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
         stub(item.getResponse()).toReturn(response);
         URI requestURI = URI.create("foo");
-        storage.put(requestURI, new Vary(new HashMap<String, String>()), item);
+        storage.put(requestURI, new Vary(), item);
         assertEquals(1, storage.size());
         storage.invalidate(requestURI);
         assertEquals(0, storage.size());
@@ -71,7 +71,7 @@ public class MemoryCacheStorageTest {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
         stub(item.getResponse()).toReturn(response);
         URI requestURI = URI.create("foo");
-        storage.put(requestURI, new Vary(new HashMap<String, String>()), item);
+        storage.put(requestURI, new Vary(), item);
         assertEquals(1, storage.size());
         storage.invalidate(requestURI, item);
         assertEquals(0, storage.size());

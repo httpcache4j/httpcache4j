@@ -12,6 +12,9 @@ import java.util.*;
 public final class Vary implements Serializable {
     private final Map<String, String> varyHeaders = new HashMap<String, String>();
 
+    public Vary() {        
+    }
+
     /**
      * Constructor
      *
