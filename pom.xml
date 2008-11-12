@@ -30,7 +30,7 @@
         <developer>
             <id>erlend.hamnaberg</id>
             <name>Erlend Hamnaberg</name>
-            <email>erlend@hamnaberg.net</email>
+            <email>hamnis@codehaus.org</email>
         </developer>
     </developers>
 
@@ -214,30 +214,30 @@
         <module>httpcache4j-core</module>
         <module>httpcache4j-api</module>
         <module>httpcache4j-storage-api</module>
-        <module>clients</module>
+        <!--<module>clients</module>--> <!-- TODO: How to deal with this problem that clients are not tagged by -->
     </modules>
 
 
     <scm>
-        <connection>scm:svn:http://svn.codehaus.org/httpcache4j/tags/httpcache4j-1.0-RC1</connection>
-        <developerConnection>scm:svn:https://svn.codehaus.org/httpcache4j/tags/httpcache4j-1.0-RC1</developerConnection>
-        <url>http://fisheye.codehaus.org/browse/httpcache4j/tags/httpcache4j-1.0-RC1</url>
+        <connection>scm:svn:http://svn.codehaus.org/httpcache4j/trunk/</connection>
+        <developerConnection>scm:svn:https://svn.codehaus.org/httpcache4j/trunk/</developerConnection>
+        <url>http://fisheye.codehaus.org/browse/httpcache4j/trunk/</url>
     </scm>
 
     <distributionManagement>
         <repository>
             <id>httpcache4j</id>
             <name>Codehaus maven repo</name>
-            <url>dav:https://dav.codehaus.org/repository/httpcache4j/</url>
+            <url>dav:https://dav.codehaus.org/repository/httpcache4j</url>
         </repository>
         <snapshotRepository>
             <id>httpcache4j-snapshot</id>
             <name>Codehaus maven repo</name>
-            <url>dav:https://dav.codehaus.org/snapshots.repository/httpcache4j/</url>
+            <url>dav:https://dav.codehaus.org/snapshots.repository/httpcache4j</url>
         </snapshotRepository>
         <site>
             <id>httpcache4j-site</id>
-            <url>dav:https://dav.codehaus.org/httpcache4j/</url>
+            <url>dav:https://dav.codehaus.org/httpcache4j</url>
         </site>
     </distributionManagement>
 </project>
