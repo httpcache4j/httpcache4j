@@ -15,8 +15,8 @@ public class DeletingFileFilter implements FileFilter {
             return !pathname.delete();
         }
         else if (pathname.isDirectory()) {
-            File[] files = pathname.listFiles(new DeletingFileFilter());
-            if (files.length == 0) {
+            File[] files = pathname.listFiles(this); // Optimization: No need to create new filter, as there's no state
+            if (files == null || files.length == 0) {
                 return !pathname.delete();
             }
             else {
