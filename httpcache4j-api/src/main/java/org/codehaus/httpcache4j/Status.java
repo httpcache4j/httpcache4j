@@ -61,6 +61,7 @@ public final class Status extends Metadata {
     public static final Status HTTP_VERSION_NOT_SUPPORTED = new Status(505, "HTTP Version Not Supported");
 
     private int code;
+    private static final long serialVersionUID = 352513594744701224L;
 
     public Status(int code, String name) {
         super(name);
@@ -107,6 +108,11 @@ public final class Status extends Metadata {
         int result = super.hashCode();
         result = 31 * result + code;
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return getCode() + " " + getName();
     }
 
     public static Status valueOf(int statusCode) {
