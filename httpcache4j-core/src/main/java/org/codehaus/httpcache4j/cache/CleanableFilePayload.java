@@ -55,6 +55,7 @@ public class CleanableFilePayload implements CleanablePayload {
             IOUtils.closeQuietly(outputStream);
             IOUtils.closeQuietly(stream);
         }
+        //TODO: Should we do something if the file's length() is 0 ? Throw Exception? ignore it? delete it?
     }
 
     private File getFile() {
@@ -66,8 +67,8 @@ public class CleanableFilePayload implements CleanablePayload {
     }
 
     public InputStream getInputStream() {
-        if (isAvailable()) {
-            File file = getFile();
+        File file = getFile();
+        if (isAvailable(file)) {
             try {
                 return FileUtils.openInputStream(file);
             }
@@ -83,11 +84,18 @@ public class CleanableFilePayload implements CleanablePayload {
     }
 
     public void clean() {
-        generationManager.removeFile(fileName);
+        final File file = getFile();
+        if (file != null && isAvailable(file)) {
+            file.delete();
+        }
     }
 
     public boolean isAvailable() {
         File file = getFile();
+        return isAvailable(file);
+    }
+
+    private boolean isAvailable(File file) {
         return file.exists() && file.canRead() && file.canWrite();
     }
 }

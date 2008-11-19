@@ -30,7 +30,7 @@ public class DefaultPayloadCreator implements PayloadCreator {
     private FileGenerationManager fileGenerationManager;
 
     public DefaultPayloadCreator(final File baseDirectory) {
-        this(baseDirectory, 5, 50);
+        this(baseDirectory, 5, 1000);
     }
 
     public DefaultPayloadCreator(final File baseDirectory, int numberOfGenerations, int generationSize) {

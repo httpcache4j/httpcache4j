@@ -19,13 +19,18 @@ package org.codehaus.httpcache4j.cache;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.payload.Payload;
 
+import org.apache.commons.lang.Validate;
+
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.io.Serializable;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
-public class MemoryCacheStorage implements CacheStorage {
+public class MemoryCacheStorage implements CacheStorage, Serializable {
 
     protected Map<URI, CacheValue> cache;
 
@@ -34,11 +39,7 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     public MemoryCacheStorage(int capacity) {
-        cache = new HashMap<URI, CacheValue>(capacity);
-    }
-
-    protected MemoryCacheStorage(Map<URI, CacheValue> map) {
-        cache = map;
+        cache = new InvalidateOnRemoveHashMap(capacity);
     }
 
     public synchronized void put(URI requestURI, Vary vary, CacheItem cacheItem) {
@@ -69,8 +70,7 @@ public class MemoryCacheStorage implements CacheStorage {
 
     public synchronized void invalidate(URI uri) {
         if (cache.containsKey(uri)) {
-            CacheValue value = cache.remove(uri);
-            invalidate(value, null);
+            cache.remove(uri);
         }
     }
 
@@ -112,13 +112,26 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     public synchronized void clear() {
-        for (CacheValue value : cache.values()) {
-            invalidate(value, null);
+        Set<URI> uris = new HashSet<URI>(cache.keySet());
+        for (URI uri : uris) {
+            cache.remove(uri);
         }
-        cache.clear();
     }
 
     public synchronized int size() {
         return cache.size();
+    }
+
+    private class InvalidateOnRemoveHashMap extends HashMap<URI, CacheValue> {
+        public InvalidateOnRemoveHashMap(final int capacity) {
+            super(capacity);
+        }
+
+        @Override
+        public CacheValue remove(final Object key) {
+            final CacheValue value = super.remove(key);
+            invalidate(value, null);
+            return value;
+        }
     }
 }
