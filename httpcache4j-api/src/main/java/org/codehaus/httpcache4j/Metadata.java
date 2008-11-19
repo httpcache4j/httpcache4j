@@ -16,10 +16,13 @@
 
 package org.codehaus.httpcache4j;
 
+import java.io.Serializable;
+
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
-public class Metadata {
+public class Metadata implements Serializable {
     private final String name;
     private String description;
+    private static final long serialVersionUID = -4266185242513244974L;
 
     public Metadata(String name) {
         this.name = name;
