@@ -146,44 +146,45 @@ public class HTTPCache {
     }
 
     private HTTPResponse handleResolve(HTTPRequest request, CacheItem item) {
-        HTTPResponse response;
+        HTTPResponse response = null;
         HTTPResponse resolvedResponse = resolver.resolve(request);
+        if (resolvedResponse != null) {
+            try {
+                if (isCacheableResponse(resolvedResponse)) {
+                    Vary vary = determineVariation(resolvedResponse, request);
 
-        try {
-            if (isCacheableResponse(resolvedResponse)) {
-                Vary vary = determineVariation(resolvedResponse, request);
+                    storage.put(request.getRequestURI(), vary, new CacheItem(resolvedResponse));
+                    response = resolvedResponse;
+                }
+                else if (item != null && resolvedResponse.getStatus().getCode() == Status.NOT_MODIFIED.getCode()) {
+                    //replace the cached entry as the entry was not modified
+                    HTTPResponse cachedResponse = item.getResponse();
+                    HTTPResponse updatedResponse;
+                    LinkedHashMap<String, List<Header>> headers = new LinkedHashMap<String, List<Header>>(cachedResponse.getHeaders().getHeadersAsMap());
 
-                storage.put(request.getRequestURI(), vary, new CacheItem(resolvedResponse));
+                    headers.putAll(removeUnmodifiableHeaders(resolvedResponse.getHeaders()).getHeadersAsMap());
+                    Headers realHeaders = new Headers(headers);
+                    updatedResponse = new HTTPResponse(cachedResponse.getPayload(), resolvedResponse.getStatus(), realHeaders);
+                    Vary vary = determineVariation(updatedResponse, request);
+                    storage.put(request.getRequestURI(), vary, new CacheItem(updatedResponse));
+                    response = updatedResponse;
+                }
+                else {
+                    //Response was not cacheable
+                    response = resolvedResponse;
+                }
+                if (item != null && resolvedResponse.getStatus().getCode() == Status.OK.getCode()) {
+                    //Success was ok, but we had already a response for this item.
+                    //invalidate it so we don't clutter the filesystem.
+                    storage.invalidate(request.getRequestURI(), item);
+                }
+            }
+            catch (HTTPException e) {
+                if (item != null) {
+                    storage.invalidate(request.getRequestURI(), item);
+                }
                 response = resolvedResponse;
             }
-            else if (item != null && resolvedResponse.getStatus().getCode() == Status.NOT_MODIFIED.getCode()) {
-                //replace the cached entry as the entry was not modified
-                HTTPResponse cachedResponse = item.getResponse();
-                HTTPResponse updatedResponse;
-                LinkedHashMap<String, List<Header>> headers = new LinkedHashMap<String, List<Header>>(cachedResponse.getHeaders().getHeadersAsMap());
-
-                headers.putAll(removeUnmodifiableHeaders(resolvedResponse.getHeaders()).getHeadersAsMap());
-                Headers realHeaders = new Headers(headers);
-                updatedResponse = new HTTPResponse(cachedResponse.getPayload(), resolvedResponse.getStatus(), realHeaders);
-                Vary vary = determineVariation(updatedResponse, request);
-                storage.put(request.getRequestURI(), vary, new CacheItem(updatedResponse));
-                response = updatedResponse;
-            }
-            else {
-                //Response was not cacheable
-                response = resolvedResponse;
-            }
-            if (item != null && resolvedResponse.getStatus().getCode() == Status.OK.getCode()) {
-                //Success was ok, but we had already a response for this item.
-                //invalidate it so we don't clutter the filesystem.
-                storage.invalidate(request.getRequestURI(), item);
-            }
-        }
-        catch (HTTPException e) {
-            if (item != null) {
-                storage.invalidate(request.getRequestURI(), item);
-            }
-            response = resolvedResponse;
         }
         return response;
     }
