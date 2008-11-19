@@ -109,8 +109,8 @@ class FileGenerationManager {
         for (Generation generation : getGenerations()) {
             File candidate = new File(generation.getGenerationDirectory(), fileName);
             if (candidate.exists()) {
-                //because of; http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4017593
                 if (!target.equals(candidate)) {
+                    //because of; http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4017593
                     target.delete();
                     if (candidate.renameTo(target)) {
                         return target;
@@ -122,19 +122,6 @@ class FileGenerationManager {
         return target;
     }
     
-    public void removeFile(String fileName) {
-        File target = new File(getCurrentGeneration().getGenerationDirectory(), fileName);
-        if (target.exists()) {
-            target.delete();
-        }
-        for (Generation generation : getGenerations()) {
-            File candidate = new File(generation.getGenerationDirectory(), fileName);
-            if (candidate.exists()) {
-                candidate.delete();
-            }
-        }
-    }
-
     static class Generation implements Comparable<Generation> {
         private File generationDirectory;
         private int sequence;
