@@ -25,6 +25,7 @@ import org.codehaus.httpcache4j.util.DeletingFileFilter;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,6 +52,14 @@ class FileGenerationManager {
         this.numberOfGenerations = numberOfGenerations;
         generationFilter = new AndFileFilter(DirectoryFileFilter.DIRECTORY, new RegexFileFilter("[0-9]*"));
         getGenerations();
+    }
+
+    int getGenerationSize() {
+        return generationSize;
+    }
+
+    int getNumberOfGenerations() {
+        return numberOfGenerations;
     }
 
     /**

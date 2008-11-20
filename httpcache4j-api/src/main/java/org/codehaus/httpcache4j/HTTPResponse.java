@@ -28,6 +28,8 @@ import java.util.*;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public final class HTTPResponse implements Serializable {
+    private static final long serialVersionUID = -7448511905298678448L;
+    
     private final Status status;
     private final Payload payload;
     private final Headers headers;
@@ -85,5 +87,49 @@ public final class HTTPResponse implements Serializable {
 
     public Set<HTTPMethod> getAllowedMethods() {
         return allowedMethods != null ? allowedMethods : Collections.<HTTPMethod>emptySet();
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        HTTPResponse response = (HTTPResponse) o;
+
+        if (ETag != null ? !ETag.equals(response.ETag) : response.ETag != null) {
+            return false;
+        }
+        if (allowedMethods != null ? !allowedMethods.equals(response.allowedMethods) : response.allowedMethods != null) {
+            return false;
+        }
+        if (headers != null ? !headers.equals(response.headers) : response.headers != null) {
+            return false;
+        }
+        if (lastModified != null ? !lastModified.equals(response.lastModified) : response.lastModified != null) {
+            return false;
+        }
+        if (payload != null ? !payload.equals(response.payload) : response.payload != null) {
+            return false;
+        }
+        if (status != null ? !status.equals(response.status) : response.status != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = status != null ? status.hashCode() : 0;
+        result = 31 * result + (payload != null ? payload.hashCode() : 0);
+        result = 31 * result + (headers != null ? headers.hashCode() : 0);
+        result = 31 * result + (ETag != null ? ETag.hashCode() : 0);
+        result = 31 * result + (lastModified != null ? lastModified.hashCode() : 0);
+        result = 31 * result + (allowedMethods != null ? allowedMethods.hashCode() : 0);
+        return result;
     }
 }

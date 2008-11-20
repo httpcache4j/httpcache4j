@@ -25,18 +25,20 @@ import javax.activation.MimeTypeParseException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.io.Serializable;
 
 /**
  * Media type used in representations and preferences.
  *
  * @see <a href="http://en.wikipedia.org/wiki/MIME">MIME types on Wikipedia</a>
  */
-public final class MIMEType {
+public final class MIMEType implements Serializable {
     public static final MIMEType ALL = new MIMEType("*", "*");
     public static final MIMEType APPLICATION_OCTET_STREAM = new MIMEType("application", "octet-stream");
 
     private final MimeType mimeType;
     private final List<Parameter> parameters = new ArrayList<Parameter>();
+    private static final long serialVersionUID = 1937511950666426391L;
 
     public MIMEType(String MIMEType) {
         MimeType mimeType;

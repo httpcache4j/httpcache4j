@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
+import java.io.ObjectStreamException;
 import java.util.UUID;
 
 /**
@@ -34,11 +36,17 @@ import java.util.UUID;
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public class CleanableFilePayload implements CleanablePayload {
+public class CleanableFilePayload implements CleanablePayload, Serializable {
 
+    private static final long serialVersionUID = -4565379464661253740L;
+    
     private final String fileName;
-    private final FileGenerationManager generationManager;
+    private transient FileGenerationManager generationManager;
     private final MIMEType mimeType;
+    //TODO: is this a good idea? Should the generationManager be serializable instead?
+    private final int generations;
+    private final int generationSize;
+    private final File baseDirectory;
 
     public CleanableFilePayload(FileGenerationManager generationManager, InputStream stream, MIMEType mimeType) throws IOException {
         Validate.notNull(generationManager, "You may not add a null generation manager");
@@ -46,6 +54,9 @@ public class CleanableFilePayload implements CleanablePayload {
         this.mimeType = mimeType;
         fileName = UUID.randomUUID().toString();
         this.generationManager = generationManager;
+        generationSize = generationManager.getGenerationSize();
+        generations = generationManager.getNumberOfGenerations();
+        baseDirectory = generationManager.getBaseDirectory();
         File file = getFile();
         FileOutputStream outputStream = FileUtils.openOutputStream(file);
         try {
@@ -97,5 +108,11 @@ public class CleanableFilePayload implements CleanablePayload {
 
     private boolean isAvailable(File file) {
         return file.exists() && file.canRead() && file.canWrite();
+    }
+
+    //serialization stuff.
+    private Object readResolve() throws ObjectStreamException {
+        generationManager = new FileGenerationManager(baseDirectory, generations, generationSize);
+        return this;
     }
 }
