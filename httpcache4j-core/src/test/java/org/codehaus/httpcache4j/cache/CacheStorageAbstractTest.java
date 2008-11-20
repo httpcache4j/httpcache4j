@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.apache.commons.lang.builder.EqualsBuilder;
 
 import java.net.URI;
 
@@ -17,7 +18,7 @@ import static junit.framework.Assert.*;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public abstract class CacheStorageAbstractTest {
-    private CacheStorage storage;
+    protected CacheStorage storage;
 
     @Before
     public void setup() {
@@ -25,10 +26,12 @@ public abstract class CacheStorageAbstractTest {
     }
 
     protected abstract CacheStorage createCacheStorage();
+    protected abstract void afterTest();
 
     @After
     public void after() {
         storage.clear();
+        afterTest();
     }
 
     @Test

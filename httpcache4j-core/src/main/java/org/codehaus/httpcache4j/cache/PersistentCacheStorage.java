@@ -59,10 +59,14 @@ public class PersistentCacheStorage implements CacheStorage, Serializable {
         if (!serializationFileDirectory.exists()) {
             serializationFileDirectory.mkdirs();
         }
+        /*Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                saveCacheToDisk();
+            }
+        }));*/
     }
 
     public synchronized void put(URI requestURI, Vary vary, CacheItem cacheItem) {
-        getCacheFromDisk();
         if (cache.containsKey(requestURI)) {
             CacheValue value = cache.get(requestURI);
             Map<Vary, CacheItem> variations = new HashMap<Vary, CacheItem>(value.getVariations());
@@ -90,15 +94,12 @@ public class PersistentCacheStorage implements CacheStorage, Serializable {
     }
 
     public synchronized void invalidate(URI uri) {
-        getCacheFromDisk();
         if (cache.containsKey(uri)) {
             cache.remove(uri);
         }
-        saveCacheToDisk();
     }
 
-    public void invalidate(URI requestURI, CacheItem item) {
-        getCacheFromDisk();
+    public synchronized void invalidate(URI requestURI, CacheItem item) {
         if (cache.containsKey(requestURI) && item != null) {
             CacheValue value = cache.get(requestURI);
             invalidate(value, item);
@@ -106,7 +107,6 @@ public class PersistentCacheStorage implements CacheStorage, Serializable {
                 cache.remove(requestURI);
             }
         }
-        saveCacheToDisk();
     }
 
     protected void invalidate(CacheValue value, CacheItem item) {
@@ -141,6 +141,7 @@ public class PersistentCacheStorage implements CacheStorage, Serializable {
         for (URI uri : uris) {
             cache.remove(uri);
         }
+        serializationFile.delete();
     }
 
     public synchronized int size() {
@@ -148,23 +149,33 @@ public class PersistentCacheStorage implements CacheStorage, Serializable {
     }
 
     @SuppressWarnings({"unchecked"})
-    private void getCacheFromDisk() {
-        FileInputStream inputStream = null;
-        try {
-            inputStream = FileUtils.openInputStream(serializationFile);
-            cache = (Map<URI, CacheValue>) SerializationUtils.deserialize(inputStream);
+    private synchronized void getCacheFromDisk() {
+        if (cache == null) {
+            cache = new InvalidateOnRemoveHashMap(capacity);
         }
-        catch (IOException e) {
-            //Ignored, we create a new one.
+        if (serializationFile.exists()) {
+            FileInputStream inputStream = null;
+            try {
+                inputStream = FileUtils.openInputStream(serializationFile);
+                cache = (Map<URI, CacheValue>) SerializationUtils.deserialize(inputStream);
+            }
+            catch (Exception e) {
+                serializationFile.delete();
+                e.printStackTrace();
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException)e;
+                }
+                //Ignored, we create a new one.
+                cache = new InvalidateOnRemoveHashMap(capacity);
+            }
+            finally {
+                IOUtils.closeQuietly(inputStream);
+            }
         }
-        finally {
-            IOUtils.closeQuietly(inputStream);
-        }
-        cache = new InvalidateOnRemoveHashMap(capacity);
     }
 
     @SuppressWarnings({"unchecked"})
-    private void saveCacheToDisk() {
+    private synchronized void saveCacheToDisk() {
         FileOutputStream outputStream = null;
         try {
             outputStream = FileUtils.openOutputStream(serializationFile);

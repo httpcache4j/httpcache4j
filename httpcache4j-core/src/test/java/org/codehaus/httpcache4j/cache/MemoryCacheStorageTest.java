@@ -36,4 +36,7 @@ public class MemoryCacheStorageTest extends CacheStorageAbstractTest {
     protected CacheStorage createCacheStorage() {
         return new MemoryCacheStorage();
     }
+
+    protected void afterTest() {
+    }
 }
