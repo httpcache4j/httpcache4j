@@ -88,19 +88,6 @@ public final class MIMEType implements Serializable {
         return mimeType.getPrimaryType();
     }
 
-    private boolean matches(String MIMEType) {
-        try {
-            return this.mimeType.match(MIMEType);
-        }
-        catch (MimeTypeParseException e) {
-            throw new IllegalArgumentException("Argument is not a mime type", e);
-        }
-    }
-
-    private boolean matches(MIMEType MIMEType) {
-        return this.mimeType.match(MIMEType.mimeType);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -143,5 +130,12 @@ public final class MIMEType implements Serializable {
     @Override
     public String toString() {
         return mimeType.toString();
+    }
+    
+    public static MIMEType valueOf(final String MIMEType) {
+        return new MIMEType(MIMEType);
+    }
+    public static MIMEType valueOf(final String primaryType, final String subType) {
+        return new MIMEType(primaryType, subType);
     }
 }

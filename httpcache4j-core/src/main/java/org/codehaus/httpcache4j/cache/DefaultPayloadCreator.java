@@ -40,7 +40,7 @@ public class DefaultPayloadCreator implements PayloadCreator {
     public Payload createPayload(final Headers headers, final InputStream stream) {
         boolean cacheable = HTTPUtils.hasCacheableHeaders(headers);
         Header contentTypeHeader = headers.getFirstHeader(HeaderConstants.CONTENT_TYPE);
-        MIMEType type = contentTypeHeader != null ? new MIMEType(contentTypeHeader.getValue()) : MIMEType.APPLICATION_OCTET_STREAM;
+        MIMEType type = contentTypeHeader != null ? MIMEType.valueOf(contentTypeHeader.getValue()) : MIMEType.APPLICATION_OCTET_STREAM;
         if (cacheable) {
             try {
                 return new CleanableFilePayload(fileGenerationManager, stream, type);
