@@ -71,10 +71,6 @@ public final class Tag extends Metadata {
         else if (httpTagCopy.equals("*")) {
             result = new Tag("*", weak);
         }
-        else {
-            Logger.getLogger(Tag.class.getCanonicalName()).log(Level.WARNING,
-                    "Invalid tag format detected: " + httpTagCopy);
-        }
 
         return result;
     }
@@ -85,9 +81,18 @@ public final class Tag extends Metadata {
      * @param opaqueTag The tag value.
      * @param weak      The weakness indicator.
      */
-    private Tag(final String opaqueTag, boolean weak) {
+    public Tag(final String opaqueTag, boolean weak) {
         super(opaqueTag);
         this.weak = weak;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param opaqueTag The tag value.
+     */
+    public Tag(final String opaqueTag) {
+        this(opaqueTag, false);        
     }
 
     /**
