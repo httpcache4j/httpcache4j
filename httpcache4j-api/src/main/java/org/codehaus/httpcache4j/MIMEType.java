@@ -110,7 +110,7 @@ public final class MIMEType implements Serializable {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(0, 31).append(getPrimaryType()).append(getSubType()).toHashCode();
+        return new HashCodeBuilder(10, 31).append(getPrimaryType()).append(getSubType()).toHashCode();
     }
 
     public boolean includes(MIMEType mimeType) {
