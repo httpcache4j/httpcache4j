@@ -135,6 +135,7 @@ public final class MIMEType implements Serializable {
     public static MIMEType valueOf(final String MIMEType) {
         return new MIMEType(MIMEType);
     }
+    
     public static MIMEType valueOf(final String primaryType, final String subType) {
         return new MIMEType(primaryType, subType);
     }

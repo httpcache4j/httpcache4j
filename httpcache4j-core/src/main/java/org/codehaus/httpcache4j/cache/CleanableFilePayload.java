@@ -29,24 +29,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+import java.io.FileNotFoundException;
 import java.util.UUID;
 
 /**
- * Stores the file in "bucket".
+ * Stores the file in "bucket". This class is responsible for making the 
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
+//TODO: file locks. We could solve this by introducing some read and write lock.
+//todo: there may be many read locks, but only one write lock.
+//TODO: probably needs refactoring of this class.
 public class CleanableFilePayload implements CleanablePayload, Serializable {
 
     private static final long serialVersionUID = -4565379464661253740L;
     
     private final String fileName;
-    private transient FileGenerationManager generationManager;
+    private final FileGenerationManager generationManager;
     private final MIMEType mimeType;
-    //TODO: is this a good idea? Should the generationManager be serializable instead?
-    private final int generations;
-    private final int generationSize;
-    private final File baseDirectory;
 
     public CleanableFilePayload(FileGenerationManager generationManager, InputStream stream, MIMEType mimeType) throws IOException {
         Validate.notNull(generationManager, "You may not add a null generation manager");
@@ -54,9 +54,6 @@ public class CleanableFilePayload implements CleanablePayload, Serializable {
         this.mimeType = mimeType;
         fileName = UUID.randomUUID().toString();
         this.generationManager = generationManager;
-        generationSize = generationManager.getGenerationSize();
-        generations = generationManager.getNumberOfGenerations();
-        baseDirectory = generationManager.getBaseDirectory();
         File file = getFile();
         FileOutputStream outputStream = FileUtils.openOutputStream(file);
         try {
@@ -66,7 +63,9 @@ public class CleanableFilePayload implements CleanablePayload, Serializable {
             IOUtils.closeQuietly(outputStream);
             IOUtils.closeQuietly(stream);
         }
-        //TODO: Should we do something if the file's length() is 0 ? Throw Exception? ignore it? delete it?
+        if (file.length() == 0) {
+            file.delete();
+        }
     }
 
     private File getFile() {
@@ -108,11 +107,5 @@ public class CleanableFilePayload implements CleanablePayload, Serializable {
 
     private boolean isAvailable(File file) {
         return file.exists() && file.canRead() && file.canWrite();
-    }
-
-    //serialization stuff.
-    private Object readResolve() throws ObjectStreamException {
-        generationManager = new FileGenerationManager(baseDirectory, generations, generationSize);
-        return this;
     }
 }

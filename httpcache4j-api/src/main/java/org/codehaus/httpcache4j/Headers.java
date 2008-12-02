@@ -23,7 +23,7 @@ import java.util.*;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public final class Headers implements Serializable, Iterable<Map.Entry<String, List<Header>>> {
-    public static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
+    private static final long serialVersionUID = -7175564984758939316L;
     private Map<String, List<Header>> headers = new HashMap<String, List<Header>>();
 
     public Headers() {
