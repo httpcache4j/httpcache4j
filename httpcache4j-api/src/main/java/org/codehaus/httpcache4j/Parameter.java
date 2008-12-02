@@ -29,6 +29,7 @@ import java.io.Serializable;
 public class Parameter implements Serializable {
     protected String name;
     protected String value;
+    private static final long serialVersionUID = 8126643664459915558L;
 
     public Parameter(String name, String value) {
         Validate.notEmpty(name, "You may not have an empty parameter name");

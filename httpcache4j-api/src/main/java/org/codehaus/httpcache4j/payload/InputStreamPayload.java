@@ -23,6 +23,12 @@ import org.apache.commons.lang.Validate;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Represents a payload that is backed by a one-shot inputstream.
+ * The stream may be an arbitrary stream type. If you start
+ * reading from the stream, the available flag will be set to false, and the
+ * next invocation of  
+ */
 public class InputStreamPayload implements Payload {
     private final InputStream stream;
     private MIMEType mimeType;

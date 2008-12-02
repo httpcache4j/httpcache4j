@@ -25,6 +25,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
+/**
+ * Payload that accepts a file with mimetype.
+ * This can be used by the {@link org.codehaus.httpcache4j.HTTPRequest request}
+ */
 public class FilePayload implements Payload {
     protected File file;
     private MIMEType mimeType;

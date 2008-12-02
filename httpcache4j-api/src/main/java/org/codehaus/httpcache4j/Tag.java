@@ -16,8 +16,6 @@
 
 package org.codehaus.httpcache4j;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Validation tag equivalent to the HTTP entity tag. "A strong entity tag may be
@@ -34,9 +32,10 @@ import java.util.logging.Logger;
  *      Entity Tag Cache Validators</a>
  */
 public final class Tag extends Metadata {
+    private static final long serialVersionUID = 673213161743597801L;
+
     /** Tag matching any other tag, used in call's condition data. */
     public static final Tag ALL = Tag.parse("*");
-
     /** The tag weakness. */
     private boolean weak;
 

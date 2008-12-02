@@ -31,11 +31,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-class FileGenerationManager {
+class FileGenerationManager implements Serializable{
+    private static final long serialVersionUID = -1558644426181861334L;
+    
     private final File baseDirectory;
-    private int generationSize;
-    private int numberOfGenerations;
-    private FileFilter generationFilter;
+    private final int generationSize;
+    private final int numberOfGenerations;
+    private final FileFilter generationFilter;
 
     public FileGenerationManager(final File baseDirectory, final int numberOfGenerations) {
         this(baseDirectory, numberOfGenerations, 100);
@@ -52,14 +54,6 @@ class FileGenerationManager {
         this.numberOfGenerations = numberOfGenerations;
         generationFilter = new AndFileFilter(DirectoryFileFilter.DIRECTORY, new RegexFileFilter("[0-9]*"));
         getGenerations();
-    }
-
-    int getGenerationSize() {
-        return generationSize;
-    }
-
-    int getNumberOfGenerations() {
-        return numberOfGenerations;
     }
 
     /**
@@ -100,16 +94,12 @@ class FileGenerationManager {
         }
     }
 
-    public File getBaseDirectory() {
-        return baseDirectory;
-    }
-
     /**
      * Returns the most recent created generation
      *
      * @return the generation with the highest sequence number
      */
-    public Generation getCurrentGeneration() {
+    Generation getCurrentGeneration() {
         return getGenerations().get(0);
     }
 
@@ -125,7 +115,6 @@ class FileGenerationManager {
                         return target;
                     }
                 }
-                //TODO: what happens if the candidate does not exist?
             }
         }
         return target;

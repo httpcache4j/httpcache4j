@@ -18,9 +18,12 @@ package org.codehaus.httpcache4j.payload;
 
 import org.codehaus.httpcache4j.MIMEType;
 
-import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Represents a HTTP payload. may be either a {@link org.codehaus.httpcache4j.HTTPRequest request} payload
+ * or a {@link org.codehaus.httpcache4j.HTTPResponse response} payload.
+ */
 public interface Payload {
 
     /**
