@@ -18,7 +18,11 @@ package org.codehaus.httpcache4j;
 
 import java.io.Serializable;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/**
+ * A generic metadata class that contains a name and (optional) description.
+ *
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ */
 public class Metadata implements Serializable {
     private final String name;
     private String description;

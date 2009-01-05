@@ -29,8 +29,12 @@ import java.util.Set;
 import java.util.HashSet;
 import java.io.Serializable;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
-public class MemoryCacheStorage implements CacheStorage, Serializable {
+/**
+ * In Memory implementation of a cache storage.
+ *
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ */
+public class MemoryCacheStorage implements CacheStorage {
 
     protected Map<URI, CacheValue> cache;
 

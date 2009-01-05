@@ -26,7 +26,13 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 import java.util.*;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/**
+ * Represents a HTTP response delivered by the cache.
+ * Constructions of this should not be done by clients, they should
+ * rely on that the cache does its job.
+ *
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ */
 public final class HTTPResponse implements Serializable {
     private static final long serialVersionUID = -7448511905298678448L;
     
@@ -48,7 +54,7 @@ public final class HTTPResponse implements Serializable {
             ETag = Tag.parse(headers.getFirstHeader(ETAG).getValue());
         }
         if (headers.hasHeader(LAST_MODIFIED)) {
-            lastModified = HTTPUtils.fromHttpDate(headers.getFirstHeader(LAST_MODIFIED));
+            lastModified = HeaderUtils.fromHttpDate(headers.getFirstHeader(LAST_MODIFIED));
         }
         if (headers.hasHeader(ALLOW)) {
             String value = headers.getFirstHeader(ALLOW).getValue();

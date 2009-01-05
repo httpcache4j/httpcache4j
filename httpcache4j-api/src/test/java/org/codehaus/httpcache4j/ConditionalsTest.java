@@ -119,7 +119,7 @@ public class ConditionalsTest {
         DateTime dateTime = new DateTime();
         conditionals.setIfModifiedSince(dateTime);
         assertEquals(dateTime, conditionals.getModifiedSince());
-        Header header = HTTPUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, dateTime);
+        Header header = HeaderUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, dateTime);
         assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_MODIFIED_SINCE));
     }
 
@@ -128,7 +128,7 @@ public class ConditionalsTest {
         DateTime dateTime = new DateTime();
         conditionals.setIfUnModifiedSince(dateTime);
         assertEquals(dateTime, conditionals.getUnModifiedSince());
-        Header header = HTTPUtils.toHttpDate(HeaderConstants.IF_UNMODIFIED_SINCE, dateTime);
+        Header header = HeaderUtils.toHttpDate(HeaderConstants.IF_UNMODIFIED_SINCE, dateTime);
         assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_UNMODIFIED_SINCE));
     }
 

@@ -25,6 +25,10 @@ import java.io.File;
  * <a href="mailto:trygvis@inamo.no">Trygve Laugst&oslash;l</a>
  * <a href="mailto:michal@codehaus.org">Michal Maczka</a>
  *
+ * This utility class makes us able to create temporary directories.
+ * This should only be used by Test cases.
+ * It is placed in main so we don't have to depend on the test sources.
+ * 
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
 public class TestUtil {

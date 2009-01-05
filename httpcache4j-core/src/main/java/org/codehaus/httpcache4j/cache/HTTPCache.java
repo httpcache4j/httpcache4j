@@ -219,7 +219,7 @@ public class HTTPCache {
             return false;
         }
         Headers headers = response.getHeaders();
-        return HTTPUtils.hasCacheableHeaders(headers);
+        return HeaderUtils.hasCacheableHeaders(headers);
 
     }
 

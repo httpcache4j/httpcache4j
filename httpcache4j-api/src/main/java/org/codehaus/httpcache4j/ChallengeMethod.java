@@ -17,6 +17,8 @@
 package org.codehaus.httpcache4j;
 
 /**
+ * An enum describing the different challenge types that the cache supports. 
+ *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @author last modified by $Author: $
  * @version $Id: $

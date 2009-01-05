@@ -21,6 +21,8 @@ import java.io.File;
 import java.util.Arrays;
 
 /**
+ * A file-filter that deletes the files as it traverses the directories.
+ *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @author last modified by $Author: $
  * @version $Id: $
@@ -34,10 +36,7 @@ public class DeletingFileFilter implements FileFilter {
             File[] files = pathname.listFiles(this); // Optimization: No need to create new filter, as there's no state
             if (files == null || files.length == 0) {
                 return !pathname.delete();
-            }
-            else {
-                System.err.println("Unable to delete these files: " + Arrays.toString(files));
-            }
+            }            
         }
         return true;
     }
