@@ -23,6 +23,7 @@ public interface HeaderConstants {
     String ALLOW = "Allow";
     String CACHE_CONTROL = "Cache-Control";
     String CONTENT_TYPE = "Content-Type";
+    String DATE = "Date";
     String ETAG = "ETag";
     String EXPIRES = "Expires";
     String IF_NON_MATCH = "If-None-Match";

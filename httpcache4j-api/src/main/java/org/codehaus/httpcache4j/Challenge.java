@@ -17,6 +17,8 @@
 package org.codehaus.httpcache4j;
 
 /**
+ * Represents a Username and password challenge.
+ *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @author last modified by $Author: $
  * @version $Id: $

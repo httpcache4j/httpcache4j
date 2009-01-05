@@ -21,12 +21,12 @@ import org.apache.commons.lang.Validate;
 import java.util.*;
 
 public class Header extends Parameter {
+    private static final long serialVersionUID = 3652406179988246038L;
     private Map<String, String> directives = new HashMap<String, String>();
 
     public Header(String name, String value) {
         super(name, value);
-        Validate.notEmpty(name);
-        Validate.notEmpty(value);
+        Validate.notEmpty(value, "The value of a Header may not be empty");
         parseDirectives(value);
     }
 

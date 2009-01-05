@@ -18,7 +18,7 @@ package org.codehaus.httpcache4j.preference;
 
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.HeaderConstants;
-import org.codehaus.httpcache4j.HTTPUtils;
+import org.codehaus.httpcache4j.HeaderUtils;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -61,6 +61,6 @@ public class LocalePreferenceTest {
             preferences.add(new LocalePreference(locale));
         }
         Header expected = new Header(HeaderConstants.ACCEPT_LANGUAGE, Locale.US.getLanguage() + ", " + Locale.GERMAN);
-        Assert.assertEquals(expected, HTTPUtils.toHeader(HeaderConstants.ACCEPT_LANGUAGE, preferences));
+        Assert.assertEquals(expected, HeaderUtils.toHeader(HeaderConstants.ACCEPT_LANGUAGE, preferences));
     }
 }

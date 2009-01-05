@@ -21,7 +21,11 @@ import org.apache.commons.lang.Validate;
 import java.io.Serializable;
 import java.util.*;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/**
+ * A collection of headers.
+ *
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ */
 public final class Headers implements Serializable, Iterable<Map.Entry<String, List<Header>>> {
     private static final long serialVersionUID = -7175564984758939316L;
     private Map<String, List<Header>> headers = new HashMap<String, List<Header>>();

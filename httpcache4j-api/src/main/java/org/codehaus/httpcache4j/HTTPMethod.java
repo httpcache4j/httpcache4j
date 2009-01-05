@@ -16,7 +16,12 @@
 
 package org.codehaus.httpcache4j;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/**
+ * An enum that defines the different HTTP methods.
+ *
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ *
+ */
 public enum HTTPMethod {
     GET,
     PUT,

@@ -18,7 +18,7 @@ package org.codehaus.httpcache4j.preference;
 
 import org.apache.commons.lang.Validate;
 
-import org.codehaus.httpcache4j.HTTPUtils;
+import org.codehaus.httpcache4j.HeaderUtils;
 import org.codehaus.httpcache4j.Header;
 
 import java.util.Arrays;
@@ -62,7 +62,7 @@ public abstract class Preference<T> {
     }
 
     protected Header toHeader() {
-        return HTTPUtils.toHeader(getHeaderName(), Arrays.asList(this));
+        return HeaderUtils.toHeader(getHeaderName(), Arrays.asList(this));
     }
 
     @Override

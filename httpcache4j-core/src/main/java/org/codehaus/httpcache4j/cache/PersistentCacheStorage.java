@@ -17,7 +17,6 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.HTTPRequest;
-import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.payload.Payload;
 
 import org.apache.commons.lang.Validate;
@@ -37,13 +36,18 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
-public class PersistentCacheStorage implements CacheStorage, Serializable {
+/**
+ * Persistent version of the in memory cache. This stores a serialized version of the
+ * hashmap on every save. The cache is then restored on startup.
+ *  
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ */
+public class PersistentCacheStorage implements CacheStorage,Serializable {
 
     protected Map<URI, CacheValue> cache;
     private final File serializationFile;
     private final int capacity;
-    private static final long serialVersionUID = 9034997800345196393L;
+    private static final long serialVersionUID = -5754292582576416056L;
 
     public PersistentCacheStorage(File serializationFileDirectory) {
         this(1000, serializationFileDirectory, "persistent.ser");
@@ -59,11 +63,11 @@ public class PersistentCacheStorage implements CacheStorage, Serializable {
         if (!serializationFileDirectory.exists()) {
             serializationFileDirectory.mkdirs();
         }
-        /*Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
                 saveCacheToDisk();
             }
-        }));*/
+        }));
     }
 
     public synchronized void put(URI requestURI, Vary vary, CacheItem cacheItem) {

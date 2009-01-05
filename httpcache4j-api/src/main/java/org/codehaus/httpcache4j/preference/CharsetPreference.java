@@ -18,7 +18,12 @@ package org.codehaus.httpcache4j.preference;
 
 import org.codehaus.httpcache4j.HeaderConstants;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/**
+ * Represents a Charset preference.
+ * This sets the Accept-Charset header.
+ *
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ */
 public class CharsetPreference extends Preference<String> {
     public CharsetPreference(String preference) {
         super(preference);

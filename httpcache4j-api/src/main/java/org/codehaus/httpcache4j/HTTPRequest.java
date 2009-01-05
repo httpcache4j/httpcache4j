@@ -26,7 +26,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/**
+ * Represents a HTTP request. You can use this in a couple of ways: <br/>
+ * either manipulating the headers directly, or by using the convenience objects.
+ * If you manipulate the headers, and use the convenience objects afterwards, the
+ * headers produced by the convenience objects takes precedence.
+ *
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ */
 public class HTTPRequest {
     private final URI requestURI;
     private final List<Parameter> parameters;

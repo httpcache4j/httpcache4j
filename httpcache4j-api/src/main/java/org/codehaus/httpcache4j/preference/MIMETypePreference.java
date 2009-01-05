@@ -19,7 +19,11 @@ package org.codehaus.httpcache4j.preference;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.HeaderConstants;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/**
+ * Sets the mime types that this client expects for this response.
+ *
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ */
 public class MIMETypePreference extends Preference<MIMEType> {
     public MIMETypePreference(MIMEType preference) {
         super(preference);

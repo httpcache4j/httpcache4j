@@ -23,7 +23,40 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/**
+ * Represents the different conditional types that an HTTP request may have.
+ * This are basically 4 things:
+ * <ul>
+ *   <li>If-Match</li>
+ *   <li>If-None-Match</li>
+ *   <li>If-Unmodified-Since</li>
+ *   <li>If-Modified-Since</li>
+ * </ul>
+ *
+ * Combinations of these conditionals are possible with the following exceptions<br/>
+ * 
+ * <table>
+ *   <thead>
+ *    <th>Conditional</th><th>Can be combined with</th><th>Unspecified</th>
+ *   </thead>
+ *   <tbody>
+ *   <tr>
+ *     <th>If-Match</th><td>If-Unmodified-Since</td><td>If-None-Match, If-Modified-Since</td>
+ *   </tr>
+ *   <tr>
+ *     <th>If-None-Match</th><td>If-Modified-Since</td><td>If-Match, If-Unmodified-Since</td>
+ *   </tr>
+ *   <tr>
+ *     <th>If-Unmodified-Since</th><td>If-Match</td><td>If-None-Match, If-Modified-Since</td>
+ *   </tr>
+ *   <tr>
+ *     <th>If-Modified-Since</th><td>If-None-Match</td><td>If-Match, If-Unmodified-Since</td>
+ *   </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ */
 public final class Conditionals {
     private final List<Tag> match = new ArrayList<Tag>();
     private final List<Tag> nonMatch = new ArrayList<Tag>();
@@ -60,7 +93,7 @@ public final class Conditionals {
      * The meaning of "If-None-Match: *" is that the method MUST NOT be performed if the representation selected by
      * the origin server (or by a cache, possibly using the Vary mechanism, see section 14.44) exists,
      * and SHOULD be performed if the representation does not exist.
-     * FThis feature is intended to be useful in preventing races between PUT operations. 
+     * This feature is intended to be useful in preventing races between PUT operations. 
      *
      * @param tag the tag to add, may be null. This means the same as adding {@link Tag#ALL}
      * @throws IllegalArgumentException if ALL is supplied more than once, or you add a null tag more than once.
@@ -129,10 +162,10 @@ public final class Conditionals {
             headers.add(new Header(HeaderConstants.IF_NON_MATCH, buildTagHeaderValue(getNonMatch())));
         }
         if (modifiedSince != null) {
-            headers.add(HTTPUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, modifiedSince));
+            headers.add(HeaderUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, modifiedSince));
         }
         if (unModifiedSince != null) {
-            headers.add(HTTPUtils.toHttpDate(HeaderConstants.IF_UNMODIFIED_SINCE, unModifiedSince));
+            headers.add(HeaderUtils.toHttpDate(HeaderConstants.IF_UNMODIFIED_SINCE, unModifiedSince));
         }
 
         return headers;

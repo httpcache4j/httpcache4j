@@ -16,7 +16,7 @@
 
 package org.codehaus.httpcache4j;
 
-/** Status to return after handling a call. */
+/** HTTP Status to return after handling a call. */
 public final class Status extends Metadata {
 
     public static final Status CONTINUE = new Status(100, "Continue");

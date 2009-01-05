@@ -42,11 +42,11 @@ public class HeadersTest {
     @Test
     public void testDateHeader() {
         DateTime now = new DateTime(2008, 10, 12, 15, 0, 0, 0);
-        Header header = HTTPUtils.toHttpDate(HeaderConstants.EXPIRES, now);
+        Header header = HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, now);
         assertNotNull("Header was null", header);
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(HTTPUtils.PATTERN_RFC1123);
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(HeaderUtils.PATTERN_RFC1123);
         assertEquals(formatter.print(now), header.getValue());
-        assertEquals(now.getMillis(), HTTPUtils.getHeaderAsDate(header));
+        assertEquals(now.getMillis(), HeaderUtils.getHeaderAsDate(header));
     }
 
     @Test
@@ -60,18 +60,18 @@ public class HeadersTest {
     @Test
     public void testHasCacheHeaders() {
         headers = new Headers();
-        assertFalse("There was cacheable headers in an empty header map",HTTPUtils.hasCacheableHeaders(headers));
+        assertFalse("There was cacheable headers in an empty header map", HeaderUtils.hasCacheableHeaders(headers));
         headers.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
-        assertTrue("There was no cacheable headers", HTTPUtils.hasCacheableHeaders(headers));
+        assertTrue("There was no cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
         headers = new Headers();
-        headers.add(HTTPUtils.toHttpDate(HeaderConstants.EXPIRES, new DateTime()));
-        assertTrue("There was no cacheable headers", HTTPUtils.hasCacheableHeaders(headers));
+        headers.add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, new DateTime()));
+        assertTrue("There was no cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
         headers = new Headers();
         headers.add(new Header(HeaderConstants.PRAGMA, "private"));
-        assertFalse("There was cacheable headers", HTTPUtils.hasCacheableHeaders(headers));
+        assertFalse("There was cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
         headers = new Headers();
         headers.add(new Header(HeaderConstants.PRAGMA, "private"));
         headers.add(new Header(HeaderConstants.ETAG, "\"foo\""));
-        assertTrue("There was no cacheable headers", HTTPUtils.hasCacheableHeaders(headers));
+        assertTrue("There was no cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
     }
 }

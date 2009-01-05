@@ -19,15 +19,18 @@ package org.codehaus.httpcache4j.preference;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.HeaderConstants;
-import org.codehaus.httpcache4j.HTTPUtils;
+import org.codehaus.httpcache4j.HeaderUtils;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Collections;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
-//TODO: add encoding preference.
+/**
+ * Collections for preferences.
+ * 
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ */
+//TODO: add encoding preference. (handle decoding in client).
 public final class Preferences {
     private List<Preference<Locale>> acceptLocales = new ArrayList<Preference<Locale>>();
     private List<Preference<MIMEType>> acceptMIMETypes = new ArrayList<Preference<MIMEType>>();
@@ -69,15 +72,13 @@ public final class Preferences {
     public Headers toHeaders() {
         Headers headers = new Headers();
         if (!getAcceptMIMETypes().isEmpty()) {
-            headers.add(HTTPUtils.toHeader(HeaderConstants.ACCEPT, getAcceptMIMETypes()));
-
+            headers.add(HeaderUtils.toHeader(HeaderConstants.ACCEPT, getAcceptMIMETypes()));
         }
-        else if (!getAcceptLocales().isEmpty()) {
-            headers.add(HTTPUtils.toHeader(HeaderConstants.ACCEPT_LANGUAGE, getAcceptLocales()));
-
+        if (!getAcceptLocales().isEmpty()) {
+            headers.add(HeaderUtils.toHeader(HeaderConstants.ACCEPT_LANGUAGE, getAcceptLocales()));
         }
-        else if (!getAcceptCharset().isEmpty()) {
-            headers.add(HTTPUtils.toHeader(HeaderConstants.ACCEPT_CHARSET, getAcceptCharset()));
+        if (!getAcceptCharset().isEmpty()) {
+            headers.add(HeaderUtils.toHeader(HeaderConstants.ACCEPT_CHARSET, getAcceptCharset()));
         }
         return headers;
     }

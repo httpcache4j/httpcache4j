@@ -38,7 +38,7 @@ public class DefaultPayloadCreator implements PayloadCreator {
     }
 
     public Payload createPayload(final Headers headers, final InputStream stream) {
-        boolean cacheable = HTTPUtils.hasCacheableHeaders(headers);
+        boolean cacheable = HeaderUtils.hasCacheableHeaders(headers);
         Header contentTypeHeader = headers.getFirstHeader(HeaderConstants.CONTENT_TYPE);
         MIMEType type = contentTypeHeader != null ? MIMEType.valueOf(contentTypeHeader.getValue()) : MIMEType.APPLICATION_OCTET_STREAM;
         if (cacheable) {
