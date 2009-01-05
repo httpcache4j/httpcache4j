@@ -19,10 +19,9 @@ package org.codehaus.httpcache4j.cache;
 import org.apache.commons.lang.math.NumberUtils;
 
 import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.HTTPUtils;
+import org.codehaus.httpcache4j.HeaderUtils;
 import org.codehaus.httpcache4j.Header;
-import static org.codehaus.httpcache4j.HeaderConstants.CACHE_CONTROL;
-import static org.codehaus.httpcache4j.HeaderConstants.EXPIRES;
+import static org.codehaus.httpcache4j.HeaderConstants.*;
 import org.codehaus.httpcache4j.Headers;
 
 import org.joda.time.DateTime;
@@ -31,12 +30,11 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * This is an interal class, and should not be subclassed or used by clients.
- * It is not final because of test cases.
+ * This is an internal class, and should not be used by clients.
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public class CacheItem implements Serializable {
+public final class CacheItem implements Serializable {
     private static final long serialVersionUID = 5891522215450656044L;
     
     private final DateTime cachedTime;
@@ -55,6 +53,9 @@ public class CacheItem implements Serializable {
         long now = new DateTime().getMillis();
         if (headers.hasHeader(CACHE_CONTROL)) {
             Header ccHeader = headers.getFirstHeader(CACHE_CONTROL);
+            if (ccHeader.getValue().toLowerCase().contains("must-revalidate")) {
+                return true;
+            }
             Map<String, String> directives = ccHeader.getDirectives();
             String maxAgeDirective = directives.get("max-age");
             if (maxAgeDirective != null) {
@@ -67,15 +68,16 @@ public class CacheItem implements Serializable {
             }
         }
         /**
-         *  HTTP/1.1 clients and caches MUST treat other invalid date formats, especially including the value "0", as in the past (i.e., "already expired").
+         * HTTP/1.1 clients and caches MUST treat other invalid date formats, especially including the value "0", as in the past (i.e., "already expired").
          * To mark a response as "already expired," an origin server sends an Expires date that is equal to the Date header value.
          * (See the rules for expiration calculations in section 13.2.4.)
          * To mark a response as "never expires," an origin server sends an Expires date approximately one year from the time the response is sent.
          * HTTP/1.1 servers SHOULD NOT send Expires dates more than one year in the future.
          */
         if (headers.hasHeader(EXPIRES)) {
-            long expiryDate = HTTPUtils.getHeaderAsDate(headers.getFirstHeader(EXPIRES));
-            if (expiryDate == -1 || now >= expiryDate) {
+            long expiryDate = HeaderUtils.getHeaderAsDate(headers.getFirstHeader(EXPIRES));
+            long date = HeaderUtils.getHeaderAsDate(headers.getFirstHeader(DATE));
+            if (expiryDate == -1 || now >= expiryDate || date == expiryDate) {
                 return true;
             }
         }

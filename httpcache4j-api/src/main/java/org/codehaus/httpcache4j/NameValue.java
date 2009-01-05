@@ -10,7 +10,7 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public class NameValue implements Serializable {
+public abstract class NameValue implements Serializable {
     protected String name;
     protected String value;
     private static final long serialVersionUID = 8126643664459915558L;
