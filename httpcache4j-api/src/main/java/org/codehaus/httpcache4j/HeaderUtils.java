@@ -20,47 +20,31 @@ import static org.codehaus.httpcache4j.HeaderConstants.*;
 import org.codehaus.httpcache4j.preference.Preference;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.apache.commons.lang.builder.ToStringBuilder;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 public final class HeaderUtils {
-    public static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
+    public static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss 'GMT'";
     private static final String NO_STORE_HEADER_VALUE = "no-store";
     private static final String NO_CACHE_HEADER_VALUE = "no-cache";
 
     private HeaderUtils() {
     }
 
-    //TODO: replace with JodaTime DateTimeFormatter... Something weird is going on here
     public static DateTime fromHttpDate(Header header) {
         if (header == null) {
             return null;
         }
-        SimpleDateFormat format = new SimpleDateFormat(PATTERN_RFC1123);
-        Date date = null;
-        try {
-            date = format.parse(header.getValue());
-        }
-        catch (ParseException e) {
-            //TODO: decide what to do here....
-        }
-        if (date != null) {
-            return new DateTime(date.getTime());
-        }
-        return null;
-
-        //DateTimeFormatter formatter = DateTimeFormat.forPattern(PATTERN_RFC1123).withZone(DateTimeZone.forID("UTC"));
-        //return formatter.parseDateTime(header.getValue());
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(PATTERN_RFC1123).withZone(DateTimeZone.forID("UTC"));
+        return formatter.parseDateTime(header.getValue());
     }
 
+
     public static Header toHttpDate(String headerName, DateTime time) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(PATTERN_RFC1123);
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(PATTERN_RFC1123).withZone(DateTimeZone.forID("UTC"));
         return new Header(headerName, formatter.print(time));
     }
 

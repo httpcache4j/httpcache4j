@@ -17,6 +17,7 @@
 package org.codehaus.httpcache4j;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import static org.junit.Assert.*;
@@ -41,11 +42,10 @@ public class HeadersTest {
 
     @Test
     public void testDateHeader() {
-        DateTime now = new DateTime(2008, 10, 12, 15, 0, 0, 0);
+        DateTime now = new DateTime(2008, 10, 12, 15, 0, 0, 0, DateTimeZone.forID("UTC"));
         Header header = HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, now);
         assertNotNull("Header was null", header);
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(HeaderUtils.PATTERN_RFC1123);
-        assertEquals(formatter.print(now), header.getValue());
+        assertEquals("Sun, 12 Oct 2008 15:00:00 GMT", header.getValue());
         assertEquals(now.getMillis(), HeaderUtils.getHeaderAsDate(header));
     }
 
