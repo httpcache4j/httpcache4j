@@ -125,7 +125,7 @@ public class HTTPCache {
             if (item != null && item.isStale()) {
                 //If the cached value is stale, execute the request and try to cache it.
                 HTTPResponse staleResponse = item.getResponse();
-                if (request.getConditionals().getNonMatch().isEmpty() && staleResponse.getHeaders().hasHeader(ETAG)) {
+                if (request.getMethod() == HTTPMethod.GET && request.getConditionals().getNonMatch().isEmpty() && staleResponse.getHeaders().hasHeader(ETAG)) {
                     addIfNoneMatchHeader(staleResponse.getHeaders().getFirstHeader(ETAG), request);
                 }
 
