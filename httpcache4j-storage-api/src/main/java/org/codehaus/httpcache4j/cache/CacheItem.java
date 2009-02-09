@@ -82,7 +82,7 @@ public final class CacheItem implements Serializable {
             }
         }
 
-        return !headers.hasHeader(CACHE_CONTROL) || !headers.hasHeader(EXPIRES);
+        return !headers.hasHeader(CACHE_CONTROL) && !headers.hasHeader(EXPIRES);
     }
 
     public DateTime getCachedTime() {
