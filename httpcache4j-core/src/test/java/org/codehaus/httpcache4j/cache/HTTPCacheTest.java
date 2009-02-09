@@ -94,6 +94,36 @@ public class HTTPCacheTest {
         assertEquals(1, cacheStorage.size());
     }
 
+    @Test
+    public void testHEADAndGET() {
+        HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.HEAD);
+        stub(responseResolver.resolve(request)).toReturn(new HTTPResponse(null, Status.OK, new Headers()));
+        HTTPResponse response = cache.doCachedRequest(request);
+        assertFalse(response.hasPayload());
+        assertEquals(0, request.getConditionals().toHeaders().size());
+        response = doGet(new Headers(), Status.OK, 1);
+        assertTrue("No payload on get", response.hasPayload());
+        stub(cacheStorage.size()).toReturn(1);
+        assertEquals(1, cacheStorage.size());
+    }
+
+    @Test
+    public void testHEADWithETagAndGET() {
+        HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.HEAD);
+        Headers headers = new Headers();
+        headers.add(new Header("ETag", "\"foo\""));
+        HTTPResponse cachedResponse = new HTTPResponse(null, Status.OK, headers);
+        stub(responseResolver.resolve(request)).toReturn(cachedResponse);
+        stub(cacheStorage.get(request)).toReturn(new CacheItem(cachedResponse));
+        HTTPResponse response = cache.doCachedRequest(request);
+        assertEquals("Conditionals was set, incorrect", 0, request.getConditionals().toHeaders().size());        
+        assertFalse(response.hasPayload());
+        response = doGet(new Headers(), Status.OK, 1);
+        assertTrue("No payload on get", response.hasPayload());
+        stub(cacheStorage.size()).toReturn(1);
+        assertEquals(1, cacheStorage.size());
+    }
+
     private HTTPResponse doGet(Headers responseHeaders, Status status, int numberItemsInCache) {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.GET);
         stub(responseResolver.resolve(request)).toReturn(new HTTPResponse(mock(Payload.class), status, responseHeaders));
