@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2008, The Codehaus. All Rights Reserved.
+  ~
+  ~   Licensed under the Apache License, Version 2.0 (the "License");
+  ~   you may not use this file except in compliance with the License.
+  ~   You may obtain a copy of the License at
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~   Unless required by applicable law or agreed to in writing, software
+  ~   distributed under the License is distributed on an "AS IS" BASIS,
+  ~   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~   See the License for the specific language governing permissions and
+  ~   limitations under the License.
+  ~
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.codehaus.httpcache4j</groupId>
+        <artifactId>httpcache4j-parent</artifactId>
+        <version>1</version>
+    </parent>
+    <groupId>org.codehaus.httpcache4j</groupId>
+    <artifactId>httpcache4j</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-RC4</version>
+    <name>Java HTTP cache</name>
+    <url>http://httpcache4j.codehaus.org</url>
+
+    <developers>
+        <developer>
+            <id>erlend.hamnaberg</id>
+            <name>Erlend Hamnaberg</name>
+            <email>hamnis@codehaus.org</email>
+        </developer>
+    </developers>
+
+    <repositories>
+        <repository>
+            <id>codehaus</id>
+            <url>http://repository.codehaus.org</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>codehaus - snapshots</id>
+            <url>http://snapshots.repository.codehaus.org</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>codehaus</id>
+            <url>http://repository.codehaus.org</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </pluginRepository>
+        <pluginRepository>
+            <id>codehaus - snapshots</id>
+            <url>http://snapshots.repository.codehaus.org</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-webdav</artifactId>
+                <version>1.0-beta-2</version>
+            </extension>
+        </extensions>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-idea-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <downloadSources>true</downloadSources>
+                    <downloadJavadocs>true</downloadJavadocs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.codehaus.httpcache4j</groupId>
+                <artifactId>httpcache4j-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.httpcache4j</groupId>
+                <artifactId>httpcache4j-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.httpcache4j</groupId>
+                <artifactId>httpcache4j-storage-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>1.4</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>1.1</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.5</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>1.5.2</version>
+        </dependency>
+    </dependencies>
+
+    <modules>
+        <module>httpcache4j-core</module>
+        <module>httpcache4j-api</module>
+        <module>httpcache4j-storage-api</module>
+    </modules>
+
+
+    <scm>
+        <connection>scm:svn:http://svn.codehaus.org/httpcache4j/tags/httpcache4j-1.0-RC4</connection>
+        <developerConnection>scm:svn:https://svn.codehaus.org/httpcache4j/tags/httpcache4j-1.0-RC4</developerConnection>
+        <url>http://fisheye.codehaus.org/browse/httpcache4j/tags/httpcache4j-1.0-RC4</url>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>httpcache4j</id>
+            <name>Codehaus maven repo</name>
+            <url>dav:https://dav.codehaus.org/repository/httpcache4j</url>
+        </repository>
+        <snapshotRepository>
+            <id>httpcache4j-snapshot</id>
+            <name>Codehaus maven repo</name>
+            <url>dav:https://dav.codehaus.org/snapshots.repository/httpcache4j</url>
+        </snapshotRepository>
+        <site>
+            <id>httpcache4j-site</id>
+            <url>dav:https://dav.codehaus.org/httpcache4j</url>
+        </site>
+    </distributionManagement>
+
+    <profiles>
+        <profile>
+            <id>codehaus-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <version>2.0-beta-7</version>
+                        <configuration>
+                            <preparationGoals>clean install</preparationGoals>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <!--<appendAssemblyId>false</appendAssemblyId>-->
+                            <descriptors>
+                                <descriptor>src/assembly/dist.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </plugin>                    
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
