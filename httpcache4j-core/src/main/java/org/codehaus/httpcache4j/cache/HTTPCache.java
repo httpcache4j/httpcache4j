@@ -150,24 +150,22 @@ public class HTTPCache {
         HTTPResponse resolvedResponse = resolver.resolve(request);
         if (resolvedResponse != null) {
             try {
-                if (isCacheableResponse(resolvedResponse)) {
+                if (request.getMethod() == HTTPMethod.HEAD) {
+                    if (item != null) {
+                        response = updateResponse(request, item, resolvedResponse);
+                    }
+                    else {
+                        response = resolvedResponse;
+                    }
+                }
+                else if (isCacheableResponse(resolvedResponse)) {
                     Vary vary = determineVariation(resolvedResponse, request);
 
                     storage.put(request.getRequestURI(), vary, new CacheItem(resolvedResponse));
                     response = resolvedResponse;
                 }
                 else if (item != null && resolvedResponse.getStatus().getCode() == Status.NOT_MODIFIED.getCode()) {
-                    //replace the cached entry as the entry was not modified
-                    HTTPResponse cachedResponse = item.getResponse();
-                    HTTPResponse updatedResponse;
-                    LinkedHashMap<String, List<Header>> headers = new LinkedHashMap<String, List<Header>>(cachedResponse.getHeaders().getHeadersAsMap());
-
-                    headers.putAll(removeUnmodifiableHeaders(resolvedResponse.getHeaders()).getHeadersAsMap());
-                    Headers realHeaders = new Headers(headers);
-                    updatedResponse = new HTTPResponse(cachedResponse.getPayload(), resolvedResponse.getStatus(), realHeaders);
-                    Vary vary = determineVariation(updatedResponse, request);
-                    storage.put(request.getRequestURI(), vary, new CacheItem(updatedResponse));
-                    response = updatedResponse;
+                    response = updateResponse(request, item, resolvedResponse);
                 }
                 else {
                     //Response was not cacheable
@@ -187,6 +185,18 @@ public class HTTPCache {
             }
         }
         return response;
+    }
+
+    private HTTPResponse updateResponse(HTTPRequest request, CacheItem item, HTTPResponse resolvedResponse) {
+        HTTPResponse cachedResponse = item.getResponse();
+        Map<String, List<Header>> headers = new LinkedHashMap<String, List<Header>>(cachedResponse.getHeaders().getHeadersAsMap());
+
+        headers.putAll(removeUnmodifiableHeaders(resolvedResponse.getHeaders()).getHeadersAsMap());
+        Headers realHeaders = new Headers(headers);
+        HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), resolvedResponse.getStatus(), realHeaders);
+        Vary vary = determineVariation(updatedResponse, request);
+        storage.put(request.getRequestURI(), vary, new CacheItem(updatedResponse));
+        return updatedResponse;
     }
 
     private Headers removeUnmodifiableHeaders(Headers headers) {
