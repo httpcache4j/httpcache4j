@@ -15,7 +15,7 @@ public abstract class NameValue implements Serializable {
     protected String value;
     private static final long serialVersionUID = 8126643664459915558L;
 
-    public NameValue(String value, String name) {
+    public NameValue(String name, String value) {
         Validate.notEmpty(name, "You may not have an empty name in a name value combination");
         if (StringUtils.isBlank(value)) {
             value = "";
@@ -41,7 +41,7 @@ public abstract class NameValue implements Serializable {
             return false;
         }
 
-        Parameter header = (Parameter) o;
+        NameValue header = (NameValue) o;
 
         if (name != null ? !name.equals(header.name) : header.name != null) {
             return false;

@@ -20,7 +20,10 @@ import org.apache.commons.lang.Validate;
 
 import java.util.*;
 
-public class Header extends Parameter {
+/**
+ * Represents a HTTP Header.
+ */
+public class Header extends NameValue {
     private static final long serialVersionUID = 3652406179988246038L;
     private Map<String, String> directives = new HashMap<String, String>();
 

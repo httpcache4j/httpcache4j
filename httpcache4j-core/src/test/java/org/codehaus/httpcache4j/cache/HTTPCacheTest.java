@@ -48,6 +48,24 @@ public class HTTPCacheTest {
     }
 
     @Test
+    public void testCreate() {
+        HTTPCache cache = new HTTPCache(cacheStorage);
+        cache.setResolver(responseResolver);
+        this.cache = cache;
+        testCacheResponse();
+    }
+
+    @Test
+    public void testRequestWithInvalidConfiguredCache() {
+        this.cache = new HTTPCache(cacheStorage);
+        try {
+            testCacheResponse();
+            fail("Expected IllegalStateException");
+        } catch (IllegalStateException expected) {
+        }
+    }
+
+    @Test
     public void testCacheResponse() {
         Headers responseHeaders = new Headers();
         responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));

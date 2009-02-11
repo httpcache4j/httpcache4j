@@ -25,7 +25,7 @@ import java.io.Serializable;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class CacheValue implements Iterable<Map.Entry<Vary, CacheItem>>, Serializable {
-    private Map<Vary, CacheItem> variations = new HashMap<Vary, CacheItem>();
+    private final Map<Vary, CacheItem> variations = new HashMap<Vary, CacheItem>();
     private static final long serialVersionUID = 1589764737954233106L;
 
     public CacheValue(final Map<Vary, CacheItem> pVariations) {

@@ -31,6 +31,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * This class is internal and should never be used by clients. <p/>
+ *
+ * Responsible for creating and maintaining a "Pool" of file generations. <br/>
+ * The files are promoted when they are accessed, so we can figure out which files that are OK to delete. <br/>
+ * Known Gotchas: This needs to be in sync with the size of the storage engine. <br/>
+ * If you have too few generations when you have many items in the cache, you might
+ * be missing some files when you try to access them. <p/>
+ *
+ * Note from Despot: I am looking into another way of storing files, so this class might go away at some point,
+ * or change to a different form. 
+ *
+ */
 class FileGenerationManager implements Serializable{
     private static final long serialVersionUID = -1558644426181861334L;
     

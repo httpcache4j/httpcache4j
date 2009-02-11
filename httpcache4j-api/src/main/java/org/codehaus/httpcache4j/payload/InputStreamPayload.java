@@ -31,12 +31,24 @@ import java.io.InputStream;
  */
 public class InputStreamPayload implements Payload {
     private final InputStream stream;
-    private MIMEType mimeType;
+    private final MIMEType mimeType;
     private boolean available = true;
 
-    public InputStreamPayload(InputStream stream, MIMEType mimeType) {
+    /**
+     * Constructs an Inputstream payload.
+     *
+     * @param stream the stream to create the payload from; may not be {@code null}
+     * @param mimeType the mime type of the stream. Defaults to
+     * application/octet-stream if not set.
+     */
+    public InputStreamPayload(final InputStream stream, final MIMEType mimeType) {
         Validate.notNull(stream, "Inputstream may not be null");
-        this.mimeType = mimeType;
+        if (mimeType != null) {
+            this.mimeType = mimeType;
+        }
+        else {
+            this.mimeType = MIMEType.APPLICATION_OCTET_STREAM;
+        }
         this.stream = new WrappedInputStream(stream);
     }
 

@@ -24,7 +24,15 @@ import org.codehaus.httpcache4j.Header;
 import java.io.Serializable;
 import java.util.*;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/**
+ * Represents a HTTP Variation.
+ * We need to store a different version of the response if the request varies on
+ * E.G Accept headers.
+ * Implementors of storage engines needs to have knowledge of this class.
+ * See {@link MemoryCacheStorage} for how it's used. 
+ *
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ */
 public final class Vary implements Serializable {
     public static final String ALL = "*";
     private static final long serialVersionUID = -5275022740812240365L;

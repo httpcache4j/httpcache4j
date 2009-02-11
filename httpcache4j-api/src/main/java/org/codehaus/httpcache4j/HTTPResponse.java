@@ -43,12 +43,20 @@ public final class HTTPResponse implements Serializable {
     private DateTime lastModified;
     private Set<HTTPMethod> allowedMethods;
 
+    /**
+     * Constructs an empty http response with the given status.
+     * @param status the status to use.
+     */
+    HTTPResponse(Status status) {
+        this(null, status, new Headers());
+    }
+
     public HTTPResponse(Payload payload, Status status, Headers headers) {
         Validate.notNull(status, "You must supply a Status");
         Validate.notNull(headers, "You must supply some Headers");
         this.status = status;
         this.payload = payload;
-        this.headers = headers;
+        this.headers = new UnmodifiableHeaders(headers);
 
         if (headers.hasHeader(ETAG)) {
             ETag = Tag.parse(headers.getFirstHeader(ETAG).getValue());

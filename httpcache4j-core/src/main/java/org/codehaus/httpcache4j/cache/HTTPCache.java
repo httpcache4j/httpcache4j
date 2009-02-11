@@ -104,6 +104,9 @@ public class HTTPCache {
     }
 
     public HTTPResponse doCachedRequest(HTTPRequest request, boolean force) {
+        if (resolver == null) {
+            throw new IllegalStateException("The resolver was not set, no point of continuing with the request");
+        }
         HTTPResponse response;
         if (!isCacheableRequest(request)) {
             if (!isSafeRequest(request)) {

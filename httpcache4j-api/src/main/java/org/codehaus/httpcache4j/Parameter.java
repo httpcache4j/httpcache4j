@@ -16,12 +16,9 @@
 
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
-
-import java.io.Serializable;
-
 /**
+ * Represents a parameter. 
+ *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @author last modified by $Author: $
  * @version $Id: $
@@ -30,6 +27,6 @@ public class Parameter extends NameValue {
     private static final long serialVersionUID = -1427455155319515222L;
 
     public Parameter(String name, String value) {
-        super(value, name);
+        super(name, value);
     }
 }
