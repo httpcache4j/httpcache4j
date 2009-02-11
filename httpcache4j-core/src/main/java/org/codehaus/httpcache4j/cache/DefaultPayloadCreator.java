@@ -25,7 +25,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/**
+ * A default implementation of the cleanable payload.
+ * Most users will want to use this when they create a new ResponseResolver.
+ *  
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ */
 public class DefaultPayloadCreator implements PayloadCreator {
     private FileGenerationManager fileGenerationManager;
 

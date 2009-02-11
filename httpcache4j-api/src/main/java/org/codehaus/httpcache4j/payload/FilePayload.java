@@ -33,7 +33,13 @@ public class FilePayload implements Payload {
     protected File file;
     private MIMEType mimeType;
 
-    public FilePayload(File file, MIMEType mimeType) {
+    /**
+     * Constructs a File payload
+     *
+     * @param file the file to use, may not be {@code null}.
+     * @param mimeType the mime type of the file, may not be {@code null}. 
+     */
+    public FilePayload(final File file, final MIMEType mimeType) {
         Validate.notNull(file, "File may not be null");
         Validate.notNull(mimeType, "Mime type may not be null");
         this.file = file;

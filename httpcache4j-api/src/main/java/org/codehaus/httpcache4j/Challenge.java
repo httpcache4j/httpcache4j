@@ -23,6 +23,7 @@ package org.codehaus.httpcache4j;
  * @author last modified by $Author: $
  * @version $Id: $
  */
+//TODO: Should this maybe be an interface? Needs to be determined before 1.0
 public class Challenge {
     private String identifier;
     private char[] password;

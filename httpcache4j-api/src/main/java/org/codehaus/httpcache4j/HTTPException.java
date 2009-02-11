@@ -21,6 +21,7 @@ package org.codehaus.httpcache4j;
  * @author last modified by $Author: $
  * @version $Id: $
  */
+//TODO: consider renaming this to CacheException or something similar ??
 public class HTTPException extends RuntimeException {
 
     public HTTPException(String message) {

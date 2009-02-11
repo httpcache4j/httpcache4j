@@ -26,6 +26,9 @@ import org.joda.time.format.DateTimeFormatter;
 
 import java.util.List;
 
+/**
+ * A collection header utilities.
+ */
 public final class HeaderUtils {
     public static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss 'GMT'";
     private static final String NO_STORE_HEADER_VALUE = "no-store";
@@ -56,7 +59,6 @@ public final class HeaderUtils {
             }
         }
         catch (Exception e) {
-            e.printStackTrace();
             return -1;
         }
 

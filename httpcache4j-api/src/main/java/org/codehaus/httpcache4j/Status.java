@@ -64,13 +64,7 @@ public final class Status extends Metadata {
     private static final long serialVersionUID = 352513594744701224L;
 
     public Status(int code, String name) {
-        super(name);
-        this.code = code;
-    }
-
-    public Status(int code, String name, String description) {
-        super(name, description);
-
+        super(name, name);
         this.code = code;
     }
 

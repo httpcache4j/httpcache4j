@@ -21,7 +21,7 @@ import org.codehaus.httpcache4j.HeaderConstants;
 import java.util.Locale;
 
 /**
- * Represents an Accept-Language and Accept-Charset preference.
+ * Represents a Language preference.
  * <p/>
  * Described in http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html section: 14.2 and 14.4
  */

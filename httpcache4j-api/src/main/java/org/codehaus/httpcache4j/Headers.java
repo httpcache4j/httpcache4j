@@ -26,15 +26,15 @@ import java.util.*;
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public final class Headers implements Serializable, Iterable<Map.Entry<String, List<Header>>> {
+public class Headers implements Serializable, Iterable<Map.Entry<String, List<Header>>> {
     private static final long serialVersionUID = -7175564984758939316L;
-    private Map<String, List<Header>> headers = new HashMap<String, List<Header>>();
+    private final Map<String, List<Header>> headers = new HashMap<String, List<Header>>();
 
     public Headers() {
     }
 
     public Headers(Map<String, List<Header>> headers) {
-        Validate.notEmpty(headers);
+        Validate.notNull(headers, "The header map may not be null");
         this.headers.putAll(headers);
     }
 
@@ -44,7 +44,7 @@ public final class Headers implements Serializable, Iterable<Map.Entry<String, L
 
     public Header getFirstHeader(String headerKey) {
         List<Header> headerList = headers.get(headerKey);
-        if (headerList != null) {
+        if (headerList != null && !headerList.isEmpty()) {
             return headerList.get(0);
         }
         return null;

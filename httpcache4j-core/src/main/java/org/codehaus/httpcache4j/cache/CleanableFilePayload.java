@@ -29,12 +29,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.io.ObjectStreamException;
-import java.io.FileNotFoundException;
 import java.util.UUID;
 
 /**
- * Stores the file in "bucket". This class is responsible for making the 
+ * Stores the file in "bucket". This class is responsible creating a
+ * file in the file generation manager so we can copy the remote stream
+ * into it.
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
