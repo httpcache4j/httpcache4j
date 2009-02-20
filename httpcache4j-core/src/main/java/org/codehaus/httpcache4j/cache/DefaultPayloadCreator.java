@@ -24,6 +24,7 @@ import org.codehaus.httpcache4j.resolver.PayloadCreator;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 
 /**
  * A default implementation of the cleanable payload.
@@ -42,7 +43,7 @@ public class DefaultPayloadCreator implements PayloadCreator {
         fileGenerationManager = new FileGenerationManager(baseDirectory, numberOfGenerations, generationSize);
     }
 
-    public Payload createPayload(final Headers headers, final InputStream stream) {
+    public Payload createPayload(final URI requestURI, final Headers headers, final InputStream stream) {
         boolean cacheable = HeaderUtils.hasCacheableHeaders(headers);
         Header contentTypeHeader = headers.getFirstHeader(HeaderConstants.CONTENT_TYPE);
         MIMEType type = contentTypeHeader != null ? MIMEType.valueOf(contentTypeHeader.getValue()) : MIMEType.APPLICATION_OCTET_STREAM;

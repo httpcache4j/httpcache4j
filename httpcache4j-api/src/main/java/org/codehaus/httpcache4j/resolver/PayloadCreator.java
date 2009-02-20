@@ -20,6 +20,7 @@ import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.payload.Payload;
 
 import java.io.InputStream;
+import java.net.URI;
 
 /**
  * Creates a payload from the response. Most users will want to use the
@@ -32,10 +33,10 @@ public interface PayloadCreator {
     /**
      * Creates a payload useable by the response.
      *
-     * @param headers the headers to determine cacheablity
+     * @param requestURI
+     *@param responseHeaders the headers to determine cacheablity
      * @param stream  the stream to create the payload from.
-     *
-     * @return the created payload
+ *   @return the created payload
      */
-    Payload createPayload(Headers headers, InputStream stream);
+    Payload createPayload(URI requestURI, Headers responseHeaders, InputStream stream);
 }
