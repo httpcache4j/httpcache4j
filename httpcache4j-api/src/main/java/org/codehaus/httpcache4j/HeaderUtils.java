@@ -25,6 +25,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * A collection header utilities.
@@ -41,13 +42,17 @@ public final class HeaderUtils {
         if (header == null) {
             return null;
         }
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(PATTERN_RFC1123).withZone(DateTimeZone.forID("UTC"));
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(PATTERN_RFC1123).
+                withZone(DateTimeZone.forID("UTC")).
+                withLocale(Locale.US);
         return formatter.parseDateTime(header.getValue());
     }
 
 
     public static Header toHttpDate(String headerName, DateTime time) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(PATTERN_RFC1123).withZone(DateTimeZone.forID("UTC"));
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(PATTERN_RFC1123).
+                withZone(DateTimeZone.forID("UTC")).
+                withLocale(Locale.US);
         return new Header(headerName, formatter.print(time));
     }
 
