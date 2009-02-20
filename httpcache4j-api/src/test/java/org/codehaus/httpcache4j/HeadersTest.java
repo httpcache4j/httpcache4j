@@ -50,6 +50,14 @@ public class HeadersTest {
     }
 
     @Test
+    public void testParseDateHeader() {
+        String value = "Fri, 20 Feb 2009 12:26:45 GMT";
+        DateTime dateTime = HeaderUtils.fromHttpDate(new Header(HeaderConstants.DATE, value));
+        assertNotNull(dateTime);
+        assertEquals(value, HeaderUtils.toHttpDate(HeaderConstants.DATE, dateTime).getValue());
+    }
+
+    @Test
     public void testParseDirectives() {
         Header header = new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60");
         assertNotNull(header.getDirectives());
