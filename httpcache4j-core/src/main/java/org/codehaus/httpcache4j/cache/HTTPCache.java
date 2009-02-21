@@ -118,6 +118,9 @@ public class HTTPCache {
             //request is cacheable
             response = getFromCache(request, force);
         }
+        if (response == null) {
+            return new HTTPResponse(null, Status.UNRESPONSIVE_SERVER, new Headers());
+        }
         return response;
     }
 
