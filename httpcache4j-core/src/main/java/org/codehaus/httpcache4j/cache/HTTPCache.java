@@ -119,7 +119,7 @@ public class HTTPCache {
             response = getFromCache(request, force);
         }
         if (response == null) {
-            return new HTTPResponse(null, Status.UNRESPONSIVE_SERVER, new Headers());
+            return new HTTPResponse(null, Status.INTERNAL_SERVER_ERROR, new Headers());
         }
         return response;
     }
@@ -187,7 +187,7 @@ public class HTTPCache {
                 if (item != null) {
                     storage.invalidate(request.getRequestURI(), item);
                 }
-                response = resolvedResponse;
+                throw e;
             }
         }
         return response;
