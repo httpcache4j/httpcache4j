@@ -17,6 +17,12 @@
 package org.codehaus.httpcache4j.resolver;
 
 import org.apache.commons.lang.Validate;
+import org.codehaus.httpcache4j.Headers;
+import org.codehaus.httpcache4j.Header;
+
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Implementors should implement this instead of using the ResponseResolver interface directly.
@@ -30,6 +36,21 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
         Validate.notNull(payloadCreator, "You may not add a null Payload creator");
         this.payloadCreator = payloadCreator;
     }
+
+
+    protected Headers removePotentialDuplicates(final Headers headersToRemoveFrom, final Headers headers) {
+        Map<String, List<Header>> map = new HashMap<String, List<Header>>(headersToRemoveFrom.getHeadersAsMap());
+        for (String key : headers.getHeadersAsMap().keySet()) {
+            if (map.containsKey(key)) {
+                map.remove(key);
+            }
+        }
+        if (map.isEmpty()) {
+            return new Headers();
+        }
+        return new Headers(map);
+    }
+    
 
     protected PayloadCreator getPayloadCreator() {
         return payloadCreator;

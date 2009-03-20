@@ -24,6 +24,9 @@ package org.codehaus.httpcache4j;
 //TODO: consider renaming this to CacheException or something similar ??
 public class HTTPException extends RuntimeException {
 
+    public HTTPException(Throwable cause) {
+        super(cause);
+    }
     public HTTPException(String message) {
         super(message);
     }
