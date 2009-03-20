@@ -59,7 +59,6 @@ public final class Status extends Metadata {
     public static final Status SERVICE_UNAVAILABLE = new Status(503, "Service Unavailable");
     public static final Status GATEWAY_TIMEOUT = new Status(504, "Gateway Timeout");
     public static final Status HTTP_VERSION_NOT_SUPPORTED = new Status(505, "HTTP Version Not Supported");
-    public static final Status UNRESPONSIVE_SERVER = new Status(1000, "No Response from Origin server");
 
     private int code;
     private static final long serialVersionUID = 352513594744701224L;
