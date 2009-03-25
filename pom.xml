@@ -206,6 +206,7 @@
     <module>httpcache4j-core</module>
     <module>httpcache4j-api</module>
     <module>httpcache4j-storage-api</module>
+    <module>resolvers</module>
   </modules>
 
 
