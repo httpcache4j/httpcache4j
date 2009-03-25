@@ -15,43 +15,44 @@
   ~
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.codehaus.httpcache4j.resolvers</groupId>
-        <artifactId>resolvers</artifactId>
-        <version>1.1-SNAPSHOT</version>
-    </parent>
-    <artifactId>resolvers-commons-httpclient</artifactId>
-    <packaging>jar</packaging>
-    <name>Java HTTP cache :: Resolvers :: Commons HttpClient</name>
-    <description>Responseresolver with Commons HttpClient</description>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.codehaus.httpcache4j.resolvers</groupId>
+    <artifactId>resolvers</artifactId>
+    <version>1.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>resolvers-commons-httpclient</artifactId>
+  <packaging>jar</packaging>
+  <name>Java HTTP cache :: Resolvers :: Commons HttpClient</name>
+  <description>Responseresolver with Commons HttpClient</description>
 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 
-    <dependencies>
-        <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-	    <version>3.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.httpcache4j</groupId>
-            <artifactId>httpcache4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-        </dependency>
-        
-    </dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>3.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.httpcache4j</groupId>
+      <artifactId>httpcache4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+    </dependency>
+
+  </dependencies>
 
 
 </project>
