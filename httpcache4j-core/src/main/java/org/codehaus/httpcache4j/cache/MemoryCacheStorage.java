@@ -19,7 +19,6 @@ package org.codehaus.httpcache4j.cache;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.payload.Payload;
 
-import org.apache.commons.lang.Validate;
 
 import java.net.URI;
 import java.util.Collections;
@@ -27,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-import java.io.Serializable;
 
 /**
  * In Memory implementation of a cache storage.
@@ -48,11 +46,8 @@ public class MemoryCacheStorage implements CacheStorage {
 
     public synchronized void put(URI requestURI, Vary vary, CacheItem cacheItem) {
         if (cache.containsKey(requestURI)) {
-            CacheValue value = cache.get(requestURI);
-            Map<Vary, CacheItem> variations = new HashMap<Vary, CacheItem>(value.getVariations());
-            variations.put(vary, cacheItem);
-            value = new CacheValue(variations);
-            value.getVariations().put(vary, cacheItem);
+            CacheValue value = cache.get(requestURI);            
+            value.add(vary, cacheItem);
             cache.put(requestURI, value);
         }
         else {
@@ -82,7 +77,7 @@ public class MemoryCacheStorage implements CacheStorage {
         if (cache.containsKey(requestURI) && item != null) {
             CacheValue value = cache.get(requestURI);
             invalidate(value, item);
-            if (value.getVariations().isEmpty()) {
+            if (value.isEmpty()) {
                 cache.remove(requestURI);
             }
         }
@@ -106,7 +101,7 @@ public class MemoryCacheStorage implements CacheStorage {
             }
 
             if (found != null) {
-                value.getVariations().remove(found);
+                value.remove(found);
                 Payload payload = item.getResponse().getPayload();
                 if (payload instanceof CleanablePayload) {
                     ((CleanablePayload) payload).clean();
@@ -126,7 +121,7 @@ public class MemoryCacheStorage implements CacheStorage {
         return cache.size();
     }
 
-    private class InvalidateOnRemoveHashMap extends HashMap<URI, CacheValue> {
+    protected class InvalidateOnRemoveHashMap extends HashMap<URI, CacheValue> {
         public InvalidateOnRemoveHashMap(final int capacity) {
             super(capacity);
         }

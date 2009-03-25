@@ -97,6 +97,6 @@ public final class Vary implements Serializable {
     }
 
     public int hashCode() {
-        return (varyHeaders != null ? varyHeaders.hashCode() : 0);
+        return varyHeaders.hashCode();
     }
 }

@@ -84,7 +84,7 @@ public class HTTPCacheTest {
         doGet(responseHeaders, Status.OK, 1);
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.PUT);
         cache.doCachedRequest(request);
-        stub(cacheStorage.size()).toReturn(0);
+        when(cacheStorage.size()).thenReturn(0);
         assertEquals(0, cacheStorage.size());
     }
 
@@ -92,7 +92,7 @@ public class HTTPCacheTest {
     public void testPOST() {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.POST);
         cache.doCachedRequest(request);
-        stub(cacheStorage.size()).toReturn(0);
+        when(cacheStorage.size()).thenReturn(0);
         assertEquals(0, cacheStorage.size());
     }
 
@@ -100,7 +100,7 @@ public class HTTPCacheTest {
     public void testTRACE() {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.TRACE);
         cache.doCachedRequest(request);
-        stub(cacheStorage.size()).toReturn(0);
+        when(cacheStorage.size()).thenReturn(0);
         assertEquals(0, cacheStorage.size());
     }
     @Test
@@ -108,20 +108,20 @@ public class HTTPCacheTest {
         doGet(new Headers(), Status.OK, 1);
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.TRACE);
         cache.doCachedRequest(request);
-        stub(cacheStorage.size()).toReturn(1);
+        when(cacheStorage.size()).thenReturn(1);
         assertEquals(1, cacheStorage.size());
     }
 
     @Test
     public void testHEADAndGET() {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.HEAD);
-        stub(responseResolver.resolve(request)).toReturn(new HTTPResponse(null, Status.OK, new Headers()));
+        when(responseResolver.resolve(request)).thenReturn(new HTTPResponse(null, Status.OK, new Headers()));
         HTTPResponse response = cache.doCachedRequest(request);
         assertFalse(response.hasPayload());
         assertEquals(0, request.getConditionals().toHeaders().size());
         response = doGet(new Headers(), Status.OK, 1);
         assertTrue("No payload on get", response.hasPayload());
-        stub(cacheStorage.size()).toReturn(1);
+        when(cacheStorage.size()).thenReturn(1);
         assertEquals(1, cacheStorage.size());
     }
 
@@ -131,22 +131,23 @@ public class HTTPCacheTest {
         Headers headers = new Headers();
         headers.add(new Header("ETag", "\"foo\""));
         HTTPResponse cachedResponse = new HTTPResponse(null, Status.OK, headers);
-        stub(responseResolver.resolve(request)).toReturn(cachedResponse);
-        stub(cacheStorage.get(request)).toReturn(new CacheItem(cachedResponse));
+        when(responseResolver.resolve(request)).thenReturn(cachedResponse);
+        when(cacheStorage.get(request)).thenReturn(new CacheItem(cachedResponse));
         HTTPResponse response = cache.doCachedRequest(request);
         assertEquals("Conditionals was set, incorrect", 0, request.getConditionals().toHeaders().size());        
         assertFalse(response.hasPayload());
         response = doGet(new Headers(), Status.OK, 1);
         assertTrue("No payload on get", response.hasPayload());
-        stub(cacheStorage.size()).toReturn(1);
+        when(cacheStorage.size()).thenReturn(1);
         assertEquals(1, cacheStorage.size());
     }
 
     private HTTPResponse doGet(Headers responseHeaders, Status status, int numberItemsInCache) {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.GET);
-        stub(responseResolver.resolve(request)).toReturn(new HTTPResponse(mock(Payload.class), status, responseHeaders));
+        Payload payload = mock(Payload.class);
+        when(responseResolver.resolve(request)).thenReturn(new HTTPResponse(payload, status, responseHeaders));
         HTTPResponse response = cache.doCachedRequest(request);
-        stub(cacheStorage.size()).toReturn(numberItemsInCache);
+        when(cacheStorage.size()).thenReturn(numberItemsInCache);
         assertEquals(numberItemsInCache, cacheStorage.size());
         return response;
     }

@@ -42,7 +42,7 @@ import java.io.FileOutputStream;
  *  
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public class PersistentCacheStorage implements CacheStorage,Serializable {
+public class PersistentCacheStorage extends MemoryCacheStorage implements Serializable {
 
     protected Map<URI, CacheValue> cache;
     private final File serializationFile;
@@ -56,7 +56,7 @@ public class PersistentCacheStorage implements CacheStorage,Serializable {
     public PersistentCacheStorage(int capacity, File serializationFileDirectory, String name) {
         Validate.isTrue(capacity > 0, "You may not have a empty persistent cache");
         Validate.notNull(serializationFileDirectory, "You may not have a null serializationDirectory");
-        Validate.notEmpty(name, "You may not have a empty name");
+        Validate.notEmpty(name, "You may not have a empty file name");
         this.capacity = capacity;
         serializationFile = new File(serializationFileDirectory, name);
         getCacheFromDisk();
@@ -71,89 +71,12 @@ public class PersistentCacheStorage implements CacheStorage,Serializable {
     }
 
     public synchronized void put(URI requestURI, Vary vary, CacheItem cacheItem) {
-        if (cache.containsKey(requestURI)) {
-            CacheValue value = cache.get(requestURI);
-            Map<Vary, CacheItem> variations = new HashMap<Vary, CacheItem>(value.getVariations());
-            variations.put(vary, cacheItem);
-            value = new CacheValue(variations);
-            value.getVariations().put(vary, cacheItem);
-            cache.put(requestURI, value);
-        }
-        else {
-            cache.put(requestURI, new CacheValue(Collections.singletonMap(vary, cacheItem)));
-        }
+        super.put(requestURI, vary, cacheItem);
         saveCacheToDisk();
     }
 
-    public synchronized CacheItem get(HTTPRequest request) {
-        CacheValue cacheValue = cache.get(request.getRequestURI());
-        if (cacheValue != null) {
-            for (Map.Entry<Vary, CacheItem> entry : cacheValue) {
-                if (entry.getKey().matches(request)) {
-                    return entry.getValue();
-                }
-            }
-        }
-        return null;
-    }
-
-    public synchronized void invalidate(URI uri) {
-        if (cache.containsKey(uri)) {
-            cache.remove(uri);
-        }
-    }
-
-    public synchronized void invalidate(URI requestURI, CacheItem item) {
-        if (cache.containsKey(requestURI) && item != null) {
-            CacheValue value = cache.get(requestURI);
-            invalidate(value, item);
-            if (value.getVariations().isEmpty()) {
-                cache.remove(requestURI);
-            }
-        }
-    }
-
-    protected void invalidate(CacheValue value, CacheItem item) {
-        if (item == null) {
-            for (Map.Entry<Vary, CacheItem> entry : value) {
-                Payload payload = entry.getValue().getResponse().getPayload();
-                if (payload instanceof CleanablePayload) {
-                    ((CleanablePayload) payload).clean();
-                }
-            }
-        }
-        else {
-            Vary found = null;
-            for (Map.Entry<Vary, CacheItem> entry : value) {
-                if (entry.getValue().equals(item)) {
-                    found = entry.getKey();
-                }
-            }
-
-            if (found != null) {
-                value.getVariations().remove(found);
-                Payload payload = item.getResponse().getPayload();
-                if (payload instanceof CleanablePayload) {
-                    ((CleanablePayload) payload).clean();
-                }
-            }
-        }
-    }
-
-    public synchronized void clear() {
-        Set<URI> uris = new HashSet<URI>(cache.keySet());
-        for (URI uri : uris) {
-            cache.remove(uri);
-        }
-        serializationFile.delete();
-    }
-
-    public synchronized int size() {
-        return cache.size();
-    }
-
     @SuppressWarnings({"unchecked"})
-    private synchronized void getCacheFromDisk() {
+    private void getCacheFromDisk() {
         if (cache == null) {
             cache = new InvalidateOnRemoveHashMap(capacity);
         }
@@ -179,7 +102,7 @@ public class PersistentCacheStorage implements CacheStorage,Serializable {
     }
 
     @SuppressWarnings({"unchecked"})
-    private synchronized void saveCacheToDisk() {
+    private void saveCacheToDisk() {
         FileOutputStream outputStream = null;
         try {
             outputStream = FileUtils.openOutputStream(serializationFile);
@@ -190,19 +113,6 @@ public class PersistentCacheStorage implements CacheStorage,Serializable {
         }
         finally {
             IOUtils.closeQuietly(outputStream);
-        }
-    }
-
-    private class InvalidateOnRemoveHashMap extends HashMap<URI, CacheValue> {
-        public InvalidateOnRemoveHashMap(final int capacity) {
-            super(capacity);
-        }
-
-        @Override
-        public CacheValue remove(final Object key) {
-            final CacheValue value = super.remove(key);
-            invalidate(value, null);
-            return value;
         }
     }
 }
