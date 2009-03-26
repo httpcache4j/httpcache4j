@@ -17,10 +17,7 @@
 package org.codehaus.httpcache4j.client;
 
 import org.codehaus.httpcache4j.resolver.PayloadCreator;
-import org.codehaus.httpcache4j.HTTPRequest;
-import org.codehaus.httpcache4j.HTTPMethod;
-import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.MIMEType;
+import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -35,6 +32,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.net.URI;
+import java.io.IOException;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class HTTPClientResponseResolverTest {
@@ -59,12 +57,22 @@ public class HTTPClientResponseResolverTest {
         assertEquals(0, response.getHeaders().size());
     }
 
+    @Test(expected = HTTPException.class)
+    public void testResolveFailingGET() throws IOException {
+        HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.GET);
+        final HttpMethod method = mock(GetMethod.class);
+        HTTPClientResponseResolver resolver = new TestableHTTPClientResponseResolver(method);
+        when(httpClient.executeMethod(method)).thenThrow(new IOException("Connection error"));
+        resolver.resolve(request);
+        fail("No exception was thrown...");
+    }
+
     @Test
     public void testResolvePOSTWithNoHeaders() {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.POST);
         final Payload payload = mock(Payload.class);
         request.setPayload(payload);
-        stub(payload.getMimeType()).toReturn(new MIMEType("text/plain"));
+        when(payload.getMimeType()).thenReturn(new MIMEType("text/plain"));
         final HttpMethod method = mock(PostMethod.class);
         HTTPClientResponseResolver resolver = createResponseResolver(method, 201, new Header[0]);
 
@@ -79,7 +87,7 @@ public class HTTPClientResponseResolverTest {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.PUT);
         final Payload payload = mock(Payload.class);
         request.setPayload(payload);
-        stub(payload.getMimeType()).toReturn(new MIMEType("text/plain"));
+        when(payload.getMimeType()).thenReturn(new MIMEType("text/plain"));
         final HttpMethod method = mock(PostMethod.class);
         HTTPClientResponseResolver resolver = createResponseResolver(method, 200, new Header[0]);
 
@@ -90,14 +98,23 @@ public class HTTPClientResponseResolverTest {
     }
 
     private HTTPClientResponseResolver createResponseResolver(final HttpMethod httpMethod, final int statusCode, final Header[] headers) {
-        stub(httpMethod.getStatusCode()).toReturn(statusCode);
-        stub(httpMethod.getResponseHeaders()).toReturn(headers);
+        when(httpMethod.getStatusCode()).thenReturn(statusCode);
+        when(httpMethod.getResponseHeaders()).thenReturn(headers);
 
-        return new HTTPClientResponseResolver(httpClient, creator) {
-            @Override
-            HttpMethod getMethod(final HTTPMethod method, final URI requestURI) {
-                return httpMethod;
-            }
-        };
+        return new TestableHTTPClientResponseResolver(httpMethod);
+    }
+
+    private class TestableHTTPClientResponseResolver extends HTTPClientResponseResolver {
+        private final HttpMethod httpMethod;
+
+        public TestableHTTPClientResponseResolver(HttpMethod httpMethod) {
+            super(HTTPClientResponseResolverTest.this.httpClient, HTTPClientResponseResolverTest.this.creator);
+            this.httpMethod = httpMethod;
+        }
+
+        @Override
+        HttpMethod getMethod(final HTTPMethod method, final URI requestURI) {
+            return httpMethod;
+        }
     }
 }
