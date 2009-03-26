@@ -16,25 +16,18 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import org.codehaus.httpcache4j.HTTPRequest;
-import org.codehaus.httpcache4j.payload.Payload;
-
-import org.apache.commons.lang.Validate;
-import org.apache.commons.lang.SerializationUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-
-import java.net.URI;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
-import java.io.Serializable;
 import java.io.File;
-import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URI;
+import java.util.Map;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang.Validate;
 
 /**
  * Persistent version of the in memory cache. This stores a serialized version of the
@@ -70,7 +63,8 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
         }));
     }
 
-    public synchronized void put(URI requestURI, Vary vary, CacheItem cacheItem) {
+    @Override
+	public synchronized void put(URI requestURI, Vary vary, CacheItem cacheItem) {
         super.put(requestURI, vary, cacheItem);
         saveCacheToDisk();
     }
@@ -100,8 +94,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
             }
         }
     }
-
-    @SuppressWarnings({"unchecked"})
+    
     private void saveCacheToDisk() {
         FileOutputStream outputStream = null;
         try {

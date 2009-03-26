@@ -1,13 +1,16 @@
 package org.codehaus.httpcache4j.cache;
 
-import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.Status;
-import org.codehaus.httpcache4j.Headers;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
+
+import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.Headers;
+import org.codehaus.httpcache4j.Status;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>

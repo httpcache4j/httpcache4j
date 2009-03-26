@@ -1,20 +1,18 @@
 package org.codehaus.httpcache4j.cache;
 
-import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.Status;
-import org.codehaus.httpcache4j.Headers;
-import org.codehaus.httpcache4j.HTTPRequest;
-
-import org.junit.Before;
-import org.junit.After;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.apache.commons.lang.builder.EqualsBuilder;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotSame;
 
 import java.net.URI;
 
-import junit.framework.Assert;
-import static junit.framework.Assert.*;
+import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.Headers;
+import org.codehaus.httpcache4j.Status;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public abstract class CacheStorageAbstractTest {
@@ -48,7 +46,7 @@ public abstract class CacheStorageAbstractTest {
         CacheItem item = new CacheItem(response);
         HTTPRequest request = Mockito.mock(HTTPRequest.class);
         URI requestURI = URI.create("foo");
-        Mockito.stub(request.getRequestURI()).toReturn(requestURI);
+        Mockito.when(request.getRequestURI()).thenReturn(requestURI);
         storage.put(requestURI, new Vary(), item);
         assertEquals(1, storage.size());
         CacheItem outItem = storage.get(request);
@@ -60,7 +58,7 @@ public abstract class CacheStorageAbstractTest {
         testPutAndGetCacheItem();
         HTTPRequest request = Mockito.mock(HTTPRequest.class);
         URI requestURI = URI.create("foo");
-        Mockito.stub(request.getRequestURI()).toReturn(requestURI);
+        Mockito.when(request.getRequestURI()).thenReturn(requestURI);
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
         CacheItem item = new CacheItem(response);
         final CacheItem cacheItem = storage.get(request);

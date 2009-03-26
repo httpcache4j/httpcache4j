@@ -16,27 +16,15 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import static junit.framework.Assert.*;
-
-import org.codehaus.httpcache4j.HTTPRequest;
-import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.Headers;
-import org.codehaus.httpcache4j.Status;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.stub;
-
-import java.net.URI;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class MemoryCacheStorageTest extends CacheStorageAbstractTest {
-    protected CacheStorage createCacheStorage() {
+    @Override
+	protected CacheStorage createCacheStorage() {
         return new MemoryCacheStorage();
     }
 
-    protected void afterTest() {
+    @Override
+	protected void afterTest() {
     }
 }

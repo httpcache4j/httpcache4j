@@ -17,15 +17,15 @@
 package org.codehaus.httpcache4j;
 
 import static org.codehaus.httpcache4j.HeaderConstants.*;
-import org.codehaus.httpcache4j.preference.Preference;
 
+import java.util.List;
+import java.util.Locale;
+
+import org.codehaus.httpcache4j.preference.Preference;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-
-import java.util.List;
-import java.util.Locale;
 
 /**
  * A collection header utilities.
@@ -91,7 +91,7 @@ public final class HeaderUtils {
 
     public static Header toHeader(String headerName, List<? extends Preference<?>> preferences) {
         StringBuilder builder = new StringBuilder();
-        for (Preference preference : preferences) {
+        for (Preference<?> preference : preferences) {
             if (builder.length() > 0) {
                 builder.append(", ");
             }

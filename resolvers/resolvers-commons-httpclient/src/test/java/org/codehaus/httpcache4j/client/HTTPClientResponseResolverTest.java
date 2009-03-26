@@ -16,29 +16,33 @@
 
 package org.codehaus.httpcache4j.client;
 
-import org.codehaus.httpcache4j.resolver.PayloadCreator;
-import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.payload.Payload;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.net.URI;
+
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.codehaus.httpcache4j.HTTPException;
+import org.codehaus.httpcache4j.HTTPMethod;
+import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.MIMEType;
+import org.codehaus.httpcache4j.payload.Payload;
+import org.codehaus.httpcache4j.resolver.PayloadCreator;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Assert;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.net.URI;
-import java.io.IOException;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class HTTPClientResponseResolverTest {
     private HttpClient httpClient;
     private PayloadCreator creator;
-
+    
     @Before
     public void init() {
         httpClient = mock(HttpClient.class);
