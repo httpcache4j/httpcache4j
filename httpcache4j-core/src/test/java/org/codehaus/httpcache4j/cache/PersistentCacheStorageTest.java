@@ -16,31 +16,26 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
 
-import org.codehaus.httpcache4j.HTTPRequest;
+import java.io.File;
+import java.net.URI;
+
+import org.apache.commons.io.FileUtils;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
-import org.codehaus.httpcache4j.Status;
 import org.codehaus.httpcache4j.MIMEType;
-import org.codehaus.httpcache4j.util.TestUtil;
+import org.codehaus.httpcache4j.Status;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
-
-import org.junit.After;
-import org.junit.Before;
+import org.codehaus.httpcache4j.util.TestUtil;
 import org.junit.Test;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.stub;
-import org.apache.commons.io.FileUtils;
-
-import java.net.URI;
-import java.io.File;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
     private File baseDirectory;
-
-    protected CacheStorage createCacheStorage() {
+    
+    @Override
+	protected CacheStorage createCacheStorage() {
         baseDirectory = TestUtil.getTestFile("target/test/");
         baseDirectory.mkdirs();
         return new PersistentCacheStorage(TestUtil.getTestFile("target/test/"));
@@ -57,7 +52,8 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
         assertEquals(1, storage.size());
     }
 
-    public void afterTest() {
+    @Override
+	public void afterTest() {
         baseDirectory.listFiles(new DeletingFileFilter());
     }
 }

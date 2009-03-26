@@ -16,16 +16,17 @@
 
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParameterList;
 import javax.activation.MimeTypeParseException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.io.Serializable;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  * Media type used in representations and preferences.
@@ -71,7 +72,8 @@ public final class MIMEType implements Serializable {
         }
     }
 
-    private void convertParamerters(MimeType mimeType) {
+    @SuppressWarnings("unchecked")
+	private void convertParamerters(MimeType mimeType) {
         MimeTypeParameterList list = mimeType.getParameters();
         Enumeration names = list.getNames();
         while (names.hasMoreElements()) {

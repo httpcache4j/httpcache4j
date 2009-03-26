@@ -16,15 +16,14 @@
 
 package org.codehaus.httpcache4j.preference;
 
-import org.apache.commons.lang.Validate;
-
-import org.codehaus.httpcache4j.HeaderUtils;
-import org.codehaus.httpcache4j.Header;
-
 import java.util.Arrays;
 
+import org.apache.commons.lang.Validate;
+import org.codehaus.httpcache4j.Header;
+import org.codehaus.httpcache4j.HeaderUtils;
+
 public abstract class Preference<T> {
-    private T preference;
+    private final T preference;
     private double quality = 1.0;
 
     public Preference(T preference) {
@@ -74,7 +73,7 @@ public abstract class Preference<T> {
             return false;
         }
 
-        Preference that = (Preference) o;
+        Preference<?> that = (Preference<?>) o;
 
         if (preference != null ? !preference.equals(that.preference) : that.preference != null) {
             return false;

@@ -16,9 +16,8 @@
 
 package org.codehaus.httpcache4j.util;
 
-import java.io.FileFilter;
 import java.io.File;
-import java.util.Arrays;
+import java.io.FileFilter;
 
 /**
  * A file-filter that deletes the files as it traverses the directories.
