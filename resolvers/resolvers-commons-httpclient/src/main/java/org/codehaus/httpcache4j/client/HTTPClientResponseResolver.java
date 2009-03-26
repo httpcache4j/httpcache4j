@@ -54,7 +54,8 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
      * HttpClient client = new HttpClient(new MultiThreadedConnectionManager());
      * ResponseResolver resolver = HTTPClientResponseResolver(client, new DefaultPayloadCreator);
      * }
-     * @param client the HttpClient instance to use. may not be {@code null}
+     *
+     * @param client         the HttpClient instance to use. may not be {@code null}
      * @param payloadCreator the payload creator to use, may not be {@code null}
      */
     public HTTPClientResponseResolver(HttpClient client, PayloadCreator payloadCreator) {
@@ -70,6 +71,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             return convertResponse(request.getRequestURI(), method);
         }
         catch (IOException e) {
+            method.releaseConnection();
             throw new HTTPException(e.getMessage(), e);
         }
     }
@@ -105,8 +107,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 Credentials usernamePassword = new UsernamePasswordCredentials(challenge.getIdentifier(), challenge.getPassword() != null ? new String(challenge.getPassword()) : null);
                 client.getState().setCredentials(new AuthScope(requestURI.getHost(), requestURI.getPort(), AuthScope.ANY_REALM), usernamePassword);
             }
-        }
-        else {
+        } else {
             method.setDoAuthentication(true);
         }
         List<Parameter> parameters = request.getParameters();
@@ -143,13 +144,12 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         Headers headers = new Headers();
         for (Header header : method.getResponseHeaders()) {
             headers.add(header.getName(), header.getValue());
-        }        
+        }
         InputStream stream = getInputStream(method);
         Payload payload;
         if (stream != null) {
             payload = getPayloadCreator().createPayload(requestURI, headers, stream);
-        }
-        else {
+        } else {
             payload = null;
         }
 
@@ -158,16 +158,18 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
     private InputStream getInputStream(HttpMethod method) {
         try {
-            return method.getResponseBodyAsStream() != null ? method.getResponseBodyAsStream() : null;
+            return method.getResponseBodyAsStream() != null ? new HttpMethodStream(method) : null;
         }
         catch (IOException e) {
-            throw new  HTTPException("Unable to get InputStream from HttpClient", e);
+            method.releaseConnection();
+            throw new HTTPException("Unable to get InputStream from HttpClient", e);
         }
     }
 
     /**
      * Determines the HttpClient's request method from the HTTPMethod enum.
-     * @param method the HTTPCache enum that determines
+     *
+     * @param method     the HTTPCache enum that determines
      * @param requestURI the request URI.
      * @return a new HttpMethod subclass.
      */
@@ -191,4 +193,55 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 throw new IllegalArgumentException("Uknown method");
         }
     }
+
+    private static class HttpMethodStream extends InputStream {
+        private final HttpMethod method;
+        private final InputStream delegate;
+
+        public HttpMethodStream(final HttpMethod method) throws IOException {
+            this.method = method;
+            this.delegate = method.getResponseBodyAsStream();
+        }
+
+        public int read() throws IOException {
+            return delegate.read();
+        }
+
+        public int read(final byte[] b) throws IOException {
+            return delegate.read(b);
+        }
+
+        public int read(final byte[] b, final int off, final int len) throws IOException {
+            return delegate.read(b, off, len);
+        }
+
+        public long skip(final long n) throws IOException {
+            return delegate.skip(n);
+        }
+
+        public int available() throws IOException {
+            return delegate.available();
+        }
+
+        public void close() throws IOException {
+            try {
+                delegate.close();
+            } finally {
+                method.releaseConnection();
+            }
+        }
+
+        public void mark(final int readlimit) {
+            delegate.mark(readlimit);
+        }
+
+        public void reset() throws IOException {
+            delegate.reset();
+        }
+
+        public boolean markSupported() {
+            return delegate.markSupported();
+        }
+    }
+
 }
