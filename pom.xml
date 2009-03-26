@@ -34,12 +34,13 @@
   <inceptionYear>2008</inceptionYear>
 
   <issueManagement>
-    <url>http://jira.codehaus.org/browse/HTCJ</url>
+    <system>JIRA</system>
+    <url>http://jira.codehaus.org/secure/BrowseProject.jspa?pid=11880</url>
   </issueManagement>
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
-      <url>http://apache.org/licenses/LICENSE-2.0</url>      
+      <url>http://apache.org/licenses/LICENSE-2.0</url>
     </license>
   </licenses>
   <mailingLists>
@@ -48,7 +49,7 @@
       <post>user@httpcache4j.codehaus.org</post>
       <archive>http://archive.codehaus.org/lists/org.codehaus.httpcache4j.user</archive>
       <subscribe>http://xircles.codehaus.org/lists/user@httpcache4j.codehaus.org/subscribe</subscribe>
-      <unsubscribe>http://xircles.codehaus.org/lists/user@httpcache4j.codehaus.org/unsubscribe</unsubscribe>      
+      <unsubscribe>http://xircles.codehaus.org/lists/user@httpcache4j.codehaus.org/unsubscribe</unsubscribe>
     </mailingList>
     <mailingList>
       <name>Developers</name>
@@ -246,29 +247,22 @@
 
   <profiles>
     <profile>
-      <id>codehaus-release</id>
+      <id>release</id>
       <build>
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-release-plugin</artifactId>
-            <version>2.0-beta-7</version>
+            <version>2.0-beta-8</version>
             <configuration>
               <preparationGoals>clean install</preparationGoals>
             </configuration>
           </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <configuration>
-              <!--<appendAssemblyId>false</appendAssemblyId>-->
-              <descriptors>
-                <descriptor>src/assembly/dist.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </plugin>
         </plugins>
       </build>
+      <modules>
+        <module>httpcache4j-dist</module>
+      </modules>
     </profile>
     <profile>
       <id>reporting-aggregate</id>
@@ -285,6 +279,24 @@ time mvn site -Preporting && time mvn site:deploy && time mvn site -Preporting-a
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-changes-plugin</artifactId>
+            <version>2.1</version>
+            <configuration>
+              <onlyCurrentVersion>true</onlyCurrentVersion>
+              <resolutionIds>Fixed</resolutionIds>
+              <statusIds>Closed</statusIds>
+            </configuration>
+            <reportSets>
+              <reportSet>
+                <reports>
+                  <report>jira-report</report>
+                </reports>
+              </reportSet>
+            </reportSets>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jxr-plugin</artifactId>
             <version>2.1</version>
             <configuration>
@@ -294,7 +306,14 @@ time mvn site -Preporting && time mvn site:deploy && time mvn site -Preporting-a
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.4</version>
+            <version>2.5</version>
+            <reportSets>
+              <reportSet>
+                <reports>
+                  <report>aggregate</report>
+                </reports>
+              </reportSet>
+            </reportSets>
             <configuration>
               <links>
                 <link>http://java.sun.com/j2se/1.4.2/docs/api</link>
@@ -302,12 +321,10 @@ time mvn site -Preporting && time mvn site:deploy && time mvn site -Preporting-a
                 <link>http://java.sun.com/j2se/1.5.0/docs/api</link>
                 <link>http://junit.sourceforge.net/javadoc/</link>
               </links>
-              <aggregate>true</aggregate>
             </configuration>
           </plugin>
         </plugins>
       </reporting>
     </profile>
-
   </profiles>
 </project>
