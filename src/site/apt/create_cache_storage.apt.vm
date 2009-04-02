@@ -1,0 +1,21 @@
+ -----
+ Create CacheStorage
+ -----
+ Erlend Hamnaberg
+
+Creating a new Cache Storage
+ 
+ First you need to to add this to your POM file.
+ 
+---------------------------------------
+ <dependency>
+    <groupId>org.codehaus.httpcache4j</groupId>
+    <artifactId>httpcache4j-storage-api</artifactId>
+    <version>${currentVersion}</version>
+ </dependency>
+---------------------------------------
+
+ Then you need to implement {{{./xref/org/codehaus/httpcache4j/cache/CacheStorage.html} this}} interface.
+ 
+ It is advisable to leave implementations of CacheStorage to professionals. 
+ You can, however, use the {{{./xref/org/codehaus/httpcache4j/cache/MemoryCacheStorage.html} Memory Cache Storage}} as inspiration. 

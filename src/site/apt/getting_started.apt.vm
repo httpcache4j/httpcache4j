@@ -1,8 +1,8 @@
-			------
-            Getting Stared
-            ------
-            Erlend Hamnaberg
-            ------             
+ ------
+ Getting Started
+ ------
+ Erlend Hamnaberg
+ ------             
 
 Getting started
 
@@ -28,7 +28,9 @@ Getting started
 ----------------------------------------
 HTTPCache cache = new HTTPCache(
   new MemoryCacheStorage(), 
-  new HTTPClientResolver(new HttpClient(),  new DefaultPayloadCreator(SystemUtils.getJavaIoTmpDir()
+  new HTTPClientResolver(
+    new HttpClient(), 
+    new DefaultPayloadCreator(SystemUtils.getJavaIoTmpDir())
 );
 ----------------------------------------
 
