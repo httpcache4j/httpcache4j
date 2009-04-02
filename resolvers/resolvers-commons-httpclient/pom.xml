@@ -21,20 +21,12 @@
   <parent>
     <groupId>org.codehaus.httpcache4j.resolvers</groupId>
     <artifactId>resolvers</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.1.1-SNAPSHOT</version>
   </parent>
   <artifactId>resolvers-commons-httpclient</artifactId>
   <packaging>jar</packaging>
   <name>Java HTTP cache :: Resolvers :: Commons HttpClient</name>
-  <description>Responseresolver with Commons HttpClient</description>
-
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-source-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
+  <description>Responseresolver using Commons HttpClient</description>
 
   <dependencies>
     <dependency>

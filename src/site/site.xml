@@ -24,11 +24,14 @@
         <menu name="Overview">
         	<item name="HttpCache4j" href="index.html"/>            
             <item name="Getting started" href="getting_started.html"/>
+            <item name="Javadoc" href="/apidocs/index.html"/>
+        </menu>
+		<menu name="Developers" inherit="top">
             <item name="Extending HTTPCache4j" href="extending.html"/>
+            <item name="Source Xref" href="/xref/index.html"/>
             <!--<item name="Developer guidelines" href="developer_guidelines.html"/>-->
         </menu>
-
-        <menu ref="modules" inherit="top"/>
+        <!-- <menu ref="modules" inherit="top"/>-->
         <menu ref="reports" inherit="bottom"/>
     </body>
 </project>
