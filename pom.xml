@@ -26,7 +26,7 @@
   <groupId>org.codehaus.httpcache4j</groupId>
   <artifactId>httpcache4j</artifactId>
   <packaging>pom</packaging>
-  <version>1.1.1</version>
+  <version>1.2-SNAPSHOT</version>
   <name>Java HTTP cache</name>
   <url>http://httpcache4j.codehaus.org</url>
   <description>HttpCache4j is a library for caching HTTP requests from a client.</description>
@@ -246,9 +246,9 @@
 
 
   <scm>
-    <connection>scm:svn:http://svn.codehaus.org/httpcache4j/tags/httpcache4j-1.1.1</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/httpcache4j/tags/httpcache4j-1.1.1</developerConnection>
-    <url>http://fisheye.codehaus.org/browse/httpcache4j/tags/httpcache4j-1.1.1</url>
+    <connection>scm:svn:http://svn.codehaus.org/httpcache4j/trunk</connection>
+    <developerConnection>scm:svn:https://svn.codehaus.org/httpcache4j/trunk</developerConnection>
+    <url>http://fisheye.codehaus.org/browse/httpcache4j/trunk</url>
   </scm>
 
   <distributionManagement>
