@@ -153,6 +153,13 @@ public final class Conditionals {
         return unModifiedSince;
     }
 
+    public void clear() {
+        match.clear();
+        nonMatch.clear();
+        modifiedSince = null;
+        unModifiedSince = null;
+    }
+
     public Headers toHeaders() {
         Headers headers = new Headers();
         if (!getMatch().isEmpty()) {

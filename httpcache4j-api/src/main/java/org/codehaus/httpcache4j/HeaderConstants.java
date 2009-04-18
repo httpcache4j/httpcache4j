@@ -34,6 +34,7 @@ public interface HeaderConstants {
     String LOCATION = "Location";
     String PRAGMA = "Pragma";
     String VARY = "Vary";
+    String WARNING = "Warning";
 
     /**
      * The Retry-After response-header field can be used with a 503 (Service Unavailable)

@@ -50,7 +50,7 @@ public class HTTPClientResponseResolverTest {
     }
 
     @Test
-    public void testResolveGETWithNoHeaders() {
+    public void testResolveGETWithNoHeaders() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.GET);
         final HttpMethod method = mock(GetMethod.class);
         HTTPClientResponseResolver resolver = createResponseResolver(method, 200, new Header[0]);
@@ -61,7 +61,7 @@ public class HTTPClientResponseResolverTest {
         assertEquals(0, response.getHeaders().size());
     }
 
-    @Test(expected = HTTPException.class)
+    @Test(expected = IOException.class)
     public void testResolveFailingGET() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.GET);
         final HttpMethod method = mock(GetMethod.class);
@@ -72,7 +72,7 @@ public class HTTPClientResponseResolverTest {
     }
 
     @Test
-    public void testResolvePOSTWithNoHeaders() {
+    public void testResolvePOSTWithNoHeaders() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.POST);
         final Payload payload = mock(Payload.class);
         request.setPayload(payload);
@@ -87,7 +87,7 @@ public class HTTPClientResponseResolverTest {
     }
 
     @Test
-    public void testResolvePUTWithNoHeaders() {
+    public void testResolvePUTWithNoHeaders() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.PUT);
         final Payload payload = mock(Payload.class);
         request.setPayload(payload);

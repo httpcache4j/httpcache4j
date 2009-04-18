@@ -64,16 +64,10 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         this.client = client;
     }
 
-    public HTTPResponse resolve(HTTPRequest request) {
+    public HTTPResponse resolve(HTTPRequest request) throws IOException{
         HttpMethod method = convertRequest(request);
-        try {
-            client.executeMethod(method);
-            return convertResponse(request.getRequestURI(), method);
-        }
-        catch (IOException e) {
-            method.releaseConnection();
-            throw new HTTPException(e.getMessage(), e);
-        }
+        client.executeMethod(method);
+        return convertResponse(request.getRequestURI(), method);
     }
 
     public boolean isUseRequestChallenge() {
