@@ -19,6 +19,8 @@ package org.codehaus.httpcache4j.resolver;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 
+import java.io.IOException;
+
 /**
  * The basic interface to resolve a response with the originating server.
  * This is used internally by the HTTPCache, but users may use this directly if they do not require the caching
@@ -34,6 +36,7 @@ public interface ResponseResolver {
      * @param request the request to resolve.
      *
      * @return the raw response from the server.
+     * @throws java.io.IOException if an IOException occurs e.g: java.net.ConnectException.
      */
-    HTTPResponse resolve(HTTPRequest request);
+    HTTPResponse resolve(HTTPRequest request) throws IOException;
 }

@@ -24,6 +24,8 @@ import org.codehaus.httpcache4j.resolver.ResponseResolver;
 import org.apache.commons.lang.Validate;
 
 import java.util.*;
+import java.io.IOException;
+import java.net.SocketException;
 
 /**
  * TODO:
@@ -112,7 +114,11 @@ public class HTTPCache {
             if (!isSafeRequest(request)) {
                 storage.invalidate(request.getRequestURI());
             }
-            response = resolver.resolve(request);
+            try {
+                response = resolver.resolve(request);
+            } catch (IOException e) {
+                throw new HTTPException(e);
+            }
         }
         else {
             //request is cacheable
@@ -153,47 +159,59 @@ public class HTTPCache {
 
     private HTTPResponse handleResolve(HTTPRequest request, CacheItem item) {
         HTTPResponse response = null;
-        HTTPResponse resolvedResponse = resolver.resolve(request);
+        HTTPResponse resolvedResponse = null;
+        try {
+            resolvedResponse = resolver.resolve(request);
+        } catch (IOException e) {
+            //No cached item found, we throw an exception.
+            if (item == null) {
+                throw new HTTPException(e);
+            }
+            else {
+                response = warn(request, item.getResponse(), e);
+            }
+        }
         if (resolvedResponse != null) {
-            try {
-                if (request.getMethod() == HTTPMethod.HEAD) {
-                    if (item != null) {
-                        response = updateResponse(request, item, resolvedResponse);
-                    }
-                    else {
-                        response = resolvedResponse;
-                    }
-                }
-                else if (isCacheableResponse(resolvedResponse)) {
-                    Vary vary = determineVariation(resolvedResponse, request);
-
-                    storage.put(request.getRequestURI(), vary, new CacheItem(resolvedResponse));
-                    response = resolvedResponse;
-                }
-                else if (item != null && resolvedResponse.getStatus().getCode() == Status.NOT_MODIFIED.getCode()) {
-                    response = updateResponse(request, item, resolvedResponse);
+            if (request.getMethod() == HTTPMethod.HEAD) {
+                if (item != null) {
+                    response = updateHeadersFromResolved(request, item, resolvedResponse);
                 }
                 else {
-                    //Response was not cacheable
                     response = resolvedResponse;
                 }
-                if (item != null && resolvedResponse.getStatus().getCode() == Status.OK.getCode()) {
-                    //Success was ok, but we had already a response for this item.
-                    //invalidate it so we don't clutter the filesystem.
-                    storage.invalidate(request.getRequestURI(), item);
-                }
             }
-            catch (HTTPException e) {
-                if (item != null) {
-                    storage.invalidate(request.getRequestURI(), item);
-                }
-                throw e;
+            else if (isCacheableResponse(resolvedResponse)) {
+                Vary vary = determineVariation(resolvedResponse, request);
+
+                storage.put(request.getRequestURI(), vary, new CacheItem(resolvedResponse));
+                response = resolvedResponse;
+            }
+            else if (item != null && resolvedResponse.getStatus().getCode() == Status.NOT_MODIFIED.getCode()) {
+                response = updateHeadersFromResolved(request, item, resolvedResponse);
+            }
+            else {
+                //Response was not cacheable
+                response = resolvedResponse;
+            }
+            if (item != null && resolvedResponse.getStatus().getCode() == Status.OK.getCode()) {
+                //Success was ok, but we had already a response for this item.
+                //invalidate it so we don't clutter the filesystem.
+                storage.invalidate(request.getRequestURI(), item);
             }
         }
         return response;
     }
 
-    private HTTPResponse updateResponse(HTTPRequest request, CacheItem item, HTTPResponse resolvedResponse) {
+    private HTTPResponse warn(HTTPRequest request, HTTPResponse response, IOException e) {
+        Headers headers = new Headers(response.getHeaders().getHeadersAsMap());
+        headers.add(Warning.STALE_WARNING.toHeader());
+        if (e instanceof SocketException) {
+            headers.add(Warning.DISCONNECT_OPERATION_WARNING.toHeader());
+        }
+        return new HTTPResponse(response.getPayload(), Status.OK, headers);
+    }
+
+    private HTTPResponse updateHeadersFromResolved(HTTPRequest request, CacheItem item, HTTPResponse resolvedResponse) {
         HTTPResponse cachedResponse = item.getResponse();
         Map<String, List<Header>> headers = new LinkedHashMap<String, List<Header>>(cachedResponse.getHeaders().getHeadersAsMap());
 
