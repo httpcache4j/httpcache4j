@@ -17,8 +17,7 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
-import static org.codehaus.httpcache4j.HeaderConstants.ETAG;
-import static org.codehaus.httpcache4j.HeaderConstants.VARY;
+import static org.codehaus.httpcache4j.HeaderConstants.*;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
 import org.apache.commons.lang.Validate;
@@ -137,9 +136,7 @@ public class HTTPCache {
             if (item != null && item.isStale()) {
                 //If the cached value is stale, execute the request and try to cache it.
                 HTTPResponse staleResponse = item.getResponse();
-                if (request.getMethod() == HTTPMethod.GET && request.getConditionals().getNonMatch().isEmpty() && staleResponse.getHeaders().hasHeader(ETAG)) {
-                    addIfNoneMatchHeader(staleResponse.getHeaders().getFirstHeader(ETAG), request);
-                }
+                prepareConditionalRequest(request, staleResponse);
 
                 response = handleResolve(request, item);
             }
@@ -157,6 +154,18 @@ public class HTTPCache {
         return response;
     }
 
+    private void prepareConditionalRequest(HTTPRequest request, HTTPResponse staleResponse) {
+        Conditionals conditionals = request.getConditionals();
+        if (request.getMethod() == HTTPMethod.GET && conditionals.toHeaders().isEmpty()) {
+            if (staleResponse.getHeaders().hasHeader(ETAG)) {
+                addIfNoneMatchHeader(staleResponse.getHeaders().getFirstHeader(ETAG), request);
+            }
+            else if (staleResponse.getLastModified() != null) {
+                conditionals.setIfModifiedSince(staleResponse.getLastModified());
+            }
+        }
+    }
+
     private HTTPResponse handleResolve(HTTPRequest request, CacheItem item) {
         HTTPResponse response = null;
         HTTPResponse resolvedResponse = null;
@@ -168,7 +177,7 @@ public class HTTPCache {
                 throw new HTTPException(e);
             }
             else {
-                response = warn(request, item.getResponse(), e);
+                response = warn(item.getResponse(), e);
             }
         }
         if (resolvedResponse != null) {
@@ -202,7 +211,7 @@ public class HTTPCache {
         return response;
     }
 
-    private HTTPResponse warn(HTTPRequest request, HTTPResponse response, IOException e) {
+    private HTTPResponse warn(HTTPResponse response, IOException e) {
         Headers headers = new Headers(response.getHeaders().getHeadersAsMap());
         headers.add(Warning.STALE_WARNING.toHeader());
         if (e instanceof SocketException) {
@@ -273,7 +282,7 @@ public class HTTPCache {
             if (request.getHeaders().hasHeader(HeaderConstants.CACHE_CONTROL)) {
                 String cacheControlHeaderValue = request.getHeaders().getFirstHeader(HeaderConstants.CACHE_CONTROL).getValue();
                 //If the request tells us that we shouldn't cache the response, then we don't.
-                return !(cacheControlHeaderValue.contains("no-store")) || cacheControlHeaderValue.contains("no-cache");
+                return !cacheControlHeaderValue.contains("no-store") || !cacheControlHeaderValue.contains("no-cache");
             }
             return true;
         }
