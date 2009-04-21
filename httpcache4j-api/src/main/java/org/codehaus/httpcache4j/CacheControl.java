@@ -18,40 +18,84 @@ package org.codehaus.httpcache4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 
+import java.util.*;
+
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 public class CacheControl {
-    private int maxAge;
-    private Directive directive;
+    private int maxAge = -1;
+    private int maxStale = -1;
+    private int minFresh = -1;
+    //TODO: what semantic meaning does this have over max-age? I think it overrides
+    private int sMaxAge = -1; //http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.3 //ignored for now
+    private Set<Directive> directives = new HashSet<Directive>();
+
+    public CacheControl(Map<Directive, String> directives) {
+        this.directives.addAll(directives.keySet());
+        parseDirectiveMap(directives);
+    }
 
     public CacheControl(Header header) {
-        if (!HeaderConstants.CACHE_CONTROL.equalsIgnoreCase(header.getName())) {
-            throw new IllegalArgumentException("Trying to construct a CacheControl object without a CacheControl Header");
-        }
         parse(header);
     }
 
+    public static CacheControl valueOf(String headerValue) {
+        return new CacheControl(new Header(HeaderConstants.CACHE_CONTROL, headerValue));
+    }
+
     private void parse(Header header) {
-        for (Directive directive : Directive.values()) {
-            if  (directive.getValue().equalsIgnoreCase(header.getValue())) {
-                this.directive = directive;
-            }
-        }
-        if (this.directive == null) {
+        Map<Directive, String> directiveMap = convertDirectiveMap(header);
+        parseDirectiveMap(directiveMap);
+        directives.addAll(directiveMap.keySet());
+        if (directives.isEmpty()) {
             throw new IllegalArgumentException("Unkown value from header: " + header.getValue());
-        }
-        else {
-            if (directive == Directive.PRIVATE || directive == Directive.PUBLIC) {
-                String maxAgeString = header.getDirectives().get(Directive.MAX_AGE.getValue());
-                if (StringUtils.isEmpty(maxAgeString)) {
-                    maxAge = NumberUtils.toInt(maxAgeString);
-                }
-            }
         }
     }
 
+    private void parseDirectiveMap(Map<Directive, String> directiveMap) {
+        String directiveValue = directiveMap.get(Directive.MAX_AGE);
+        maxAge = NumberUtils.toInt(directiveValue, -1);
+        directiveValue = directiveMap.get(Directive.MAX_STALE);
+        maxStale = NumberUtils.toInt(directiveValue, -1);
+        directiveValue = directiveMap.get(Directive.MIN_FRESH);
+        minFresh = NumberUtils.toInt(directiveValue, -1);
+        directiveValue = directiveMap.get(Directive.S_MAX_AGE);
+        sMaxAge = NumberUtils.toInt(directiveValue, -1);
+    }
+
+    private Map<Directive, String> convertDirectiveMap(Header header) {
+        Map<Directive, String> directives = new HashMap<Directive, String>();
+        for (Directive directive : Directive.values()) {
+            directives.put(directive, header.getDirectives().get(directive.getValue()));
+        }
+        return directives;
+    }
+
+    public int getMaxAge() {
+        return maxAge;
+    }
+
+    public int getMaxStale() {
+        return maxStale;
+    }
+
+    public int getMinFresh() {
+        return minFresh;
+    }
+
+    int getSMaxAge() {
+        return sMaxAge;
+    }
+
+    public boolean isPrivate() {
+        return directives.contains(Directive.PRIVATE);
+    }
+
+    public Header toHeader() {
+        return null;
+    }
 
     public enum Directive {
         PRIVATE("private"),
