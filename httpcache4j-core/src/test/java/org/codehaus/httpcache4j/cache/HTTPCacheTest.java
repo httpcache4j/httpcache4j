@@ -32,6 +32,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.net.URI;
+import java.io.IOException;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class HTTPCacheTest {
@@ -113,7 +114,7 @@ public class HTTPCacheTest {
     }
 
     @Test
-    public void testHEADAndGET() {
+    public void testHEADAndGET() throws IOException {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.HEAD);
         when(responseResolver.resolve(request)).thenReturn(new HTTPResponse(null, Status.OK, new Headers()));
         HTTPResponse response = cache.doCachedRequest(request);
@@ -126,7 +127,7 @@ public class HTTPCacheTest {
     }
 
     @Test
-    public void testHEADWithETagAndGET() {
+    public void testHEADWithETagAndGET() throws IOException {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.HEAD);
         Headers headers = new Headers();
         headers.add(new Header("ETag", "\"foo\""));
@@ -145,7 +146,11 @@ public class HTTPCacheTest {
     private HTTPResponse doGet(Headers responseHeaders, Status status, int numberItemsInCache) {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.GET);
         Payload payload = mock(Payload.class);
-        when(responseResolver.resolve(request)).thenReturn(new HTTPResponse(payload, status, responseHeaders));
+        try {
+            when(responseResolver.resolve(request)).thenReturn(new HTTPResponse(payload, status, responseHeaders));
+        } catch (IOException e) {
+            fail(e.getMessage());
+        }
         HTTPResponse response = cache.doCachedRequest(request);
         when(cacheStorage.size()).thenReturn(numberItemsInCache);
         assertEquals(numberItemsInCache, cacheStorage.size());
