@@ -72,6 +72,9 @@ class HTTPCacheHelper {
     String calculateAge(final HTTPResponse pResolvedResponse, final HTTPResponse pCachedResponse) {
         DateTime resolved = HeaderUtils.fromHttpDate(pResolvedResponse.getHeaders().getFirstHeader(HeaderConstants.DATE));
         DateTime cached = HeaderUtils.fromHttpDate(pCachedResponse.getHeaders().getFirstHeader(HeaderConstants.DATE));
+        if (resolved == null || cached == null) {
+            return "0";
+        }
         return String.valueOf(Seconds.secondsBetween(cached, resolved).getSeconds());
     }
 
