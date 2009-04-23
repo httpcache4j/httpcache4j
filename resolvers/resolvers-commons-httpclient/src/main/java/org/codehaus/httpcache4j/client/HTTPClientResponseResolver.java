@@ -87,13 +87,8 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private HttpMethod convertRequest(HTTPRequest request) {
         URI requestURI = request.getRequestURI();
         HttpMethod method = getMethod(request.getMethod(), requestURI);
-        Headers defaultHeaders = request.getHeaders();
-        Headers conditionalHeaders = request.getConditionals().toHeaders();
-        Headers preferencesHeaders = request.getPreferences().toHeaders();
-        addHeaders(conditionalHeaders, method);
-        addHeaders(preferencesHeaders, method);
-        //We don't want to add headers more than once.
-        addHeaders(removePotentialDuplicates(removePotentialDuplicates(defaultHeaders, conditionalHeaders), preferencesHeaders), method);
+        Headers requestHeaders = resolveHeaders(request);
+        addHeaders(requestHeaders, method);
         if (isUseRequestChallenge()) {
             Challenge challenge = request.getChallenge();
             if (challenge != null) {
@@ -115,9 +110,6 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             EntityEnclosingMethod carrier = (EntityEnclosingMethod) method;
             if (payload != null) {
                 carrier.setRequestEntity(new InputStreamRequestEntity(payload));
-            }
-            if (!defaultHeaders.hasHeader(HeaderConstants.CONTENT_TYPE)) {
-                carrier.setRequestHeader(HeaderConstants.CONTENT_TYPE, request.getPayload().getMimeType().toString());
             }
         }
 

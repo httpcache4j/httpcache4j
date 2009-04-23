@@ -16,25 +16,28 @@
 
 package org.codehaus.httpcache4j;
 
-public interface HeaderConstants {
-    String ACCEPT = "Accept";
-    String ACCEPT_LANGUAGE = "Accept-Language";
-    String ACCEPT_CHARSET = "Accept-Charset";
-    String ALLOW = "Allow";
-    String CACHE_CONTROL = "Cache-Control";
-    String CONTENT_TYPE = "Content-Type";
-    String DATE = "Date";
-    String ETAG = "ETag";
-    String EXPIRES = "Expires";
-    String IF_NON_MATCH = "If-None-Match";
-    String IF_MATCH = "If-Match";
-    String IF_MODIFIED_SINCE = "If-Modified-Since";
-    String IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
-    String LAST_MODIFIED = "Last-Modified";
-    String LOCATION = "Location";
-    String PRAGMA = "Pragma";
-    String VARY = "Vary";
-    String WARNING = "Warning";
+public final class HeaderConstants {
+    private HeaderConstants(){}
+    
+    public static final String ACCEPT = "Accept";
+    public static final String ACCEPT_LANGUAGE = "Accept-Language";
+    public static final String ACCEPT_CHARSET = "Accept-Charset";
+    public static final String AGE = "Age";
+    public static final String ALLOW = "Allow";
+    public static final String CACHE_CONTROL = "Cache-Control";
+    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String DATE = "Date";
+    public static final String ETAG = "ETag";
+    public static final String EXPIRES = "Expires";
+    public static final String IF_NON_MATCH = "If-None-Match";
+    public static final String IF_MATCH = "If-Match";
+    public static final String IF_MODIFIED_SINCE = "If-Modified-Since";
+    public static final String IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
+    public static final String LAST_MODIFIED = "Last-Modified";
+    public static final String LOCATION = "Location";
+    public static final String PRAGMA = "Pragma";
+    public static final String VARY = "Vary";
+    public static final String WARNING = "Warning";
 
     /**
      * The Retry-After response-header field can be used with a 503 (Service Unavailable)
@@ -45,5 +48,5 @@ public interface HeaderConstants {
      * after the time of the response
      */
     //TODO: Use this!
-    String RETRY_AFTER = "Retry-After";
+    public static final String RETRY_AFTER = "Retry-After";
 }

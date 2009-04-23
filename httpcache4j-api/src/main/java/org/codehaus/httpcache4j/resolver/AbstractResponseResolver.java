@@ -19,6 +19,8 @@ package org.codehaus.httpcache4j.resolver;
 import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.Header;
+import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.HeaderConstants;
 
 import java.util.List;
 import java.util.Map;
@@ -38,13 +40,9 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
     }
 
 
-    protected Headers removePotentialDuplicates(final Headers headersToRemoveFrom, final Headers headers) {
-        Map<String, List<Header>> map = new HashMap<String, List<Header>>(headersToRemoveFrom.getHeadersAsMap());
-        for (String key : headers.getHeadersAsMap().keySet()) {
-            if (map.containsKey(key)) {
-                map.remove(key);
-            }
-        }
+    private Headers merge(final Headers base, final Headers toMerge) {
+        Map<String, List<Header>> map = new HashMap<String, List<Header>>(base.getHeadersAsMap());
+        map.putAll(toMerge.getHeadersAsMap());
         if (map.isEmpty()) {
             return new Headers();
         }
@@ -54,5 +52,19 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
 
     protected PayloadCreator getPayloadCreator() {
         return payloadCreator;
+    }
+
+    protected Headers resolveHeaders(HTTPRequest request) {
+        Headers requestHeaders = request.getHeaders();
+        Headers conditionalHeaders = request.getConditionals().toHeaders();
+        Headers preferencesHeaders = request.getPreferences().toHeaders();
+
+        requestHeaders = merge(merge(requestHeaders, conditionalHeaders), preferencesHeaders);
+        if (!requestHeaders.hasHeader(HeaderConstants.CONTENT_TYPE) && request.hasPayload()) {
+            requestHeaders.add(HeaderConstants.CONTENT_TYPE, request.getPayload().getMimeType().toString());
+        }
+        
+        //We don't want to add headers more than once.
+        return requestHeaders;
     }
 }
