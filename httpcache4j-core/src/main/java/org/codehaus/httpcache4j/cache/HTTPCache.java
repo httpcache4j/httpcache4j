@@ -182,7 +182,7 @@ public class HTTPCache {
 
         headers.putAll(helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders()).getHeadersAsMap());
         Headers realHeaders = new Headers(headers);
-        realHeaders.add("Age", helper.calculateAge(resolvedResponse, cachedResponse));
+        realHeaders.add(HeaderConstants.AGE, helper.calculateAge(resolvedResponse, cachedResponse));
         HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), resolvedResponse.getStatus(), realHeaders);
         Vary vary = helper.determineVariation(updatedResponse, request);
         storage.put(request.getRequestURI(), vary, new CacheItem(updatedResponse));
