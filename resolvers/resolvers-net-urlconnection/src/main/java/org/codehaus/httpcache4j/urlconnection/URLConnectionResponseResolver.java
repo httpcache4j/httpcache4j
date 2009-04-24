@@ -20,10 +20,12 @@ import org.codehaus.httpcache4j.resolver.PayloadCreator;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.codec.binary.Base64;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.HttpURLConnection;
@@ -47,28 +49,58 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         URLConnection openConnection = url.openConnection();
         if (openConnection instanceof HttpURLConnection) {
             HttpURLConnection connection = (HttpURLConnection) openConnection;
-            configureConnection(connection);
-            connection.setRequestMethod(request.getMethod().name());
-            Headers requestHeaders = resolveHeaders(request);
-
-            for (Map.Entry<String, List<Header>> entry : requestHeaders) {
-                for (Header header : entry.getValue()) {
-                    connection.addRequestProperty(header.getName(), header.getValue());
-                }
-            }
-            connection.connect();
-            writeRequest(request, connection);
+            doRequest(request, connection);
             Status status = Status.valueOf(connection.getResponseCode());
-            Headers responseHeaders = getResponseHeaders(connection);
-            Payload payload = getPayloadCreator().createPayload(request.getRequestURI(), responseHeaders, wrapReponseStream(connection));
-            return new HTTPResponse(payload, status, responseHeaders);
+            if (status == Status.UNAUTHORIZED && request.getChallenge() != null) {
+                addAuthorizationHeader(request);
+                connection.disconnect();
+                connection = (HttpURLConnection) url.openConnection();
+                doRequest(request, connection);                
+            }
+            return convertResponse(request, connection);
         }
         throw new HTTPException("This resolver only supports HTTP calls");
     }
 
-    private InputStream wrapReponseStream(HttpURLConnection connection) {
+    private void doRequest(HTTPRequest request, HttpURLConnection connection) throws IOException {
+        configureConnection(connection);
+        connection.setRequestMethod(request.getMethod().name());
+        Headers requestHeaders = resolveHeaders(request);
+
+        for (Map.Entry<String, List<Header>> entry : requestHeaders) {
+            for (Header header : entry.getValue()) {
+                connection.addRequestProperty(header.getName(), header.getValue());
+            }
+        }
+        connection.connect();
+        writeRequest(request, connection);
+    }
+
+    private HTTPResponse convertResponse(HTTPRequest request, HttpURLConnection connection) throws IOException {
+        Status status = Status.valueOf(connection.getResponseCode());
+        Headers responseHeaders = getResponseHeaders(connection);
+        Payload payload = getPayloadCreator().createPayload(request.getRequestURI(), responseHeaders, wrapReponseStream(connection, status));
+        return new HTTPResponse(payload, status, responseHeaders);
+    }
+
+    private void addAuthorizationHeader(HTTPRequest request) {
+        if (request.getChallenge().getMethod() == ChallengeMethod.BASIC) {
+            String basicString = request.getChallenge().getIdentifier() + ":" + new String(request.getChallenge().getPassword());
+            try {
+                basicString = new String(Base64.encodeBase64(basicString.getBytes("UTF-8")));
+                request.getHeaders().add("Authorization", request.getChallenge().getMethod().name() + " " + basicString);
+            } catch (UnsupportedEncodingException e) {
+                throw new Error("UTF-8 is not supported on this platform", e);
+            }
+        }
+        else if (request.getChallenge().getMethod() == ChallengeMethod.DIGEST) {
+            throw new UnsupportedOperationException("Digest is not yet supported");
+        }
+    }
+
+    private InputStream wrapReponseStream(HttpURLConnection connection, Status status) {
         try {
-            return new HttpURLConnectionStream(connection);
+            return new HttpURLConnectionStream(connection, status);
         } catch (IOException e) {
             connection.disconnect();
             throw new HTTPException(e);
@@ -94,7 +126,9 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         Map<String, List<String>> headerFields = connection.getHeaderFields();
         for (Map.Entry<String, List<String>> entry : headerFields.entrySet()) {
             for (String headerValue : entry.getValue()) {
-                headers.add(entry.getKey(), headerValue);
+                if (entry.getKey() != null) {
+                    headers.add(entry.getKey(), headerValue);
+                }
             }
         }
         return headers;
@@ -114,9 +148,14 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         private final HttpURLConnection connection;
         private final InputStream delegate;
 
-        public HttpURLConnectionStream(final HttpURLConnection connection) throws IOException {
+        public HttpURLConnectionStream(final HttpURLConnection connection, Status status) throws IOException {
             this.connection = connection;
-            this.delegate = connection.getInputStream();
+            if (status.isClientError() || status.isServerError()) {
+                delegate = connection.getErrorStream();
+            }
+            else {
+                delegate = connection.getInputStream();
+            }
         }
 
         public int read() throws IOException {
