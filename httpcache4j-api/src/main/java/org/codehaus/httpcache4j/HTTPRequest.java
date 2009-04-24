@@ -22,9 +22,7 @@ import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.preference.Preferences;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Represents a HTTP request. You can use this in a couple of ways: <br/>
@@ -81,6 +79,36 @@ public class HTTPRequest {
     public Headers getHeaders() {
         return headers;
     }
+
+    /**
+     * Returns all headers with the headers from the Conditionals, Payload and Preferences.
+     * If you have explicitly set headers on the request that are the same as the Conditionals and Preferences they are overwritten.
+     * @return All the headers
+     */
+    public Headers getAllHeaders() {
+        Headers requestHeaders = getHeaders();
+        Headers conditionalHeaders = getConditionals().toHeaders();
+        Headers preferencesHeaders = getPreferences().toHeaders();
+
+        requestHeaders = merge(merge(requestHeaders, conditionalHeaders), preferencesHeaders);
+        if (!requestHeaders.hasHeader(HeaderConstants.CONTENT_TYPE) && hasPayload()) {
+            requestHeaders.add(HeaderConstants.CONTENT_TYPE, getPayload().getMimeType().toString());
+        }
+
+        //We don't want to add headers more than once.
+        return requestHeaders;
+    }
+
+    private Headers merge(final Headers base, final Headers toMerge) {
+        Map<String, List<Header>> map = new HashMap<String, List<Header>>(base.getHeadersAsMap());
+        map.putAll(toMerge.getHeadersAsMap());
+        if (map.isEmpty()) {
+            return new Headers();
+        }
+        return new Headers(map);
+    }
+    
+
 
     public List<Parameter> getParameters() {
         return Collections.unmodifiableList(parameters);

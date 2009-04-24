@@ -17,14 +17,6 @@
 package org.codehaus.httpcache4j.resolver;
 
 import org.apache.commons.lang.Validate;
-import org.codehaus.httpcache4j.Headers;
-import org.codehaus.httpcache4j.Header;
-import org.codehaus.httpcache4j.HTTPRequest;
-import org.codehaus.httpcache4j.HeaderConstants;
-
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Implementors should implement this instead of using the ResponseResolver interface directly.
@@ -40,31 +32,7 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
     }
 
 
-    private Headers merge(final Headers base, final Headers toMerge) {
-        Map<String, List<Header>> map = new HashMap<String, List<Header>>(base.getHeadersAsMap());
-        map.putAll(toMerge.getHeadersAsMap());
-        if (map.isEmpty()) {
-            return new Headers();
-        }
-        return new Headers(map);
-    }
-    
-
     protected PayloadCreator getPayloadCreator() {
         return payloadCreator;
-    }
-
-    protected Headers resolveHeaders(HTTPRequest request) {
-        Headers requestHeaders = request.getHeaders();
-        Headers conditionalHeaders = request.getConditionals().toHeaders();
-        Headers preferencesHeaders = request.getPreferences().toHeaders();
-
-        requestHeaders = merge(merge(requestHeaders, conditionalHeaders), preferencesHeaders);
-        if (!requestHeaders.hasHeader(HeaderConstants.CONTENT_TYPE) && request.hasPayload()) {
-            requestHeaders.add(HeaderConstants.CONTENT_TYPE, request.getPayload().getMimeType().toString());
-        }
-        
-        //We don't want to add headers more than once.
-        return requestHeaders;
     }
 }

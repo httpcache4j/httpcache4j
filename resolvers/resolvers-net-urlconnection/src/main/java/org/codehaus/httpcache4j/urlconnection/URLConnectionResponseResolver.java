@@ -65,7 +65,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
     private void doRequest(HTTPRequest request, HttpURLConnection connection) throws IOException {
         configureConnection(connection);
         connection.setRequestMethod(request.getMethod().name());
-        Headers requestHeaders = resolveHeaders(request);
+        Headers requestHeaders = request.getAllHeaders();
 
         for (Map.Entry<String, List<Header>> entry : requestHeaders) {
             for (Header header : entry.getValue()) {
