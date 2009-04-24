@@ -27,7 +27,7 @@ import java.io.FileFilter;
  * @version $Id: $
  */
 public class DeletingFileFilter implements FileFilter {
-    public boolean accept(File pathname) {
+    public synchronized boolean accept(File pathname) {
         if (pathname.isFile()) {
             return !pathname.delete();
         }

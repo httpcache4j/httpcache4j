@@ -76,7 +76,7 @@ class FileGenerationManager implements Serializable{
      */
     //TODO: Is this heavy?
     //TODO: Maybe we should do this when we miss in getFile() ?
-    public List<Generation> getGenerations() {
+    public synchronized List<Generation> getGenerations() {
         final List<Generation> generations = new ArrayList<Generation>();
         //handle existing generations...
         File[] directories = baseDirectory.listFiles(generationFilter);
@@ -112,11 +112,11 @@ class FileGenerationManager implements Serializable{
      *
      * @return the generation with the highest sequence number
      */
-    Generation getCurrentGeneration() {
+    synchronized Generation getCurrentGeneration() {
         return getGenerations().get(0);
     }
 
-    public File getFile(String fileName) {
+    public synchronized File getFile(String fileName) {
         File target = new File(getCurrentGeneration().getGenerationDirectory(), fileName);
         for (Generation generation : getGenerations()) {
             File candidate = new File(generation.getGenerationDirectory(), fileName);
