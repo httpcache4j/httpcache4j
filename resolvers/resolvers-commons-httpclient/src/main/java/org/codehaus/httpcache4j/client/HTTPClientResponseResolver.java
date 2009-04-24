@@ -87,7 +87,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private HttpMethod convertRequest(HTTPRequest request) {
         URI requestURI = request.getRequestURI();
         HttpMethod method = getMethod(request.getMethod(), requestURI);
-        Headers requestHeaders = resolveHeaders(request);
+        Headers requestHeaders = request.getAllHeaders();
         addHeaders(requestHeaders, method);
         if (isUseRequestChallenge()) {
             Challenge challenge = request.getChallenge();
