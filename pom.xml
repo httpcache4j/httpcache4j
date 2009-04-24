@@ -260,6 +260,7 @@
     <snapshotRepository>
       <id>httpcache4j-snapshot</id>
       <name>Codehaus maven repo</name>
+      <uniqueVersion>false</uniqueVersion>
       <url>dav:https://dav.codehaus.org/snapshots.repository/httpcache4j</url>
     </snapshotRepository>
     <site>
