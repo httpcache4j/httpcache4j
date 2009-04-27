@@ -49,9 +49,12 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         URLConnection openConnection = url.openConnection();
         if (openConnection instanceof HttpURLConnection) {
             HttpURLConnection connection = (HttpURLConnection) openConnection;
+            if (configuration.isPreemtiveAuthentication()) {
+                addAuthorizationHeader(request);
+            }
             doRequest(request, connection);
             Status status = Status.valueOf(connection.getResponseCode());
-            if (status == Status.UNAUTHORIZED && request.getChallenge() != null) {
+            if (status == Status.UNAUTHORIZED && request.getChallenge() != null && !configuration.isPreemtiveAuthentication()) {
                 addAuthorizationHeader(request);
                 connection.disconnect();
                 connection = (HttpURLConnection) url.openConnection();
