@@ -21,6 +21,8 @@ import org.apache.commons.lang.math.NumberUtils;
 import java.util.*;
 
 /**
+ * Experimental: do not use!
+ *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
