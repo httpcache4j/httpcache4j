@@ -24,13 +24,16 @@ import org.apache.commons.lang.Validate;
 public class URLConnectionConfigurator {
     private final int readTimeout;
     private final int connectTimeout;
+    private final boolean preemtiveAuthentication;
 
     public URLConnectionConfigurator() {
+        this.preemtiveAuthentication = false;
         readTimeout = 0;
         connectTimeout = 0;
     }
 
-    public URLConnectionConfigurator(int readTimeout, int connectTimeout) {
+    public URLConnectionConfigurator(int readTimeout, int connectTimeout, boolean preemtiveAuthentication) {
+        this.preemtiveAuthentication = preemtiveAuthentication;
         Validate.isTrue(readTimeout > 0, "Read timeout must be postive");
         Validate.isTrue(connectTimeout > 0, "Connect timeout must be postive");
         this.readTimeout = readTimeout;
@@ -45,5 +48,7 @@ public class URLConnectionConfigurator {
         return connectTimeout;
     }
 
-    //private long chunckedMode;
+    public boolean isPreemtiveAuthentication() {
+        return preemtiveAuthentication;
+    }
 }
