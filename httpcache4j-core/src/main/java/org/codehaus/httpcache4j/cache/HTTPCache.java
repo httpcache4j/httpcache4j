@@ -100,6 +100,7 @@ public class HTTPCache {
         if (response == null) {
             return new HTTPResponse(null, Status.INTERNAL_SERVER_ERROR, new Headers());
         }
+        //TODO: Lock the file here???
         return response;
     }
 

@@ -33,6 +33,11 @@ public class Headers implements Serializable, Iterable<Map.Entry<String, List<He
     public Headers() {
     }
 
+    public Headers(Headers headers) {
+        Validate.notNull(headers, "The headers may not be null");
+        this.headers.putAll(headers.getHeadersAsMap());
+    }
+
     public Headers(Map<String, List<Header>> headers) {
         Validate.notNull(headers, "The header map may not be null");
         this.headers.putAll(headers);

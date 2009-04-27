@@ -8,7 +8,7 @@ import java.util.List;
 final class UnmodifiableHeaders extends Headers {
     
     public UnmodifiableHeaders(final Headers headers) {
-        super(headers.getHeadersAsMap());
+        super(headers);
     }
 
     @Override
