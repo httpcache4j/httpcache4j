@@ -15,9 +15,8 @@
  */
 package org.codehaus.httpcache4j.cache;
 
-import org.codehaus.httpcache4j.resolver.PayloadCreator;
+import org.codehaus.httpcache4j.resolver.AbstractPayloadCreator;
 import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.*;
 import org.apache.commons.io.IOUtils;
 
@@ -33,22 +32,12 @@ import java.net.URI;
 
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public class InMemoryPayloadCreator implements PayloadCreator {
+public class InMemoryPayloadCreator extends AbstractPayloadCreator {
     
-    public Payload createPayload(URI requestURI, Headers headers, InputStream stream) {
-        boolean cacheable = HeaderUtils.hasCacheableHeaders(headers);
-        Header contentTypeHeader = headers.getFirstHeader(HeaderConstants.CONTENT_TYPE);
-        MIMEType type = contentTypeHeader != null ? MIMEType.valueOf(contentTypeHeader.getValue()) : MIMEType.APPLICATION_OCTET_STREAM;
-        if (cacheable) {
-            try {
-                return new ByteArrayPayload(stream, type);
-            } catch (IOException e) {
-                return null;
-            }
-        }
-        return new InputStreamPayload(stream, type);
+    protected Payload createCachedPayload(URI requestURI, InputStream stream, MIMEType type) throws IOException {
+        return new ByteArrayPayload(stream, type);
     }
-
+    
     private class ByteArrayPayload implements Payload, Serializable {
         private byte[] bytes;
         private MIMEType type;

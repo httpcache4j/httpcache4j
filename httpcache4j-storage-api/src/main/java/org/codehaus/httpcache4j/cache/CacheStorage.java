@@ -22,7 +22,6 @@ import java.net.URI;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 //TODO: Document.
-//TODO: Implement a version that is persistent.
 public interface CacheStorage {
 
     void put(URI requestURI, Vary vary, CacheItem cacheItem);
