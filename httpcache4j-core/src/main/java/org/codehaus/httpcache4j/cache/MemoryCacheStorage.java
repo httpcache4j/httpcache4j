@@ -21,11 +21,7 @@ import org.codehaus.httpcache4j.payload.Payload;
 
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * In Memory implementation of a cache storage.
@@ -41,7 +37,7 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     public MemoryCacheStorage(int capacity) {
-        cache = new InvalidateOnRemoveHashMap(capacity);
+        cache = new InvalidateOnRemoveLRUHashMap(capacity);
     }
 
     public synchronized void put(URI requestURI, Vary vary, CacheItem cacheItem) {
@@ -121,9 +117,16 @@ public class MemoryCacheStorage implements CacheStorage {
         return cache.size();
     }
 
-    protected class InvalidateOnRemoveHashMap extends HashMap<URI, CacheValue> {
-        public InvalidateOnRemoveHashMap(final int capacity) {
+    protected class InvalidateOnRemoveLRUHashMap extends LinkedHashMap<URI, CacheValue> {
+        private final int capacity;
+        public InvalidateOnRemoveLRUHashMap(final int capacity) {
             super(capacity);
+            this.capacity = capacity;
+        }
+
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<URI, CacheValue> eldest) {
+            return size() == capacity;
         }
 
         @Override

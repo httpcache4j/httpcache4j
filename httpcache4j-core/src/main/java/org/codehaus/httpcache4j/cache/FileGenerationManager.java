@@ -20,12 +20,14 @@ import org.apache.commons.lang.Validate;
 import org.apache.commons.io.filefilter.AndFileFilter;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.apache.commons.io.filefilter.IOFileFilter;
 
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.Serializable;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,7 +52,8 @@ class FileGenerationManager implements Serializable{
     private final File baseDirectory;
     private final int generationSize;
     private final int numberOfGenerations;
-    private final FileFilter generationFilter;
+    private final IOFileFilter generationFilter;
+    private static final DeletingFileFilter DELETING_FILTER = new DeletingFileFilter();
 
     public FileGenerationManager(final File baseDirectory, final int numberOfGenerations) {
         this(baseDirectory, numberOfGenerations, 100);
@@ -74,15 +77,16 @@ class FileGenerationManager implements Serializable{
      *
      * @return the created generations.
      */
-    //TODO: Is this heavy?
+    //TODO: Is this heavy? yes. how to fix...
     //TODO: Maybe we should do this when we miss in getFile() ?
+    //TODO: reimplement using commons VFS
     public synchronized List<Generation> getGenerations() {
         final List<Generation> generations = new ArrayList<Generation>();
         //handle existing generations...
-        File[] directories = baseDirectory.listFiles(generationFilter);
+        String[] directories = baseDirectory.list(generationFilter);
         if (directories.length > 0) {
-            for (File directory : directories) {
-                generations.add(new Generation(baseDirectory, Integer.parseInt(directory.getName())));
+            for (String directory : directories) {
+                generations.add(new Generation(baseDirectory, Integer.parseInt(directory)));
             }
         }
         else {
@@ -124,8 +128,11 @@ class FileGenerationManager implements Serializable{
                 if (!target.equals(candidate)) {
                     //because of; http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4017593
                     target.delete();
-                    if (candidate.renameTo(target)) {
-                        return target;
+                    if (!candidate.renameTo(target)) {
+                        return candidate; //miss, do we really want to expose a previous generation?
+                    }
+                    else {
+                        break;
                     }
                 }
             }
@@ -134,8 +141,8 @@ class FileGenerationManager implements Serializable{
     }
     
     static class Generation implements Comparable<Generation> {
-        private File generationDirectory;
-        private int sequence;
+        private final File generationDirectory;
+        private final int sequence;
 
         public Generation(final File baseDir, final int generationNumber) {
             Validate.notNull(baseDir, "Generation directory may not be null");
@@ -146,7 +153,7 @@ class FileGenerationManager implements Serializable{
         }
 
         public synchronized void delete() {
-            File[] undeleteableFiles = generationDirectory.listFiles(new DeletingFileFilter());
+            File[] undeleteableFiles = generationDirectory.listFiles(DELETING_FILTER);
             if (undeleteableFiles == null || undeleteableFiles.length == 0) {
                 generationDirectory.delete();
             }

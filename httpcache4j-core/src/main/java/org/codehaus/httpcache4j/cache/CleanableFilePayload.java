@@ -18,7 +18,7 @@ package org.codehaus.httpcache4j.cache;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.io.input.ClosedInputStream;
 import org.apache.commons.lang.Validate;
 
 import org.codehaus.httpcache4j.HTTPException;
@@ -87,7 +87,7 @@ public class CleanableFilePayload implements CleanablePayload, Serializable {
                 throw new HTTPException("Could not create file input stream", e);
             }
         }
-        return new NullInputStream(0);
+        return new ClosedInputStream();
     }
 
     public boolean isTransient() {

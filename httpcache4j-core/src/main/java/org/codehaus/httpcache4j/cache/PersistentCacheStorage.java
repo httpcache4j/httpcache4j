@@ -72,7 +72,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     @SuppressWarnings({"unchecked"})
     private void getCacheFromDisk() {
         if (cache == null) {
-            cache = new InvalidateOnRemoveHashMap(capacity);
+            cache = new InvalidateOnRemoveLRUHashMap(capacity);
         }
         if (serializationFile.exists()) {
             FileInputStream inputStream = null;
@@ -87,7 +87,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
                     throw (RuntimeException)e;
                 }
                 //Ignored, we create a new one.
-                cache = new InvalidateOnRemoveHashMap(capacity);
+                cache = new InvalidateOnRemoveLRUHashMap(capacity);
             }
             finally {
                 IOUtils.closeQuietly(inputStream);
