@@ -108,7 +108,7 @@ public class HTTPCache {
         HTTPResponse response;
         if (!force) {
             CacheItem item = storage.get(request);
-            if (item != null && item.isStale()) {
+            if (item != null) {
                 if (item.isStale()) {
                     //If the cached value is stale, execute the request and try to cache it.
                     HTTPResponse staleResponse = item.getResponse();
