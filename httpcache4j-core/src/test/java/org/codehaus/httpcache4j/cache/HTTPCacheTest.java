@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import org.mockito.Mockito;
 
 import java.net.URI;
 import java.io.IOException;
@@ -141,6 +142,20 @@ public class HTTPCacheTest {
         assertTrue("No payload on get", response.hasPayload());
         when(cacheStorage.size()).thenReturn(1);
         assertEquals(1, cacheStorage.size());
+    }
+
+    @Test
+    public void testCacheNoneStaleRequestRegression() throws IOException {
+        HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.HEAD);
+        Headers headers = new Headers();
+        headers.add(new Header("Cache-Control", "private, max-age=65000"));
+        HTTPResponse cachedResponse = new HTTPResponse(null, Status.OK, headers);
+
+        CacheItem item = new CacheItem(cachedResponse);
+        when(cacheStorage.get(request)).thenReturn(item);
+        assertFalse(item.isStale());
+        cache.doCachedRequest(request);
+        verify(responseResolver, never()).resolve(request);        
     }
 
     private HTTPResponse doGet(Headers responseHeaders, Status status, int numberItemsInCache) {
