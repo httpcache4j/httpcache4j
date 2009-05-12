@@ -163,7 +163,7 @@
     </plugins>
   </build>
    <properties>
-    <currentVersion>1.1.1</currentVersion>    
+    <currentVersion>1.5.1</currentVersion>    
   </properties>
   
 
