@@ -104,7 +104,9 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         for (Parameter parameter : parameters) {
             query.add(new NameValuePair(parameter.getName(), parameter.getValue()));
         }
-        method.setQueryString(query.toArray(new NameValuePair[query.size()]));
+        if (!query.isEmpty()) {
+            method.setQueryString(query.toArray(new NameValuePair[query.size()]));
+        }
         if (method instanceof EntityEnclosingMethod && request.hasPayload()) {
             InputStream payload = request.getPayload().getInputStream();
             EntityEnclosingMethod carrier = (EntityEnclosingMethod) method;
