@@ -98,7 +98,6 @@ public class HTTPCache {
         if (response == null) {
             return new HTTPResponse(null, Status.INTERNAL_SERVER_ERROR, new Headers());
         }
-        //TODO: Lock the file here???
         return response;
     }
 
@@ -115,18 +114,24 @@ public class HTTPCache {
                     response = handleResolve(request, item);
                 }
                 else {
+                    //TODO: handle rewrite of Status... HEAD should probably always return 200 OK.
+                    //TODO: Age header???
                     response = item.getResponse();
                 }
             }
             else {
-                response = handleResolve(request, null);
+                response = unconditionalResolve(request);
             }
         }
         else {
-            response = handleResolve(request, null);
+            response = unconditionalResolve(request);
         }
 
         return response;
+    }
+
+    private HTTPResponse unconditionalResolve(final HTTPRequest request) {
+        return handleResolve(request, null);
     }
 
 
