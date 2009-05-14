@@ -16,8 +16,12 @@
 
 package org.codehaus.httpcache4j.util;
 
+import org.apache.commons.lang.Validate;
+
 import java.io.File;
 import java.io.FileFilter;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * A file-filter that deletes the files as it traverses the directories.
@@ -27,8 +31,18 @@ import java.io.FileFilter;
  * @version $Id: $
  */
 public class DeletingFileFilter implements FileFilter {
+    private final List<File> knownFiles = new ArrayList<File>();
+
+    public DeletingFileFilter() {
+    }
+
+    public DeletingFileFilter(List<File> knownFiles) {
+        Validate.notNull(knownFiles, "Known files may not be null");
+        this.knownFiles.addAll(knownFiles);
+    }
+
     public synchronized boolean accept(File pathname) {
-        if (pathname.isFile()) {
+        if (!knownFiles.contains(pathname) && pathname.isFile()) {
             return !pathname.delete();
         }
         else if (pathname.isDirectory()) {
