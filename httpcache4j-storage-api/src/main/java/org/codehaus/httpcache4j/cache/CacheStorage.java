@@ -19,10 +19,11 @@ package org.codehaus.httpcache4j.cache;
 import org.codehaus.httpcache4j.HTTPRequest;
 
 import java.net.URI;
+import java.util.Map;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 //TODO: Document.
-public interface CacheStorage {
+public interface CacheStorage extends Iterable<Map.Entry<URI, CacheValue>> {
 
     void put(URI requestURI, Vary vary, CacheItem cacheItem);
 
