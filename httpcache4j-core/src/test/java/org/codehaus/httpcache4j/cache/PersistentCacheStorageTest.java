@@ -38,15 +38,14 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
 	protected CacheStorage createCacheStorage() {
         baseDirectory = TestUtil.getTestFile("target/test/");
         baseDirectory.mkdirs();
-        return new PersistentCacheStorage(TestUtil.getTestFile("target/test/"));
+        return new PersistentCacheStorage(baseDirectory);
     }
 
     @Test
     public void testPUTWithRealPayload() throws Exception {
         File tempFile = File.createTempFile("foo", "bar", baseDirectory);
         tempFile.deleteOnExit();
-        FileGenerationManager manager = new FileGenerationManager(baseDirectory, 1, 2);
-        HTTPResponse response = new HTTPResponse(new CleanableFilePayload(manager, FileUtils.openInputStream(tempFile), MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
+        HTTPResponse response = new HTTPResponse(new CleanableFilePayload(tempFile, MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
         CacheItem item = new CacheItem(response);
         storage.put(URI.create("foo"), new Vary(), item);
         assertEquals(1, storage.size());

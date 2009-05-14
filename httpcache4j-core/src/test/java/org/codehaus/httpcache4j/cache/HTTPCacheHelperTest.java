@@ -44,7 +44,7 @@ public class HTTPCacheHelperTest {
     public void testNoVariation() {
         HTTPRequest request = new HTTPRequest(URI.create("dummy://url"));
         HTTPResponse response = createResponse(new Headers());
-        Vary vary = helper.determineVariation(response, request);
+        Vary vary = helper.determineVariation(response.getHeaders(), request.getHeaders());
         Assert.assertEquals(0, vary.getVaryHeaderNames().size());
     }
 
@@ -54,7 +54,7 @@ public class HTTPCacheHelperTest {
         Headers headers = new Headers();
         headers.add("Vary", "Accept");
         HTTPResponse response = createResponse(headers);
-        Vary vary = helper.determineVariation(response, request);
+        Vary vary = helper.determineVariation(response.getHeaders(), request.getHeaders());
         Assert.assertEquals(1, vary.getVaryHeaderNames().size());
     }
 
@@ -64,7 +64,7 @@ public class HTTPCacheHelperTest {
         Headers headers = new Headers();
         headers.add("Vary", "Accept, Accept-Language");
         HTTPResponse response = createResponse(headers);
-        Vary vary = helper.determineVariation(response, request);
+        Vary vary = helper.determineVariation(response.getHeaders(), request.getHeaders());
         Assert.assertEquals(2, vary.getVaryHeaderNames().size());
     }
 

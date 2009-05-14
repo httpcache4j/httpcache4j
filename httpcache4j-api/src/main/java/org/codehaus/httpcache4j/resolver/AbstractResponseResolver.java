@@ -24,15 +24,16 @@ import org.apache.commons.lang.Validate;
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
 public abstract class AbstractResponseResolver implements ResponseResolver {
-    private PayloadCreator payloadCreator;
+    private ResponseCreator responseCreator;
 
-    public AbstractResponseResolver(PayloadCreator payloadCreator) {
-        Validate.notNull(payloadCreator, "You may not add a null Payload creator");
-        this.payloadCreator = payloadCreator;
+    public AbstractResponseResolver(ResponseCreator responseCreator) {
+        Validate.notNull(responseCreator, "You may not add a null ResponseCreator");
+        this.responseCreator = responseCreator;
     }
 
 
-    protected PayloadCreator getPayloadCreator() {
-        return payloadCreator;
+    protected ResponseCreator getResponseCreator() {
+        return responseCreator;
     }
+
 }

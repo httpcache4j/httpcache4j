@@ -17,19 +17,14 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.ClosedInputStream;
-import org.apache.commons.lang.Validate;
 
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.UUID;
 
 /**
  * Stores the file in "bucket". This class is responsible creating a
@@ -44,33 +39,17 @@ import java.util.UUID;
 public class CleanableFilePayload implements CleanablePayload, Serializable {
 
     private static final long serialVersionUID = -4565379464661253740L;
-    
-    private final String fileName;
-    private final FileGenerationManager generationManager;
+
+    private final File file;
     private final MIMEType mimeType;
 
-    public CleanableFilePayload(FileGenerationManager generationManager, InputStream stream, MIMEType mimeType) throws IOException {
-        Validate.notNull(generationManager, "You may not add a null generation manager");
-        Validate.notNull(stream, "You may not add a null stream");
+    public CleanableFilePayload(final File file, final MIMEType mimeType) throws IOException {
+        this.file = file;
         this.mimeType = mimeType;
-        fileName = UUID.randomUUID().toString();
-        this.generationManager = generationManager;
-        File file = getFile();
-        FileOutputStream outputStream = FileUtils.openOutputStream(file);
-        try {
-            IOUtils.copy(stream, outputStream);
-        }
-        finally {
-            IOUtils.closeQuietly(outputStream);
-            IOUtils.closeQuietly(stream);
-        }
-        if (file.length() == 0) {
-            file.delete();
-        }
     }
 
-    private File getFile() {
-        return generationManager.getFile(fileName);
+    File getFile() {
+        return file;
     }
 
     public MIMEType getMimeType() {
@@ -78,8 +57,7 @@ public class CleanableFilePayload implements CleanablePayload, Serializable {
     }
 
     public InputStream getInputStream() {
-        File file = getFile();
-        if (isAvailable(file)) {
+        if (file.exists() && file.canRead()) {
             try {
                 return FileUtils.openInputStream(file);
             }
@@ -87,7 +65,7 @@ public class CleanableFilePayload implements CleanablePayload, Serializable {
                 throw new HTTPException("Could not create file input stream", e);
             }
         }
-        return new ClosedInputStream();
+        throw new HTTPException("File is gone...");
     }
 
     public boolean isTransient() {
@@ -95,18 +73,12 @@ public class CleanableFilePayload implements CleanablePayload, Serializable {
     }
 
     public void clean() {
-        final File file = getFile();
-        if (file != null && isAvailable(file)) {
+        if (isAvailable()) {
             file.delete();
         }
     }
 
     public boolean isAvailable() {
-        File file = getFile();
-        return isAvailable(file);
-    }
-
-    private boolean isAvailable(File file) {
-        return file.exists() && file.canRead() && file.canWrite();
+        return file.exists() && file.canRead();
     }
 }

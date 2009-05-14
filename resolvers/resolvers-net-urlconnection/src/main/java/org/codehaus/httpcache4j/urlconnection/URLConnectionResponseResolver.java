@@ -16,9 +16,8 @@
 package org.codehaus.httpcache4j.urlconnection;
 
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
-import org.codehaus.httpcache4j.resolver.PayloadCreator;
+import org.codehaus.httpcache4j.resolver.ResponseCreator;
 import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.payload.Payload;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.codec.binary.Base64;
 
@@ -39,8 +38,8 @@ import java.util.Map;
 public class URLConnectionResponseResolver extends AbstractResponseResolver {
     private final URLConnectionConfigurator configuration;
 
-    public URLConnectionResponseResolver(PayloadCreator payloadCreator, URLConnectionConfigurator configuration) {
-        super(payloadCreator);
+    public URLConnectionResponseResolver(ResponseCreator responseCreator, URLConnectionConfigurator configuration) {
+        super(responseCreator);
         this.configuration = configuration;
     }
 
@@ -82,8 +81,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
     private HTTPResponse convertResponse(HTTPRequest request, HttpURLConnection connection) throws IOException {
         Status status = Status.valueOf(connection.getResponseCode());
         Headers responseHeaders = getResponseHeaders(connection);
-        Payload payload = getPayloadCreator().createPayload(request.getRequestURI(), responseHeaders, wrapReponseStream(connection, status));
-        return new HTTPResponse(payload, status, responseHeaders);
+        return getResponseCreator().createResponse(request, status, responseHeaders, wrapReponseStream(connection, status));
     }
 
     private void addAuthorizationHeader(HTTPRequest request) {
