@@ -17,23 +17,22 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
-import org.codehaus.httpcache4j.HTTPRequest;
-import org.codehaus.httpcache4j.HTTPMethod;
-import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.Status;
-import org.codehaus.httpcache4j.Headers;
-import org.codehaus.httpcache4j.Header;
-import org.codehaus.httpcache4j.HeaderConstants;
+import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
+import org.codehaus.httpcache4j.payload.InputStreamPayload;
 
 import org.junit.Test;
 import org.junit.Before;
+import org.junit.Assert;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-import org.mockito.Mockito;
+import org.joda.time.DateTime;
+import org.joda.time.MutableDateTime;
+import org.apache.commons.io.input.ClosedInputStream;
 
 import java.net.URI;
 import java.io.IOException;
+
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class HTTPCacheTest {
@@ -77,6 +76,30 @@ public class HTTPCacheTest {
     @Test
     public void testNoCacheResponse() {
         doGet(new Headers(), Status.OK, 0);
+    }
+
+    @Test
+    public void testConditionalGet() throws IOException {
+        HTTPRequest request = new HTTPRequest(URI.create("foo"));
+        
+        DateTime prev = new DateTime();
+        Header storedHeader = HeaderUtils.toHttpDate(HeaderConstants.DATE, prev);
+        Headers responseHeaders = new Headers();
+        responseHeaders.add(storedHeader);
+        responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
+        responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
+        responseHeaders.add(storedHeader);
+        when(cacheStorage.get(request)).thenReturn(new CacheItem(new HTTPResponse(new InputStreamPayload(ClosedInputStream.CLOSED_INPUT_STREAM, MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
+        MutableDateTime changedHeader = prev.toMutableDateTime();
+        changedHeader.addMinutes(50);
+
+        Headers updatedHeaders = new Headers(responseHeaders);
+        updatedHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, changedHeader.toDateTime()));
+        when(responseResolver.resolve(request)).thenReturn(new HTTPResponse(null, Status.NOT_MODIFIED, updatedHeaders));
+        HTTPResponse response = cache.doCachedRequest(request);
+        Assert.assertNotNull("Response was null", response);
+        Assert.assertNotNull("The payload was null", response.getPayload());
+        Assert.assertNotNull("The payload had a null inputstream", response.getPayload().getInputStream());
     }
 
     @Test

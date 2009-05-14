@@ -90,14 +90,14 @@ class HTTPCacheHelper {
         return washedHeaders;
     }
 
-    Vary determineVariation(HTTPResponse resolvedResponse, HTTPRequest request) {
-        Header varyHeader = resolvedResponse.getHeaders().getFirstHeader(VARY);
+    Vary determineVariation(Headers responseHeaders, Headers requestHeaders) {
+        String varyHeader = responseHeaders.getFirstHeaderValue(VARY);
         Map<String, String> resolvedVaryHeaders = new HashMap<String, String>();
         if (varyHeader != null) {
-            String[] varies = varyHeader.getValue().split(",");
+            String[] varies = varyHeader.split(",");
             for (String vary : varies) {
-                Header value = request.getHeaders().getFirstHeader(vary);
-                resolvedVaryHeaders.put(vary, value == null ? null : value.getValue());
+                String value = requestHeaders.getFirstHeaderValue(vary);
+                resolvedVaryHeaders.put(vary, value == null ? null : value);
             }
         }
         return new Vary(resolvedVaryHeaders);

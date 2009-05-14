@@ -17,14 +17,12 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
-import static org.codehaus.httpcache4j.HeaderConstants.*;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
 import org.apache.commons.lang.Validate;
 
 import java.util.*;
 import java.io.IOException;
-import java.net.SocketException;
 
 /**
  * TODO:
@@ -52,7 +50,7 @@ public class HTTPCache {
         Validate.notNull(storage, "Cache storage may not be null");
         Validate.notNull(resolver, "Resolver may not be null");
         this.storage = storage;
-        this.resolver = resolver;
+        this.resolver = resolver;       
     }
 
     public HTTPCache(CacheStorage storage) {
@@ -74,11 +72,11 @@ public class HTTPCache {
         return storage;
     }
 
-    public HTTPResponse doCachedRequest(HTTPRequest request) {
+    public HTTPResponse doCachedRequest(final HTTPRequest request) {
         return doCachedRequest(request, false);
     }
 
-    public HTTPResponse doCachedRequest(HTTPRequest request, boolean force) {
+    public HTTPResponse doCachedRequest(final HTTPRequest request, boolean force) {
         if (resolver == null) {
             throw new IllegalStateException("The resolver was not set, no point of continuing with the request");
         }
@@ -104,7 +102,7 @@ public class HTTPCache {
         return response;
     }
 
-    private HTTPResponse getFromCache(HTTPRequest request, final boolean force) {
+    private HTTPResponse getFromCache(final HTTPRequest request, final boolean force) {
         HTTPResponse response;
         if (!force) {
             CacheItem item = storage.get(request);
@@ -132,7 +130,7 @@ public class HTTPCache {
     }
 
 
-    private HTTPResponse handleResolve(HTTPRequest request, CacheItem item) {
+    private HTTPResponse handleResolve(final HTTPRequest request, final CacheItem item) {
         HTTPResponse response = null;
         HTTPResponse resolvedResponse = null;
         try {
@@ -156,7 +154,7 @@ public class HTTPCache {
                 }
             }
             else if (helper.isCacheableResponse(resolvedResponse)) {
-                Vary vary = helper.determineVariation(resolvedResponse, request);
+                Vary vary = helper.determineVariation(resolvedResponse.getHeaders(), request.getHeaders());
 
                 storage.put(request.getRequestURI(), vary, new CacheItem(resolvedResponse));
                 response = resolvedResponse;
@@ -177,7 +175,7 @@ public class HTTPCache {
         return response;
     }
 
-    private HTTPResponse updateHeadersFromResolved(HTTPRequest request, CacheItem item, HTTPResponse resolvedResponse) {
+    private HTTPResponse updateHeadersFromResolved(final HTTPRequest request, final CacheItem item, final HTTPResponse resolvedResponse) {
         HTTPResponse cachedResponse = item.getResponse();
         Map<String, List<Header>> headers = new LinkedHashMap<String, List<Header>>(cachedResponse.getHeaders().getHeadersAsMap());
 
@@ -185,7 +183,7 @@ public class HTTPCache {
         Headers realHeaders = new Headers(headers);
         realHeaders.add(HeaderConstants.AGE, helper.calculateAge(resolvedResponse, cachedResponse));
         HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), resolvedResponse.getStatus(), realHeaders);
-        Vary vary = helper.determineVariation(updatedResponse, request);
+        Vary vary = helper.determineVariation(updatedResponse.getHeaders(), request.getHeaders());
         storage.put(request.getRequestURI(), vary, new CacheItem(updatedResponse));
         return updatedResponse;
     }

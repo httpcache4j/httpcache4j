@@ -15,7 +15,8 @@
  */
 package org.codehaus.httpcache4j.cache;
 
-import org.codehaus.httpcache4j.resolver.AbstractPayloadCreator;
+import org.codehaus.httpcache4j.resolver.StoragePolicy;
+import org.codehaus.httpcache4j.resolver.AbstractResponseCreator;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.*;
 import org.apache.commons.io.IOUtils;
@@ -24,7 +25,6 @@ import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URI;
 
 /**
  * An implementation of Payload creator that creates ByteArrayPayloads. This is mostly useful for testing.
@@ -32,13 +32,17 @@ import java.net.URI;
 
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public class InMemoryPayloadCreator extends AbstractPayloadCreator {
-    
-    protected Payload createCachedPayload(URI requestURI, InputStream stream, MIMEType type) throws IOException {
+public class InMemoryResponseCreator extends AbstractResponseCreator {
+    public InMemoryResponseCreator() {
+        super(StoragePolicy.NULL);
+    }
+
+    protected Payload createCachedPayload(HTTPRequest request, Headers responseHeaders, InputStream stream, MIMEType type) throws IOException {
         return new ByteArrayPayload(stream, type);
     }
-    
+
     private class ByteArrayPayload implements Payload, Serializable {
+        private static final long serialVersionUID = -4845254892809632007L;        
         private byte[] bytes;
         private MIMEType type;
 

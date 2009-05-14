@@ -23,9 +23,8 @@ import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.lang.Validate;
 
 import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.resolver.PayloadCreator;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
+import org.codehaus.httpcache4j.resolver.ResponseCreator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,10 +55,10 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
      * }
      *
      * @param client         the HttpClient instance to use. may not be {@code null}
-     * @param payloadCreator the payload creator to use, may not be {@code null}
+     * @param responseCreator the Response creator to use, may not be {@code null}
      */
-    public HTTPClientResponseResolver(HttpClient client, PayloadCreator payloadCreator) {
-        super(payloadCreator);
+    public HTTPClientResponseResolver(HttpClient client, ResponseCreator responseCreator) {
+        super(responseCreator);
         Validate.notNull(client, "You may not create with a null HttpClient");
         this.client = client;
     }
@@ -67,7 +66,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     public HTTPResponse resolve(HTTPRequest request) throws IOException{
         HttpMethod method = convertRequest(request);
         client.executeMethod(method);
-        return convertResponse(request.getRequestURI(), method);
+        return convertResponse(request, method);
     }
 
     public boolean isUseRequestChallenge() {
@@ -128,20 +127,13 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         }
     }
 
-    private HTTPResponse convertResponse(URI requestURI, HttpMethod method) {
+    private HTTPResponse convertResponse(HTTPRequest request, HttpMethod method) {
         Headers headers = new Headers();
         for (Header header : method.getResponseHeaders()) {
             headers.add(header.getName(), header.getValue());
         }
         InputStream stream = getInputStream(method);
-        Payload payload;
-        if (stream != null) {
-            payload = getPayloadCreator().createPayload(requestURI, headers, stream);
-        } else {
-            payload = null;
-        }
-
-        return new HTTPResponse(payload, Status.valueOf(method.getStatusCode()), headers);
+        return getResponseCreator().createResponse(request, Status.valueOf(method.getStatusCode()), headers, stream);
     }
 
     private InputStream getInputStream(HttpMethod method) {
