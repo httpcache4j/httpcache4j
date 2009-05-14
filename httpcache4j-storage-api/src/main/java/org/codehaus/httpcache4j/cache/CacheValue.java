@@ -19,14 +19,16 @@ package org.codehaus.httpcache4j.cache;
 import org.apache.commons.lang.Validate;
 
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class CacheValue implements Iterable<Map.Entry<Vary, CacheItem>>, Serializable {
-    private final Map<Vary, CacheItem> variations = new ConcurrentHashMap<Vary, CacheItem>();
+    private Map<Vary, CacheItem> variations = new ConcurrentHashMap<Vary, CacheItem>();
     private static final long serialVersionUID = 1589764737954233106L;
 
     public CacheValue(final Map<Vary, CacheItem> pVariations) {
@@ -52,5 +54,14 @@ public class CacheValue implements Iterable<Map.Entry<Vary, CacheItem>>, Seriali
 
     public int size() {
         return variations.size();
+    }
+
+    private Object readResolve() throws ObjectStreamException {
+        variations = new ConcurrentHashMap<Vary, CacheItem>(variations);
+        return this;
+    }
+    private Object writeReplace() throws ObjectStreamException {
+        variations = new HashMap<Vary, CacheItem>(variations);
+        return this;
     }
 }

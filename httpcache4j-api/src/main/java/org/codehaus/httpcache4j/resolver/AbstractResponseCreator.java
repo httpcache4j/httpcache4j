@@ -26,11 +26,13 @@ import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
+import org.codehaus.httpcache4j.payload.ClosedInputStreamPayload;
 import org.apache.commons.io.input.ClosedInputStream;
 import org.apache.commons.lang.Validate;
 
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
@@ -61,7 +63,7 @@ public abstract class AbstractResponseCreator implements ResponseCreator {
             }
         }
         if (payload == null && (status.getCode() == Status.OK.getCode() || status.getCode() == Status.NO_CONTENT.getCode())) {
-            payload = new NonTransientInputStreamPayload(ClosedInputStream.CLOSED_INPUT_STREAM, type);
+            payload = new ClosedInputStreamPayload(type);
         }
         return new HTTPResponse(payload, status, responseHeaders);
     }
@@ -71,32 +73,4 @@ public abstract class AbstractResponseCreator implements ResponseCreator {
     }
 
     protected abstract Payload createCachedPayload(HTTPRequest request, Headers responseHeaders, InputStream stream, MIMEType type) throws IOException;
-
-    private class NonTransientInputStreamPayload implements Payload {
-        private InputStream stream;
-        private MIMEType type;
-
-        public NonTransientInputStreamPayload(InputStream stream, MIMEType type) {
-            Validate.notNull(stream, "Stream may not be null");
-            Validate.notNull(type, "MIME type may not be null");
-            this.stream = stream;
-            this.type = type;
-        }
-
-        public MIMEType getMimeType() {
-            return type;
-        }
-
-        public InputStream getInputStream() {
-            return stream;
-        }
-
-        public boolean isAvailable() {
-            return true;
-        }
-
-        public boolean isTransient() {
-            return false;
-        }
-    }
 }

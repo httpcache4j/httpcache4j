@@ -33,7 +33,8 @@ import org.apache.commons.lang.Validate;
  */
 public class PersistentCacheStorage extends MemoryCacheStorage implements Serializable {
 
-    private static final int PERSISTENT_TRESHOLD = 10;
+    private static final int PERSISTENT_TRESHOLD = 100;
+    private static final long serialVersionUID = 2551525125071085301L;
 
     private final File serializationFile;
     private final int capacity;
@@ -59,6 +60,12 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
                 saveCacheToDisk();
             }
         }));
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        serializationFile.delete();
     }
 
     @Override
@@ -94,7 +101,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
         }
     }
     
-    private void saveCacheToDisk() {
+    private synchronized void saveCacheToDisk() {
         FileOutputStream outputStream = null;
         try {
             outputStream = FileUtils.openOutputStream(serializationFile);
