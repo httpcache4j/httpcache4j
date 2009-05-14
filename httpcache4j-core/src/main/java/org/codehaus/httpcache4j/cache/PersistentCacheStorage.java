@@ -16,11 +16,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.net.URI;
 import java.util.Map;
 
@@ -37,25 +33,27 @@ import org.apache.commons.lang.Validate;
  */
 public class PersistentCacheStorage extends MemoryCacheStorage implements Serializable {
 
-    protected Map<URI, CacheValue> cache;
+    private static final int PERSISTENT_TRESHOLD = 10;
+
     private final File serializationFile;
     private final int capacity;
-    private static final long serialVersionUID = -5754292582576416056L;
+    private transient int modCount;
 
     public PersistentCacheStorage(File serializationFileDirectory) {
         this(1000, serializationFileDirectory, "persistent.ser");
     }
 
-    public PersistentCacheStorage(int capacity, File serializationFileDirectory, String name) {
+    public PersistentCacheStorage(final int capacity, final File serializationFileDirectory, final String name) {
         Validate.isTrue(capacity > 0, "You may not have a empty persistent cache");
         Validate.notNull(serializationFileDirectory, "You may not have a null serializationDirectory");
         Validate.notEmpty(name, "You may not have a empty file name");
+        
         this.capacity = capacity;
+        FileManager.ensureDirectoryExists(serializationFileDirectory);
+
         serializationFile = new File(serializationFileDirectory, name);
         getCacheFromDisk();
-        if (!serializationFileDirectory.exists()) {
-            serializationFileDirectory.mkdirs();
-        }
+
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
                 saveCacheToDisk();
@@ -66,7 +64,9 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     @Override
 	public synchronized void put(URI requestURI, Vary vary, CacheItem cacheItem) {
         super.put(requestURI, vary, cacheItem);
-        saveCacheToDisk();
+        if (modCount++ % PERSISTENT_TRESHOLD == 0) {
+            saveCacheToDisk();
+        }
     }
 
     @SuppressWarnings({"unchecked"})
@@ -82,7 +82,6 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
             }
             catch (Exception e) {
                 serializationFile.delete();
-                e.printStackTrace();
                 if (e instanceof RuntimeException) {
                     throw (RuntimeException)e;
                 }

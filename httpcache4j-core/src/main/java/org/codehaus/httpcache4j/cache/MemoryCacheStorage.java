@@ -117,6 +117,10 @@ public class MemoryCacheStorage implements CacheStorage {
         return cache.size();
     }
 
+    public Iterator<Map.Entry<URI, CacheValue>> iterator() {
+        return Collections.unmodifiableSet(cache.entrySet()).iterator();
+    }
+
     protected class InvalidateOnRemoveLRUHashMap extends LinkedHashMap<URI, CacheValue> {
         private final int capacity;
         public InvalidateOnRemoveLRUHashMap(final int capacity) {
