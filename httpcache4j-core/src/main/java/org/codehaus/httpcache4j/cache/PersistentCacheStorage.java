@@ -89,9 +89,6 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
             }
             catch (Exception e) {
                 serializationFile.delete();
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException)e;
-                }
                 //Ignored, we create a new one.
                 cache = new InvalidateOnRemoveLRUHashMap(capacity);
             }
