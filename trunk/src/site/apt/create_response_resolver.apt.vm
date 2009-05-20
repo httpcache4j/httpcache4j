@@ -1,0 +1,29 @@
+ -----
+ Create Response Resolver
+ -----
+ Erlend Hamnaberg
+
+Creating a new Response Resolver.
+ 
+ First you need to to add this to your POM file.
+ 
+---------------------------------------
+ <dependency>
+    <groupId>org.codehaus.httpcache4j</groupId>
+    <artifactId>httpcache4j-api</artifactId>
+    <version>${currentVersion}</version>
+ </dependency>
+---------------------------------------
+
+ Then you need to implement this interface.
+ 
+---------------------------------------
+ public interface ResponseResolver {
+    HTTPResponse resolve(HTTPRequest request);
+ }
+---------------------------------------
+
+ The most usual approach is to extend {{{./xref/org/codehaus/httpcache4j/resolver/AbstractResponseResolver.html} AbstractResponseResolver}}, which adds a dependency on
+ the PayloadCreator interface. See the {{{./apidocs/} Javadoc}} for more information.
+ 
+ 

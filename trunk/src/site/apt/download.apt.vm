@@ -1,0 +1,12 @@
+ -----
+ HttpCache4j project site - Release notes
+ -----
+ Erlend Hamnaberg
+
+Download
+
+ {{{http://repository.codehaus.org/org/codehaus/httpcache4j/httpcache4j-dist/$currentVersion/httpcache4j-dist-${currentVersion}.tar.gz}tar.gz format}}
+
+ {{{http://repository.codehaus.org/org/codehaus/httpcache4j/httpcache4j-dist/$currentVersion/httpcache4j-dist-${currentVersion}.tar.bz2}tar.bz2 format}}
+
+ {{{http://repository.codehaus.org/org/codehaus/httpcache4j/httpcache4j-dist/$currentVersion/httpcache4j-dist-${currentVersion}.zip}zip format}}

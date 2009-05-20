@@ -1,0 +1,39 @@
+ -----
+ HttpCache4j project site - Release notes
+ -----
+ Erlend Hamnaberg
+
+1.6
+{{{http://jira.codehaus.org/browse/HTCJ-25}HTCJ-25}} - Replace the PayloadCreator Facility with a ResponseCreator facility.
+{{{http://jira.codehaus.org/browse/HTCJ-24}HTCJ-24}} - Replace the FileGenerationManager with something more sane
+{{{http://jira.codehaus.org/browse/HTCJ-23}HTCJ-23}} - I want to be able Iterate over the cache storage
+
+
+API breakage:
+  - The PayloadCreator has been removed. It has been replaced with the ResponseCreator interface.
+  - Custom CacheStorages need to implement Iterable.
+
+1.5.1
+Made the caching work again
+
+1.5
+{{{http://jira.codehaus.org/browse/HTCJ-22}HTCJ-22}} - Make the memory based storage implementations be LRU based
+{{{http://jira.codehaus.org/browse/HTCJ-20}HTCJ-20}} - If a connect exception occurs and I have content in the cache, it should be served with a staleness warning.
+{{{http://jira.codehaus.org/browse/HTCJ-21}HTCJ-21}} - The Cache must send an Age header notifying about the time since the last validation.
+{{{http://jira.codehaus.org/browse/HTCJ-19}HTCJ-19}} - Add AbstractPayloadCreator
+{{{http://jira.codehaus.org/browse/HTCJ-18}HTCJ-18}} - Create a CacheControl header class
+
+1.1
+{{{http://jira.codehaus.org/browse/HTCJ-11}HTCJ-11}} - Status.SERVER_UNRESPONSIVE should be replaced with an exception
+{{{http://jira.codehaus.org/browse/HTCJ-12}HTCJ-12}} - throw exception when we get an IOEXception in HTTPCLient resolver
+{{{http://jira.codehaus.org/browse/HTCJ-13}HTCJ-13}} - CacheValue is not thread safe
+{{{http://jira.codehaus.org/browse/HTCJ-14}HTCJ-14}} - PersistentCacheStorage should extend MemoryCacheStorage
+
+1.0
+{{{http://jira.codehaus.org/browse/HTCJ-3}HTCJ-3}} 	- NPE in FileGenerationManager.Generation.delete() if there are no files
+{{{http://jira.codehaus.org/browse/HTCJ-4}HTCJ-4}} 	- Conditionals addIfMatch and addIfNonMatch does not handle null in a good way
+{{{http://jira.codehaus.org/browse/HTCJ-5}HTCJ-5}} 	- Updated cache value is never put back to the Memory Cache storage.
+{{{http://jira.codehaus.org/browse/HTCJ-6}HTCJ-6}} 	- When unable to delete files, error message is printed to the console
+{{{http://jira.codehaus.org/browse/HTCJ-7}HTCJ-7}} 	- NPE if you get no response
+{{{http://jira.codehaus.org/browse/HTCJ-9}HTCJ-9}} 	- Status class should have a meaningful toString
+
