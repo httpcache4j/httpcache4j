@@ -34,7 +34,7 @@
 
   <issueManagement>
     <system>JIRA</system>
-    <url>http://jira.codehaus.org/secure/BrowseProject.jspa?pid=11880</url>
+    <url>http://jira.codehaus.org/browse/HTCJ</url>
   </issueManagement>
   <licenses>
     <license>
@@ -171,7 +171,7 @@
     </plugins>
   </build>
    <properties>
-    <currentVersion>1.5.1</currentVersion>    
+    <currentVersion>1.6</currentVersion>
   </properties>
   
   <dependencyManagement>
@@ -291,24 +291,6 @@ time mvn site -Preporting && time mvn site:deploy && time mvn site -Preporting-a
       -->
       <reporting>
         <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-changes-plugin</artifactId>
-            <version>2.1</version>
-            <configuration>
-              <onlyCurrentVersion>false</onlyCurrentVersion>
-              <resolutionIds>Fixed</resolutionIds>
-              <statusIds>Closed</statusIds>
-            </configuration>
-            <reportSets>
-              <reportSet>
-                <reports>
-                  <report>jira-report</report>
-                </reports>
-              </reportSet>
-            </reportSets>
-          </plugin>
-
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jxr-plugin</artifactId>
