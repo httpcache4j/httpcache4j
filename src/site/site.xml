@@ -24,6 +24,7 @@
         <menu name="Overview">
         	<item name="HttpCache4j" href="index.html"/>            
             <item name="Getting started" href="getting_started.html"/>
+            <item name="Release Notes" href="releasenotes.html"/>
             <item name="Javadoc" href="/apidocs/index.html"/>
         </menu>
 		<menu name="Developers" inherit="top">
