@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.codehaus.httpcache4j</groupId>
     <artifactId>httpcache4j</artifactId>
-    <version>1.7-SNAPSHOT</version>
+    <version>1.6-SNAPSHOT</version>
   </parent>
   <groupId>org.codehaus.httpcache4j.resolvers</groupId>
   <artifactId>resolvers</artifactId>
@@ -83,9 +83,4 @@
     <module>resolvers-commons-httpclient</module>
     <module>resolvers-net-urlconnection</module>
   </modules>
-  <scm>
-    <connection>scm:svn:http://svn.codehaus.org/httpcache4j/resolvers/trunk/</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/httpcache4j/resolvers/trunk/</developerConnection>
-    <url>http://fisheye.codehaus.org/browse/httpcache4j/resolvers/trunk/</url>
-  </scm>
 </project>
