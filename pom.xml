@@ -197,6 +197,11 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.codehaus.httpcache4j.resolvers</groupId>
+        <artifactId>resolvers-net-urlconnection</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>1.4</version>
@@ -244,6 +249,7 @@
     <module>httpcache4j-api</module>
     <module>httpcache4j-storage-api</module>
     <module>resolvers</module>
+    <module>httpcache4j-dist</module>
   </modules>
 
 
@@ -272,12 +278,6 @@
   </distributionManagement>
 
   <profiles>
-    <profile>
-      <id>release</id>
-      <modules>
-        <module>httpcache4j-dist</module>
-      </modules>
-    </profile>
     <profile>
       <id>reporting-aggregate</id>
       <!-- To generate aggregate reports -->
