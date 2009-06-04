@@ -132,8 +132,17 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         for (Header header : method.getResponseHeaders()) {
             headers.add(header.getName(), header.getValue());
         }
-        InputStream stream = getInputStream(method);
-        return getResponseCreator().createResponse(request, Status.valueOf(method.getStatusCode()), headers, stream);
+        InputStream stream = null;
+        HTTPResponse response;
+        try {
+            stream = getInputStream(method);
+            response = getResponseCreator().createResponse(request, Status.valueOf(method.getStatusCode()), headers, stream);
+        } finally {
+            if (stream == null) {
+                method.releaseConnection();
+            }
+        }
+        return response;
     }
 
     private InputStream getInputStream(HttpMethod method) {
