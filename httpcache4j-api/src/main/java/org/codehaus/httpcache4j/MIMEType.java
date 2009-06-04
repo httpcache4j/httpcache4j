@@ -73,7 +73,7 @@ public final class MIMEType implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-	private void convertParamerters(MimeType mimeType) {
+	  private void convertParamerters(MimeType mimeType) {
         MimeTypeParameterList list = mimeType.getParameters();
         Enumeration names = list.getNames();
         while (names.hasMoreElements()) {
@@ -91,7 +91,11 @@ public final class MIMEType implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object object) {
+      return equals(object, true);
+    }
+
+    public boolean equals(final Object o, final boolean includeParameters) {
         if (this == o) {
             return true;
         }
@@ -103,8 +107,10 @@ public final class MIMEType implements Serializable {
         if (!new EqualsBuilder().append(getPrimaryType(), other.getPrimaryType()).append(getSubType(), other.getSubType()).isEquals()) {
             return false;
         }
-        if (parameters != null ? !parameters.equals(other.parameters) : other.parameters != null) {
-            return false;
+        if (includeParameters) {
+            if (parameters != null ? !parameters.equals(other.parameters) : other.parameters != null) {
+                return false;
+            }
         }
 
         return true;
@@ -116,7 +122,7 @@ public final class MIMEType implements Serializable {
     }
 
     public boolean includes(MIMEType mimeType) {
-        boolean includes = mimeType == null || equals(ALL) || equals(mimeType);
+        boolean includes = mimeType == null || equals(ALL, false) || equals(mimeType, false);
         if (!includes) {
             includes = getPrimaryType().equals(mimeType.getPrimaryType())
                     && (getSubType().equals(mimeType.getSubType()) || getSubType()
