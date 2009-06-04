@@ -81,7 +81,7 @@ public class HTTPCache {
             throw new IllegalStateException("The resolver was not set, no point of continuing with the request");
         }
         HTTPResponse response;
-        if (!helper.isCacheableRequest(request)) {
+        if (!HTTPUtil.isCacheableRequest(request)) {
             if (!helper.isSafeRequest(request)) {
                 storage.invalidate(request.getRequestURI());
             }

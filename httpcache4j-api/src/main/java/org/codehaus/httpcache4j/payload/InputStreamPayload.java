@@ -19,6 +19,7 @@ package org.codehaus.httpcache4j.payload;
 import org.codehaus.httpcache4j.MIMEType;
 
 import org.apache.commons.lang.Validate;
+import org.apache.commons.io.input.ClosedInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,64 +69,42 @@ public class InputStreamPayload implements Payload {
         if (available) {
             return stream;
         }
-        return null;
+        return ClosedInputStream.CLOSED_INPUT_STREAM;
     }
 
-    private class WrappedInputStream extends InputStream {
-        private InputStream delegate;
+    private class WrappedInputStream extends DelegatingInputStream {
 
         public WrappedInputStream(InputStream delegate) {
-            this.delegate = delegate;
+            super(delegate);
         }
 
         public int read() throws IOException {
-            if (available) {
+            if (isAvailable() && !isTransient()) {
                 available = false;
             }
-            return delegate.read();
+            return super.read();
         }
 
         public int read(byte[] b) throws IOException {
-            if (available) {
+            if (isAvailable() && !isTransient()) {
                 available = false;
             }
 
-            return delegate.read(b);
+            return super.read(b);
         }
 
         public int read(byte[] b, int off, int len) throws IOException {
-            if (available) {
+            if (isAvailable() && !isTransient()) {
                 available = false;
             }
-            return delegate.read(b, off, len);
+            return super.read(b, off, len);
         }
 
         public long skip(long n) throws IOException {
-            if (available) {
+            if (isAvailable() && !isTransient()) {
                 available = false;
             }
-            return delegate.skip(n);
+            return super.skip(n);
         }
-
-        public int available() throws IOException {
-            return delegate.available();
-        }
-
-        public void close() throws IOException {
-            delegate.close();
-        }
-
-        public void mark(int readlimit) {
-            delegate.mark(readlimit);
-        }
-
-        public void reset() throws IOException {
-            delegate.reset();
-        }
-
-        public boolean markSupported() {
-            return delegate.markSupported();
-        }
-
     }
 }

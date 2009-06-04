@@ -123,18 +123,6 @@ class HTTPCacheHelper {
         return safeMethods.contains(request.getMethod());
     }
 
-    boolean isCacheableRequest(HTTPRequest request) {
-        if (request.getMethod() == HTTPMethod.GET || request.getMethod() == HTTPMethod.HEAD) {
-            if (request.getHeaders().hasHeader(HeaderConstants.CACHE_CONTROL)) {
-                String cacheControlHeaderValue = request.getHeaders().getFirstHeader(HeaderConstants.CACHE_CONTROL).getValue();
-                //If the request tells us that we shouldn't cache the response, then we don't.
-                return !cacheControlHeaderValue.contains("no-store") || !cacheControlHeaderValue.contains("no-cache");
-            }
-            return true;
-        }
-        return false;
-    }
-
     void prepareConditionalRequest(HTTPRequest request, HTTPResponse staleResponse) {
         Conditionals conditionals = request.getConditionals();
         if (request.getMethod() == HTTPMethod.GET && conditionals.toHeaders().isEmpty()) {
