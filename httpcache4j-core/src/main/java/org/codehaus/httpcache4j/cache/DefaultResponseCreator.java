@@ -41,11 +41,9 @@ public class DefaultResponseCreator extends AbstractResponseCreator {
     }
 
     protected final Payload createCachedPayload(HTTPRequest request, Headers responseHeaders, InputStream stream, MIMEType type) throws IOException {
-        if (stream != null) {
-            File file = getStoragePolicy().createFile(request, stream);
-            if (file != null && file.exists()) {
-                return new CleanableFilePayload(file, type);
-            }
+        File file = getStoragePolicy().createFile(request, stream);
+        if (file != null && file.exists()) {
+            return new CleanableFilePayload(file, type);
         }
         return null;
     }

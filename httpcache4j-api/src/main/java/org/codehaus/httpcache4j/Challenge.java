@@ -40,10 +40,15 @@ public class Challenge {
     }
 
     public char[] getPassword() {
-        return password;
+        return password != null ? password.clone() : null;
     }
 
     public ChallengeMethod getMethod() {
         return method;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Authentication using %s as %s ", method, identifier);
     }
 }
