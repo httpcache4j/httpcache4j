@@ -68,6 +68,33 @@ public class HTTPCacheHelperTest {
         Assert.assertEquals(2, vary.getVaryHeaderNames().size());
     }
 
+    @Test
+    public void testCacheableResponses() {
+        Headers headers = new Headers();
+        headers.add(HeaderConstants.CACHE_CONTROL, "private, max-age=39");
+        headers.add(HeaderUtils.toHttpDate("Date", createDateTime(10)));
+        Assert.assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.OK, headers)));
+        Assert.assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.NON_AUTHORITATIVE_INFORMATION, headers)));
+        Assert.assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.MULTIPLE_CHOICES, headers)));
+        Assert.assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.MOVED_PERMANENTLY, headers)));
+        Assert.assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.GONE, headers)));
+    }
+    
+    @Test
+    public void testNotCacheableResponses() {
+        Headers headers = new Headers();
+        headers.add(HeaderUtils.toHttpDate("Date", createDateTime(10)));
+        Assert.assertFalse("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.OK, headers)));
+        Assert.assertFalse("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.NON_AUTHORITATIVE_INFORMATION, headers)));
+        Assert.assertFalse("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.MULTIPLE_CHOICES, headers)));
+        Assert.assertFalse("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.MOVED_PERMANENTLY, headers)));
+        Assert.assertFalse("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.GONE, headers)));
+        headers.add(HeaderConstants.CACHE_CONTROL, "private, max-age=39");
+        Assert.assertFalse("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.NOT_MODIFIED, headers)));
+        Assert.assertFalse("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.ACCEPTED, headers)));
+        Assert.assertFalse("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.CREATED, headers)));
+    }
+
     private DateTime createDateTime(int seconds) {
         return new DateTime(2009, 4, 22, 10, 10, seconds, 0);
     }
