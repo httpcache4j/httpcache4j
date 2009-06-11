@@ -53,7 +53,7 @@ public abstract class AbstractResponseCreator implements ResponseCreator {
                     throw new HTTPException("Unable to create payload for response", e);
                 }
             }
-            else if (stream != null)  {
+            else if (!cacheable && stream != null)  {
                 payload = new InputStreamPayload(stream, type);
             }
         }
