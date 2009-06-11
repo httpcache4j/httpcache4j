@@ -20,6 +20,7 @@ import org.codehaus.httpcache4j.resolver.ResponseResolver;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
+import org.codehaus.httpcache4j.payload.ClosedInputStreamPayload;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -83,12 +84,10 @@ public class HTTPCacheTest {
         HTTPRequest request = new HTTPRequest(URI.create("foo"));
         
         DateTime prev = new DateTime();
-        Header storedHeader = HeaderUtils.toHttpDate(HeaderConstants.DATE, prev);
         Headers responseHeaders = new Headers();
-        responseHeaders.add(storedHeader);
+        responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, prev));
         responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
         responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
-        responseHeaders.add(storedHeader);
         when(cacheStorage.get(request)).thenReturn(new CacheItem(new HTTPResponse(new InputStreamPayload(ClosedInputStream.CLOSED_INPUT_STREAM, MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
         MutableDateTime changedHeader = prev.toMutableDateTime();
         changedHeader.addMinutes(50);
@@ -100,6 +99,48 @@ public class HTTPCacheTest {
         Assert.assertNotNull("Response was null", response);
         Assert.assertNotNull("The payload was null", response.getPayload());
         Assert.assertNotNull("The payload had a null inputstream", response.getPayload().getInputStream());
+    }
+    
+    @Test
+    public void testExternalConditionalGet() throws IOException {
+        HTTPRequest request = new HTTPRequest(URI.create("foo"));
+        request.getConditionals().addIfNoneMatch(new Tag("1234"));
+        Headers responseHeaders = new Headers();
+        responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
+        responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
+        when(cacheStorage.get(request)).thenReturn(new CacheItem(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
+        HTTPResponse response = cache.doCachedRequest(request);
+        Assert.assertNotNull("Response was null", response);
+        Assert.assertNull("The payload was not null", response.getPayload());
+        Assert.assertEquals("Wrong status", Status.NOT_MODIFIED, response.getStatus());
+    }
+
+    @Test
+    public void testExternalConditionalGetWitchDoesNotMatch() throws IOException {
+        HTTPRequest request = new HTTPRequest(URI.create("foo"));
+        request.getConditionals().addIfNoneMatch(new Tag("12345"));
+        Headers responseHeaders = new Headers();
+        responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
+        responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
+        when(cacheStorage.get(request)).thenReturn(new CacheItem(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
+        HTTPResponse response = cache.doCachedRequest(request);
+        Assert.assertNotNull("Response was null", response);
+        Assert.assertNotNull("The payload was null", response.getPayload());
+        Assert.assertEquals("Wrong status", Status.OK, response.getStatus());
+    }
+
+    @Test
+    public void testExternalConditionalGetWitchDoesNotMatchAnything() throws IOException {
+        HTTPRequest request = new HTTPRequest(URI.create("foo"));
+        request.getConditionals().addIfNoneMatch(Tag.ALL);
+        Headers responseHeaders = new Headers();
+        responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
+        responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
+        when(cacheStorage.get(request)).thenReturn(new CacheItem(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
+        HTTPResponse response = cache.doCachedRequest(request);
+        Assert.assertNotNull("Response was null", response);
+        Assert.assertNotNull("The payload was null", response.getPayload());
+        Assert.assertEquals("Wrong status", Status.OK, response.getStatus());
     }
 
     @Test
