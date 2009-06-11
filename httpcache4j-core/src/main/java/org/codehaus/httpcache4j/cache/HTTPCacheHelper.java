@@ -32,6 +32,7 @@ import java.util.*;
 class HTTPCacheHelper {
     private static final Set<HTTPMethod> safeMethods;
     private static final Set<String> unmodifiableHeaders;
+    private static final Set<Status> cacheableStatuses;
 
     static {
         // ref http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.1
@@ -55,6 +56,16 @@ class HTTPCacheHelper {
         headers.add("Transfer-Encoding");
         headers.add("Upgrade");
         unmodifiableHeaders = Collections.unmodifiableSet(headers);
+
+        /**
+         * 200, 203, 206, 300, 301 or 410
+         */
+        cacheableStatuses = Collections.unmodifiableSet(EnumSet.of(Status.OK,
+                                       Status.NON_AUTHORITATIVE_INFORMATION,
+                                       Status.MULTIPLE_CHOICES,
+                                       Status.MOVED_PERMANENTLY,
+                                       Status.GONE
+        ));
     }
 
 
@@ -103,8 +114,18 @@ class HTTPCacheHelper {
         return new Vary(resolvedVaryHeaders);
     }
 
+    /**
+     * A response received with a status code of 200, 203, 206, 300, 301 or 410 MAY be stored by a cache and used in reply to a subsequent request,
+     * subject to the expiration mechanism, unless a cache-control directive prohibits caching.
+     * However, a cache that does not support the Range and Content-Range headers MUST NOT cache 206 (Partial Content) responses.
+     *
+     * We do not support 206 (Partial Content).
+     * See: http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.4
+     * @param response the response to analyze
+     * @return {@code true} if the response is cacheable. {@code false} if not.
+     */
     boolean isCacheableResponse(HTTPResponse response) {
-        if (response.getStatus().getCode() != Status.OK.getCode()) {
+        if (!cacheableStatuses.contains(response.getStatus())) {
             return false;
         }
         Headers headers = response.getHeaders();
