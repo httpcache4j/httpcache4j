@@ -116,7 +116,7 @@ public class HTTPCache {
                 else {
                     //TODO: handle rewrite of Status... HEAD should probably always return 200 OK.
                     //TODO: Age header???
-                    response = item.getResponse();
+                    response = rewriteResponse(request, item.getResponse());
                 }
             }
             else {
@@ -127,6 +127,19 @@ public class HTTPCache {
             response = unconditionalResolve(request);
         }
 
+        return response;
+    }
+
+    private HTTPResponse rewriteResponse(HTTPRequest request, HTTPResponse response) {
+        if (request.getMethod() == HTTPMethod.GET) {
+            List<Tag> noneMatch = request.getConditionals().getNoneMatch();
+            Tag eTag = response.getETag();
+            if (eTag != null && !noneMatch.isEmpty()) {
+                if (noneMatch.contains(eTag) && !noneMatch.contains(Tag.ALL)) {
+                    return new HTTPResponse(null, Status.NOT_MODIFIED, response.getHeaders());
+                }
+            }
+        }
         return response;
     }
 
@@ -164,10 +177,10 @@ public class HTTPCache {
                 storage.put(request.getRequestURI(), vary, new CacheItem(resolvedResponse));
                 response = resolvedResponse;
             }
-            else if (item != null && resolvedResponse.getStatus().getCode() == Status.NOT_MODIFIED.getCode()) {
+            else if (item != null && resolvedResponse.getStatus() == Status.NOT_MODIFIED) {
                 response = updateHeadersFromResolved(request, item, resolvedResponse);
             }
-            else if (item != null && resolvedResponse.getStatus().getCode() == Status.OK.getCode()) {
+            else if (item != null && resolvedResponse.getStatus() == Status.OK) {
                 //Success was ok, but we had already a response for this item.
                 //invalidate it so we don't clutter the filesystem.
                 storage.invalidate(request.getRequestURI(), item);
@@ -185,9 +198,10 @@ public class HTTPCache {
         Map<String, List<Header>> headers = new LinkedHashMap<String, List<Header>>(cachedResponse.getHeaders().getHeadersAsMap());
 
         headers.putAll(helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders()).getHeadersAsMap());
+        headers.remove(HeaderConstants.AGE);
         Headers realHeaders = new Headers(headers);
         realHeaders.add(HeaderConstants.AGE, helper.calculateAge(resolvedResponse, cachedResponse));
-        HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), resolvedResponse.getStatus(), realHeaders);
+        HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), realHeaders);
         Vary vary = helper.determineVariation(updatedResponse.getHeaders(), request.getHeaders());
         storage.put(request.getRequestURI(), vary, new CacheItem(updatedResponse));
         return updatedResponse;
