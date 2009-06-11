@@ -13,7 +13,7 @@
  *   limitations under the License.
  */
 
-package org.httpcache4j.resolver;
+package org.codehaus.httpcache4j.resolver;
 
 import org.junit.Test;
 import org.junit.Before;
@@ -30,6 +30,7 @@ import org.mockito.Mockito;
 import org.codehaus.httpcache4j.resolver.ResponseCreator;
 import org.codehaus.httpcache4j.resolver.AbstractResponseCreator;
 import org.codehaus.httpcache4j.resolver.StoragePolicy;
+import org.codehaus.httpcache4j.resolver.HttpClientResponseResolver;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.ClosedInputStreamPayload;

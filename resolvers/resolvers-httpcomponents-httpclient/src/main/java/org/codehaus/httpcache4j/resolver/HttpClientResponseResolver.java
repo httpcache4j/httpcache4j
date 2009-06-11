@@ -13,7 +13,7 @@
  *   limitations under the License.
  */
 
-package org.httpcache4j.resolver;
+package org.codehaus.httpcache4j.resolver;
 
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
 import org.codehaus.httpcache4j.resolver.ResponseCreator;
