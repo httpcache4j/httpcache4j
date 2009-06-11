@@ -141,7 +141,7 @@ public final class Conditionals {
         return Collections.unmodifiableList(match);
     }
 
-    public List<Tag> getNonMatch() {
+    public List<Tag> getNoneMatch() {
         return Collections.unmodifiableList(nonMatch);
     }
 
@@ -165,8 +165,8 @@ public final class Conditionals {
         if (!getMatch().isEmpty()) {
             headers.add(new Header(HeaderConstants.IF_MATCH, buildTagHeaderValue(getMatch())));
         }
-        if (!getNonMatch().isEmpty()) {
-            headers.add(new Header(HeaderConstants.IF_NON_MATCH, buildTagHeaderValue(getNonMatch())));
+        if (!getNoneMatch().isEmpty()) {
+            headers.add(new Header(HeaderConstants.IF_NON_MATCH, buildTagHeaderValue(getNoneMatch())));
         }
         if (modifiedSince != null) {
             headers.add(HeaderUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, modifiedSince));
