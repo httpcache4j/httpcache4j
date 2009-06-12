@@ -61,7 +61,7 @@ public final class CacheItem implements Serializable {
             if (maxAgeDirective != null) {
                 int maxAge = NumberUtils.toInt(maxAgeDirective, -1);
                 long age = now - cachedTime.getMillis();
-                long remainingLife = (maxAge * 1000) - age;
+                long remainingLife = (maxAge * 1000L) - age;
                 if (maxAge == -1 || remainingLife <= 0) {
                     return true;
                 }
