@@ -18,8 +18,8 @@ package org.codehaus.httpcache4j.resolver;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.payload.ClosedInputStreamPayload;
 import org.apache.commons.lang.Validate;
+import org.apache.commons.io.IOUtils;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -51,6 +51,8 @@ public abstract class AbstractResponseCreator implements ResponseCreator {
                     payload = createCachedPayload(request, responseHeaders, stream, type);
                 } catch (IOException e) {
                     throw new HTTPException("Unable to create payload for response", e);
+                } finally {
+                    IOUtils.closeQuietly(stream);
                 }
             }
             else if (!cacheable && stream != null)  {
