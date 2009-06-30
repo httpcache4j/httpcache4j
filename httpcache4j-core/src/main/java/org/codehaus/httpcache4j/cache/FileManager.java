@@ -15,20 +15,18 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.resolver.StoragePolicy;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
+import org.codehaus.httpcache4j.util.Pair;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.Validate;
-import org.apache.commons.lang.SerializationUtils;
 
 import java.util.*;
 import java.io.*;
 import java.net.URI;
-import java.nio.channels.FileLock;
 
 /**
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
@@ -44,7 +42,7 @@ class FileManager implements StoragePolicy {
         ensureDirectoryExists(files);
         this.fileResolver = new FileResolver(files);
 
-        removeUknownFiles(storage);
+        removeUnknownFiles(storage);
     }
 
     static void ensureDirectoryExists(File directory) {
@@ -71,8 +69,9 @@ class FileManager implements StoragePolicy {
         return file;
     }
 
-    private void removeUknownFiles(CacheStorage storage) {
+    private void removeUnknownFiles(CacheStorage storage) {
         List<File> knownFiles = new ArrayList<File>();
+        List<Pair<URI, CacheItem>> invalidations = new ArrayList<Pair<URI, CacheItem>>();
         for (Map.Entry<URI, CacheValue> cacheValue : storage) {
             for (Map.Entry<Vary, CacheItem> entry : cacheValue.getValue()) {
                 HTTPResponse response = entry.getValue().getResponse();
@@ -82,9 +81,15 @@ class FileManager implements StoragePolicy {
                         if (payload.getFile().exists()) {
                             knownFiles.add(payload.getFile());
                         }
+                        else {
+                          invalidations.add(Pair.of(cacheValue.getKey(), entry.getValue()));
+                        }
                     }
                 }
             }
+        }
+        for (Map.Entry<URI, CacheItem> invalidation : invalidations) {
+            storage.invalidate(invalidation.getKey(), invalidation.getValue());
         }
         File[] files = fileResolver.getBaseDirectory().listFiles(new DeletingFileFilter(knownFiles));
         if (files != null && files.length > 0) {
