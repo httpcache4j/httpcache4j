@@ -65,7 +65,7 @@ public class CleanableFilePayload implements CleanablePayload, Serializable {
                 throw new HTTPException("Could not create file input stream", e);
             }
         }
-        throw new HTTPException("File is gone...");
+        throw new HTTPException(String.format("File '%s' is gone...", file.getAbsolutePath()));
     }
 
     public boolean isTransient() {
