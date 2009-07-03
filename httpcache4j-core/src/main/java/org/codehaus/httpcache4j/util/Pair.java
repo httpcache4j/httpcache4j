@@ -42,7 +42,7 @@ public class Pair<K, V> implements Map.Entry<K, V>, Serializable {
     }
 
     public V setValue(V pValue) {
-        throw new UnsupportedOperationException("Not allowed to set BasicEntry here.");
+        throw new UnsupportedOperationException("Not allowed to a value here.");
     }
 
     public K getKey() {
