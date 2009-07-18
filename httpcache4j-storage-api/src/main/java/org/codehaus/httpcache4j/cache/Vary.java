@@ -29,7 +29,7 @@ import java.util.*;
  * We need to store a different version of the response if the request varies on
  * E.G Accept headers.
  * Implementors of storage engines needs to have knowledge of this class.
- * See {@link MemoryCacheStorage} for how it's used. 
+ * See {@link MemoryCacheStorage} for how it's used.
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
@@ -37,12 +37,13 @@ public final class Vary implements Serializable {
     public static final String ALL = "*";
     private static final long serialVersionUID = -5275022740812240365L;
 
-    private final Map<String, String> varyHeaders = new HashMap<String, String>();
+    private final Map<String, String> varyHeaders;
 
     /**
      * Default constructor (no variations)
      */
-    public Vary() {        
+    public Vary() {
+        this(Collections.<String, String>emptyMap());
     }
 
     /**
@@ -51,20 +52,22 @@ public final class Vary implements Serializable {
      * @param headers the vary headers as keys from the response, with request headers as values.
      */
     public Vary(final Map<String, String> headers) {
-        Validate.notNull(headers);
-        varyHeaders.putAll(headers);
+        Validate.notNull(headers, "Headers may not be null");
+        varyHeaders = Collections.unmodifiableMap(new LinkedHashMap<String, String>(headers));
+    }
+    
+    public int size() {
+        return varyHeaders.size();
     }
 
-    /** @return the header names. */
-    public List<String> getVaryHeaderNames() {
-        return Collections.unmodifiableList(new ArrayList<String>(varyHeaders.keySet()));
+    public boolean isEmpty() {
+        return varyHeaders.isEmpty();
     }
 
     /**
      * Analyses the headers in the given request to figure out if this {@link Vary variation} matches.
      *
      * @param request the request to analyse
-     *
      * @return {@code true} if the request matches the variance. {@code false} if not.
      */
     public boolean matches(final HTTPRequest request) {
@@ -77,6 +80,10 @@ public final class Vary implements Serializable {
 
         }
         return true;
+    }
+
+    public Map<String, String> getVaryHeaders() {
+        return varyHeaders;
     }
 
     public boolean equals(final Object o) {
