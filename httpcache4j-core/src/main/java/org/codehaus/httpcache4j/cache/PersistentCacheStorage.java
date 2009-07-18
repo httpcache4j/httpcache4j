@@ -33,12 +33,15 @@ import org.apache.commons.lang.Validate;
  */
 public class PersistentCacheStorage extends MemoryCacheStorage implements Serializable {
 
+    private static final long PERSISTENT_TIMEOUT = 60000L;
     private static final int PERSISTENT_TRESHOLD = 100;
+
     private static final long serialVersionUID = 2551525125071085301L;
 
     private final File serializationFile;
     private final int capacity;
     private transient int modCount;
+    private long lastSerialization = 0L;
 
     public PersistentCacheStorage(File serializationFileDirectory) {
         this(1000, serializationFileDirectory, "persistent.ser");
@@ -72,7 +75,10 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 	public synchronized void put(URI requestURI, Vary vary, CacheItem cacheItem) {
         super.put(requestURI, vary, cacheItem);
         if (modCount++ % PERSISTENT_TRESHOLD == 0) {
-            saveCacheToDisk();
+            if (System.currentTimeMillis() > lastSerialization + PERSISTENT_TIMEOUT) {
+                lastSerialization = System.currentTimeMillis();  
+                saveCacheToDisk();
+            }
         }
     }
 
