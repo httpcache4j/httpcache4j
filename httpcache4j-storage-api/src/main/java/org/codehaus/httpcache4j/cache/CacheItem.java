@@ -46,7 +46,7 @@ public final class CacheItem implements Serializable {
     }
 
     public boolean isStale() {
-        if (response.getPayload() != null && !response.getPayload().isAvailable()) {
+        if (response.hasPayload() && !response.getPayload().isAvailable()) {
             return true;
         }
         Headers headers = response.getHeaders();
