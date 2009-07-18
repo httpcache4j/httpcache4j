@@ -91,9 +91,6 @@ class FileManager implements StoragePolicy {
         for (Map.Entry<URI, CacheItem> invalidation : invalidations) {
             storage.invalidate(invalidation.getKey(), invalidation.getValue());
         }
-        File[] files = fileResolver.getBaseDirectory().listFiles(new DeletingFileFilter(knownFiles));
-        if (files != null && files.length > 0) {
-            System.err.println(String.format("Unable to delete these files %s", Arrays.toString(files)));
-        }
+        fileResolver.getBaseDirectory().listFiles(new DeletingFileFilter(knownFiles));        
     }
 }
