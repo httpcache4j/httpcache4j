@@ -130,7 +130,7 @@ public class MemoryCacheStorage implements CacheStorage {
 
         @Override
         protected boolean removeEldestEntry(Map.Entry<URI, CacheValue> eldest) {
-            return size() == capacity;
+            return size() >= capacity;
         }
 
         @Override
