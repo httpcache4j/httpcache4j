@@ -18,9 +18,9 @@ public class VaryTest {
     @Test
     public void testIsEmpty() {
         vary = new Vary();
-        Assert.assertTrue("Header names added", vary.getVaryHeaderNames().isEmpty());
+        Assert.assertTrue("Header names added", vary.isEmpty());
         vary = new Vary(new HashMap<String, String>());
-        Assert.assertTrue("Header names added", vary.getVaryHeaderNames().isEmpty());
+        Assert.assertTrue("Header names added", vary.isEmpty());
     }
 
     @Test
@@ -28,8 +28,8 @@ public class VaryTest {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("Accept-Language", "en");
         vary = new Vary(map);
-        Assert.assertFalse("Header names added", vary.getVaryHeaderNames().isEmpty());
-        Assert.assertEquals("Header names added", 1, vary.getVaryHeaderNames().size());
+        Assert.assertFalse("Header names added", vary.isEmpty());
+        Assert.assertEquals("Header names added", 1, vary.size());
     }
 
     @Test
@@ -39,8 +39,8 @@ public class VaryTest {
         map.put("Accept-Encoding", "gz");
         map.put("Accept-Charset", "UTF-8");
         vary = new Vary(map);
-        Assert.assertFalse("Header names added", vary.getVaryHeaderNames().isEmpty());
-        Assert.assertEquals("Header names added", 3, vary.getVaryHeaderNames().size());
+        Assert.assertFalse("Header names added", vary.isEmpty());
+        Assert.assertEquals("Header names added", 3, vary.size());
     }
 
     @Test
@@ -50,8 +50,8 @@ public class VaryTest {
         map.put("Accept-Encoding", "gz");
         map.put("Accept-Charset", "UTF-8");
         vary = new Vary(map);
-        Assert.assertFalse("Header names added", vary.getVaryHeaderNames().isEmpty());
-        Assert.assertEquals("Header names added", 3, vary.getVaryHeaderNames().size());
+        Assert.assertFalse("Header names added", vary.isEmpty());
+        Assert.assertEquals("Header names added", 3, vary.size());
         HTTPRequest request = new HTTPRequest(URI.create("no.uri"));
         Assert.assertFalse(vary.matches(request));
     }
@@ -63,8 +63,8 @@ public class VaryTest {
         map.put("Accept-Encoding", "gz");
         map.put("Accept-Charset", "UTF-8");
         vary = new Vary(map);
-        Assert.assertFalse("Header names added", vary.getVaryHeaderNames().isEmpty());
-        Assert.assertEquals("Header names added", 3, vary.getVaryHeaderNames().size());
+        Assert.assertFalse("Header names added", vary.isEmpty());
+        Assert.assertEquals("Header names added", 3, vary.size());
         HTTPRequest request = new HTTPRequest(URI.create("no.uri"));
         for (Map.Entry<String, String> header : map.entrySet()) {
             request.addHeader(header.getKey(), header.getValue());
@@ -79,8 +79,8 @@ public class VaryTest {
         map.put("Accept-Encoding", "gz");
         map.put("Accept-Charset", "UTF-8");
         vary = new Vary(map);
-        Assert.assertFalse("Header names added", vary.getVaryHeaderNames().isEmpty());
-        Assert.assertEquals("Header names added", 3, vary.getVaryHeaderNames().size());
+        Assert.assertFalse("Header names added", vary.isEmpty());
+        Assert.assertEquals("Header names added", 3, vary.size());
         HTTPRequest request = new HTTPRequest(URI.create("no.uri"));
         request.addHeader("Accept-Language", "de");
         request.addHeader("Accept-Encoding", "gz");
