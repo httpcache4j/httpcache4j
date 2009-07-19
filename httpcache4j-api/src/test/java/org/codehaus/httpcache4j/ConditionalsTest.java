@@ -40,6 +40,20 @@ public class ConditionalsTest {
     }
 
     @Test
+    public void testIfMatchDuplicate() {
+        conditionals.addIfMatch(Tag.parse("\"foo\""));
+        conditionals.addIfMatch(Tag.parse("\"foo\""));
+        assertEquals(1, conditionals.getMatch().size());
+    }
+
+    @Test
+    public void testIfNoneMatchDuplicate() {
+        conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
+        conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
+        assertEquals(1, conditionals.getNoneMatch().size());
+    }
+
+    @Test
     public void testIfMatchWithNullTag() {
         conditionals.addIfMatch(null);
         assertEquals(1, conditionals.getMatch().size());
