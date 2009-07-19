@@ -72,7 +72,7 @@ public final class Conditionals {
      */
     public void addIfMatch(Tag tag) {
         Validate.isTrue(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_MODIFIED_SINCE));
-        Validate.isTrue(nonMatch == null || nonMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_NON_MATCH));
+        Validate.isTrue(nonMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_NON_MATCH));
         if (tag == null) {
             tag = Tag.ALL;
         }
@@ -80,7 +80,9 @@ public final class Conditionals {
             match.clear();
         }
         if (!match.contains(Tag.ALL)) {
-            match.add(tag);
+            if (!match.contains(tag)) {
+                match.add(tag);
+            }
         }
         else {
             throw new IllegalArgumentException("Tag ALL already in the list");
@@ -100,7 +102,7 @@ public final class Conditionals {
      */
     public void addIfNoneMatch(Tag tag) {
         Validate.isTrue(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_UNMODIFIED_SINCE));
-        Validate.isTrue(match == null || match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_MATCH));
+        Validate.isTrue(match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_MATCH));
         if (tag == null) {
             tag = Tag.ALL;
         }
@@ -108,7 +110,9 @@ public final class Conditionals {
             nonMatch.clear();
         }
         if (!nonMatch.contains(Tag.ALL)) {
-            nonMatch.add(tag);
+            if (!nonMatch.contains(tag)) {
+                nonMatch.add(tag);
+            }
         }
         else {
             throw new IllegalArgumentException("Tag ALL already in the list");
@@ -121,7 +125,7 @@ public final class Conditionals {
      * @param time the time to check.
      */
     public void setIfModifiedSince(DateTime time) {
-        Validate.isTrue(match == null || match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_MATCH));
+        Validate.isTrue(match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_MATCH));
         Validate.isTrue(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_UNMODIFIED_SINCE));
         modifiedSince = time;
     }
@@ -132,7 +136,7 @@ public final class Conditionals {
      * @param time the time to check.
      */
     public void setIfUnModifiedSince(DateTime time) {
-        Validate.isTrue(nonMatch == null || nonMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_NON_MATCH));
+        Validate.isTrue(nonMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_NON_MATCH));
         Validate.isTrue(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_MODIFIED_SINCE));
         unModifiedSince = time;
     }
