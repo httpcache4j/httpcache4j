@@ -34,9 +34,7 @@ import java.util.*;
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
 public final class Vary implements Serializable {
-    public static final String ALL = "*";
     private static final long serialVersionUID = -5275022740812240365L;
-
     private final Map<String, String> varyHeaders;
 
     /**
