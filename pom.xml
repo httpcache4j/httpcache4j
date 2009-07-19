@@ -207,7 +207,7 @@
     </plugins>
   </build>
    <properties>
-    <currentVersion>1.6</currentVersion>
+    <currentVersion>${version}</currentVersion>
   </properties>
   
   <dependencyManagement>
