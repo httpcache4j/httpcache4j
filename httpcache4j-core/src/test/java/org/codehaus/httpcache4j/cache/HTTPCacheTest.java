@@ -130,17 +130,18 @@ public class HTTPCacheTest {
     }
 
     @Test
-    public void testExternalConditionalGetWitchDoesNotMatchAnything() throws IOException {
-        HTTPRequest request = new HTTPRequest(URI.create("foo"));
+    public void testUnconditionalGET() throws IOException {
+        HTTPRequest request = new HTTPRequest(REQUEST_URI);
         request.getConditionals().addIfNoneMatch(Tag.ALL);
         Headers responseHeaders = new Headers();
         responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
         responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
-        when(cacheStorage.get(request)).thenReturn(new CacheItem(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
+      when(responseResolver.resolve(request)).thenReturn(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders));
         HTTPResponse response = cache.doCachedRequest(request);
+        verify(cacheStorage, times(1)).put(eq(REQUEST_URI), eq(new Vary()), any(CacheItem.class));
         Assert.assertNotNull("Response was null", response);
-        Assert.assertNotNull("The payload was null", response.getPayload());
         Assert.assertEquals("Wrong status", Status.OK, response.getStatus());
+        Assert.assertNotNull("The payload was null", response.getPayload());
     }
 
     @Test
