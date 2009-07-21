@@ -164,6 +164,10 @@ public final class Conditionals {
         unModifiedSince = null;
     }
 
+    public boolean isUnconditional() {
+      return nonMatch.contains(Tag.ALL) || match.contains(Tag.ALL);
+    }
+
     public Headers toHeaders() {
         Headers headers = new Headers();
         if (!getMatch().isEmpty()) {

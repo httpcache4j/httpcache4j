@@ -103,28 +103,28 @@ public class HTTPCache {
 
     private HTTPResponse getFromCache(final HTTPRequest request, final boolean force) {
         HTTPResponse response;
-        if (!force) {
-            CacheItem item = storage.get(request);
-            if (item != null) {
-                if (item.isStale()) {
-                    //If the cached value is stale, execute the request and try to cache it.
-                    HTTPResponse staleResponse = item.getResponse();
-                    helper.prepareConditionalRequest(request, staleResponse);
-
-                    response = handleResolve(request, item);
-                }
-                else {
-                    //TODO: handle rewrite of Status... HEAD should probably always return 200 OK.
-                    //TODO: Age header???
-                    response = rewriteResponse(request, item.getResponse());
-                }
-            }
-            else {
-                response = unconditionalResolve(request);
-            }
+        if (force || request.getConditionals().isUnconditional()) {
+          response = unconditionalResolve(request);
         }
         else {
-            response = unconditionalResolve(request);
+          CacheItem item = storage.get(request);
+          if (item != null) {
+              if (item.isStale()) {
+                  //If the cached value is stale, execute the request and try to cache it.
+                  HTTPResponse staleResponse = item.getResponse();
+                  helper.prepareConditionalRequest(request, staleResponse);
+
+                  response = handleResolve(request, item);
+              }
+              else {
+                  //TODO: handle rewrite of Status... HEAD should probably always return 200 OK.
+                  //TODO: Age header???
+                  response = rewriteResponse(request, item.getResponse());
+              }
+          }
+          else {
+              response = unconditionalResolve(request);
+          }
         }
 
         return response;
