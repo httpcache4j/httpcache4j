@@ -120,7 +120,6 @@ public class HTTPCacheTest {
         verify(cacheStorage, times(1)).put(eq(request.getRequestURI()), any(Vary.class), argThat(new MatchThisResponse(resolvedResponse)));
         assertTrue(response.hasPayload());
         assertTrue(response.getPayload().isAvailable());
-        //verify(cacheStorage, times(1)).put(eq(REQUEST_URI), eq(new Vary()), any(CacheItem.class));
     }       
 
     @Test
