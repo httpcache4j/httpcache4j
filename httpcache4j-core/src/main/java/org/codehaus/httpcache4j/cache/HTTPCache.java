@@ -112,7 +112,13 @@ public class HTTPCache {
               if (item.isStale()) {
                   //If the cached value is stale, execute the request and try to cache it.
                   HTTPResponse staleResponse = item.getResponse();
-                  helper.prepareConditionalRequest(request, staleResponse);
+                  //If the payload has been deleted for some reason, we want to do a unconditional GET
+                  if (!staleResponse.hasPayload() || staleResponse.getPayload().isAvailable()) {
+                      helper.prepareConditionalRequest(request, staleResponse);
+                  }
+                  else {
+                      request.getConditionals().clear();
+                  }
 
                   response = handleResolve(request, item);
               }
@@ -177,17 +183,20 @@ public class HTTPCache {
                 storage.put(request.getRequestURI(), vary, new CacheItem(resolvedResponse));
                 response = resolvedResponse;
             }
-            else if (item != null && resolvedResponse.getStatus() == Status.NOT_MODIFIED) {
-                response = updateHeadersFromResolved(request, item, resolvedResponse);
-            }
-            else if (item != null && resolvedResponse.getStatus() == Status.OK) {
-                //Success was ok, but we had already a response for this item.
-                //invalidate it so we don't clutter the filesystem.
-                storage.invalidate(request.getRequestURI(), item);
-            }
             else {
                 //Response was not cacheable
                 response = resolvedResponse;
+            }
+            
+            if (item != null) {
+                if (resolvedResponse.getStatus() == Status.NOT_MODIFIED) {
+                    response = updateHeadersFromResolved(request, item, resolvedResponse);
+                }
+                else if (resolvedResponse.getStatus() == Status.OK) {
+                    //Success was ok, but we had already a response for this item.
+                    //invalidate it so we don't clutter the filesystem.
+                    storage.invalidate(request.getRequestURI(), item);
+                }                
             }
         }
         return response;
