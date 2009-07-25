@@ -79,7 +79,7 @@ public class HTTPClientResponseResolverTest {
     public void testResolvePOSTWithNoHeaders() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.POST);
         final Payload payload = mock(Payload.class);
-        request.setPayload(payload);
+        request = request.payload(payload);
         when(payload.getMimeType()).thenReturn(new MIMEType("text/plain"));
         final HttpMethod method = mock(PostMethod.class);
         HTTPClientResponseResolver resolver = createResponseResolver(method, 201, new Header[0]);
@@ -94,7 +94,7 @@ public class HTTPClientResponseResolverTest {
     public void testResolvePUTWithNoHeaders() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.PUT);
         final Payload payload = mock(Payload.class);
-        request.setPayload(payload);
+        request = request.payload(payload);
         when(payload.getMimeType()).thenReturn(new MIMEType("text/plain"));
         final HttpMethod method = mock(PostMethod.class);
         HTTPClientResponseResolver resolver = createResponseResolver(method, 200, new Header[0]);

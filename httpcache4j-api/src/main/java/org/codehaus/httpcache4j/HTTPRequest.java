@@ -38,38 +38,70 @@ public class HTTPRequest {
     private final HTTPMethod method;
     private final Conditionals conditionals;
     private final Preferences preferences;
-    private Headers headers;
-    private Challenge challenge;
-    private Payload payload;
+    private final Headers headers;
+    private final Challenge challenge;
+    private final Payload payload;
 
     public HTTPRequest(URI requestURI, HTTPMethod method) {
+        this(requestURI, method, Collections.<Parameter>emptyList(), new Headers(), new Conditionals(), new Preferences(), null, null);
+    }
+
+    public HTTPRequest(HTTPRequest request) {
+        this(request.getRequestURI(),
+             request.getMethod(),
+             request.getParameters(),
+             request.getHeaders(),
+             request.getConditionals(),
+             request.getPreferences(),
+             request.getChallenge(),
+             request.getPayload()
+        );
+    }
+
+    private HTTPRequest(URI requestURI,
+                       HTTPMethod method,
+                       List<Parameter> parameters,
+                       Headers headers,
+                       Conditionals conditionals,
+                       Preferences preferences,
+                       Challenge challenge,
+                       Payload payload) {
+
         this.method = method;
         this.requestURI = requestURI;
-        this.headers = new Headers();
-        this.parameters = new ArrayList<Parameter>();
-        this.conditionals = new Conditionals();
-        this.preferences = new Preferences();
+        this.headers = headers;
+        this.conditionals = conditionals;
+        this.preferences = preferences;
+        this.challenge = challenge;
+        this.payload = payload;
         String query = requestURI.getQuery();
         if (query != null) {
-            parseQuery(query);
+            List<Parameter> list = new ArrayList<Parameter>(parameters);
+            list.addAll(parseQuery(query));
+            this.parameters = list;
+        }
+        else {
+            this.parameters = parameters;
         }
     }
-    
+
     public HTTPRequest(URI requestURI) {
         this(requestURI, HTTPMethod.GET);
     }
 
-    private void parseQuery(String query) {
+    private List<Parameter> parseQuery(String query) {
+        List<Parameter> parameters = new ArrayList<Parameter>();
         String[] parts = query.split("&");
         if (parts.length > 0) {
             for (String part : parts) {
                 int equalsIndex = part.indexOf('=');
                 if (equalsIndex != -1) {
                     Parameter param = new Parameter(part.substring(0, equalsIndex), part.substring(equalsIndex + 1));
-                    addParameter(param);
+                    parameters.add(param);
                 }
             }
         }
+        return parameters;
     }
 
     public URI getRequestURI() {
@@ -83,6 +115,7 @@ public class HTTPRequest {
     /**
      * Returns all headers with the headers from the Conditionals, Payload and Preferences.
      * If you have explicitly set headers on the request that are the same as the Conditionals and Preferences they are overwritten.
+     *
      * @return All the headers
      */
     public Headers getAllHeaders() {
@@ -107,32 +140,32 @@ public class HTTPRequest {
         }
         return new Headers(map);
     }
-    
 
 
     public List<Parameter> getParameters() {
         return Collections.unmodifiableList(parameters);
     }
 
-    public void addHeader(Header header) {
-        Validate.notNull(header, "You may not add a null header");
-        headers.add(header);
-    }
-
-    public void addHeader(String name, String value) {
-        Validate.notEmpty(name, "You may not add a null header");
-        Validate.notNull(value, "You may not add a null header");
-        headers.add(new Header(name, value));
-    }
-
-    public void addParameter(Parameter parameter) {
+    public HTTPRequest addParameter(Parameter parameter) {
+        List<Parameter> parameters = new ArrayList<Parameter>(this.parameters);
         if (!parameters.contains(parameter)) {
             parameters.add(parameter);
         }
+        return new HTTPRequest(requestURI, method, parameters, headers, conditionals, preferences, challenge, payload);
     }
 
-    public void addParameter(String name, String value) {
-        addParameter(new Parameter(name, value));
+    public HTTPRequest addParameter(String name, String value) {
+        return addParameter(new Parameter(name, value));
+    }
+
+    public HTTPRequest addHeader(Header header) {
+        Headers headers = new Headers(this.headers);
+        headers.add(header);
+        return new HTTPRequest(requestURI, method, parameters, headers, conditionals, preferences, challenge, payload);
+    }
+
+    public HTTPRequest addHeader(String name, String value) {
+        return addHeader(new Header(name, value));
     }
 
     public Conditionals getConditionals() {
@@ -151,21 +184,21 @@ public class HTTPRequest {
         return challenge;
     }
 
-    public void setChallenge(Challenge challenge) {
-        this.challenge = challenge;
+    public HTTPRequest challenge(Challenge challenge) {
+        return new HTTPRequest(requestURI, method, parameters, headers, conditionals, preferences, challenge, payload);
     }
 
     public Payload getPayload() {
         return payload;
     }
 
-    public void setPayload(Payload payload) {
-        this.payload = payload;
+    public HTTPRequest payload(Payload payload) {
+        return new HTTPRequest(requestURI, method, parameters, headers, conditionals, preferences, challenge, payload);
     }
 
-    public void setHeaders(final Headers headers) {
+    public HTTPRequest headers(final Headers headers) {
         Validate.notNull(headers, "You may not set null headers");
-        this.headers = headers;
+        return new HTTPRequest(requestURI, method, parameters, headers, conditionals, preferences, challenge, payload);
     }
 
     public boolean hasPayload() {
