@@ -171,16 +171,16 @@ public final class Conditionals {
     public Headers toHeaders() {
         Headers headers = new Headers();
         if (!getMatch().isEmpty()) {
-            headers.add(new Header(HeaderConstants.IF_MATCH, buildTagHeaderValue(getMatch())));
+            headers = headers.add(new Header(HeaderConstants.IF_MATCH, buildTagHeaderValue(getMatch())));
         }
         if (!getNoneMatch().isEmpty()) {
-            headers.add(new Header(HeaderConstants.IF_NON_MATCH, buildTagHeaderValue(getNoneMatch())));
+            headers = headers.add(new Header(HeaderConstants.IF_NON_MATCH, buildTagHeaderValue(getNoneMatch())));
         }
         if (modifiedSince != null) {
-            headers.add(HeaderUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, modifiedSince));
+            headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, modifiedSince));
         }
         if (unModifiedSince != null) {
-            headers.add(HeaderUtils.toHttpDate(HeaderConstants.IF_UNMODIFIED_SINCE, unModifiedSince));
+            headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.IF_UNMODIFIED_SINCE, unModifiedSince));
         }
 
         return headers;

@@ -120,10 +120,8 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
     private void addHeaders(Headers headers, HttpMethod method) {
         if (!headers.isEmpty()) {
-            for (Map.Entry<String, List<org.codehaus.httpcache4j.Header>> entry : headers) {
-                for (org.codehaus.httpcache4j.Header header : entry.getValue()) {
-                    method.addRequestHeader(header.getName(), header.getValue());
-                }
+            for (org.codehaus.httpcache4j.Header header : headers) {
+                method.addRequestHeader(header.getName(), header.getValue());
             }
         }
     }
@@ -131,7 +129,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private HTTPResponse convertResponse(HTTPRequest request, HttpMethod method) {
         Headers headers = new Headers();
         for (Header header : method.getResponseHeaders()) {
-            headers.add(header.getName(), header.getValue());
+            headers = headers.add(header.getName(), header.getValue());
         }
         InputStream stream = null;
         HTTPResponse response;

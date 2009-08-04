@@ -104,35 +104,38 @@ public class HTTPCache {
     private HTTPResponse getFromCache(final HTTPRequest request, final boolean force) {
         HTTPResponse response;
         if (force || request.getConditionals().isUnconditional()) {
-          response = unconditionalResolve(request);
+            response = unconditionalResolve(request);
         }
         else {
-          CacheItem item = storage.get(request);
-          if (item != null) {
-              if (item.isStale()) {
-                  //If the cached value is stale, execute the request and try to cache it.
-                  HTTPResponse staleResponse = item.getResponse();
-                  //If the payload has been deleted for some reason, we want to do a unconditional GET
-                  if (!staleResponse.hasPayload() || staleResponse.getPayload().isAvailable()) {
-                      helper.prepareConditionalRequest(request, staleResponse);
-                  }
-                  else {
-                      request.getConditionals().clear();
-                  }
+            CacheItem item = storage.get(request);
+            HTTPRequest req = request;
+            if (item != null) {
+                if (item.isStale()) {
+                    //If the cached value is stale, execute the request and try to cache it.
+                    HTTPResponse staleResponse = item.getResponse();
+                    //If the payload has been deleted for some reason, we want to do a unconditional GET
+                    if (!staleResponse.hasPayload() || staleResponse.getPayload().isAvailable()) {
+                        req = helper.prepareConditionalRequest(request, staleResponse);
+                    }
+                    else {
+                        req = request.conditionals(new Conditionals());
+                    }
 
-                  response = handleResolve(request, item);
-              }
-              else {
-                  //TODO: handle rewrite of Status... HEAD should probably always return 200 OK.
-                  //TODO: Age header???
-                  response = rewriteResponse(request, item.getResponse());
-              }
-          }
-          else {
-              response = unconditionalResolve(request);
-          }
+                    response = handleResolve(req, item);
+                }
+                else {
+                    //TODO: handle rewrite of Status... HEAD should probably always return 200 OK.
+                    //TODO: Age header???
+                    response = rewriteResponse(req, item.getResponse());
+                }
+            }
+            else {
+                response = unconditionalResolve(request);
+            }
         }
-
+        if (response != null) {
+            return helper.calculateAge(response);
+        }
         return response;
     }
 
@@ -204,14 +207,12 @@ public class HTTPCache {
 
     private HTTPResponse updateHeadersFromResolved(final HTTPRequest request, final CacheItem item, final HTTPResponse resolvedResponse) {
         HTTPResponse cachedResponse = item.getResponse();
-        Map<String, List<Header>> headers = new LinkedHashMap<String, List<Header>>(cachedResponse.getHeaders().getHeadersAsMap());
-
-        headers.putAll(helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders()).getHeadersAsMap());
-        headers.remove(HeaderConstants.AGE);
-        Headers realHeaders = new Headers(headers);
-        realHeaders.add(HeaderConstants.AGE, helper.calculateAge(resolvedResponse, cachedResponse));
-        HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), realHeaders);
+        Headers headers = new Headers(resolvedResponse.getHeaders());
+        headers = headers.add(helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders()));
+        HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers);
+        //TODO: replace with Key.create()
         Vary vary = helper.determineVariation(updatedResponse.getHeaders(), request.getHeaders());
+        //Key.create(request, updatedResponse);
         storage.put(request.getRequestURI(), vary, new CacheItem(updatedResponse));
         return updatedResponse;
     }

@@ -71,7 +71,7 @@ public final class Vary implements Serializable {
     public boolean matches(final HTTPRequest request) {
         for (Map.Entry<String, String> varyEntry : varyHeaders.entrySet()) {
             List<Header> requestHeaderValue = request.getHeaders().getHeaders(varyEntry.getKey());
-            boolean valid = requestHeaderValue == null ? varyEntry.getValue() == null : request.getHeaders().getFirstHeader(varyEntry.getKey()).getValue().equals(varyEntry.getValue());
+            boolean valid = requestHeaderValue.isEmpty() ? varyEntry.getValue() == null : request.getHeaders().getFirstHeader(varyEntry.getKey()).getValue().equals(varyEntry.getValue());
             if (!valid) {
                 return false;
             }

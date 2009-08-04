@@ -53,10 +53,8 @@ public class ResponseWriter {
     }
 
     private void writeHeaders(PrintWriter writer, Headers headers) {
-        for (Map.Entry<String, List<Header>> header : headers) {
-            for (Header head : header.getValue()) {
-                writer.println(String.format("%s: %s", head.getName(), head.getValue()));
-            }
+        for (Header head : headers) {
+            writer.println(head.toString());
         }
     }
 

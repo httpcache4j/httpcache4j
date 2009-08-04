@@ -34,8 +34,7 @@ public class HTTPResponseTest {
 
     @Test
     public void testparseETagHeader() {
-        Headers headers = new Headers();
-        headers.add(new Header("ETag", "\"abba\""));
+        Headers headers = new Headers().add(new Header("ETag", "\"abba\""));
         HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
         assertEquals(0, response.getAllowedMethods().size());
         assertNotNull(response.getETag());
@@ -47,8 +46,7 @@ public class HTTPResponseTest {
 
     @Test
     public void testETagHeader() {
-        Headers headers = new Headers();
-        headers.add(new Header("ETag", "\"abba\""));
+        Headers headers = new Headers().add(new Header("ETag", "\"abba\""));
         HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
         assertEquals(0, response.getAllowedMethods().size());
         assertNotNull(response.getETag());
@@ -60,8 +58,7 @@ public class HTTPResponseTest {
 
     @Test
     public void testAllowHeaders() {
-        Headers headers = new Headers();
-        headers.add(HeaderConstants.ALLOW, "GET, POST, OPTIONS");
+        Headers headers = new Headers().add(HeaderConstants.ALLOW, "GET, POST, OPTIONS");
         HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
         assertEquals(3, response.getAllowedMethods().size());
         assertNull(response.getLastModified());

@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.Assert;
 import org.codehaus.httpcache4j.*;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
 
 import java.net.URI;
 
@@ -31,13 +32,11 @@ public class HTTPCacheHelperTest {
 
     @Test
     public void testAgeCalculation() {
-        Headers headers = new Headers();
-        headers.add(HeaderUtils.toHttpDate("Date", createDateTime(10)));
+        Headers headers = new Headers().add(HeaderUtils.toHttpDate("Date", createDateTime(0)));
+        DateTimeUtils.setCurrentMillisFixed(createDateTime(10).getMillis());
         HTTPResponse cachedResponse = createResponse(headers);
-        headers = new Headers();
-        headers.add(HeaderUtils.toHttpDate("Date", createDateTime(20)));
-        HTTPResponse resolvedResponse = createResponse(headers);
-        Assert.assertEquals("10", helper.calculateAge(resolvedResponse, cachedResponse));
+        HTTPResponse responseWithCalculatedAge = helper.calculateAge(cachedResponse);
+        Assert.assertEquals("10", responseWithCalculatedAge.getHeaders().getFirstHeaderValue("Age"));
     }
     
     @Test
@@ -51,8 +50,7 @@ public class HTTPCacheHelperTest {
     @Test
     public void testOneVariation() {
         HTTPRequest request = new HTTPRequest(URI.create("dummy://url"));
-        Headers headers = new Headers();
-        headers.add("Vary", "Accept");
+        Headers headers = new Headers().add("Vary", "Accept");
         HTTPResponse response = createResponse(headers);
         Vary vary = helper.determineVariation(response.getHeaders(), request.getHeaders());
         Assert.assertEquals(1, vary.size());
@@ -61,8 +59,7 @@ public class HTTPCacheHelperTest {
     @Test
     public void testTwoVariations() {
         HTTPRequest request = new HTTPRequest(URI.create("dummy://url"));
-        Headers headers = new Headers();
-        headers.add("Vary", "Accept, Accept-Language");
+        Headers headers = new Headers().add("Vary", "Accept, Accept-Language");
         HTTPResponse response = createResponse(headers);
         Vary vary = helper.determineVariation(response.getHeaders(), request.getHeaders());
         Assert.assertEquals(2, vary.size());
@@ -71,8 +68,8 @@ public class HTTPCacheHelperTest {
     @Test
     public void testCacheableResponses() {
         Headers headers = new Headers();
-        headers.add(HeaderConstants.CACHE_CONTROL, "private, max-age=39");
-        headers.add(HeaderUtils.toHttpDate("Date", createDateTime(10)));
+        headers = headers.add(HeaderConstants.CACHE_CONTROL, "private, max-age=39");
+        headers = headers.add(HeaderUtils.toHttpDate("Date", createDateTime(10)));
         Assert.assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.OK, headers)));
         Assert.assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.NON_AUTHORITATIVE_INFORMATION, headers)));
         Assert.assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.MULTIPLE_CHOICES, headers)));

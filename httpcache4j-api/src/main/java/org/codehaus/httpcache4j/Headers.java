@@ -20,36 +20,41 @@ import org.apache.commons.lang.Validate;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.List;
+import java.util.Set;
+
+import fj.F;
+
 
 /**
  * A collection of headers.
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public class Headers implements Serializable, Iterable<Map.Entry<String, List<Header>>> {
+public class Headers implements Serializable, Iterable<Header> {
     private static final long serialVersionUID = -7175564984758939316L;
-    private final Map<String, List<Header>> headers = new HashMap<String, List<Header>>();
+    private final HeaderHashMap headers = new HeaderHashMap();
 
     public Headers() {
     }
 
-    public Headers(Headers headers) {
+    public Headers(final Headers headers) {
         Validate.notNull(headers, "The headers may not be null");
         this.headers.putAll(headers.getHeadersAsMap());
     }
 
-    public Headers(Map<String, List<Header>> headers) {
+    public Headers(final Map<String, List<String>> headers) {
         Validate.notNull(headers, "The header map may not be null");
         this.headers.putAll(headers);
     }
 
     public List<Header> getHeaders(String headerKey) {
-        return headers.get(headerKey);
+        return headers.getAsHeaders(headerKey);
     }
 
     public Header getFirstHeader(String headerKey) {
-        List<Header> headerList = headers.get(headerKey);
-        if (headerList != null && !headerList.isEmpty()) {
+        List<Header> headerList = getHeaders(headerKey);
+        if (!headerList.isEmpty()) {
             return headerList.get(0);
         }
         return null;
@@ -63,32 +68,35 @@ public class Headers implements Serializable, Iterable<Map.Entry<String, List<He
         return null;
     }
 
-    public void add(Header header) {
-        List<Header> list = headers.get(header.getName());
-        if (list == null) {
-            list = new ArrayList<Header>();
-            headers.put(header.getName(), list);
+    public Headers add(Header header) {
+        Map<String, List<String>> headers = copyMap();
+        List<String> list = new ArrayList<String>(headers.get(header.getName()));
+        if (!list.contains(header.getValue())) {
+            list.add(header.getValue());
         }
-        if (!list.contains(header)) {
-            list.add(header);
-        }
+        headers.put(header.getName(), list);
+        return new Headers(headers);
     }
 
-    public void add(String key, String value) {
-        add(new Header(key, value));
+    public Headers add(String key, String value) {
+        return add(new Header(key, value));
     }
 
     public boolean contains(Header header) {
-        List<Header> values = headers.get(header.getName());
-        return values != null && values.contains(header);
+        List<Header> values = getHeaders(header.getName());
+        return values.contains(header);
     }
 
-    public Map<String, List<Header>> getHeadersAsMap() {
+    public Map<String, List<String>> getHeadersAsMap() {
         return Collections.unmodifiableMap(headers);
     }
 
-    public Iterator<Map.Entry<String, List<Header>>> iterator() {
-        return getHeadersAsMap().entrySet().iterator();
+    public HeaderHashMap copyMap() {
+        return new HeaderHashMap(headers);
+    }
+
+    public Iterator<Header> iterator() {
+        return headers.getAsHeaders();
     }
 
     public Set<String> keySet() {
@@ -96,15 +104,19 @@ public class Headers implements Serializable, Iterable<Map.Entry<String, List<He
     }
 
     public boolean hasHeader(String headerName) {
-        return headers.get(headerName) != null;
+        return !headers.get(headerName).isEmpty();
     }
 
-    public void put(String name, List<Header> headers) {
-        this.headers.put(name, headers);
+    public Headers put(String name, List<Header> headers) {
+        HeaderHashMap heads = copyMap();
+        heads.put(name, headers);
+        return new Headers(heads);
     }
 
-    public void remove(String name) {
-        headers.remove(name);
+    public Headers remove(String name) {
+        Map<String, List<String>> heads = copyMap();
+        heads.remove(name);
+        return new Headers(heads);
     }
 
     public int size() {
@@ -113,5 +125,101 @@ public class Headers implements Serializable, Iterable<Map.Entry<String, List<He
 
     public boolean isEmpty() {
         return headers.isEmpty();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Headers headers1 = (Headers) o;
+
+        return headers.equals(headers1.headers);
+    }
+
+    @Override
+    public int hashCode() {
+        return headers != null ? headers.hashCode() : 0;
+    }
+
+    public Headers add(Iterable<Header> headers) {
+        HeaderHashMap map = new HeaderHashMap();
+        for (Header header : headers) {
+            List<String> list = new ArrayList<String>(map.get(header.getName()));
+            if (!list.contains(header.getValue())) {
+                list.add(header.getValue());
+            }
+            map.put(header.getName(), list);
+        }
+        return new Headers(map);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        for (Header header : this) {
+            if (builder.length() > 0) {
+                builder.append("\r\n");
+            }
+            builder.append(header);
+        }
+        return builder.toString();
+    }
+
+    public static class HeaderHashMap extends LinkedHashMap<String, List<String>> {
+        private static final long serialVersionUID = 2714358409043444835L;
+
+        public HeaderHashMap() {
+        }
+
+        public HeaderHashMap(Map<? extends String, ? extends List<String>> m) {
+            super(m);
+        }
+
+        private static F<Header,String> headerToString = new F<Header, String>() {
+            public String f(Header value) {
+                return value.getValue();
+            }
+        };
+
+        @Override
+        public List<String> get(Object key) {
+            List<String> value = super.get(key);
+            return value != null ? value : Collections.<String>emptyList();
+        }
+
+        public List<Header> getAsHeaders(final String key) {
+            fj.data.List<String> stringList = fj.data.List.iterableList(get(key));
+            fj.data.List<Header> headerList = stringList.map(stringToHeader(key));
+            return new ArrayList<Header>(headerList.toCollection());
+        }
+
+        private F<String, Header> stringToHeader(final String key) {
+            return new F<String, Header>() {
+                public Header f(String value) {
+                    return new Header(key, value);
+                }
+            };
+        }
+
+        public List<String> put(String key, List<Header> value) {
+            fj.data.List<Header> headers = fj.data.List.iterableList(value);
+            fj.data.List<String> strings = headers.map(headerToString);
+            return super.put(key, new ArrayList<String>(strings.toCollection()));
+        }
+
+        public Iterator<Header> getAsHeaders() {
+            fj.data.List<Header> headers = fj.data.List.nil();
+            for (Map.Entry<String, List<String>> entry : this.entrySet()) {
+                fj.data.List<String> stringList = fj.data.List.iterableList(entry.getValue());
+                fj.data.List<Header> headerList = stringList.map(stringToHeader(entry.getKey()));
+                headers = headers.append(headerList);
+            }
+            return headers.iterator();
+        }
     }
 }

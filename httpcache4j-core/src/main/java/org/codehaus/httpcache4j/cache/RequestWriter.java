@@ -67,10 +67,8 @@ public class RequestWriter {
     }
 
     private void writerRequestHeaders(PrintWriter writer) {
-        for (Map.Entry<String, List<Header>> entry : request.getAllHeaders()) {
-            for (Header head : entry.getValue()) {
-                writer.println(head);
-            }
+        for (Header head : request.getAllHeaders()) {
+            writer.println(head.toString());
         }
     }
 
