@@ -94,6 +94,14 @@
         <enabled>false</enabled>
       </releases>
     </repository>
+    <repository>
+      <id>functionaljava</id>
+      <url>http://functionaljava.googlecode.com/svn/maven/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    
   </repositories>
   <pluginRepositories>
     <pluginRepository>
@@ -241,6 +249,11 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>1.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.functionaljava</groupId>
+        <artifactId>fj</artifactId>
+        <version>2.19</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>

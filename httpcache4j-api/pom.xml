@@ -36,5 +36,9 @@
       <groupId>javax.activation</groupId>
       <artifactId>activation</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.functionaljava</groupId>
+      <artifactId>fj</artifactId>
+    </dependency>
   </dependencies>
 </project>

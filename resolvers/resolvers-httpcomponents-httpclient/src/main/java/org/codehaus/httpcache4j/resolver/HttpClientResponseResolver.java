@@ -62,10 +62,8 @@ public class HttpClientResponseResolver extends AbstractResponseResolver {
         HttpUriRequest realRequest = getMethod(request.getMethod(), request.getRequestURI());
         
         Headers headers = request.getAllHeaders();
-        for (Map.Entry<String, List<Header>> headerList : headers) {
-            for (Header header : headerList.getValue()) {
-                realRequest.addHeader(header.getName(), header.getValue());
-            }
+        for (Header header : headers) {
+            realRequest.addHeader(header.getName(), header.getValue());
         }
         if (useRequestChallenge && request.getChallenge() != null) {
             Challenge challenge = request.getChallenge();
@@ -125,7 +123,7 @@ public class HttpClientResponseResolver extends AbstractResponseResolver {
         Headers headers = new Headers();
         org.apache.http.Header[] realHeaders = response.getAllHeaders();
         for (org.apache.http.Header header : realHeaders) {
-            headers.add(header.getName(), header.getValue());
+            headers = headers.add(header.getName(), header.getValue());
         }
 
         InputStream stream = getStream(realRequest, response);

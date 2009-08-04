@@ -16,15 +16,21 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.apache.commons.lang.Validate;
+import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.Headers;
+import static org.codehaus.httpcache4j.HeaderConstants.VARY;
 
 import java.net.URI;
 import java.io.Serializable;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-class Key implements Serializable {
+public class Key implements Serializable {
     private static final long serialVersionUID = 5827064595759738979L;
     
     private URI uri;
@@ -33,6 +39,24 @@ class Key implements Serializable {
     public static Key create(URI uri, Vary vary) {
         return new Key(uri, vary);
     }
+    public static Key create(HTTPRequest request, HTTPResponse response) {
+        URI uri = request.getRequestURI();
+        return new Key(uri, determineVariation(request.getAllHeaders(), response.getHeaders()));
+    }
+
+    private static Vary determineVariation(Headers responseHeaders, Headers requestHeaders) {
+        String varyHeader = responseHeaders.getFirstHeaderValue(VARY);
+        Map<String, String> resolvedVaryHeaders = new HashMap<String, String>();
+        if (varyHeader != null) {
+            String[] varies = varyHeader.split(",");
+            for (String vary : varies) {
+                String value = requestHeaders.getFirstHeaderValue(vary);
+                resolvedVaryHeaders.put(vary, value == null ? null : value);
+            }
+        }
+        return new Vary(resolvedVaryHeaders);
+    }
+
 
     Key(URI uri, Vary vary) {
         Validate.notNull(uri, "URI may not be null");

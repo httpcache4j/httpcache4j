@@ -56,13 +56,7 @@ public final class HTTPResponse implements Serializable {
         Validate.notNull(headers, "You must supply some Headers");
         this.status = status;
         this.payload = payload;
-        //Only wrap if this not wrapped from before. (to avoid multiple wrappings).
-        if (headers instanceof UnmodifiableHeaders) {
-            this.headers = headers;
-        }
-        else {
-            this.headers = new UnmodifiableHeaders(headers);
-        }
+        this.headers = headers;
 
         if (headers.hasHeader(ETAG)) {
             ETag = Tag.parse(headers.getFirstHeader(ETAG).getValue());

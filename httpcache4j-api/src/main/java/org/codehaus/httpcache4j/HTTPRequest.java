@@ -133,12 +133,7 @@ public class HTTPRequest {
     }
 
     private Headers merge(final Headers base, final Headers toMerge) {
-        Map<String, List<Header>> map = new HashMap<String, List<Header>>(base.getHeadersAsMap());
-        map.putAll(toMerge.getHeadersAsMap());
-        if (map.isEmpty()) {
-            return new Headers();
-        }
-        return new Headers(map);
+        return new Headers(base).add(toMerge);        
     }
 
 
@@ -159,8 +154,7 @@ public class HTTPRequest {
     }
 
     public HTTPRequest addHeader(Header header) {
-        Headers headers = new Headers(this.headers);
-        headers.add(header);
+        Headers headers = new Headers(this.headers).add(header);
         return new HTTPRequest(requestURI, method, parameters, headers, conditionals, preferences, challenge, payload);
     }
 
@@ -190,6 +184,10 @@ public class HTTPRequest {
 
     public Payload getPayload() {
         return payload;
+    }
+
+    public HTTPRequest conditionals(Conditionals conditionals) {
+        return new HTTPRequest(requestURI, method, parameters, headers, conditionals, preferences, challenge, payload);
     }
 
     public HTTPRequest payload(Payload payload) {

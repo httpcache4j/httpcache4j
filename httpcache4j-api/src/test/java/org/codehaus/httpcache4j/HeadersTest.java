@@ -25,17 +25,12 @@ import org.junit.Test;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class HeadersTest {
-    private Headers headers;
-
-    @Before
-    public void setupHeaders() {
-        headers = new Headers();
-    }
 
     @Test
     public void testAddSimpleHeader() {
-        headers.add(new Header("foo", "bar"));
+        Headers headers = new Headers().add(new Header("foo", "bar"));
         assertNotNull("Header list was null", headers.getHeaders("foo"));
+        assertEquals("Header list was null", 1, headers.getHeaders("foo").size());
         assertEquals("Header was not equal", new Header("foo", "bar"), headers.getFirstHeader("foo"));
     }
 
@@ -65,20 +60,39 @@ public class HeadersTest {
     }
 
     @Test
+    public void testHeadersEquals() {
+        Headers h = new Headers().add(HeaderConstants.ACCEPT, "application/xhtml").add("Foo", "Bar").add(HeaderConstants.AGE, "23");
+        Headers h2 = new Headers().add(HeaderConstants.ACCEPT, "application/xhtml").add("Foo", "Bar").add(HeaderConstants.AGE, "23");
+        assertEquals(h, h2);
+    }
+
+    @Test
+    public void testHeadersEquals2() {
+        Headers h = new Headers().add("Foo", "Bar").add(HeaderConstants.AGE, "23").add(HeaderConstants.ACCEPT, "application/xhtml");
+        Headers h2 = new Headers().add(HeaderConstants.ACCEPT, "application/xhtml").add("Foo", "Bar").add(HeaderConstants.AGE, "23");
+        assertEquals(h, h2);
+    }
+
+    @Test
+    public void testNOTHeadersEquals() {
+        Headers h = new Headers().add("Foo", "Bar").add(HeaderConstants.AGE, "23").add(HeaderConstants.ACCEPT, "application/xhtml");
+        Headers h2 = new Headers();
+        assertFalse(h.equals(h2));
+    }
+
+    @Test
     public void testHasCacheHeaders() {
-        headers = new Headers();
+        Headers headers = new Headers();
         assertFalse("There was cacheable headers in an empty header map", HeaderUtils.hasCacheableHeaders(headers));
-        headers.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
+        headers = headers.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
         assertTrue("There was no cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
-        headers = new Headers();
-        headers.add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, new DateTime()));
+        headers = new Headers().add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, new DateTime()));
         assertTrue("There was no cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
-        headers = new Headers();
-        headers.add(new Header(HeaderConstants.PRAGMA, "private"));
+        headers = new Headers().add(new Header(HeaderConstants.PRAGMA, "private"));
         assertFalse("There was cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
         headers = new Headers();
-        headers.add(new Header(HeaderConstants.PRAGMA, "private"));
-        headers.add(new Header(HeaderConstants.ETAG, "\"foo\""));
+        headers = headers.add(new Header(HeaderConstants.PRAGMA, "private"));
+        headers = headers.add(new Header(HeaderConstants.ETAG, "\"foo\""));
         assertTrue("There was no cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
     }
 }

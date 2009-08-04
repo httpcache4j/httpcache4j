@@ -80,13 +80,23 @@ class HTTPCacheHelper {
     }
 
 
-    String calculateAge(final HTTPResponse pResolvedResponse, final HTTPResponse pCachedResponse) {
-        DateTime resolved = HeaderUtils.fromHttpDate(pResolvedResponse.getHeaders().getFirstHeader(HeaderConstants.DATE));
+    HTTPResponse calculateAge(final HTTPResponse pCachedResponse) {
+        Headers heads = new Headers(pCachedResponse.getHeaders());
+        DateTime now = new DateTime();
         DateTime cached = HeaderUtils.fromHttpDate(pCachedResponse.getHeaders().getFirstHeader(HeaderConstants.DATE));
-        if (resolved == null || cached == null) {
-            return "0";
+        String age;
+        if (cached == null) {
+            age = "0";
         }
-        return String.valueOf(Seconds.secondsBetween(cached, resolved).getSeconds());
+        else {
+            age = String.valueOf(Seconds.secondsBetween(cached, now).getSeconds());
+        }
+        if (age != null) {
+            return new HTTPResponse(pCachedResponse.getPayload(), pCachedResponse.getStatus(), heads.add(HeaderConstants.AGE, age)); 
+        }
+        else {
+            return pCachedResponse;
+        }
     }
 
     Headers removeUnmodifiableHeaders(Headers headers) {
@@ -133,27 +143,31 @@ class HTTPCacheHelper {
 
     }
 
-    private void addIfNoneMatchHeader(final Header eTagHeader, HTTPRequest request) {
+    private Conditionals addIfNoneMatchHeader(final Header eTagHeader, HTTPRequest request) {
         Tag tag = eTagHeader == null ? null : Tag.parse(eTagHeader.getValue());
+        Conditionals conditionals = request.getConditionals();
         if (tag != null && tag != Tag.ALL) {
-            request.getConditionals().addIfNoneMatch(tag);
+            conditionals.addIfNoneMatch(tag);
         }
+        return conditionals;
     }
 
     boolean isSafeRequest(HTTPRequest request) {
         return safeMethods.contains(request.getMethod());
     }
 
-    void prepareConditionalRequest(HTTPRequest request, HTTPResponse staleResponse) {
+    HTTPRequest prepareConditionalRequest(HTTPRequest request, HTTPResponse staleResponse) {
         Conditionals conditionals = request.getConditionals();
         if (request.getMethod() == HTTPMethod.GET && conditionals.toHeaders().isEmpty()) {
             if (staleResponse.getHeaders().hasHeader(ETAG)) {
-                addIfNoneMatchHeader(staleResponse.getHeaders().getFirstHeader(ETAG), request);
+                conditionals = addIfNoneMatchHeader(staleResponse.getHeaders().getFirstHeader(ETAG), request);
             }
             else if (staleResponse.getLastModified() != null) {
                 conditionals.setIfModifiedSince(staleResponse.getLastModified());
             }
+            return request.conditionals(conditionals);
         }
+        return request;
     }
 
 }

@@ -69,10 +69,8 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         connection.setRequestMethod(request.getMethod().name());
         Headers requestHeaders = request.getAllHeaders();
 
-        for (Map.Entry<String, List<Header>> entry : requestHeaders) {
-            for (Header header : entry.getValue()) {
-                connection.addRequestProperty(header.getName(), header.getValue());
-            }
+        for (Header header : requestHeaders) {
+            connection.addRequestProperty(header.getName(), header.getValue());
         }
         connection.connect();
         writeRequest(request, connection);
@@ -128,7 +126,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         for (Map.Entry<String, List<String>> entry : headerFields.entrySet()) {
             for (String headerValue : entry.getValue()) {
                 if (entry.getKey() != null) {
-                    headers.add(entry.getKey(), headerValue);
+                    headers = headers.add(entry.getKey(), headerValue);
                 }
             }
         }
