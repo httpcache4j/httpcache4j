@@ -298,6 +298,7 @@
     <module>httpcache4j-api</module>
     <module>httpcache4j-storage-api</module>
     <module>resolvers</module>
+    <module>storage</module>
     <module>httpcache4j-dist</module>
   </modules>
 
