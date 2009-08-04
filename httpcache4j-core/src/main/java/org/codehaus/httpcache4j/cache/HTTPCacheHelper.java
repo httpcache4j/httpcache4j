@@ -111,19 +111,6 @@ class HTTPCacheHelper {
         return washedHeaders;
     }
 
-    Vary determineVariation(Headers responseHeaders, Headers requestHeaders) {
-        String varyHeader = responseHeaders.getFirstHeaderValue(VARY);
-        Map<String, String> resolvedVaryHeaders = new HashMap<String, String>();
-        if (varyHeader != null) {
-            String[] varies = varyHeader.split(",");
-            for (String vary : varies) {
-                String value = requestHeaders.getFirstHeaderValue(vary);
-                resolvedVaryHeaders.put(vary, value == null ? null : value);
-            }
-        }
-        return new Vary(resolvedVaryHeaders);
-    }
-
     /**
      * A response received with a status code of 200, 203, 206, 300, 301 or 410 MAY be stored by a cache and used in reply to a subsequent request,
      * subject to the expiration mechanism, unless a cache-control directive prohibits caching.

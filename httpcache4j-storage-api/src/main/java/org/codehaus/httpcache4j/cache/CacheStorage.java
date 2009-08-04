@@ -17,24 +17,24 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.HTTPResponse;
 
 import java.net.URI;
 import java.util.Map;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 //TODO: Document.
-public interface CacheStorage extends Iterable<Map.Entry<URI, CacheValue>> {
+public interface CacheStorage extends Iterable<Key> {
 
-    void put(URI requestURI, Vary vary, CacheItem cacheItem);
+    HTTPResponse put(Key key, HTTPResponse response);
 
     CacheItem get(final HTTPRequest request);
 
     void invalidate(URI uri);
 
+    void invalidate(Key key);
+    
     void clear();
 
     int size();
-
-    //TODO: maybe not required any more...
-    void invalidate(URI requestURI, CacheItem item);
 }

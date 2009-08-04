@@ -17,6 +17,7 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.HTTPResponse;
 
 import java.net.URI;
 import java.util.Map;
@@ -25,11 +26,15 @@ import java.util.Collections;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class NullCacheStorage implements CacheStorage {
-    public void put(final URI requestURI, final Vary vary, final CacheItem cacheItem) {
+    public HTTPResponse put(Key key, HTTPResponse response) {
+        return null;
     }
 
     public CacheItem get(final HTTPRequest request) {
         return null;
+    }
+
+    public void invalidate(Key key) {
     }
 
     public void invalidate(final URI uri) {
@@ -42,10 +47,7 @@ public class NullCacheStorage implements CacheStorage {
         return 0;
     }
 
-    public void invalidate(final URI requestURI, final CacheItem item) {        
-    }
-
-    public Iterator<Map.Entry<URI, CacheValue>> iterator() {
-        return Collections.<URI, CacheValue>emptyMap().entrySet().iterator();
+    public Iterator<Key> iterator() {
+        return Collections.<Key>emptySet().iterator();
     }
 }

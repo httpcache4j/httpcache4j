@@ -24,6 +24,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.Validate;
+import org.codehaus.httpcache4j.HTTPResponse;
 
 /**
  * Persistent version of the in memory cache. This stores a serialized version of the
@@ -72,17 +73,17 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     }
 
     @Override
-	public synchronized void put(URI requestURI, Vary vary, CacheItem cacheItem) {
-        super.put(requestURI, vary, cacheItem);
+    public HTTPResponse put(Key key, HTTPResponse response) {
+        HTTPResponse res = super.put(key, response);
         if (modCount++ % PERSISTENT_TRESHOLD == 0) {
             if (System.currentTimeMillis() > lastSerialization + PERSISTENT_TIMEOUT) {
-                lastSerialization = System.currentTimeMillis();  
+                lastSerialization = System.currentTimeMillis();
                 saveCacheToDisk();
             }
         }
+        return res;
     }
 
-    @SuppressWarnings({"unchecked"})
     private void getCacheFromDisk() {
         if (cache == null) {
             cache = new InvalidateOnRemoveLRUHashMap(capacity);
@@ -91,7 +92,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
             FileInputStream inputStream = null;
             try {
                 inputStream = FileUtils.openInputStream(serializationFile);
-                cache = (Map<URI, CacheValue>) SerializationUtils.deserialize(inputStream);
+                cache = (InvalidateOnRemoveLRUHashMap) SerializationUtils.deserialize(inputStream);
             }
             catch (Exception e) {
                 serializationFile.delete();

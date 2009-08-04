@@ -17,6 +17,7 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.Payload;
 
 
@@ -30,7 +31,7 @@ import java.util.*;
  */
 public class MemoryCacheStorage implements CacheStorage {
 
-    protected Map<URI, CacheValue> cache;
+    protected InvalidateOnRemoveLRUHashMap cache;
 
     public MemoryCacheStorage() {
         this(1000);
@@ -40,75 +41,45 @@ public class MemoryCacheStorage implements CacheStorage {
         cache = new InvalidateOnRemoveLRUHashMap(capacity);
     }
 
-    public synchronized void put(URI requestURI, Vary vary, CacheItem cacheItem) {
-        if (cache.containsKey(requestURI)) {
-            CacheValue value = cache.get(requestURI);            
-            value.add(vary, cacheItem);
-            cache.put(requestURI, value);
-        }
-        else {
-            cache.put(requestURI, new CacheValue(Collections.singletonMap(vary, cacheItem)));
-        }
+    public synchronized HTTPResponse put(Key key, HTTPResponse response) {
+        HTTPResponse fixedResponse = createPayload(response);
+        cache.put(key, new CacheItem(fixedResponse));
+        return fixedResponse;
+    }
+
+    protected HTTPResponse createPayload(HTTPResponse response) {
+        return response;
     }
 
     public synchronized CacheItem get(HTTPRequest request) {
-        CacheValue cacheValue = cache.get(request.getRequestURI());
-        if (cacheValue != null) {
-            for (Map.Entry<Vary, CacheItem> entry : cacheValue) {
-                if (entry.getKey().matches(request)) {
-                    return entry.getValue();
-                }
+        for (Map.Entry<Key, CacheItem> entry : cache.entrySet()) {
+            Key key = entry.getKey();
+            if (request.getRequestURI().equals(key.getURI()) && key.getVary().matches(request)) {
+                return entry.getValue();
             }
         }
         return null;
     }
 
     public synchronized void invalidate(URI uri) {
-        if (cache.containsKey(uri)) {
-            cache.remove(uri);
+        Set<Key> keys = new HashSet<Key>();
+        for (Key key : cache.keySet()) {
+            if (key.getURI().equals(uri)) {
+                keys.add(key);
+            }
+        }
+        for (Key key : keys) {
+            cache.remove(key);
         }
     }
 
-    public void invalidate(URI requestURI, CacheItem item) {
-        if (cache.containsKey(requestURI) && item != null) {
-            CacheValue value = cache.get(requestURI);
-            invalidate(value, item);
-            if (value.isEmpty()) {
-                cache.remove(requestURI);
-            }
-        }
-    }
-
-    protected void invalidate(CacheValue value, CacheItem item) {
-        if (item == null) {
-            for (Map.Entry<Vary, CacheItem> entry : value) {
-                Payload payload = entry.getValue().getResponse().getPayload();
-                if (payload instanceof CleanablePayload) {
-                    ((CleanablePayload) payload).clean();
-                }
-            }
-        }
-        else {
-            Vary found = null;
-            for (Map.Entry<Vary, CacheItem> entry : value) {
-                if (entry.getValue().equals(item)) {
-                    found = entry.getKey();
-                }
-            }
-
-            if (found != null) {
-                value.remove(found);
-                Payload payload = item.getResponse().getPayload();
-                if (payload instanceof CleanablePayload) {
-                    ((CleanablePayload) payload).clean();
-                }
-            }
-        }
+    public void invalidate(Key key) {
+        cache.remove(key);
     }
 
     public synchronized void clear() {
-        Set<URI> uris = new HashSet<URI>(cache.keySet());
-        for (URI uri : uris) {
+        Set<Key> uris = new HashSet<Key>(cache.keySet());
+        for (Key uri : uris) {
             cache.remove(uri);
         }
     }
@@ -117,26 +88,31 @@ public class MemoryCacheStorage implements CacheStorage {
         return cache.size();
     }
 
-    public Iterator<Map.Entry<URI, CacheValue>> iterator() {
-        return Collections.unmodifiableSet(cache.entrySet()).iterator();
+    public Iterator<Key> iterator() {
+        return Collections.unmodifiableSet(cache.keySet()).iterator();
     }
 
-    protected class InvalidateOnRemoveLRUHashMap extends LinkedHashMap<URI, CacheValue> {
+    protected class InvalidateOnRemoveLRUHashMap extends LinkedHashMap<Key, CacheItem> {
+        private static final long serialVersionUID = -8600084275381371031L;
         private final int capacity;
+
         public InvalidateOnRemoveLRUHashMap(final int capacity) {
             super(capacity);
             this.capacity = capacity;
         }
 
         @Override
-        protected boolean removeEldestEntry(Map.Entry<URI, CacheValue> eldest) {
+        protected boolean removeEldestEntry(Map.Entry<Key, CacheItem> eldest) {
             return size() >= capacity;
         }
 
         @Override
-        public CacheValue remove(final Object key) {
-            final CacheValue value = super.remove(key);
-            invalidate(value, null);
+        public CacheItem remove(final Object key) {
+            final CacheItem value = super.remove(key);
+            Payload payload = value.getResponse().getPayload();
+            if (payload instanceof CleanablePayload) {
+                ((CleanablePayload) payload).clean();
+            }
             return value;
         }
     }

@@ -46,8 +46,7 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
         File tempFile = File.createTempFile("foo", "bar", baseDirectory);
         tempFile.deleteOnExit();
         HTTPResponse response = new HTTPResponse(new CleanableFilePayload(tempFile, MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
-        CacheItem item = new CacheItem(response);
-        storage.put(URI.create("foo"), new Vary(), item);
+        storage.put(Key.create(URI.create("foo"), new Vary()), response);
         assertEquals(1, storage.size());
     }
 
