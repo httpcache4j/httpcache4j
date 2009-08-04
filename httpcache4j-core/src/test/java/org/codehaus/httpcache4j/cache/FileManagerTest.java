@@ -22,13 +22,11 @@ import org.junit.After;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.HTTPRequest;
-import org.codehaus.httpcache4j.Headers;
 import org.apache.commons.io.input.NullInputStream;
 
 import java.net.URI;
 import java.io.IOException;
 import java.io.File;
-import java.io.FileNotFoundException;
 
 /**
  * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
@@ -41,7 +39,7 @@ public class FileManagerTest {
     @Before
     public void setUp() {
         testFile = TestUtil.getTestFile("target/test");
-        fileManager = new FileManager(testFile, new NullCacheStorage());
+        fileManager = new FileManager(testFile);
     }
 
     @Test

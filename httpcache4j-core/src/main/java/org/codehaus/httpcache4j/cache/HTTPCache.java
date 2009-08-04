@@ -181,10 +181,7 @@ public class HTTPCache {
                 }
             }
             else if (helper.isCacheableResponse(resolvedResponse)) {
-                Vary vary = helper.determineVariation(resolvedResponse.getHeaders(), request.getHeaders());
-
-                storage.put(request.getRequestURI(), vary, new CacheItem(resolvedResponse));
-                response = resolvedResponse;
+                response = storage.put(Key.create(request, resolvedResponse), resolvedResponse);
             }
             else {
                 //Response was not cacheable
@@ -197,8 +194,8 @@ public class HTTPCache {
                 }
                 else if (resolvedResponse.getStatus() == Status.OK) {
                     //Success was ok, but we had already a response for this item.
-                    //invalidate it so we don't clutter the filesystem.
-                    storage.invalidate(request.getRequestURI(), item);
+                    //invalidate it so we don't clutter the Storage.
+                    storage.invalidate(Key.create(request, item.getResponse()));
                 }                
             }
         }
@@ -210,10 +207,8 @@ public class HTTPCache {
         Headers headers = new Headers(resolvedResponse.getHeaders());
         headers = headers.add(helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders()));
         HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers);
-        //TODO: replace with Key.create()
-        Vary vary = helper.determineVariation(updatedResponse.getHeaders(), request.getHeaders());
-        //Key.create(request, updatedResponse);
-        storage.put(request.getRequestURI(), vary, new CacheItem(updatedResponse));
+
+        storage.put(Key.create(request, updatedResponse), updatedResponse);
         return updatedResponse;
     }
 }

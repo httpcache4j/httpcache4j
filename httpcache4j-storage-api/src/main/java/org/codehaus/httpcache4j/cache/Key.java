@@ -65,6 +65,14 @@ public class Key implements Serializable {
         this.vary = vary;
     }
 
+    public URI getURI() {
+        return uri;
+    }
+
+    public Vary getVary() {
+        return vary;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

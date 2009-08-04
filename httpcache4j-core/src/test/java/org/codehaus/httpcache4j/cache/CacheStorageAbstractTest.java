@@ -12,6 +12,7 @@ import org.codehaus.httpcache4j.Status;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
 import org.mockito.Mockito;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
@@ -35,43 +36,43 @@ public abstract class CacheStorageAbstractTest {
     @Test
     public void testPutCacheItem() {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
-        CacheItem item = new CacheItem(response);
-        storage.put(URI.create("foo"), new Vary(), item);
+        storage.put(Key.create(URI.create("foo"), new Vary()), response);
         assertEquals(1, storage.size());
     }
 
     @Test
     public void testPutAndGetCacheItem() {
+        CacheItem outItem = putAndGet(Mockito.mock(HTTPRequest.class));
+        assertNotNull("OutItem was null", outItem);
+        assertNotNull("OutItem response was null", outItem.getResponse());
+    }
+
+    private CacheItem putAndGet(HTTPRequest request) {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
-        CacheItem item = new CacheItem(response);
-        HTTPRequest request = Mockito.mock(HTTPRequest.class);
         URI requestURI = URI.create("foo");
         Mockito.when(request.getRequestURI()).thenReturn(requestURI);
-        storage.put(requestURI, new Vary(), item);
+        storage.put(Key.create(requestURI, new Vary()), response);
         assertEquals(1, storage.size());
-        CacheItem outItem = storage.get(request);
-        assertEquals(item, outItem);
+        return storage.get(request);
     }
 
     @Test
     public void testPutUpdatedCacheItem() {
-        testPutAndGetCacheItem();
         HTTPRequest request = Mockito.mock(HTTPRequest.class);
+        CacheItem item = putAndGet(request);
         URI requestURI = URI.create("foo");
         Mockito.when(request.getRequestURI()).thenReturn(requestURI);
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
-        CacheItem item = new CacheItem(response);
+        storage.put(Key.create(requestURI, new Vary()), response);
         final CacheItem cacheItem = storage.get(request);
-        storage.put(requestURI, new Vary(), item);
-        assertNotSame("Items were the same", cacheItem, item);
+        assertNotSame("Items were the same", cacheItem.getCachedTime(), item.getCachedTime());
     }
 
     @Test
     public void testInvalidate() {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
-        CacheItem item = new CacheItem(response);
         URI requestURI = URI.create("foo");
-        storage.put(requestURI, new Vary(), item);
+        storage.put(Key.create(requestURI, new Vary()), response);
         assertEquals(1, storage.size());
         storage.invalidate(requestURI);
         assertEquals(0, storage.size());
@@ -80,11 +81,11 @@ public abstract class CacheStorageAbstractTest {
     @Test
     public void testInvalidateSingleItem() {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
-        CacheItem item = new CacheItem(response);
         URI requestURI = URI.create("foo");
-        storage.put(requestURI, new Vary(), item);
+        Key key = Key.create(requestURI, new Vary());
+        storage.put(key, response);
         assertEquals(1, storage.size());
-        storage.invalidate(requestURI, item);
+        storage.invalidate(key);
         assertEquals(0, storage.size());
     }
 }

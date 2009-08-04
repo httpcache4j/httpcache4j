@@ -39,7 +39,7 @@ public class HTTPCacheHelperTest {
         Assert.assertEquals("10", responseWithCalculatedAge.getHeaders().getFirstHeaderValue("Age"));
     }
     
-    @Test
+  /*  @Test
     public void testNoVariation() {
         HTTPRequest request = new HTTPRequest(URI.create("dummy://url"));
         HTTPResponse response = createResponse(new Headers());
@@ -64,7 +64,7 @@ public class HTTPCacheHelperTest {
         Vary vary = helper.determineVariation(response.getHeaders(), request.getHeaders());
         Assert.assertEquals(2, vary.size());
     }
-
+*/
     @Test
     public void testCacheableResponses() {
         Headers headers = new Headers();

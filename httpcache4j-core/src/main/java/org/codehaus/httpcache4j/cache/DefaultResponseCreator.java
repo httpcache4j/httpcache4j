@@ -31,8 +31,8 @@ import java.io.IOException;
  */
 public class DefaultResponseCreator extends AbstractResponseCreator {
 
-    public DefaultResponseCreator(final File baseDirectory, CacheStorage storage) {
-        super(new FileManager(baseDirectory, storage));
+    public DefaultResponseCreator(final File baseDirectory) {
+        super(new FileManager(baseDirectory));
     }
 
     @Override

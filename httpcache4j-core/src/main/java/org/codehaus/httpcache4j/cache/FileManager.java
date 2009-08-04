@@ -32,17 +32,15 @@ import java.net.URI;
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-class FileManager implements StoragePolicy {
+final class FileManager implements StoragePolicy {
     private final FileResolver fileResolver;
 
-    public FileManager(final File baseDirectory, CacheStorage storage) {
+    public FileManager(final File baseDirectory) {
         Validate.notNull(baseDirectory, "Base directory may not be null");
         ensureDirectoryExists(baseDirectory);
         File files = new File(baseDirectory, "files");
         ensureDirectoryExists(files);
         this.fileResolver = new FileResolver(files);
-
-        removeUnknownFiles(storage);
     }
 
     static void ensureDirectoryExists(File directory) {
@@ -69,10 +67,11 @@ class FileManager implements StoragePolicy {
         return file;
     }
 
+/*
     private void removeUnknownFiles(CacheStorage storage) {
         List<File> knownFiles = new ArrayList<File>();
         List<Pair<URI, CacheItem>> invalidations = new ArrayList<Pair<URI, CacheItem>>();
-        for (Map.Entry<URI, CacheValue> cacheValue : storage) {
+        for (Key key : storage) {
             for (Map.Entry<Vary, CacheItem> entry : cacheValue.getValue()) {
                 HTTPResponse response = entry.getValue().getResponse();
                 if (response.hasPayload()) {
@@ -93,4 +92,5 @@ class FileManager implements StoragePolicy {
         }
         fileResolver.getBaseDirectory().listFiles(new DeletingFileFilter(knownFiles));        
     }
+*/
 }
