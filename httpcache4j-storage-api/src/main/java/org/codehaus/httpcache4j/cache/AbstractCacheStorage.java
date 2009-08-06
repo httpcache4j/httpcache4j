@@ -27,42 +27,16 @@ import java.io.IOException;
  * @version $Revision: $
  */
 public abstract class AbstractCacheStorage implements CacheStorage {
-    protected final Class<? extends Payload> type;
-
-    public AbstractCacheStorage(Class<? extends Payload> payloadType) {
-        type = payloadType;
-    }
-
-    protected HTTPResponse rewriteResponse(Key key, HTTPResponse response) {
-        if (response.hasPayload()) {
-            Payload payload = response.getPayload();
-            if (type.isInstance(payload) && payload.isAvailable()) {
-                return response;
-            }
-            else {
-                InputStream stream = null;
-                try {
-                    stream = payload.getInputStream();
-                    return new HTTPResponse(createPayload(key, payload, stream), response.getStatus(), response.getHeaders());
-                } catch (IOException ignore) {
-                }
-                finally {
-                    IOUtils.closeQuietly(stream);
-                }
-            }
-        }
-        else {
-            return response;
-        }
-        throw new IllegalArgumentException("Unable to cache response");
-    }
-
-    protected abstract Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException;
 
     public final HTTPResponse put(Key key, HTTPResponse response) {
-        HTTPResponse cachedResponse = rewriteResponse(key, response);
-        return putImpl(key, cachedResponse);
+        invalidate(key);
+        HTTPResponse cacheableResponse = rewriteResponse(key, response);
+        return putImpl(key, cacheableResponse);
     }
 
-    protected abstract HTTPResponse putImpl(Key key, HTTPResponse cachedResponse);
+    protected abstract HTTPResponse rewriteResponse(Key key, HTTPResponse response);
+
+    protected abstract HTTPResponse putImpl(Key key, HTTPResponse response);
+
+    protected abstract void invalidate(Key key);
 }

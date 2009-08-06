@@ -192,11 +192,6 @@ public class HTTPCache {
                 if (resolvedResponse.getStatus() == Status.NOT_MODIFIED) {
                     response = updateHeadersFromResolved(request, item, resolvedResponse);
                 }
-                else if (resolvedResponse.getStatus() == Status.OK) {
-                    //Success was ok, but we had already a response for this item.
-                    //invalidate it so we don't clutter the Storage.
-                    storage.invalidate(Key.create(request, item.getResponse()));
-                }                
             }
         }
         return response;

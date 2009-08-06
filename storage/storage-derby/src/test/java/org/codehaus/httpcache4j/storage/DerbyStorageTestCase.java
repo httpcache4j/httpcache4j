@@ -20,6 +20,8 @@ import org.codehaus.httpcache4j.util.TestUtil;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.cache.Key;
 import org.codehaus.httpcache4j.cache.Vary;
+import org.codehaus.httpcache4j.cache.CacheStorageAbstractTest;
+import org.codehaus.httpcache4j.cache.CacheStorage;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.Status;
@@ -34,42 +36,24 @@ import java.net.URI;
  * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class DerbyStorageTestCase {
-    private DerbyCacheStorage storage;
-    private static final MIMEType MIME_TYPE = MIMEType.valueOf("text/uri-list");
+public class DerbyStorageTestCase extends CacheStorageAbstractTest{
     private static File storageDirectory;
 
     @BeforeClass
     public static void beforeClass() {
         storageDirectory = TestUtil.getTestFile("target/storage");
     }
-    
-    @Before
-    public void setUp() {
-        storage = new DerbyCacheStorage(storageDirectory);
-    }
-    
-    @Test
-    public void testPutSingleResponseWithEmptyVaryAndPayload() {
-        Key key = Key.create(URI.create("foo"), new Vary());
-        storage.put(key, new HTTPResponse(null, Status.OK, new Headers()));
-    }
-
-    @Test
-    public void testPutSingleResponseWithEmptyVary() {
-        Key key = Key.create(URI.create("foo"), new Vary());
-        storage.put(key, new HTTPResponse(new InputStreamPayload(new NullInputStream(1), MIME_TYPE), Status.OK, new Headers()));
-    }
-
-
-    @After
-    public void tearDown() {
-        storage.clear();        
-    }
-
 
     @AfterClass
     public static void afterClass() {
         storageDirectory.listFiles(new DeletingFileFilter());
+    }
+
+    protected CacheStorage createCacheStorage() {
+        return new DerbyCacheStorage(storageDirectory);
+    }
+
+    @Override
+    protected void afterTest() {
     }
 }

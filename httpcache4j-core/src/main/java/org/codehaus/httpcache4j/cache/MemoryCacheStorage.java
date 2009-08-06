@@ -20,8 +20,6 @@ import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.ByteArrayPayload;
-import org.apache.commons.io.IOUtils;
-
 
 import java.net.URI;
 import java.util.*;
@@ -33,7 +31,7 @@ import java.io.IOException;
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public class MemoryCacheStorage extends AbstractCacheStorage  {
+public class MemoryCacheStorage extends AbstractMapBasedCacheStorage  {
 
     protected final int capacity;
     protected InvalidateOnRemoveLRUHashMap cache;
@@ -83,7 +81,7 @@ public class MemoryCacheStorage extends AbstractCacheStorage  {
         }
     }
 
-    public synchronized void invalidate(Key key) {
+    protected synchronized void invalidate(Key key) {
         cache.remove(key);
     }
 
@@ -130,9 +128,11 @@ public class MemoryCacheStorage extends AbstractCacheStorage  {
         @Override
         public CacheItem remove(final Object key) {
             final CacheItem value = super.remove(key);
-            Payload payload = value.getResponse().getPayload();
-            if (payload instanceof CleanablePayload) {
-                ((CleanablePayload) payload).clean();
+            if (value != null) {
+                Payload payload = value.getResponse().getPayload();
+                if (payload instanceof CleanablePayload) {
+                    ((CleanablePayload) payload).clean();
+                }
             }
             return value;
         }
