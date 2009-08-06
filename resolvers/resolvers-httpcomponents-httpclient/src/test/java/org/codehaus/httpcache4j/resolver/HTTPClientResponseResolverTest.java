@@ -15,56 +15,46 @@
 
 package org.codehaus.httpcache4j.resolver;
 
-import org.junit.Test;
-import org.junit.Before;
-import static org.junit.Assert.*;
+import org.apache.commons.io.input.NullInputStream;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.*;
 import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.message.BasicStatusLine;
 import org.apache.http.message.BasicHeader;
-import org.apache.commons.io.input.NullInputStream;
-import static org.mockito.Mockito.*;
-import org.mockito.Mockito;
-import org.codehaus.httpcache4j.resolver.ResponseCreator;
-import org.codehaus.httpcache4j.resolver.AbstractResponseCreator;
-import org.codehaus.httpcache4j.resolver.StoragePolicy;
-import org.codehaus.httpcache4j.resolver.HttpClientResponseResolver;
-import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.payload.ClosedInputStreamPayload;
+import org.apache.http.message.BasicStatusLine;
+import org.codehaus.httpcache4j.HTTPMethod;
+import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.HeaderUtils;
 import org.joda.time.DateTime;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.net.URI;
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URI;
 
 /**
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-public class HttpClientResponseResolverTest {
+public class HTTPClientResponseResolverTest {
 
     private HttpClient client;
-    private ResponseCreator creator;
 
     @Before
     public void setUp() {
         client = mock(HttpClient.class);
-        creator = new AbstractResponseCreator(StoragePolicy.NULL) {
-            @Override
-            protected Payload createCachedPayload(HTTPRequest request, Headers responseHeaders, InputStream stream, MIMEType type) throws IOException {
-                return new ClosedInputStreamPayload(type);
-            }
-        };
-
     }
 
 
     @Test
     public void testSimpleGET() throws IOException {
-        HttpClientResponseResolver resolver = new TestableResolver();
+        HTTPClientResponseResolver resolver = new TestableResolver();
         HttpResponse mockedResponse = mock(HttpResponse.class);
         when(mockedResponse.getAllHeaders()).thenReturn(new org.apache.http.Header[0]);
         when(mockedResponse.getStatusLine()).thenReturn(new BasicStatusLine(new HttpVersion(1, 1),200, "OK"));
@@ -77,7 +67,7 @@ public class HttpClientResponseResolverTest {
 
     @Test
     public void testNotSoSimpleGET() throws IOException {
-        HttpClientResponseResolver resolver = new TestableResolver();
+        HTTPClientResponseResolver resolver = new TestableResolver();
         HttpResponse mockedResponse = mock(HttpResponse.class);
         when(mockedResponse.getAllHeaders()).thenReturn(new org.apache.http.Header[] {new BasicHeader("Date", HeaderUtils.toHttpDate("Date", new DateTime()).getValue())});
         when(mockedResponse.getStatusLine()).thenReturn(new BasicStatusLine(new HttpVersion(1, 1),200, "OK"));
@@ -91,7 +81,7 @@ public class HttpClientResponseResolverTest {
 
     @Test
     public void testPUT() throws IOException {
-        HttpClientResponseResolver resolver = new TestableResolver();
+        HTTPClientResponseResolver resolver = new TestableResolver();
         HttpResponse mockedResponse = mock(HttpResponse.class);
         when(mockedResponse.getAllHeaders()).thenReturn(new org.apache.http.Header[] {new BasicHeader("Date", HeaderUtils.toHttpDate("Date", new DateTime()).getValue())});
         when(mockedResponse.getStatusLine()).thenReturn(new BasicStatusLine(new HttpVersion(1, 1), 200, "OK"));
@@ -103,9 +93,9 @@ public class HttpClientResponseResolverTest {
         assertFalse("Response did have payload", response.hasPayload());
     }
 
-    private class TestableResolver extends HttpClientResponseResolver {
+    private class TestableResolver extends HTTPClientResponseResolver {
         public TestableResolver() {
-            super(HttpClientResponseResolverTest.this.client, HttpClientResponseResolverTest.this.creator);
+            super(HTTPClientResponseResolverTest.this.client);
         }
 
         @Override

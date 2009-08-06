@@ -25,7 +25,7 @@ import java.io.IOException;
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 public class DelegatingInputStream extends InputStream {
-    private InputStream delegate;
+    private final InputStream delegate;
 
 
     public DelegatingInputStream(InputStream delegate) {

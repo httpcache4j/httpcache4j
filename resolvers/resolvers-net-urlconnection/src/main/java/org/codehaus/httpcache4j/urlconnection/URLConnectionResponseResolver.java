@@ -16,10 +16,11 @@
 package org.codehaus.httpcache4j.urlconnection;
 
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
-import org.codehaus.httpcache4j.resolver.ResponseCreator;
 import org.codehaus.httpcache4j.*;
+import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.Validate;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,8 +39,8 @@ import java.util.Map;
 public class URLConnectionResponseResolver extends AbstractResponseResolver {
     private final URLConnectionConfigurator configuration;
 
-    public URLConnectionResponseResolver(ResponseCreator responseCreator, URLConnectionConfigurator configuration) {
-        super(responseCreator);
+    public URLConnectionResponseResolver(URLConnectionConfigurator configuration) {
+        Validate.notNull(configuration, "Configuration may not be null");
         this.configuration = configuration;
     }
 
@@ -59,7 +60,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
                 connection = (HttpURLConnection) url.openConnection();
                 doRequest(request, connection);                
             }
-            return convertResponse(request, connection);
+            return convertResponse(connection);
         }
         throw new HTTPException("This resolver only supports HTTP calls");
     }
@@ -76,10 +77,10 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         writeRequest(request, connection);
     }
 
-    private HTTPResponse convertResponse(HTTPRequest request, HttpURLConnection connection) throws IOException {
+    private HTTPResponse convertResponse(HttpURLConnection connection) throws IOException {
         Status status = Status.valueOf(connection.getResponseCode());
         Headers responseHeaders = getResponseHeaders(connection);
-        return getResponseCreator().createResponse(request, status, responseHeaders, wrapReponseStream(connection, status));
+        return getResponseCreator().createResponse(status, responseHeaders, wrapReponseStream(connection, status));
     }
 
     private void addAuthorizationHeader(HTTPRequest request) {
@@ -143,58 +144,22 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         connection.setAllowUserInteraction(false);        
     }
 
-    private static class HttpURLConnectionStream extends InputStream {
+    private static class HttpURLConnectionStream extends DelegatingInputStream {
         private final HttpURLConnection connection;
-        private final InputStream delegate;
 
         public HttpURLConnectionStream(final HttpURLConnection connection, Status status) throws IOException {
+            super(status.isClientError() || status.isServerError() ? connection.getErrorStream() : connection.getInputStream());
             this.connection = connection;
-            if (status.isClientError() || status.isServerError()) {
-                delegate = connection.getErrorStream();
-            }
-            else {
-                delegate = connection.getInputStream();
-            }
         }
 
-        public int read() throws IOException {
-            return delegate.read();
-        }
-
-        public int read(final byte[] b) throws IOException {
-            return delegate.read(b);
-        }
-
-        public int read(final byte[] b, final int off, final int len) throws IOException {
-            return delegate.read(b, off, len);
-        }
-
-        public long skip(final long n) throws IOException {
-            return delegate.skip(n);
-        }
-
-        public int available() throws IOException {
-            return delegate.available();
-        }
-
+        @Override
         public void close() throws IOException {
             try {
-                delegate.close();
+                super.close();
             } finally {
                 connection.disconnect();
             }
         }
 
-        public void mark(final int readlimit) {
-            delegate.mark(readlimit);
-        }
-
-        public void reset() throws IOException {
-            delegate.reset();
-        }
-
-        public boolean markSupported() {
-            return delegate.markSupported();
-        }
     }
 }

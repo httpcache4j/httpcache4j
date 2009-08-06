@@ -19,18 +19,23 @@ package org.codehaus.httpcache4j.cache;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.Payload;
+import org.codehaus.httpcache4j.payload.ByteArrayPayload;
+import org.apache.commons.io.IOUtils;
 
 
 import java.net.URI;
 import java.util.*;
+import java.io.InputStream;
+import java.io.IOException;
 
 /**
  * In Memory implementation of a cache storage.
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
-public class MemoryCacheStorage implements CacheStorage {
+public class MemoryCacheStorage extends AbstractCacheStorage  {
 
+    protected final int capacity;
     protected InvalidateOnRemoveLRUHashMap cache;
 
     public MemoryCacheStorage() {
@@ -38,17 +43,22 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     public MemoryCacheStorage(int capacity) {
-        cache = new InvalidateOnRemoveLRUHashMap(capacity);
+        this(capacity, ByteArrayPayload.class);
     }
 
-    public synchronized HTTPResponse put(Key key, HTTPResponse response) {
-        HTTPResponse fixedResponse = createPayload(response);
-        cache.put(key, new CacheItem(fixedResponse));
-        return fixedResponse;
+    protected MemoryCacheStorage(int capacity, Class<? extends Payload> payloadType) {
+        super(payloadType);
+        this.capacity = capacity;
+        cache = new InvalidateOnRemoveLRUHashMap(this.capacity);
     }
 
-    protected HTTPResponse createPayload(HTTPResponse response) {
-        return response;
+    protected synchronized HTTPResponse putImpl(Key key, HTTPResponse cachedResponse) {
+        cache.put(key, new CacheItem(cachedResponse));
+        return cachedResponse;
+    }
+
+    protected Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException {
+        return new ByteArrayPayload(stream, payload.getMimeType());
     }
 
     public synchronized CacheItem get(HTTPRequest request) {
@@ -73,7 +83,7 @@ public class MemoryCacheStorage implements CacheStorage {
         }
     }
 
-    public void invalidate(Key key) {
+    public synchronized void invalidate(Key key) {
         cache.remove(key);
     }
 
@@ -88,7 +98,7 @@ public class MemoryCacheStorage implements CacheStorage {
         return cache.size();
     }
 
-    public Iterator<Key> iterator() {
+    public synchronized Iterator<Key> iterator() {
         return Collections.unmodifiableSet(cache.keySet()).iterator();
     }
 
@@ -101,10 +111,21 @@ public class MemoryCacheStorage implements CacheStorage {
             this.capacity = capacity;
         }
 
+        private InvalidateOnRemoveLRUHashMap(InvalidateOnRemoveLRUHashMap map) {
+            super(map);
+            this.capacity = map.capacity;
+        }
+
+        public InvalidateOnRemoveLRUHashMap copy() {
+            return new InvalidateOnRemoveLRUHashMap(this);
+        }
+
+
         @Override
         protected boolean removeEldestEntry(Map.Entry<Key, CacheItem> eldest) {
-            return size() >= capacity;
+            return size() > capacity;
         }
+
 
         @Override
         public CacheItem remove(final Object key) {

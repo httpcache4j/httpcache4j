@@ -44,13 +44,13 @@ public class FileManagerTest {
 
     @Test
     public void testResolveToFile() throws IOException {
-        File file = fileManager.createFile(new HTTPRequest(URI.create("foo")), new NullInputStream(1));
+        File file = fileManager.createFile(Key.create(URI.create("foo"), new Vary()), new NullInputStream(1));
         Assert.assertNotNull("File was null", file);
         Assert.assertEquals(1, file.length());
     }
 
     public void testResolveToEmptyFile() throws IOException {
-      File file = fileManager.createFile(new HTTPRequest(URI.create("foo")), new NullInputStream(0));
+      File file = fileManager.createFile(Key.create(URI.create("foo"), new Vary()), new NullInputStream(0));
       Assert.assertNull("File was not null",file);
     }
 

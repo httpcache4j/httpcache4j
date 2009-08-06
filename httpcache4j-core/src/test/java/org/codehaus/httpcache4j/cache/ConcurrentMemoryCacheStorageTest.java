@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, The Codehaus. All Rights Reserved.
+ * Copyright (c) 2009. The Codehaus. All Rights Reserved.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -11,21 +11,24 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
  */
 
-package org.codehaus.httpcache4j.resolver;
+package org.codehaus.httpcache4j.cache;
+
+import org.junit.Test;
 
 /**
- * Implementors should implement this instead of using the ResponseResolver interface directly.
- *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @version $Revision: $
  */
-public abstract class AbstractResponseResolver implements ResponseResolver {
-    private final ResponseCreator responseCreator = new ResponseCreator();
-
-    protected ResponseCreator getResponseCreator() {
-        return responseCreator;
+public class ConcurrentMemoryCacheStorageTest extends ConcurrentCacheStorageAbstractTest{
+    protected CacheStorage createCacheStorage() {
+        return new MemoryCacheStorage();
     }
 
+    @Test
+    public void test1001Concurrent() throws InterruptedException {
+        testIterations(1001, 1000);
+    }
+    
 }

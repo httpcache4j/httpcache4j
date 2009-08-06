@@ -17,6 +17,7 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang.Validate;
 
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.HeaderUtils;
@@ -41,8 +42,14 @@ public final class CacheItem implements Serializable {
     private final HTTPResponse response;
 
     public CacheItem(HTTPResponse response) {
+        this(response, new DateTime());
+    }
+
+    public CacheItem(HTTPResponse response, DateTime cacheTime) {
+        Validate.notNull(response, "Response may not be null");
+        Validate.notNull(cacheTime, "CacheTime may not be null");
         this.response = response;
-        cachedTime = new DateTime();
+        cachedTime = cacheTime;
     }
 
     public boolean isStale() {

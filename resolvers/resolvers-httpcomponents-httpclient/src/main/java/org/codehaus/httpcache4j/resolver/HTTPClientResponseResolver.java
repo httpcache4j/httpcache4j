@@ -15,8 +15,6 @@
 
 package org.codehaus.httpcache4j.resolver;
 
-import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
-import org.codehaus.httpcache4j.resolver.ResponseCreator;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
@@ -34,33 +32,30 @@ import org.apache.commons.lang.Validate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-public class HttpClientResponseResolver extends AbstractResponseResolver {
+public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private HttpClient httpClient;
     private boolean useRequestChallenge;
 
-    public HttpClientResponseResolver(HttpClient httpClient, ResponseCreator responseCreator) {
-        super(responseCreator);
+    public HTTPClientResponseResolver(HttpClient httpClient) {
         Validate.notNull(httpClient, "HttpClient may not be null");
         this.httpClient = httpClient;
-        
+
     }
 
     public HTTPResponse resolve(final HTTPRequest request) throws IOException {
         HttpUriRequest realRequest = convertRequest(request);
         HttpResponse response = httpClient.execute(realRequest);
-        return convertResponse(request, realRequest, response);
+        return convertResponse(realRequest, response);
     }
 
     private HttpUriRequest convertRequest(HTTPRequest request) {
         HttpUriRequest realRequest = getMethod(request.getMethod(), request.getRequestURI());
-        
+
         Headers headers = request.getAllHeaders();
         for (Header header : headers) {
             realRequest.addHeader(header.getName(), header.getValue());
@@ -77,16 +72,19 @@ public class HttpClientResponseResolver extends AbstractResponseResolver {
 
         if (request.hasPayload() && realRequest instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest req = (HttpEntityEnclosingRequest) realRequest;
-            req.setEntity(new InputStreamEntity(request.getPayload().getInputStream(), -1));            
+            req.setEntity(new InputStreamEntity(request.getPayload().getInputStream(), -1));
         }
         return realRequest;
     }
 
     private AuthScheme getScheme(ChallengeMethod method) {
         switch (method) {
-            case BASIC: return new BasicScheme();
-            case DIGEST: return new DigestScheme();
-            default: throw new HTTPException("Not supported authentication scheme");
+            case BASIC:
+                return new BasicScheme();
+            case DIGEST:
+                return new DigestScheme();
+            default:
+                throw new HTTPException("Not supported authentication scheme");
         }
     }
 
@@ -118,7 +116,7 @@ public class HttpClientResponseResolver extends AbstractResponseResolver {
         }
     }
 
-    private HTTPResponse convertResponse(HTTPRequest request, HttpUriRequest realRequest, HttpResponse response) throws IOException {
+    private HTTPResponse convertResponse(HttpUriRequest request, HttpResponse response) throws IOException {
         Status status = Status.valueOf(response.getStatusLine().getStatusCode());
         Headers headers = new Headers();
         org.apache.http.Header[] realHeaders = response.getAllHeaders();
@@ -126,8 +124,8 @@ public class HttpClientResponseResolver extends AbstractResponseResolver {
             headers = headers.add(header.getName(), header.getValue());
         }
 
-        InputStream stream = getStream(realRequest, response);
-        return getResponseCreator().createResponse(request, status, headers, stream);
+        InputStream stream = getStream(request, response);
+        return getResponseCreator().createResponse(status, headers, stream);
     }
 
     private InputStream getStream(HttpUriRequest realRequest, HttpResponse response) throws IOException {

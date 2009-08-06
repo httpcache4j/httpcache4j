@@ -17,19 +17,20 @@
 package org.codehaus.httpcache4j.cache;
 
 import java.io.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.net.URI;
-import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.payload.Payload;
 
 /**
  * Persistent version of the in memory cache. This stores a serialized version of the
  * hashmap on every save. The cache is then restored on startup.
- *  
+ *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
 public class PersistentCacheStorage extends MemoryCacheStorage implements Serializable {
@@ -40,23 +41,23 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     private static final long serialVersionUID = 2551525125071085301L;
 
     private final File serializationFile;
-    private final int capacity;
+    private final FileManager fileManager;
+
     private transient int modCount;
     private long lastSerialization = 0L;
 
-    public PersistentCacheStorage(File serializationFileDirectory) {
-        this(1000, serializationFileDirectory, "persistent.ser");
+    public PersistentCacheStorage(File storageDirectory) {
+        this(1000, storageDirectory, "persistent.ser");
     }
 
-    public PersistentCacheStorage(final int capacity, final File serializationFileDirectory, final String name) {
+    public PersistentCacheStorage(final int capacity, final File storageDirectory, final String name) {
+        super(capacity, CleanableFilePayload.class);
         Validate.isTrue(capacity > 0, "You may not have a empty persistent cache");
-        Validate.notNull(serializationFileDirectory, "You may not have a null serializationDirectory");
+        Validate.notNull(storageDirectory, "You may not have a null storageDirectory");
         Validate.notEmpty(name, "You may not have a empty file name");
-        
-        this.capacity = capacity;
-        FileManager.ensureDirectoryExists(serializationFileDirectory);
+        fileManager = new FileManager(storageDirectory);
 
-        serializationFile = new File(serializationFileDirectory, name);
+        serializationFile = new File(storageDirectory, name);
         getCacheFromDisk();
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -67,14 +68,14 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     }
 
     @Override
-    public void clear() {
+    public synchronized void clear() {
         super.clear();
         serializationFile.delete();
     }
 
     @Override
-    public HTTPResponse put(Key key, HTTPResponse response) {
-        HTTPResponse res = super.put(key, response);
+    public synchronized HTTPResponse putImpl(Key key, HTTPResponse response) {
+        HTTPResponse res = super.putImpl(key, response);
         if (modCount++ % PERSISTENT_TRESHOLD == 0) {
             if (System.currentTimeMillis() > lastSerialization + PERSISTENT_TIMEOUT) {
                 lastSerialization = System.currentTimeMillis();
@@ -82,6 +83,25 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
             }
         }
         return res;
+    }
+
+    @Override
+    protected Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException {
+        File file = fileManager.createFile(key, stream);
+        if (file != null && file.exists()) {
+            return new CleanableFilePayload(file, payload.getMimeType());
+        }
+        throw new IllegalArgumentException("Unable to store response with key: " + key);
+    }
+
+    @Override
+    public synchronized void invalidate(URI uri) {
+        super.invalidate(uri);
+    }
+
+    @Override
+    public synchronized void invalidate(Key key) {
+        super.invalidate(key);
     }
 
     private void getCacheFromDisk() {
@@ -104,12 +124,12 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
             }
         }
     }
-    
+
     private synchronized void saveCacheToDisk() {
         FileOutputStream outputStream = null;
         try {
             outputStream = FileUtils.openOutputStream(serializationFile);
-            SerializationUtils.serialize((Serializable) cache, outputStream);
+            SerializationUtils.serialize(cache, outputStream);
         }
         catch (IOException e) {
             //Ignored, we create a new one.

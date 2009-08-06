@@ -29,7 +29,7 @@ import java.util.*;
  * We need to store a different version of the response if the request varies on
  * E.G Accept headers.
  * Implementors of storage engines needs to have knowledge of this class.
- * See {@link MemoryCacheStorage} for how it's used.
+ * See {@link Key} for how it's used.
  *
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
@@ -78,6 +78,18 @@ public final class Vary implements Serializable {
 
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry<String, String> entry : varyHeaders.entrySet()) {
+            if (builder.length() > 0) {
+                builder.append("\r\n");
+            }
+            builder.append(entry.getKey()).append(": ").append(entry);
+        }
+        return builder.toString();
     }
 
     public Map<String, String> getVaryHeaders() {
