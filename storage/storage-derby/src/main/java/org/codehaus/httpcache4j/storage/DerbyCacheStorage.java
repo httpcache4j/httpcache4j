@@ -27,9 +27,6 @@ import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.PreparedStatementCallback;
-import org.springframework.jdbc.core.support.AbstractLobCreatingPreparedStatementCallback;
-import org.springframework.jdbc.support.lob.LobCreator;
-import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 
@@ -47,7 +44,7 @@ import java.io.IOException;
  * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class DerbyCacheStorage implements CacheStorage {
+public class DerbyCacheStorage extends AbstractCacheStorage {
     private static String[] TABLES = {"response"};
     private final SimpleJdbcTemplate jdbcTemplate;
     private ResponseMapper responseMapper;
@@ -113,45 +110,38 @@ public class DerbyCacheStorage implements CacheStorage {
 
     }
 
-    //TODO: Figure out what inputstream maps to.
-    public HTTPResponse put(final Key key, final HTTPResponse response) {
-        int exists = jdbcTemplate.queryForInt("select count(*) from response where uri = ? and vary = ?", key.getURI().toString(), key.getVary().toString());
-        if (exists > 0) {
-            jdbcTemplate.update("update response set headers = ?, cachetime = ? where uri = ? and vary = ?",
-                                response.getHeaders().toString(),
-                                new Timestamp(DateTimeUtils.currentTimeMillis()),
-                                key.getURI().toString(),
-                                key.getVary().toString()
-            );
-        }
-        else {
-            JdbcOperations jdbcOperations = jdbcTemplate.getJdbcOperations();
-            jdbcOperations.execute("insert into response(uri, vary, status, headers, payload, mimeType, cachetime) values (?, ?, ?, ?, ?, ?, ?)", new PreparedStatementCallback() {
-                public Object doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
-                    preparedStatement.setString(1, key.getURI().toString());
-                    preparedStatement.setString(2, key.getVary().toString());
-                    preparedStatement.setInt(3, response.getStatus().getCode());
-                    preparedStatement.setString(4, response.getHeaders().toString());
-                    if (response.hasPayload()) {
-                        InputStream stream = response.getPayload().getInputStream();
-                        try {
-                            preparedStatement.setBlob(5, stream);
-                            preparedStatement.setString(6, response.getPayload().getMimeType().toString());
-                        } finally {
-                            IOUtils.closeQuietly(stream);
-                        }
-                    }
-                    else {
-                        preparedStatement.setNull(5, Types.BLOB);
-                        preparedStatement.setNull(6, Types.VARCHAR);
-                    }
-                    preparedStatement.setTimestamp(7, new Timestamp(DateTimeUtils.currentTimeMillis()));
+    protected HTTPResponse rewriteResponse(Key key, HTTPResponse response) {
+        return response;
+    }
 
-                    return preparedStatement.executeUpdate();
+    protected HTTPResponse putImpl(final Key key, final HTTPResponse response) {
+        JdbcOperations jdbcOperations = jdbcTemplate.getJdbcOperations();
+        jdbcOperations.execute("insert into response(uri, vary, status, headers, payload, mimeType, cachetime) values (?, ?, ?, ?, ?, ?, ?)", new PreparedStatementCallback() {
+            public Object doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
+                preparedStatement.setString(1, key.getURI().toString());
+                preparedStatement.setString(2, key.getVary().toString());
+                preparedStatement.setInt(3, response.getStatus().getCode());
+                preparedStatement.setString(4, response.getHeaders().toString());
+                if (response.hasPayload()) {
+                    InputStream stream = response.getPayload().getInputStream();
+                    try {
+                        preparedStatement.setBlob(5, stream);
+                        preparedStatement.setString(6, response.getPayload().getMimeType().toString());
+                    } finally {
+                        IOUtils.closeQuietly(stream);
+                    }
                 }
-            });
-        }
+                else {
+                    preparedStatement.setNull(5, Types.BLOB);
+                    preparedStatement.setNull(6, Types.VARCHAR);
+                }
+                preparedStatement.setTimestamp(7, new Timestamp(DateTimeUtils.currentTimeMillis()));
+
+                return preparedStatement.executeUpdate();
+            }
+        });
         return getResponseFromDB(key);
+
     }
 
     private HTTPResponse getResponseFromDB(Key key) {

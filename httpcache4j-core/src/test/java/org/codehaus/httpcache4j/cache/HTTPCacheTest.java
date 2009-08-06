@@ -114,7 +114,6 @@ public class HTTPCacheTest {
         HTTPResponse response = cache.doCachedRequest(request);
         assertTrue("None match was not empty",request.getConditionals().getNoneMatch().isEmpty());
         verify(responseResolver, atLeast(1)).resolve(isA(HTTPRequest.class));
-        verify(cacheStorage, times(1)).invalidate(isA(Key.class));
         verify(cacheStorage, times(1)).put(isA(Key.class), eq(resolvedResponse));
         assertTrue("Response did not have a payload", response.hasPayload());
         assertTrue("Payload was not available", response.getPayload().isAvailable());

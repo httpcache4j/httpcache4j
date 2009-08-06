@@ -31,8 +31,6 @@ public interface CacheStorage extends Iterable<Key> {
     CacheItem get(final HTTPRequest request);
 
     void invalidate(URI uri);
-
-    void invalidate(Key key);
     
     void clear();
 

@@ -77,15 +77,4 @@ public abstract class CacheStorageAbstractTest {
         storage.invalidate(requestURI);
         assertEquals(0, storage.size());
     }
-
-    @Test
-    public void testInvalidateSingleItem() {
-        HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
-        URI requestURI = URI.create("foo");
-        Key key = Key.create(requestURI, new Vary());
-        storage.put(key, response);
-        assertEquals(1, storage.size());
-        storage.invalidate(key);
-        assertEquals(0, storage.size());
-    }
 }

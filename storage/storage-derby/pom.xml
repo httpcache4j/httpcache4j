@@ -26,7 +26,7 @@
   <artifactId>storage-derby</artifactId>
   <packaging>jar</packaging>
   <name>Java HTTP cache :: Storage Engines :: Derby</name>
-  <description>Storage using Apache derby</description>
+  <description>Storage using Apache Derby, note that this module requires Java 6</description>
 
   <dependencies>
     <dependency>
@@ -49,6 +49,16 @@
     </dependency>
 
   </dependencies>
-
-
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.0.2</version>
+        <configuration>
+          <target>1.6</target>
+          <source>1.6</source>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
