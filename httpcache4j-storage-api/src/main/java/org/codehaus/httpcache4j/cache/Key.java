@@ -74,6 +74,14 @@ public class Key implements Serializable {
     }
 
     @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("URI: ").append(uri).append("\n");
+        sb.append("VARY: ").append(vary).append("\n");
+        return sb.toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

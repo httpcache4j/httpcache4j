@@ -236,6 +236,12 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.codehaus.httpcache4j</groupId>
+        <artifactId>httpcache4j-storage-api</artifactId>
+        <classifier>tests</classifier>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.codehaus.httpcache4j.resolvers</groupId>
         <artifactId>resolvers-commons-httpclient</artifactId>
         <version>${project.version}</version>

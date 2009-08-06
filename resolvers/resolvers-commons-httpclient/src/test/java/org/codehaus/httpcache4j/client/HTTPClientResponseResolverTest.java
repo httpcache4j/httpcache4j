@@ -21,7 +21,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 
 import org.apache.commons.httpclient.Header;
@@ -31,26 +30,16 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.resolver.ResponseCreator;
-import org.codehaus.httpcache4j.resolver.AbstractResponseCreator;
-import org.codehaus.httpcache4j.resolver.StoragePolicy;
 import org.junit.Before;
 import org.junit.Test;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class HTTPClientResponseResolverTest {
     private HttpClient httpClient;
-    private ResponseCreator creator;
     
     @Before
     public void init() {
         httpClient = mock(HttpClient.class);
-        creator = new AbstractResponseCreator(StoragePolicy.NULL) {
-            @Override
-            protected Payload createCachedPayload(HTTPRequest request, Headers responseHeaders, InputStream stream, MIMEType type) throws IOException {
-                return null;
-            }
-        };
     }
 
     @Test
@@ -115,7 +104,7 @@ public class HTTPClientResponseResolverTest {
         private final HttpMethod httpMethod;
 
         public TestableHTTPClientResponseResolver(HttpMethod httpMethod) {
-            super(HTTPClientResponseResolverTest.this.httpClient, HTTPClientResponseResolverTest.this.creator);
+            super(HTTPClientResponseResolverTest.this.httpClient);
             this.httpMethod = httpMethod;
         }
 

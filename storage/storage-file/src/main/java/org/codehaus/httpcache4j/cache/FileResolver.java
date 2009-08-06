@@ -20,13 +20,15 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 import java.net.URI;
 import java.io.File;
+import java.io.Serializable;
 
 /**
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-public class FileResolver {
-    private File baseDirectory;
+public class FileResolver implements Serializable {
+    private static final long serialVersionUID = 3986711605116911333L;
+    private final File baseDirectory;
 
     public FileResolver(File baseDirectory) {
         Validate.notNull(baseDirectory, "Base directory may not be null");

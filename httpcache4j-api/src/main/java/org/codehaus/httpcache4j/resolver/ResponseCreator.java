@@ -15,10 +15,9 @@
 
 package org.codehaus.httpcache4j.resolver;
 
-import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.Status;
-import org.codehaus.httpcache4j.Headers;
-import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.*;
+import org.codehaus.httpcache4j.payload.Payload;
+import org.codehaus.httpcache4j.payload.InputStreamPayload;
 
 import java.io.InputStream;
 
@@ -26,6 +25,16 @@ import java.io.InputStream;
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-public interface ResponseCreator {
-    HTTPResponse createResponse(HTTPRequest request, Status status, Headers headers, InputStream stream);
+public final class ResponseCreator {
+    public HTTPResponse createResponse(final Status status, final Headers responseHeaders, final InputStream stream) {
+        Header contentTypeHeader = responseHeaders.getFirstHeader(HeaderConstants.CONTENT_TYPE);
+        MIMEType type = contentTypeHeader != null ? MIMEType.valueOf(contentTypeHeader.getValue()) : MIMEType.APPLICATION_OCTET_STREAM;
+        Payload payload = null;
+        if (status.isBodyContentAllowed()) {
+            if (stream != null) {
+                payload = new InputStreamPayload(stream, type);
+            }
+        }
+        return new HTTPResponse(payload, status, responseHeaders);
+    }    
 }

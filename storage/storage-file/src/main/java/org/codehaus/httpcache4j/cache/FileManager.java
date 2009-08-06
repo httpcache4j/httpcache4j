@@ -15,43 +15,32 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import org.codehaus.httpcache4j.HTTPRequest;
-import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.resolver.StoragePolicy;
-import org.codehaus.httpcache4j.util.DeletingFileFilter;
-import org.codehaus.httpcache4j.util.Pair;
+import org.codehaus.httpcache4j.util.StorageUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.Validate;
 
 import java.util.*;
 import java.io.*;
-import java.net.URI;
 
 /**
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-final class FileManager implements StoragePolicy {
+final class FileManager implements Serializable {
     private final FileResolver fileResolver;
+    private static final long serialVersionUID = -5273056780013227862L;
 
     public FileManager(final File baseDirectory) {
         Validate.notNull(baseDirectory, "Base directory may not be null");
-        ensureDirectoryExists(baseDirectory);
+        StorageUtil.ensureDirectoryExists(baseDirectory);
         File files = new File(baseDirectory, "files");
-        ensureDirectoryExists(files);
+        StorageUtil.ensureDirectoryExists(files);
         this.fileResolver = new FileResolver(files);
     }
 
-    static void ensureDirectoryExists(File directory) {
-        if (!directory.exists() && !directory.mkdirs()) {
-            throw new IllegalArgumentException(String.format("Directory %s did not exist, and could not be created", directory));
-        }
-    }
-
-
-    File createFile(HTTPRequest request, InputStream stream) throws IOException {
-        File file = fileResolver.resolve(request.getRequestURI(), UUID.randomUUID().toString());
+    File createFile(Key key, InputStream stream) throws IOException {
+        File file = fileResolver.resolve(key.getURI(), UUID.randomUUID().toString());
 
         FileOutputStream outputStream = FileUtils.openOutputStream(file);
         try {

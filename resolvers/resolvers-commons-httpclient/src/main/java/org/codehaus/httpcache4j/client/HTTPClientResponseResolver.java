@@ -25,13 +25,11 @@ import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
-import org.codehaus.httpcache4j.resolver.ResponseCreator;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.ArrayList;
 
 /**
@@ -55,19 +53,17 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
      * ResponseResolver resolver = HTTPClientResponseResolver(client, new DefaultPayloadCreator);
      * }
      *
-     * @param client         the HttpClient instance to use. may not be {@code null}
-     * @param responseCreator the Response creator to use, may not be {@code null}
+     * @param client the HttpClient instance to use. may not be {@code null}
      */
-    public HTTPClientResponseResolver(HttpClient client, ResponseCreator responseCreator) {
-        super(responseCreator);
+    public HTTPClientResponseResolver(HttpClient client) {
         Validate.notNull(client, "You may not create with a null HttpClient");
         this.client = client;
     }
 
-    public HTTPResponse resolve(HTTPRequest request) throws IOException{
+    public HTTPResponse resolve(HTTPRequest request) throws IOException {
         HttpMethod method = convertRequest(request);
         client.executeMethod(method);
-        return convertResponse(request, method);
+        return convertResponse(method);
     }
 
     public boolean isUseRequestChallenge() {
@@ -96,7 +92,8 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 Credentials usernamePassword = new UsernamePasswordCredentials(challenge.getIdentifier(), challenge.getPassword() != null ? new String(challenge.getPassword()) : null);
                 client.getState().setCredentials(new AuthScope(requestURI.getHost(), requestURI.getPort(), AuthScope.ANY_REALM), usernamePassword);
             }
-        } else {
+        }
+        else {
             method.setDoAuthentication(true);
         }
         List<Parameter> parameters = request.getParameters();
@@ -126,7 +123,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         }
     }
 
-    private HTTPResponse convertResponse(HTTPRequest request, HttpMethod method) {
+    private HTTPResponse convertResponse(HttpMethod method) {
         Headers headers = new Headers();
         for (Header header : method.getResponseHeaders()) {
             headers = headers.add(header.getName(), header.getValue());
@@ -135,7 +132,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         HTTPResponse response;
         try {
             stream = getInputStream(method);
-            response = getResponseCreator().createResponse(request, Status.valueOf(method.getStatusCode()), headers, stream);
+            response = getResponseCreator().createResponse(Status.valueOf(method.getStatusCode()), headers, stream);
         } finally {
             if (stream == null) {
                 method.releaseConnection();

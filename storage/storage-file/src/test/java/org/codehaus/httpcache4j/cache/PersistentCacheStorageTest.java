@@ -17,6 +17,7 @@
 package org.codehaus.httpcache4j.cache;
 
 import static junit.framework.Assert.assertEquals;
+import junit.framework.Assert;
 
 import java.io.File;
 import java.net.URI;
@@ -47,7 +48,7 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
         tempFile.deleteOnExit();
         HTTPResponse response = new HTTPResponse(new CleanableFilePayload(tempFile, MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
         storage.put(Key.create(URI.create("foo"), new Vary()), response);
-        assertEquals(1, storage.size());
+        Assert.assertEquals(1, storage.size());
     }
 
     @Override
