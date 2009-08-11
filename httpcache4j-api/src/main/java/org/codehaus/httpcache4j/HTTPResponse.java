@@ -31,7 +31,7 @@ import java.util.*;
  * Constructions of this should not be done by clients, they should
  * rely on that the cache does its job.
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public final class HTTPResponse implements Serializable {
     private static final long serialVersionUID = -7448511905298678448L;

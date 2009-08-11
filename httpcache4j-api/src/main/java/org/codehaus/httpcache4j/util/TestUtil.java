@@ -29,7 +29,7 @@ import java.io.File;
  * This should only be used by Test cases.
  * It is placed in main so we don't have to depend on the test sources.
  * 
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class TestUtil {
     private static String basedirPath;

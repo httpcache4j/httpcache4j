@@ -8,7 +8,7 @@ import java.io.Serializable;
 /**
  * Represents a name/value pair.
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public abstract class NameValue implements Serializable {
     protected String name;

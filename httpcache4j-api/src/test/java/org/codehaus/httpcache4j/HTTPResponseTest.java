@@ -19,7 +19,7 @@ package org.codehaus.httpcache4j;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class HTTPResponseTest {
     @Test
     public void testNoHeaders() {

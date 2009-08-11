@@ -30,7 +30,7 @@ import java.util.*;
  * If you manipulate the headers, and use the convenience objects afterwards, the
  * headers produced by the convenience objects takes precedence.
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class HTTPRequest {
     private final URI requestURI;

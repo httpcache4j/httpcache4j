@@ -17,7 +17,7 @@
 package org.codehaus.httpcache4j.cache;
 
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class MemoryCacheStorageTest extends CacheStorageAbstractTest {
     @Override
 	protected CacheStorage createCacheStorage() {

@@ -28,7 +28,7 @@ import java.util.Locale;
 /**
  * Collections for preferences.
  * 
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 //TODO: add encoding preference. (handle decoding in client).
 public final class Preferences {

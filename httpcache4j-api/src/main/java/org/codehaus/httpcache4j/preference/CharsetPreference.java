@@ -22,7 +22,7 @@ import org.codehaus.httpcache4j.HeaderConstants;
  * Represents a Charset preference.
  * This sets the Accept-Charset header.
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class CharsetPreference extends Preference<String> {
     public CharsetPreference(String preference) {

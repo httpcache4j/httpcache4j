@@ -18,7 +18,7 @@ package org.codehaus.httpcache4j.cache;
 import org.junit.Test;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class ConcurrentMemoryCacheStorageTest extends ConcurrentCacheStorageAbstractTest{

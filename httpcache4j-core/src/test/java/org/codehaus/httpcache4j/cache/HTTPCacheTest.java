@@ -33,7 +33,7 @@ import java.net.URI;
 import java.io.IOException;
 
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class HTTPCacheTest {
     private ResponseResolver responseResolver;
     private CacheStorage cacheStorage;

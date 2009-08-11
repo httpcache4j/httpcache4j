@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * This is an internal class, and should not be used by clients.
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public final class CacheItem implements Serializable {
     private static final long serialVersionUID = 5891522215450656044L;

@@ -22,7 +22,7 @@ import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import java.io.InputStream;
 
 /**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 public final class ResponseCreator {
