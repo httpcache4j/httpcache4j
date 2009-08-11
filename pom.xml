@@ -70,6 +70,17 @@
       <id>erlend.hamnaberg</id>
       <name>Erlend Hamnaberg</name>
       <email>hamnis@codehaus.org</email>
+      <roles>
+        <role>Despot</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>erik.mogensen</id>
+      <name>Erik Mogensen</name>
+      <email>mogsie@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
     </developer>
   </developers>
 
@@ -95,13 +106,13 @@
       </releases>
     </repository>
     <repository>
-      <id>functionaljava</id>
-      <url>http://functionaljava.googlecode.com/svn/maven/</url>
+      <id>google code</id>
+      <url>http://google-maven-repository.googlecode.com/svn/repository/</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
     </repository>
-    
+
   </repositories>
   <pluginRepositories>
     <pluginRepository>
@@ -257,10 +268,10 @@
         <version>1.4</version>
       </dependency>
       <dependency>
-        <groupId>org.functionaljava</groupId>
-        <artifactId>fj</artifactId>
-        <version>2.19</version>
-      </dependency>
+        <groupId>com.google.code.google-collections</groupId>
+        <artifactId>google-collect</artifactId>
+        <version>1.0-RC2</version>
+      </dependency>      
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>

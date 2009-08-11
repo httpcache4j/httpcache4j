@@ -23,7 +23,8 @@ import java.util.*;
 import java.util.List;
 import java.util.Set;
 
-import fj.F;
+import com.google.common.collect.Lists;
+import com.google.common.base.Function;
 
 
 /**
@@ -91,7 +92,7 @@ public class Headers implements Serializable, Iterable<Header> {
         return Collections.unmodifiableMap(headers);
     }
 
-    public HeaderHashMap copyMap() {
+    private HeaderHashMap copyMap() {
         return new HeaderHashMap(headers);
     }
 
@@ -109,7 +110,7 @@ public class Headers implements Serializable, Iterable<Header> {
 
     public Headers put(String name, List<Header> headers) {
         HeaderHashMap heads = copyMap();
-        heads.put(name, headers);
+        heads.putImpl(name, headers);
         return new Headers(heads);
     }
 
@@ -143,7 +144,7 @@ public class Headers implements Serializable, Iterable<Header> {
 
     @Override
     public int hashCode() {
-        return headers != null ? headers.hashCode() : 0;
+        return headers.hashCode();
     }
 
     public Headers add(Iterable<Header> headers) {
@@ -173,51 +174,53 @@ public class Headers implements Serializable, Iterable<Header> {
     public static class HeaderHashMap extends LinkedHashMap<String, List<String>> {
         private static final long serialVersionUID = 2714358409043444835L;
 
-        public HeaderHashMap() {
-        }
-
-        public HeaderHashMap(Map<? extends String, ? extends List<String>> m) {
-            super(m);
-        }
-
-        private static F<Header,String> headerToString = new F<Header, String>() {
-            public String f(Header value) {
-                return value.getValue();
+        private final Function<Header,String> headerToString = new Function<Header, String>() {
+            public String apply(Header from) {
+                return from.getValue();
             }
         };
 
+        public HeaderHashMap() {
+        }
+
+        public HeaderHashMap(HeaderHashMap headerHashMap) {
+            super(headerHashMap);
+        }
+
         @Override
         public List<String> get(Object key) {
-            List<String> value = super.get(key);
+            List<String> value = super.get(((String) key).toLowerCase());
             return value != null ? value : Collections.<String>emptyList();
         }
 
-        public List<Header> getAsHeaders(final String key) {
-            fj.data.List<String> stringList = fj.data.List.iterableList(get(key));
-            fj.data.List<Header> headerList = stringList.map(stringToHeader(key));
-            return new ArrayList<Header>(headerList.toCollection());
+        List<Header> getAsHeaders(final String key) {
+            List<Header> headers = new ArrayList<Header>();
+            headers.addAll(Lists.transform(get(key), stringToHeader(key)));
+            return Collections.unmodifiableList(headers);
         }
 
-        private F<String, Header> stringToHeader(final String key) {
-            return new F<String, Header>() {
-                public Header f(String value) {
-                    return new Header(key, value);
-                }
-            };
+        private Function<String, Header> stringToHeader(final String key) {
+            return new Function<String, Header>() {
+                    public Header apply(String from) {
+                        return new Header(key, from);
+                    }
+                };
         }
 
-        public List<String> put(String key, List<Header> value) {
-            fj.data.List<Header> headers = fj.data.List.iterableList(value);
-            fj.data.List<String> strings = headers.map(headerToString);
-            return super.put(key, new ArrayList<String>(strings.toCollection()));
+        @Override
+        public List<String> put(String key, List<String> value) {
+            return super.put(key.toLowerCase(), value);
         }
 
-        public Iterator<Header> getAsHeaders() {
-            fj.data.List<Header> headers = fj.data.List.nil();
+        List<String> putImpl(String key, List<Header> value) {
+            List<String> stringList = Lists.transform(value, headerToString);
+            return put(key, new ArrayList<String>(stringList));
+        }
+
+        Iterator<Header> getAsHeaders() {
+            List<Header> headers = new ArrayList<Header>();
             for (Map.Entry<String, List<String>> entry : this.entrySet()) {
-                fj.data.List<String> stringList = fj.data.List.iterableList(entry.getValue());
-                fj.data.List<Header> headerList = stringList.map(stringToHeader(entry.getKey()));
-                headers = headers.append(headerList);
+                headers.addAll(Lists.transform(entry.getValue(), stringToHeader(entry.getKey())));
             }
             return headers.iterator();
         }
