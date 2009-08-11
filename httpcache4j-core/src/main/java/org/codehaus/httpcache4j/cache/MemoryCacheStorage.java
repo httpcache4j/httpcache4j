@@ -29,7 +29,7 @@ import java.io.IOException;
 /**
  * In Memory implementation of a cache storage.
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class MemoryCacheStorage extends AbstractMapBasedCacheStorage  {
 

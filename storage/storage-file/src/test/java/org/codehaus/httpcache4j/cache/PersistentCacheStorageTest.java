@@ -30,7 +30,7 @@ import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.junit.Test;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
     private File baseDirectory;
     

@@ -19,7 +19,7 @@ import java.util.Map;
 import java.io.Serializable;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  * A simple Map.Entry implementaton.
  */

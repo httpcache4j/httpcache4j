@@ -24,7 +24,7 @@ import java.io.File;
 import java.io.Serializable;
 
 /**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 class FileResolver implements Serializable {

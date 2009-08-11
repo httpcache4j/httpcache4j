@@ -23,7 +23,7 @@ import org.junit.Test;
 import java.io.File;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class ConcurrentPersistentCacheStorageTest extends ConcurrentCacheStorageAbstractTest {

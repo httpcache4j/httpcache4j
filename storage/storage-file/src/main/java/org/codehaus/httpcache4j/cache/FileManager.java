@@ -24,7 +24,7 @@ import java.util.*;
 import java.io.*;
 
 /**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 final class FileManager implements Serializable {

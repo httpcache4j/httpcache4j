@@ -23,7 +23,7 @@ import org.codehaus.httpcache4j.HeaderConstants;
  * The warning header:
  * http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.46
  *
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 class Warning {

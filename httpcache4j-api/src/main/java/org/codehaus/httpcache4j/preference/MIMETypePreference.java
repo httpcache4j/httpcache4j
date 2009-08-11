@@ -22,7 +22,7 @@ import org.codehaus.httpcache4j.HeaderConstants;
 /**
  * Sets the mime types that this client expects for this response.
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class MIMETypePreference extends Preference<MIMEType> {
     public MIMETypePreference(MIMEType preference) {

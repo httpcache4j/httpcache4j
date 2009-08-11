@@ -15,7 +15,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import org.mockito.Mockito;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public abstract class CacheStorageAbstractTest {
     protected CacheStorage storage;
 

@@ -38,7 +38,7 @@ import java.util.ArrayList;
  * If you need to use SSL, please follow the guide here.
  * http://hc.apache.org/httpclient-3.x/sslguide.html
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 //TODO: add default user agent. This should maybe only be the cache? Maybe the client type as well. Add support for the client of the cache???
 public class HTTPClientResponseResolver extends AbstractResponseResolver {

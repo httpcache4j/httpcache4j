@@ -34,7 +34,7 @@ import com.google.common.collect.Maps;
  * Implementors of storage engines needs to have knowledge of this class.
  * See {@link Key} for how it's used.
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public final class Vary implements Serializable {
     private static final Collator COLLATOR = Collator.getInstance(Locale.UK);

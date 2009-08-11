@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.io.IOException;
 
 /**
- * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public abstract class AbstractMapBasedCacheStorage extends AbstractCacheStorage {

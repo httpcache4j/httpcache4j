@@ -31,7 +31,7 @@ import org.codehaus.httpcache4j.payload.Payload;
  * Persistent version of the in memory cache. This stores a serialized version of the
  * hashmap on every save. The cache is then restored on startup.
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class PersistentCacheStorage extends MemoryCacheStorage implements Serializable {
 

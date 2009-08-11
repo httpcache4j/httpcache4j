@@ -19,7 +19,7 @@ package org.codehaus.httpcache4j.resolver;
 /**
  * Implementors should implement this instead of using the ResponseResolver interface directly.
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public abstract class AbstractResponseResolver implements ResponseResolver {
     private final ResponseCreator responseCreator = new ResponseCreator();

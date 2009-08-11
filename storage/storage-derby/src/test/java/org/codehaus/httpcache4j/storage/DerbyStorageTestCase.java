@@ -33,7 +33,7 @@ import java.io.File;
 import java.net.URI;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class DerbyStorageTestCase extends CacheStorageAbstractTest{

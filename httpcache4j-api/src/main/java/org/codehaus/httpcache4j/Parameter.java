@@ -19,7 +19,7 @@ package org.codehaus.httpcache4j;
 /**
  * Represents a parameter. 
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @author last modified by $Author: $
  * @version $Id: $
  */

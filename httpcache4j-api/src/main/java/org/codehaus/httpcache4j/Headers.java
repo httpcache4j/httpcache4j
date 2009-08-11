@@ -30,7 +30,7 @@ import com.google.common.base.Function;
 /**
  * A collection of headers.
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class Headers implements Serializable, Iterable<Header> {
     private static final long serialVersionUID = -7175564984758939316L;

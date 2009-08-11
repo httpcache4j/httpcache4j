@@ -9,7 +9,7 @@ import java.util.Map;
 import java.net.URI;
 
 /**
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Id $
  */
 public class VaryTest {

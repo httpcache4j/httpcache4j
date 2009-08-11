@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.ByteArrayInputStream;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
 * @version $Revision: $
 */
 public class ByteArrayPayload implements Payload, Serializable {

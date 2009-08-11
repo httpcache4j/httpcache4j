@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.Collections;
 
-/** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
+/** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class NullCacheStorage implements CacheStorage {
     public HTTPResponse insert(Key key, HTTPResponse response) {
         return response;

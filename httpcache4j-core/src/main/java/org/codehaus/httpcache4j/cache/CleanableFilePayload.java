@@ -31,7 +31,7 @@ import java.io.Serializable;
  * file in the file generation manager so we can copy the remote stream
  * into it.
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 //TODO: file locks. We could solve this by introducing some read and write lock.
 //todo: there may be many read locks, but only one write lock.

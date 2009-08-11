@@ -21,7 +21,7 @@ import java.io.Serializable;
 /**
  * A generic metadata class that contains a name and (optional) description.
  *
- * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class Metadata implements Serializable {
     private final String name;

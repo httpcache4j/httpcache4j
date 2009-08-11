@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.io.IOException;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 public class DelegatingInputStream extends InputStream {
