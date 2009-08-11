@@ -145,7 +145,7 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
 
     @Override
     public HTTPResponse update(Key key, HTTPResponse response) {
-        jdbcTemplate.update("update response set = headers = ?, cachetime = ? where uri ? and vary = ?",
+        jdbcTemplate.update("update response set headers = ?, cachetime = ? where uri = ? and vary = ?",
                             response.getHeaders().toString(),
                             new Timestamp(DateTimeUtils.currentTimeMillis()),
                             key.getURI().toString(),
