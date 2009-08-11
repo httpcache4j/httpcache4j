@@ -51,7 +51,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     }
 
     public PersistentCacheStorage(final int capacity, final File storageDirectory, final String name) {
-        super(capacity, CleanableFilePayload.class);
+        super(capacity);
         Validate.isTrue(capacity > 0, "You may not have a empty persistent cache");
         Validate.notNull(storageDirectory, "You may not have a null storageDirectory");
         Validate.notEmpty(name, "You may not have a empty file name");

@@ -36,7 +36,7 @@ public abstract class CacheStorageAbstractTest {
     @Test
     public void testPutCacheItem() {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
-        storage.put(Key.create(URI.create("foo"), new Vary()), response);
+        storage.insert(Key.create(URI.create("foo"), new Vary()), response);
         assertEquals(1, storage.size());
     }
 
@@ -51,7 +51,7 @@ public abstract class CacheStorageAbstractTest {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
         URI requestURI = URI.create("foo");
         Mockito.when(request.getRequestURI()).thenReturn(requestURI);
-        storage.put(Key.create(requestURI, new Vary()), response);
+        storage.insert(Key.create(requestURI, new Vary()), response);
         assertEquals(1, storage.size());
         return storage.get(request);
     }
@@ -63,7 +63,7 @@ public abstract class CacheStorageAbstractTest {
         URI requestURI = URI.create("foo");
         Mockito.when(request.getRequestURI()).thenReturn(requestURI);
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
-        storage.put(Key.create(requestURI, new Vary()), response);
+        storage.update(Key.create(requestURI, new Vary()), response);
         final CacheItem cacheItem = storage.get(request);
         assertNotSame("Items were the same", cacheItem.getCachedTime(), item.getCachedTime());
     }
@@ -72,7 +72,7 @@ public abstract class CacheStorageAbstractTest {
     public void testInvalidate() {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
         URI requestURI = URI.create("foo");
-        storage.put(Key.create(requestURI, new Vary()), response);
+        storage.insert(Key.create(requestURI, new Vary()), response);
         assertEquals(1, storage.size());
         storage.invalidate(requestURI);
         assertEquals(0, storage.size());

@@ -26,7 +26,9 @@ import java.util.Map;
 //TODO: Document.
 public interface CacheStorage extends Iterable<Key> {
 
-    HTTPResponse put(Key key, HTTPResponse response);
+    HTTPResponse insert(Key key, HTTPResponse response);
+    
+    HTTPResponse update(Key key, HTTPResponse response);
 
     CacheItem get(final HTTPRequest request);
 

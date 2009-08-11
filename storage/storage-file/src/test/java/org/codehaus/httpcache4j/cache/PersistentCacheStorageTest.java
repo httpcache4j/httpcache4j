@@ -22,7 +22,6 @@ import junit.framework.Assert;
 import java.io.File;
 import java.net.URI;
 
-import org.apache.commons.io.FileUtils;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.MIMEType;
@@ -47,7 +46,7 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
         File tempFile = File.createTempFile("foo", "bar", baseDirectory);
         tempFile.deleteOnExit();
         HTTPResponse response = new HTTPResponse(new CleanableFilePayload(tempFile, MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
-        storage.put(Key.create(URI.create("foo"), new Vary()), response);
+        storage.insert(Key.create(URI.create("foo"), new Vary()), response);
         Assert.assertEquals(1, storage.size());
     }
 

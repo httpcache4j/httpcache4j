@@ -40,7 +40,7 @@ final class FileManager implements Serializable {
     }
 
     File createFile(Key key, InputStream stream) throws IOException {
-        File file = fileResolver.resolve(key.getURI(), UUID.randomUUID().toString());
+        File file = fileResolver.resolve(key);
 
         FileOutputStream outputStream = FileUtils.openOutputStream(file);
         try {

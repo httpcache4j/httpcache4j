@@ -26,8 +26,12 @@ import java.util.Collections;
 
 /** @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a> */
 public class NullCacheStorage implements CacheStorage {
-    public HTTPResponse put(Key key, HTTPResponse response) {
-        return null;
+    public HTTPResponse insert(Key key, HTTPResponse response) {
+        return response;
+    }
+
+    public HTTPResponse update(Key key, HTTPResponse response) {
+        return response;
     }
 
     public CacheItem get(final HTTPRequest request) {
