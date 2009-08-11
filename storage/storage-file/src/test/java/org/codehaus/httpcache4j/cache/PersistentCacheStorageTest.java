@@ -26,9 +26,11 @@ import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.Status;
+import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.junit.Test;
+import org.apache.commons.io.input.NullInputStream;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
@@ -43,9 +45,7 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
 
     @Test
     public void testPUTWithRealPayload() throws Exception {
-        File tempFile = File.createTempFile("foo", "bar", baseDirectory);
-        tempFile.deleteOnExit();
-        HTTPResponse response = new HTTPResponse(new CleanableFilePayload(tempFile, MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
+        HTTPResponse response = new HTTPResponse(new InputStreamPayload(new NullInputStream(10), MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
         storage.insert(Key.create(URI.create("foo"), new Vary()), response);
         Assert.assertEquals(1, storage.size());
     }

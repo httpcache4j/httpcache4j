@@ -37,7 +37,6 @@ import com.google.common.collect.Maps;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public final class Vary implements Serializable {
-    private static final Collator COLLATOR = Collator.getInstance(Locale.UK);
     private static final long serialVersionUID = -5275022740812240365L;
     
     private final Map<String, String> varyHeaders;
@@ -56,7 +55,7 @@ public final class Vary implements Serializable {
      */
     public Vary(final Map<String, String> headers) {
         Validate.notNull(headers, "Headers may not be null");
-        Map<String, String> h = Maps.newTreeMap(COLLATOR);
+        Map<String, String> h = Maps.newTreeMap(new VaryComparator());
         h.putAll(headers);
         varyHeaders = Collections.unmodifiableMap(h);
     }
@@ -122,5 +121,24 @@ public final class Vary implements Serializable {
 
     public int hashCode() {
         return varyHeaders.hashCode();
+    }
+
+    public static class VaryComparator implements Comparator<String>, Serializable {
+        private static final long serialVersionUID = 7826440288680033131L;
+        private transient Collator collator = getCollator();
+
+        private Collator getCollator() {
+            collator = Collator.getInstance(Locale.UK);
+            return collator;
+        }
+
+        public int compare(String one, String two) {
+            return getCollator().compare(one, two);
+        }
+
+        private Object readResolve() {
+            collator = getCollator();
+            return this;
+        }
     }
 }

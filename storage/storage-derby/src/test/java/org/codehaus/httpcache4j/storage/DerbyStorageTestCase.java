@@ -16,6 +16,8 @@
 package org.codehaus.httpcache4j.storage;
 
 import org.junit.*;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.cache.Key;
@@ -31,6 +33,8 @@ import org.apache.commons.io.input.NullInputStream;
 
 import java.io.File;
 import java.net.URI;
+
+import junit.framework.*;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
@@ -56,4 +60,12 @@ public class DerbyStorageTestCase extends CacheStorageAbstractTest{
     @Override
     protected void afterTest() {
     }
+
+    @Test
+    public void testPUTWithRealPayload() throws Exception {
+        HTTPResponse response = new HTTPResponse(new InputStreamPayload(new NullInputStream(10), MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
+        storage.insert(Key.create(URI.create("foo"), new Vary()), response);
+        assertEquals(1, storage.size());
+    }
+    
 }

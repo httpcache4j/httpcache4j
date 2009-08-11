@@ -174,7 +174,7 @@ public class Headers implements Serializable, Iterable<Header> {
     public static class HeaderHashMap extends LinkedHashMap<String, List<String>> {
         private static final long serialVersionUID = 2714358409043444835L;
 
-        private final Function<Header,String> headerToString = new Function<Header, String>() {
+        private static final Function<Header,String> headerToString = new Function<Header, String>() {
             public String apply(Header from) {
                 return from.getValue();
             }
