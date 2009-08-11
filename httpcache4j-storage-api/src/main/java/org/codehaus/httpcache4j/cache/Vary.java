@@ -23,6 +23,9 @@ import org.codehaus.httpcache4j.Header;
 
 import java.io.Serializable;
 import java.util.*;
+import java.text.Collator;
+
+import com.google.common.collect.Maps;
 
 /**
  * Represents a HTTP Variation.
@@ -34,7 +37,9 @@ import java.util.*;
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  */
 public final class Vary implements Serializable {
+    private static final Collator COLLATOR = Collator.getInstance(Locale.UK);
     private static final long serialVersionUID = -5275022740812240365L;
+    
     private final Map<String, String> varyHeaders;
 
     /**
@@ -51,7 +56,9 @@ public final class Vary implements Serializable {
      */
     public Vary(final Map<String, String> headers) {
         Validate.notNull(headers, "Headers may not be null");
-        varyHeaders = Collections.unmodifiableMap(new LinkedHashMap<String, String>(headers));
+        Map<String, String> h = Maps.newTreeMap(COLLATOR);
+        h.putAll(headers);
+        varyHeaders = Collections.unmodifiableMap(h);
     }
     
     public int size() {
