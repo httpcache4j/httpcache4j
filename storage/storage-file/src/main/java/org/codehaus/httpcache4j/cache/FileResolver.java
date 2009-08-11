@@ -17,6 +17,7 @@ package org.codehaus.httpcache4j.cache;
 
 import org.apache.commons.lang.Validate;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.codehaus.httpcache4j.util.StorageUtil;
 
 import java.net.URI;
 import java.io.File;
@@ -26,7 +27,7 @@ import java.io.Serializable;
  * @author <a href="mailto:erlend@hamnaberg.net">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-public class FileResolver implements Serializable {
+class FileResolver implements Serializable {
     private static final long serialVersionUID = 3986711605116911333L;
     private final File baseDirectory;
 
@@ -39,12 +40,11 @@ public class FileResolver implements Serializable {
         return baseDirectory;
     }
 
-    public File resolve(URI requestURI, String fileName) {
-        String uriSha = DigestUtils.shaHex(requestURI.toString());
+    public File resolve(Key key) {
+        String uriSha = DigestUtils.shaHex(key.getURI().toString());
+        String varySha = DigestUtils.shaHex(key.getVary().toString());
         File uriFolder = new File(baseDirectory, uriSha);
-        if (!uriFolder.exists() && !uriFolder.mkdirs()) {
-            throw new IllegalStateException("Unable to create Directory for URI " + requestURI);
-        }
-        return new File(uriFolder, fileName);
+        StorageUtil.ensureDirectoryExists(uriFolder);
+        return new File(uriFolder, varySha);
     }
 }

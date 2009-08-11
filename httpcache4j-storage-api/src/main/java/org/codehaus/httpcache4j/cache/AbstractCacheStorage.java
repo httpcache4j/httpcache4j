@@ -23,12 +23,12 @@ import java.io.InputStream;
 import java.io.IOException;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public abstract class AbstractCacheStorage implements CacheStorage {
 
-    public final HTTPResponse put(Key key, HTTPResponse response) {
+    public final HTTPResponse insert(Key key, HTTPResponse response) {
         invalidate(key);
         HTTPResponse cacheableResponse = rewriteResponse(key, response);
         return putImpl(key, cacheableResponse);
@@ -39,4 +39,6 @@ public abstract class AbstractCacheStorage implements CacheStorage {
     protected abstract HTTPResponse putImpl(Key key, HTTPResponse response);
 
     protected abstract void invalidate(Key key);
+  
+    protected abstract HTTPResponse get(Key key);
 }

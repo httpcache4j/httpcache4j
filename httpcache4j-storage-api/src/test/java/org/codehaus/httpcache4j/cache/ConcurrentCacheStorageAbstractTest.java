@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.concurrent.*;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public abstract class ConcurrentCacheStorageAbstractTest {
@@ -57,7 +57,7 @@ public abstract class ConcurrentCacheStorageAbstractTest {
             final Key key = new Key(uri, vary);
             Callable<HTTPResponse> call = new Callable<HTTPResponse>() {
                 public HTTPResponse call() throws Exception {
-                    HTTPResponse cached = cacheStorage.put(key, response);
+                    HTTPResponse cached = cacheStorage.insert(key, response);
                     CacheItem cacheItem = cacheStorage.get(new HTTPRequest(uri));
                     assertSame(cached, cacheItem.getResponse());
                     return cached;

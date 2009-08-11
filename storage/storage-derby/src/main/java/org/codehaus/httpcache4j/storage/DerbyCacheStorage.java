@@ -41,7 +41,7 @@ import java.io.IOException;
  * We have one table, Response.
  * The tables are created on startup if they do not exist.
  *
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class DerbyCacheStorage extends AbstractCacheStorage {
@@ -140,11 +140,21 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
                 return preparedStatement.executeUpdate();
             }
         });
-        return getResponseFromDB(key);
-
+        return get(key);
     }
 
-    private HTTPResponse getResponseFromDB(Key key) {
+    @Override
+    public HTTPResponse update(Key key, HTTPResponse response) {
+        jdbcTemplate.update("update response set = headers = ?, cachetime = ? where uri ? and vary = ?",
+                            response.getHeaders().toString(),
+                            new Timestamp(DateTimeUtils.currentTimeMillis()),
+                            key.getURI().toString(),
+                            key.getVary().toString()
+        );
+        return get(key);
+    }
+
+    protected HTTPResponse get(Key key) {
         try {
             CacheItemHolder holder = jdbcTemplate.queryForObject(
                     "select * from response where uri = ? and vary = ?",

@@ -23,38 +23,32 @@ import java.io.InputStream;
 import java.io.IOException;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public abstract class AbstractMapBasedCacheStorage extends AbstractCacheStorage {
-    protected final Class<? extends Payload> type;
-    
-    public AbstractMapBasedCacheStorage(Class<? extends Payload> payloadType) {
-        type = payloadType;
-    }
 
     protected HTTPResponse rewriteResponse(Key key, HTTPResponse response) {
         if (response.hasPayload()) {
             Payload payload = response.getPayload();
-            if (type.isInstance(payload) && payload.isAvailable()) {
-                return response;
+            InputStream stream = null;
+            try {
+                stream = payload.getInputStream();
+                return new HTTPResponse(createPayload(key, payload, stream), response.getStatus(), response.getHeaders());
+            } catch (IOException ignore) {
             }
-            else {
-                InputStream stream = null;
-                try {
-                    stream = payload.getInputStream();
-                    return new HTTPResponse(createPayload(key, payload, stream), response.getStatus(), response.getHeaders());
-                } catch (IOException ignore) {
-                }
-                finally {
-                    IOUtils.closeQuietly(stream);
-                }
+            finally {
+                IOUtils.closeQuietly(stream);
             }
         }
         else {
             return response;
         }
         throw new IllegalArgumentException("Unable to cache response");
+    }
+
+    public final HTTPResponse update(Key key, HTTPResponse response) {
+        return putImpl(key, response);
     }
 
     protected abstract Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException;

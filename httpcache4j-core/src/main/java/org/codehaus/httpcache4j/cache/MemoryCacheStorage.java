@@ -40,12 +40,7 @@ public class MemoryCacheStorage extends AbstractMapBasedCacheStorage  {
         this(1000);
     }
 
-    public MemoryCacheStorage(int capacity) {
-        this(capacity, ByteArrayPayload.class);
-    }
-
-    protected MemoryCacheStorage(int capacity, Class<? extends Payload> payloadType) {
-        super(payloadType);
+    protected MemoryCacheStorage(int capacity) {
         this.capacity = capacity;
         cache = new InvalidateOnRemoveLRUHashMap(this.capacity);
     }
@@ -79,6 +74,14 @@ public class MemoryCacheStorage extends AbstractMapBasedCacheStorage  {
         for (Key key : keys) {
             cache.remove(key);
         }
+    }
+
+    protected HTTPResponse get(Key key) {
+        CacheItem cacheItem = cache.get(key);
+        if (cacheItem != null) {
+            return cacheItem.getResponse();
+        }
+        return null;
     }
 
     protected synchronized void invalidate(Key key) {

@@ -181,7 +181,7 @@ public class HTTPCache {
                 }
             }
             else if (helper.isCacheableResponse(resolvedResponse)) {
-                response = storage.put(Key.create(request, resolvedResponse), resolvedResponse);
+                response = storage.insert(Key.create(request, resolvedResponse), resolvedResponse);
             }
             else {
                 //Response was not cacheable
@@ -203,7 +203,7 @@ public class HTTPCache {
         headers = headers.add(helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders()));
         HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers);
 
-        storage.put(Key.create(request, updatedResponse), updatedResponse);
+        storage.update(Key.create(request, updatedResponse), updatedResponse);
         return updatedResponse;
     }
 }
