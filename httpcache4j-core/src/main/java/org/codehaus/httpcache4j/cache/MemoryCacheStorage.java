@@ -62,7 +62,11 @@ public class MemoryCacheStorage extends AbstractMapBasedCacheStorage  {
     }
 
     protected Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException {
-        return new ByteArrayPayload(stream, payload.getMimeType());
+        ByteArrayPayload p = new ByteArrayPayload(stream, payload.getMimeType());
+        if (p.isAvailable()) {
+            return p;
+        }
+        return null;
     }
 
     public CacheItem get(HTTPRequest request) {

@@ -46,7 +46,7 @@ public class ByteArrayPayload implements Payload, Serializable {
     }
 
     public boolean isAvailable() {
-        return bytes != null;
+        return bytes != null && bytes.length > 0;
     }
 
     public boolean isTransient() {
