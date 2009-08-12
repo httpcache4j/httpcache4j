@@ -18,6 +18,8 @@ package org.codehaus.httpcache4j.cache;
 
 import java.io.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.Lock;
 import java.net.URI;
 
 import org.apache.commons.io.FileUtils;
@@ -45,6 +47,8 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 
     private transient int modCount;
     private long lastSerialization = 0L;
+    //private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    //private final Lock write = lock.writeLock();
 
     public PersistentCacheStorage(File storageDirectory) {
         this(1000, storageDirectory, "persistent.ser");
@@ -68,21 +72,31 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     }
 
     @Override
-    public synchronized void clear() {
+    public void clear() {
+        write.lock();
         super.clear();
-        serializationFile.delete();
+        try {
+            serializationFile.delete();
+        } finally {
+            write.unlock();
+        }
     }
 
     @Override
-    public synchronized HTTPResponse putImpl(Key key, HTTPResponse response) {
+    public HTTPResponse putImpl(Key key, HTTPResponse response) {
+        write.lock();
         HTTPResponse res = super.putImpl(key, response);
-        if (modCount++ % PERSISTENT_TRESHOLD == 0) {
-            if (System.currentTimeMillis() > lastSerialization + PERSISTENT_TIMEOUT) {
-                lastSerialization = System.currentTimeMillis();
-                saveCacheToDisk();
+        try {
+            if (modCount++ % PERSISTENT_TRESHOLD == 0) {
+                if (System.currentTimeMillis() > lastSerialization + PERSISTENT_TIMEOUT) {
+                    lastSerialization = System.currentTimeMillis();
+                    saveCacheToDisk();
+                }
             }
+            return res;
+        } finally {
+            write.unlock();
         }
-        return res;
     }
 
     @Override
@@ -91,17 +105,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
         if (file != null && file.exists()) {
             return new CleanableFilePayload(file, payload.getMimeType());
         }
-        throw new IllegalArgumentException("Unable to store response with key: " + key);
-    }
-
-    @Override
-    public synchronized void invalidate(URI uri) {
-        super.invalidate(uri);
-    }
-
-    @Override
-    public synchronized void invalidate(Key key) {
-        super.invalidate(key);
+        return null;
     }
 
     private void getCacheFromDisk() {
@@ -125,7 +129,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
         }
     }
 
-    private synchronized void saveCacheToDisk() {
+    private void saveCacheToDisk() {
         FileOutputStream outputStream = null;
         try {
             outputStream = FileUtils.openOutputStream(serializationFile);

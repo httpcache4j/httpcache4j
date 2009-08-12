@@ -23,6 +23,8 @@ import org.codehaus.httpcache4j.payload.ByteArrayPayload;
 
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.Lock;
 import java.io.InputStream;
 import java.io.IOException;
 
@@ -35,6 +37,9 @@ public class MemoryCacheStorage extends AbstractMapBasedCacheStorage  {
 
     protected final int capacity;
     protected InvalidateOnRemoveLRUHashMap cache;
+    private final ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock();
+    private final Lock read = rwlock.readLock();
+    protected final Lock write = rwlock.writeLock();
 
     public MemoryCacheStorage() {
         this(1000);
@@ -45,62 +50,107 @@ public class MemoryCacheStorage extends AbstractMapBasedCacheStorage  {
         cache = new InvalidateOnRemoveLRUHashMap(this.capacity);
     }
 
-    protected synchronized HTTPResponse putImpl(Key key, HTTPResponse cachedResponse) {
-        cache.put(key, new CacheItem(cachedResponse));
-        return cachedResponse;
+    protected HTTPResponse putImpl(Key key, HTTPResponse cachedResponse) {
+        write.lock();
+
+        try {
+            cache.put(key, new CacheItem(cachedResponse));
+            return cachedResponse;
+        } finally {
+            write.unlock();
+        }
     }
 
     protected Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException {
         return new ByteArrayPayload(stream, payload.getMimeType());
     }
 
-    public synchronized CacheItem get(HTTPRequest request) {
-        for (Map.Entry<Key, CacheItem> entry : cache.entrySet()) {
-            Key key = entry.getKey();
-            if (request.getRequestURI().equals(key.getURI()) && key.getVary().matches(request)) {
-                return entry.getValue();
+    public CacheItem get(HTTPRequest request) {
+        read.lock();
+
+        try {
+            for (Map.Entry<Key, CacheItem> entry : cache.entrySet()) {
+                Key key = entry.getKey();
+                if (request.getRequestURI().equals(key.getURI()) && key.getVary().matches(request)) {
+                    return entry.getValue();
+                }
             }
+            return null;
+        } finally {
+            read.unlock();
         }
-        return null;
     }
 
-    public synchronized void invalidate(URI uri) {
-        Set<Key> keys = new HashSet<Key>();
-        for (Key key : cache.keySet()) {
-            if (key.getURI().equals(uri)) {
-                keys.add(key);
+    public void invalidate(URI uri) {
+        write.lock();
+
+        try {
+            Set<Key> keys = new HashSet<Key>();
+            for (Key key : cache.keySet()) {
+                if (key.getURI().equals(uri)) {
+                    keys.add(key);
+                }
             }
-        }
-        for (Key key : keys) {
-            cache.remove(key);
+            for (Key key : keys) {
+                cache.remove(key);
+            }
+        } finally {
+            write.unlock();
         }
     }
 
     protected HTTPResponse get(Key key) {
-        CacheItem cacheItem = cache.get(key);
-        if (cacheItem != null) {
-            return cacheItem.getResponse();
-        }
-        return null;
-    }
+        read.lock();
 
-    protected synchronized void invalidate(Key key) {
-        cache.remove(key);
-    }
-
-    public synchronized void clear() {
-        Set<Key> uris = new HashSet<Key>(cache.keySet());
-        for (Key uri : uris) {
-            cache.remove(uri);
+        try {
+            CacheItem cacheItem = cache.get(key);
+            if (cacheItem != null) {
+                return cacheItem.getResponse();
+            }
+            return null;
+        } finally {
+            read.unlock();
         }
     }
 
-    public synchronized int size() {
-        return cache.size();
+    protected void invalidate(Key key) {
+        write.lock();
+        try {
+            cache.remove(key);
+        } finally {
+            write.unlock();
+        }
     }
 
-    public synchronized Iterator<Key> iterator() {
-        return Collections.unmodifiableSet(cache.keySet()).iterator();
+    public void clear() {
+        write.lock();
+
+        try {
+            Set<Key> uris = new HashSet<Key>(cache.keySet());
+            for (Key uri : uris) {
+                cache.remove(uri);
+            }
+        } finally {
+            write.unlock();
+        }
+    }
+
+    public int size() {
+        read.lock();
+        try {
+            return cache.size();
+        } finally {
+            read.unlock();
+        }
+    }
+
+    public Iterator<Key> iterator() {
+        read.lock();
+        try {
+            return Collections.unmodifiableSet(cache.keySet()).iterator();
+        } finally {
+            read.unlock();
+        }
     }
 
     protected class InvalidateOnRemoveLRUHashMap extends LinkedHashMap<Key, CacheItem> {
