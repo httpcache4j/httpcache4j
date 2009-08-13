@@ -30,6 +30,8 @@ import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.apache.commons.io.input.NullInputStream;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
@@ -45,9 +47,33 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
 
     @Test
     public void testPUTWithRealPayload() throws Exception {
-        HTTPResponse response = new HTTPResponse(new InputStreamPayload(new NullInputStream(10), MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
+        HTTPResponse response = createRealResponse();
         storage.insert(Key.create(URI.create("foo"), new Vary()), response);
         Assert.assertEquals(1, storage.size());
+    }
+
+    @Test
+    public void testMultipleInserts() {
+        Key key = new Key(URI.create("foo"), new Vary());
+        HTTPResponse res = null;
+        for (int i = 0; i < 100; i++) {
+            HTTPResponse response = createRealResponse();
+            res = storage.insert(key, response);
+        }
+        assertNotNull("Result may not be null", res);
+        if (res.hasPayload()) {
+            CleanableFilePayload payload = (CleanableFilePayload) res.getPayload();
+            final File parent = payload.getFile().getParentFile();
+            final File file = new FileResolver(parent.getParentFile()).resolve(key);
+            assertEquals(file.toString(), payload.getFile().toString());
+            assertTrue(parent.isDirectory());
+            assertEquals(1, parent.list().length);
+        }
+
+    }
+
+    private HTTPResponse createRealResponse() {
+        return new HTTPResponse(new InputStreamPayload(new NullInputStream(10), MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
     }
 
     @Override
