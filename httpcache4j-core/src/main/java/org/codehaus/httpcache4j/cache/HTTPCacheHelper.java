@@ -16,7 +16,6 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
-import static org.codehaus.httpcache4j.HeaderConstants.VARY;
 import static org.codehaus.httpcache4j.HeaderConstants.ETAG;
 import org.joda.time.Seconds;
 import org.joda.time.DateTime;
@@ -150,7 +149,7 @@ class HTTPCacheHelper {
                 conditionals = addIfNoneMatchHeader(staleResponse.getHeaders().getFirstHeader(ETAG), request);
             }
             else if (staleResponse.getLastModified() != null) {
-                conditionals.setIfModifiedSince(staleResponse.getLastModified());
+                conditionals.ifModifiedSince(staleResponse.getLastModified());
             }
             return request.conditionals(conditionals);
         }

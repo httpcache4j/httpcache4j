@@ -87,22 +87,15 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         addHeaders(requestHeaders, method);
         if (isUseRequestChallenge()) {
             Challenge challenge = request.getChallenge();
-            if (challenge != null) {
+            if (challenge != null && challenge instanceof UsernamePasswordChallenge) {
+                UsernamePasswordChallenge upc = (UsernamePasswordChallenge) challenge;
                 method.setDoAuthentication(true);
-                Credentials usernamePassword = new UsernamePasswordCredentials(challenge.getIdentifier(), challenge.getPassword() != null ? new String(challenge.getPassword()) : null);
+                Credentials usernamePassword = new UsernamePasswordCredentials(challenge.getIdentifier(), upc.getPassword() != null ? new String(upc.getPassword()) : null);
                 client.getState().setCredentials(new AuthScope(requestURI.getHost(), requestURI.getPort(), AuthScope.ANY_REALM), usernamePassword);
             }
         }
         else {
             method.setDoAuthentication(true);
-        }
-        List<Parameter> parameters = request.getParameters();
-        List<NameValuePair> query = new ArrayList<NameValuePair>(parameters.size());
-        for (Parameter parameter : parameters) {
-            query.add(new NameValuePair(parameter.getName(), parameter.getValue()));
-        }
-        if (!query.isEmpty()) {
-            method.setQueryString(query.toArray(new NameValuePair[query.size()]));
         }
         if (method instanceof EntityEnclosingMethod && request.hasPayload()) {
             InputStream payload = request.getPayload().getInputStream();
