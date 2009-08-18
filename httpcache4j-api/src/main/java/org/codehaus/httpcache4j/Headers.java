@@ -32,7 +32,7 @@ import com.google.common.base.Function;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public class Headers implements Serializable, Iterable<Header> {
+public final class Headers implements Serializable, Iterable<Header> {
     private static final long serialVersionUID = -7175564984758939316L;
     private final HeaderHashMap headers = new HeaderHashMap();
 
@@ -108,7 +108,7 @@ public class Headers implements Serializable, Iterable<Header> {
         return !headers.get(headerName).isEmpty();
     }
 
-    public Headers put(String name, List<Header> headers) {
+    public Headers add(String name, List<Header> headers) {
         HeaderHashMap heads = copyMap();
         heads.putImpl(name, headers);
         return new Headers(heads);
@@ -118,6 +118,18 @@ public class Headers implements Serializable, Iterable<Header> {
         Map<String, List<String>> heads = copyMap();
         heads.remove(name);
         return new Headers(heads);
+    }
+
+    public Headers add(Iterable<Header> headers) {
+        HeaderHashMap map = new HeaderHashMap();
+        for (Header header : headers) {
+            List<String> list = new ArrayList<String>(map.get(header.getName()));
+            if (!list.contains(header.getValue())) {
+                list.add(header.getValue());
+            }
+            map.put(header.getName(), list);
+        }
+        return new Headers(map);
     }
 
     public int size() {
@@ -145,18 +157,6 @@ public class Headers implements Serializable, Iterable<Header> {
     @Override
     public int hashCode() {
         return headers.hashCode();
-    }
-
-    public Headers add(Iterable<Header> headers) {
-        HeaderHashMap map = new HeaderHashMap();
-        for (Header header : headers) {
-            List<String> list = new ArrayList<String>(map.get(header.getName()));
-            if (!list.contains(header.getValue())) {
-                list.add(header.getValue());
-            }
-            map.put(header.getName(), list);
-        }
-        return new Headers(map);
     }
 
     @Override

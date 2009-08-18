@@ -17,7 +17,6 @@ package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
 import static org.codehaus.httpcache4j.HeaderConstants.ETAG;
-import org.joda.time.Seconds;
 import org.joda.time.DateTime;
 
 import java.io.IOException;
@@ -90,7 +89,7 @@ class HTTPCacheHelper {
         usableHeaders.removeAll(unmodifiableHeaders);
         for (String removableHeader : usableHeaders) {
             if (headers.hasHeader(removableHeader)) {
-                washedHeaders.put(removableHeader, headers.getHeaders((removableHeader)));
+                washedHeaders.add(removableHeader, headers.getHeaders((removableHeader)));
             }
         }
         return washedHeaders;
