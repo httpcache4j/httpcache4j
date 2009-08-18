@@ -70,7 +70,6 @@ public class VaryTest {
         for (Map.Entry<String, String> header : map.entrySet()) {
             request = request.addHeader(header.getKey(), header.getValue());
         }
-        System.out.println("request: " + request.getHeaders());
         Assert.assertTrue(vary.matches(request));
     }
 
