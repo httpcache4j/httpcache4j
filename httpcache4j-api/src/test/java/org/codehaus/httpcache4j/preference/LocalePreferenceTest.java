@@ -23,10 +23,7 @@ import org.codehaus.httpcache4j.HeaderUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class LocalePreferenceTest {
 
@@ -34,24 +31,24 @@ public class LocalePreferenceTest {
     public void testSingleLocale() {
         Locale us = Locale.US;
         LocalePreference pref = new LocalePreference(us);
-        Assert.assertEquals(new Header(HeaderConstants.ACCEPT_LANGUAGE, us.getLanguage()), pref.toHeader());
+        Assert.assertEquals("en", pref.getStringValue());
+        Assert.assertEquals(1.0, pref.getQuality(), 1.0);
     }
 
     @Test
     public void testSingleLocaleWithIgnoredQuality() {
         Locale us = Locale.US;
-        LocalePreference pref = new LocalePreference(us);
-        pref.setQuality(1.0);
-        Assert.assertEquals(new Header(HeaderConstants.ACCEPT_LANGUAGE, us.getLanguage()), pref.toHeader());
+        LocalePreference pref = new LocalePreference(us, 1.0);
+        Assert.assertEquals("en", pref.getStringValue());
+        Assert.assertEquals(1.0, pref.getQuality(), 1.0);
     }
 
     @Test
     public void testSingleLocaleWithQuality() {
         Locale us = Locale.US;
-        LocalePreference pref = new LocalePreference(us);
-        pref.setQuality(0.8);
+        LocalePreference pref = new LocalePreference(us, 0.8);
         Header expected = new Header(HeaderConstants.ACCEPT_LANGUAGE, us.getLanguage() + ";q=0.8");
-        Assert.assertEquals(expected, pref.toHeader());
+        Assert.assertEquals(expected, Preferences.toHeader(HeaderConstants.ACCEPT_LANGUAGE, Collections.singletonList(pref)));
     }
 
     @Test
@@ -61,6 +58,6 @@ public class LocalePreferenceTest {
             preferences.add(new LocalePreference(locale));
         }
         Header expected = new Header(HeaderConstants.ACCEPT_LANGUAGE, Locale.US.getLanguage() + ", " + Locale.GERMAN);
-        Assert.assertEquals(expected, HeaderUtils.toHeader(HeaderConstants.ACCEPT_LANGUAGE, preferences));
+        Assert.assertEquals(expected, Preferences.toHeader(HeaderConstants.ACCEPT_LANGUAGE, preferences));
     }
 }

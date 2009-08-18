@@ -88,16 +88,4 @@ public final class HeaderUtils {
                 || headers.getFirstHeader(EXPIRES) != null
                 || headers.getFirstHeader(LAST_MODIFIED) != null;
     }
-
-    public static Header toHeader(String headerName, List<? extends Preference<?>> preferences) {
-        StringBuilder builder = new StringBuilder();
-        for (Preference<?> preference : preferences) {
-            if (builder.length() > 0) {
-                builder.append(", ");
-            }
-            builder.append(preference.toString());
-        }
-        return new Header(headerName, builder.toString());
-    }
-
 }

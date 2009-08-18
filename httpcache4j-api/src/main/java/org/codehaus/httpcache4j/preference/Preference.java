@@ -22,13 +22,19 @@ import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.HeaderUtils;
 
-public abstract class Preference<T> {
+public class Preference<T> {
     private final T preference;
-    private double quality = 1.0;
+    private final double quality;
 
     public Preference(T preference) {
+        this(preference, 1.0);
+    }
+
+    public Preference(T preference, double quality) {
         Validate.notNull(preference, "Preference may not be null, use a ALL preference instead.");
+        Validate.isTrue(quality <= 1.0 && quality > 0.0, "Quality is a percentage ranging from 0.0, to 1.0");
         this.preference = preference;
+        this.quality = quality;
     }
 
     public T getPreference() {
@@ -37,11 +43,6 @@ public abstract class Preference<T> {
 
     public double getQuality() {
         return quality;
-    }
-
-    public void setQuality(double quality) {
-        Validate.isTrue(quality <= 1.0 && quality > 0.0, "Quality is a percentage ranging from 0.0, to 1.0");
-        this.quality = quality;
     }
 
     @Override
@@ -58,10 +59,6 @@ public abstract class Preference<T> {
 
     protected String getStringValue() {
         return getPreference().toString();
-    }
-
-    protected Header toHeader() {
-        return HeaderUtils.toHeader(getHeaderName(), Arrays.asList(this));
     }
 
     @Override
@@ -86,6 +83,4 @@ public abstract class Preference<T> {
     public int hashCode() {
         return preference != null ? preference.hashCode() : 0;
     }
-
-    protected abstract String getHeaderName();
 }
