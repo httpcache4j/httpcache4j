@@ -122,7 +122,8 @@ public class HTTPCacheTest {
     public void testExternalConditionalRequestWhereResponsePayloadHasBeenRemoved() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("dummy://url"));
         Tag tag = new Tag("foo", false);
-        request.getConditionals().addIfNoneMatch(tag);
+        Conditionals conditionals = request.getConditionals().addIfNoneMatch(tag);
+        request = request.conditionals(conditionals);
         Headers headers = new Headers();
         headers.add(HeaderConstants.ETAG, tag.format());
         headers.add(HeaderConstants.CACHE_CONTROL, "max-age=10");
@@ -163,7 +164,7 @@ public class HTTPCacheTest {
     @Test
     public void testExternalConditionalGet() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("foo"));
-        request.getConditionals().addIfNoneMatch(new Tag("1234"));
+        request = request.conditionals(request.getConditionals().addIfNoneMatch(new Tag("1234")));
         Headers responseHeaders = new Headers();
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
         responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));

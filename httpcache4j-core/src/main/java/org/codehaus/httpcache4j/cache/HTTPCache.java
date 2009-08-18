@@ -20,6 +20,7 @@ import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
 import org.apache.commons.lang.Validate;
+import org.joda.time.DateTime;
 
 import java.util.*;
 import java.io.IOException;
@@ -125,31 +126,35 @@ public class HTTPCache {
                 }
                 else {
                     //TODO: handle rewrite of Status... HEAD should probably always return 200 OK.
-                    //TODO: Age header???
-                    response = rewriteResponse(req, item.getResponse());
+                    response = rewriteResponse(req, item);
                 }
             }
             else {
                 response = unconditionalResolve(request);
             }
         }
-        if (response != null) {
-            return helper.calculateAge(response);
-        }
         return response;
     }
 
-    private HTTPResponse rewriteResponse(HTTPRequest request, HTTPResponse response) {
+    private HTTPResponse rewriteResponse(HTTPRequest request, CacheItem item) {
+        HTTPResponse response = item.getResponse();
         if (request.getMethod() == HTTPMethod.GET) {
             List<Tag> noneMatch = request.getConditionals().getNoneMatch();
             Tag eTag = response.getETag();
             if (eTag != null && !noneMatch.isEmpty()) {
-                if (noneMatch.contains(eTag) && !noneMatch.contains(Tag.ALL)) {
-                    return new HTTPResponse(null, Status.NOT_MODIFIED, response.getHeaders());
+                if (noneMatch.contains(eTag) || noneMatch.contains(Tag.ALL)) {
+                    response = new HTTPResponse(null, Status.NOT_MODIFIED, response.getHeaders());
+                }
+            }
+            DateTime lastModified = response.getLastModified();
+            DateTime modifiedSince = request.getConditionals().getModifiedSince();
+            if (lastModified != null && modifiedSince != null) {
+                if (lastModified.equals(modifiedSince)) {
+                    response = new HTTPResponse(null, Status.NOT_MODIFIED, response.getHeaders());
                 }
             }
         }
-        return response;
+        return helper.calculateAge(request, response, item.getCachedTime());
     }
 
     private HTTPResponse unconditionalResolve(final HTTPRequest request) {
