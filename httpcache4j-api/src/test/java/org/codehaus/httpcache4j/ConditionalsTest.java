@@ -18,22 +18,15 @@ package org.codehaus.httpcache4j;
 
 import org.joda.time.DateTime;
 import static org.junit.Assert.*;
-import org.junit.Before;
 import org.junit.Test;
 
 public class ConditionalsTest {
-    private Conditionals conditionals;
-
-    @Before
-    public void setupConditionals() {
-        conditionals = new Conditionals();
-    }
-
     @Test
     public void testIfMatch() {
-        conditionals.addIfMatch(Tag.parse("\"foo\""));
+        Conditionals conditionals = new Conditionals();
+        conditionals = conditionals.addIfMatch(Tag.parse("\"foo\""));
         assertEquals(1, conditionals.getMatch().size());
-        conditionals.addIfMatch(Tag.parse("\"bar\""));
+        conditionals = conditionals.addIfMatch(Tag.parse("\"bar\""));
         assertEquals(2, conditionals.getMatch().size());
         Header header = new Header(HeaderConstants.IF_MATCH, "\"foo\", \"bar\"");
         assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_MATCH));
@@ -41,21 +34,24 @@ public class ConditionalsTest {
 
     @Test
     public void testIfMatchDuplicate() {
-        conditionals.addIfMatch(Tag.parse("\"foo\""));
-        conditionals.addIfMatch(Tag.parse("\"foo\""));
+        Conditionals conditionals = new Conditionals();
+        conditionals = conditionals.addIfMatch(Tag.parse("\"foo\""));
+        conditionals = conditionals.addIfMatch(Tag.parse("\"foo\""));
         assertEquals(1, conditionals.getMatch().size());
     }
 
     @Test
     public void testIfNoneMatchDuplicate() {
-        conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
-        conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
+        Conditionals conditionals = new Conditionals();
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
         assertEquals(1, conditionals.getNoneMatch().size());
     }
 
     @Test
     public void testIfMatchWithNullTag() {
-        conditionals.addIfMatch(null);
+        Conditionals conditionals = new Conditionals();
+        conditionals = conditionals.addIfMatch(null);
         assertEquals(1, conditionals.getMatch().size());
 
         try {
@@ -70,7 +66,8 @@ public class ConditionalsTest {
 
     @Test
     public void testIfNoneMatchWithNullTag() {
-        conditionals.addIfNoneMatch(null);
+        Conditionals conditionals = new Conditionals();
+        conditionals = conditionals.addIfNoneMatch(null);
         assertEquals(1, conditionals.getNoneMatch().size());
         try {
             conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
@@ -84,7 +81,8 @@ public class ConditionalsTest {
 
     @Test
     public void testIfMatchStar() {
-        conditionals.addIfMatch(Tag.parse("*"));
+        Conditionals conditionals = new Conditionals();
+        conditionals = conditionals.addIfMatch(Tag.parse("*"));
         assertEquals(1, conditionals.getMatch().size());
         try {
             conditionals.addIfMatch(Tag.parse("\"bar\""));
@@ -96,7 +94,8 @@ public class ConditionalsTest {
 
     @Test
     public void testIfNoneMatchStar() {
-        conditionals.addIfNoneMatch(Tag.parse("*"));
+        Conditionals conditionals = new Conditionals();
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("*"));
         assertEquals(1, conditionals.getNoneMatch().size());
         try {
             conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
@@ -108,9 +107,10 @@ public class ConditionalsTest {
 
     @Test
     public void testIfNoneMatch() {
-        conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
+        Conditionals conditionals = new Conditionals();
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
         assertEquals(1, conditionals.getNoneMatch().size());
-        conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
         assertEquals(2, conditionals.getNoneMatch().size());
         Header header = new Header(HeaderConstants.IF_NON_MATCH, "\"foo\", \"bar\"");
         assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_NON_MATCH));
@@ -118,7 +118,8 @@ public class ConditionalsTest {
 
     @Test
     public void testIfNoneMatchAndIfMatch() {
-        conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
+        Conditionals conditionals = new Conditionals();
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
         assertEquals(1, conditionals.getNoneMatch().size());
         try {
             conditionals.addIfMatch(Tag.parse("\"bar\""));
@@ -130,8 +131,9 @@ public class ConditionalsTest {
 
     @Test
     public void testIfModifiedSince() {
+        Conditionals conditionals = new Conditionals();
         DateTime dateTime = new DateTime();
-        conditionals.ifModifiedSince(dateTime);
+        conditionals = conditionals.ifModifiedSince(dateTime);
         assertEquals(dateTime, conditionals.getModifiedSince());
         Header header = HeaderUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, dateTime);
         assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_MODIFIED_SINCE));
@@ -139,8 +141,9 @@ public class ConditionalsTest {
 
     @Test
     public void testIfUnmodifiedSince() {
+        Conditionals conditionals = new Conditionals();
         DateTime dateTime = new DateTime();
-        conditionals.ifUnModifiedSince(dateTime);
+        conditionals = conditionals.ifUnModifiedSince(dateTime);
         assertEquals(dateTime, conditionals.getUnModifiedSince());
         Header header = HeaderUtils.toHttpDate(HeaderConstants.IF_UNMODIFIED_SINCE, dateTime);
         assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_UNMODIFIED_SINCE));
@@ -148,7 +151,8 @@ public class ConditionalsTest {
 
     @Test
     public void testIfModifiedSinceAndIfMatch() {
-        conditionals.addIfMatch(Tag.parse("\"bar\""));
+        Conditionals conditionals = new Conditionals();
+        conditionals = conditionals.addIfMatch(Tag.parse("\"bar\""));
         assertEquals(1, conditionals.getMatch().size());
         DateTime dateTime = new DateTime();
         try {
@@ -162,25 +166,28 @@ public class ConditionalsTest {
 
     @Test
     public void testIfModifiedSinceAndIfNoneMatch() {
-        conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
+        Conditionals conditionals = new Conditionals();
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
         assertEquals(1, conditionals.getNoneMatch().size());
         DateTime dateTime = new DateTime();
-        conditionals.ifModifiedSince(dateTime);
+        conditionals = conditionals.ifModifiedSince(dateTime);
         assertEquals(dateTime, conditionals.getModifiedSince());
     }
 
     @Test
     public void testIfUnModifiedSinceAndIfMatch() {
-        conditionals.addIfMatch(Tag.parse("\"bar\""));
+        Conditionals conditionals = new Conditionals();
+        conditionals = conditionals.addIfMatch(Tag.parse("\"bar\""));
         assertEquals(1, conditionals.getMatch().size());
         DateTime dateTime = new DateTime();
-        conditionals.ifUnModifiedSince(dateTime);
+        conditionals = conditionals.ifUnModifiedSince(dateTime);
         assertEquals(dateTime, conditionals.getUnModifiedSince());
     }
 
     @Test
     public void testIfUnModifiedSinceAndIfNoneMatch() {
-        conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
+        Conditionals conditionals = new Conditionals();
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
         assertEquals(1, conditionals.getNoneMatch().size());
         DateTime dateTime = new DateTime();
         try {
@@ -194,8 +201,9 @@ public class ConditionalsTest {
 
     @Test
     public void testIfModifiedSinceAndIfUnmodifiedSince() {
+        Conditionals conditionals = new Conditionals();
         DateTime dateTime = new DateTime();
-        conditionals.ifUnModifiedSince(dateTime);
+        conditionals = conditionals.ifUnModifiedSince(dateTime);
         assertEquals(dateTime, conditionals.getUnModifiedSince());
         try {
             conditionals.ifModifiedSince(dateTime);
@@ -203,5 +211,23 @@ public class ConditionalsTest {
         }
         catch (IllegalArgumentException expected) {
         }
+    }
+
+    @Test
+    public void testImmutability() {
+        Conditionals conditionals = new Conditionals();
+        DateTime dateTime = new DateTime();
+        Conditionals conditionals2 = conditionals.ifUnModifiedSince(dateTime);
+        assertNotSame(conditionals, conditionals2);
+        assertEquals(0, conditionals.getNoneMatch().size());
+        assertEquals(0, conditionals.getMatch().size());
+        assertNull(conditionals.getModifiedSince());
+        assertNull(conditionals.getUnModifiedSince());
+
+        assertEquals(0, conditionals2.getNoneMatch().size());
+        assertEquals(0, conditionals2.getMatch().size());
+        assertNull(conditionals2.getModifiedSince());
+        assertEquals(dateTime, conditionals2.getUnModifiedSince());
+
     }
 }
