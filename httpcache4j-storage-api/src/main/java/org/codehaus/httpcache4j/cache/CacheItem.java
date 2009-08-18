@@ -26,6 +26,8 @@ import static org.codehaus.httpcache4j.HeaderConstants.*;
 import org.codehaus.httpcache4j.Headers;
 
 import org.joda.time.DateTime;
+import org.joda.time.Seconds;
+import org.joda.time.DateTimeUtils;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -37,40 +39,87 @@ import java.util.Map;
  */
 public final class CacheItem implements Serializable {
     private static final long serialVersionUID = 5891522215450656044L;
-    
+
     private final DateTime cachedTime;
     private final HTTPResponse response;
+    private final int ttl;
 
+    /**
+     * Creates a new CacheItem with cachetime now() and TTL 24hrs seconds.
+     *
+     * @param response
+     */
     public CacheItem(HTTPResponse response) {
         this(response, new DateTime());
     }
 
-    public CacheItem(HTTPResponse response, DateTime cacheTime) {
+    public CacheItem(HTTPResponse response, DateTime cachedTime) {
         Validate.notNull(response, "Response may not be null");
-        Validate.notNull(cacheTime, "CacheTime may not be null");
+        Validate.notNull(cachedTime, "CacheTime may not be null");
         this.response = response;
-        cachedTime = cacheTime;
+        this.cachedTime = cachedTime;
+        this.ttl = getTTL(response, 0);
     }
 
-    public boolean isStale() {
+    public boolean isStale(DateTime requestTime) {
         if (response.hasPayload() && !response.getPayload().isAvailable()) {
             return true;
         }
+        long age = calulcateAGE(response, cachedTime, requestTime);
+        return ttl - age <= 0;
+    }
+
+    /**
+     * age_value
+     * is the value of Age: header received by the cache with
+     * this response.
+     * date_value
+     * is the value of the origin server's Date: header
+     * request_time
+     * is the (local) time when the cache made the request
+     * that resulted in this cached response
+     * response_time
+     * is the (local) time when the cache received the
+     * response
+     * now
+     * is the current (local) time
+     * <p/>
+     * apparent_age = max(0, response_time - date_value);
+     * corrected_received_age = max(apparent_age, age_value);
+     * response_delay = response_time - request_time;
+     * corrected_initial_age = corrected_received_age + response_delay;
+     * resident_time = now - response_time;
+     * current_age   = corrected_initial_age + resident_time;
+     *
+     * @param response    the item to calculate the age from.
+     * @param cachedTime  the time when the item was cached.
+     * @param requestTime the time when the request was started.
+     * @return the age value
+     */
+    public static long calulcateAGE(HTTPResponse response, DateTime cachedTime, DateTime requestTime) {
         Headers headers = response.getHeaders();
-        long now = new DateTime().getMillis();
+
+        DateTime date_value = HeaderUtils.fromHttpDate(headers.getFirstHeader(DATE));
+        long age_value = NumberUtils.toLong(headers.getFirstHeaderValue(AGE), 0);
+        long apparent_age = Math.max(0, cachedTime.getMillis() - date_value.getMillis());
+        long corrected_recieved_age = Math.max(apparent_age, age_value);
+        long response_delay = cachedTime.getMillis() - requestTime.getMillis();
+        long corrected_inital_age = corrected_recieved_age + response_delay;
+        long resident_time = DateTimeUtils.currentTimeMillis() - cachedTime.getMillis();
+        return (corrected_inital_age + resident_time) / 1000;
+    }
+
+
+    public static int getTTL(HTTPResponse response, int defaultTTLinSeconds) {
+        final Headers headers = response.getHeaders();
         if (headers.hasHeader(CACHE_CONTROL)) {
             Header ccHeader = headers.getFirstHeader(CACHE_CONTROL);
-            if (ccHeader.getValue().toLowerCase().contains("must-revalidate")) {
-                return true;
-            }
             Map<String, String> directives = ccHeader.getDirectives();
             String maxAgeDirective = directives.get("max-age");
             if (maxAgeDirective != null) {
                 int maxAge = NumberUtils.toInt(maxAgeDirective, -1);
-                long age = now - cachedTime.getMillis();
-                long remainingLife = (maxAge * 1000L) - age;
-                if (maxAge == -1 || remainingLife <= 0) {
-                    return true;
+                if (maxAge > 0) {
+                    return maxAge;
                 }
             }
         }
@@ -82,14 +131,17 @@ public final class CacheItem implements Serializable {
          * HTTP/1.1 servers SHOULD NOT send Expires dates more than one year in the future.
          */
         if (headers.hasHeader(EXPIRES)) {
-            long expiryDate = HeaderUtils.getHeaderAsDate(headers.getFirstHeader(EXPIRES));
-            long date = HeaderUtils.getHeaderAsDate(headers.getFirstHeader(DATE));
-            if (expiryDate == -1 || now >= expiryDate || date == expiryDate) {
-                return true;
+            DateTime expiryDate = HeaderUtils.fromHttpDate(headers.getFirstHeader(EXPIRES));
+            if (expiryDate != null) {
+                DateTime date = HeaderUtils.fromHttpDate(headers.getFirstHeader(DATE));
+                if (date != null && date.isBefore(expiryDate)) {
+                    return Seconds.secondsBetween(date, expiryDate).getSeconds();
+                }
             }
+
         }
 
-        return !headers.hasHeader(CACHE_CONTROL) && !headers.hasHeader(EXPIRES);
+        return defaultTTLinSeconds;
     }
 
     public DateTime getCachedTime() {
