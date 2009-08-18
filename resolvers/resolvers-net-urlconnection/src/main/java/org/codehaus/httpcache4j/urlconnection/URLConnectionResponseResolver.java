@@ -85,7 +85,8 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
 
     private void addAuthorizationHeader(HTTPRequest request) {
         if (request.getChallenge().getMethod() == ChallengeMethod.BASIC) {
-            String basicString = request.getChallenge().getIdentifier() + ":" + new String(request.getChallenge().getPassword());
+            UsernamePasswordChallenge upc = (UsernamePasswordChallenge) request.getChallenge();
+            String basicString = request.getChallenge().getIdentifier() + ":" + new String(upc.getPassword());
             try {
                 basicString = new String(Base64.encodeBase64(basicString.getBytes("UTF-8")));
                 request.getHeaders().add("Authorization", request.getChallenge().getMethod().name() + " " + basicString);

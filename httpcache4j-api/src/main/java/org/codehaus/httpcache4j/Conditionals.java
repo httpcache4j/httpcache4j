@@ -58,21 +58,39 @@ import java.util.List;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public final class Conditionals {
-    private final List<Tag> match = new ArrayList<Tag>();
-    private final List<Tag> nonMatch = new ArrayList<Tag>();
-    private DateTime modifiedSince;
-    private DateTime unModifiedSince;
+    private final List<Tag> match;
+    private final List<Tag> noneMatch;
+    private final DateTime modifiedSince;
+    private final DateTime unModifiedSince;
     private static final String ERROR_MESSAGE = "The combination of %s and %s is undefined by the HTTP specification";
+
+    public Conditionals() {
+        this(empty(), empty(), null, null);
+    }
+
+    private static List<Tag> empty() {
+        return Collections.emptyList();
+    }
+
+    public Conditionals(List<Tag> match, List<Tag> noneMatch, DateTime modifiedSince, DateTime unModifiedSince) {
+        this.match = match;
+        this.noneMatch = noneMatch;
+        this.modifiedSince = modifiedSince;
+        this.unModifiedSince = unModifiedSince;
+    }
 
     /**
      * Adds tags to the If-Match header.
      *
      * @param tag the tag to add, may be null. This means the same as adding {@link Tag#ALL}
      * @throws IllegalArgumentException if ALL is supplied more than once, or you add a null tag more than once.
+     * @return a new Conditionals object with the If-Match tag added.
      */
-    public void addIfMatch(Tag tag) {
+    public Conditionals addIfMatch(Tag tag) {
         Validate.isTrue(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_MODIFIED_SINCE));
-        Validate.isTrue(nonMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_NON_MATCH));
+        Validate.isTrue(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_NON_MATCH));
+        List<Tag> match = new ArrayList<Tag>(this.match);
+
         if (tag == null) {
             tag = Tag.ALL;
         }
@@ -87,6 +105,7 @@ public final class Conditionals {
         else {
             throw new IllegalArgumentException("Tag ALL already in the list");
         }
+        return new Conditionals(Collections.unmodifiableList(match), empty(), null, unModifiedSince);
     }
 
     /**
@@ -99,46 +118,63 @@ public final class Conditionals {
      *
      * @param tag the tag to add, may be null. This means the same as adding {@link Tag#ALL}
      * @throws IllegalArgumentException if ALL is supplied more than once, or you add a null tag more than once.
+     * @return a new Conditionals object with the If-None-Match tag added.
      */
-    public void addIfNoneMatch(Tag tag) {
+    public Conditionals addIfNoneMatch(Tag tag) {
         Validate.isTrue(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_UNMODIFIED_SINCE));
         Validate.isTrue(match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_MATCH));
+        List<Tag> noneMatch = new ArrayList<Tag>(this.noneMatch);
         if (tag == null) {
             tag = Tag.ALL;
         }
         if (Tag.ALL.equals(tag)) {
-            nonMatch.clear();
+            noneMatch.clear();
         }
-        if (!nonMatch.contains(Tag.ALL)) {
-            if (!nonMatch.contains(tag)) {
-                nonMatch.add(tag);
+        if (!noneMatch.contains(Tag.ALL)) {
+            if (!noneMatch.contains(tag)) {
+                noneMatch.add(tag);
             }
         }
         else {
             throw new IllegalArgumentException("Tag ALL already in the list");
         }
+        return new Conditionals(empty(), Collections.unmodifiableList(noneMatch), modifiedSince, null);
     }
 
     /**
      * You should use the server's time here. Otherwise you might get unexpected results.
+     * The typical use case is: <br/>
+     * <pre>
+     *   HTTPResponse response = ....
+     *   HTTPRequest request = createRequest();
+     *   request = request.conditionals(new Conditionals().ifModifiedSince(response.getLastModified());
+     * </pre>
      *
      * @param time the time to check.
+     * @return the conditionals with the If-Modified-Since date set.
      */
-    public void setIfModifiedSince(DateTime time) {
+    public Conditionals ifModifiedSince(DateTime time) {
         Validate.isTrue(match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_MATCH));
         Validate.isTrue(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_UNMODIFIED_SINCE));
-        modifiedSince = time;
+        return new Conditionals(empty(), noneMatch, time, null);        
     }
 
     /**
      * You should use the server's time here. Otherwise you might get unexpected results.
+     * The typical use case is: <br/>
+     * <pre>
+     *   HTTPResponse response = ....
+     *   HTTPRequest request = createRequest();
+     *   request = request.conditionals(new Conditionals().ifUnModifiedSince(response.getLastModified());
+     * </pre>
      *
      * @param time the time to check.
+     * @return the conditionals with the If-Unmodified-Since date set.
      */
-    public void setIfUnModifiedSince(DateTime time) {
-        Validate.isTrue(nonMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_NON_MATCH));
+    public Conditionals ifUnModifiedSince(DateTime time) {
+        Validate.isTrue(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_NON_MATCH));
         Validate.isTrue(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_MODIFIED_SINCE));
-        unModifiedSince = time;
+        return new Conditionals(match, empty(), null, time);
     }
 
     public List<Tag> getMatch() {
@@ -146,7 +182,7 @@ public final class Conditionals {
     }
 
     public List<Tag> getNoneMatch() {
-        return Collections.unmodifiableList(nonMatch);
+        return Collections.unmodifiableList(noneMatch);
     }
 
     public DateTime getModifiedSince() {
@@ -157,15 +193,8 @@ public final class Conditionals {
         return unModifiedSince;
     }
 
-    public void clear() {
-        match.clear();
-        nonMatch.clear();
-        modifiedSince = null;
-        unModifiedSince = null;
-    }
-
     public boolean isUnconditional() {
-      return nonMatch.contains(Tag.ALL) || match.contains(Tag.ALL);
+      return noneMatch.contains(Tag.ALL) || match.contains(Tag.ALL);
     }
 
     public Headers toHeaders() {

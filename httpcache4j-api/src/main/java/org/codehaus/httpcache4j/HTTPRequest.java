@@ -23,7 +23,6 @@ import org.codehaus.httpcache4j.preference.Preferences;
 import org.joda.time.DateTime;
 
 import java.net.URI;
-import java.util.*;
 
 /**
  * Represents a HTTP request. You can use this in a couple of ways: <br/>
@@ -35,7 +34,6 @@ import java.util.*;
  */
 public class HTTPRequest {
     private final URI requestURI;
-    private final List<Parameter> parameters;
     private final HTTPMethod method;
     private final Conditionals conditionals;
     private final Preferences preferences;
@@ -45,13 +43,12 @@ public class HTTPRequest {
     private final DateTime requestTime;
 
     public HTTPRequest(URI requestURI, HTTPMethod method) {
-        this(requestURI, method, Collections.<Parameter>emptyList(), new Headers(), new Conditionals(), new Preferences(), null, null, new DateTime());
+        this(requestURI, method, new Headers(), new Conditionals(), new Preferences(), null, null, new DateTime());
     }
 
     public HTTPRequest(HTTPRequest request) {
         this(request.getRequestURI(),
              request.getMethod(),
-             request.getParameters(),
              request.getHeaders(),
              request.getConditionals(),
              request.getPreferences(),
@@ -63,7 +60,6 @@ public class HTTPRequest {
 
     private HTTPRequest(URI requestURI,
                        HTTPMethod method,
-                       List<Parameter> parameters,
                        Headers headers,
                        Conditionals conditionals,
                        Preferences preferences,
@@ -79,34 +75,10 @@ public class HTTPRequest {
         this.challenge = challenge;
         this.payload = payload;
         this.requestTime = requestTime;
-        String query = requestURI.getQuery();
-        if (query != null) {
-            List<Parameter> list = new ArrayList<Parameter>(parameters);
-            list.addAll(parseQuery(query));
-            this.parameters = list;
-        }
-        else {
-            this.parameters = parameters;
-        }
     }
 
     public HTTPRequest(URI requestURI) {
         this(requestURI, HTTPMethod.GET);
-    }
-
-    private List<Parameter> parseQuery(String query) {
-        List<Parameter> parameters = new ArrayList<Parameter>();
-        String[] parts = query.split("&");
-        if (parts.length > 0) {
-            for (String part : parts) {
-                int equalsIndex = part.indexOf('=');
-                if (equalsIndex != -1) {
-                    Parameter param = new Parameter(part.substring(0, equalsIndex), part.substring(equalsIndex + 1));
-                    parameters.add(param);
-                }
-            }
-        }
-        return parameters;
     }
 
     public URI getRequestURI() {
@@ -141,26 +113,9 @@ public class HTTPRequest {
         return new Headers(base).add(toMerge);        
     }
 
-
-    public List<Parameter> getParameters() {
-        return Collections.unmodifiableList(parameters);
-    }
-
-    public HTTPRequest addParameter(Parameter parameter) {
-        List<Parameter> parameters = new ArrayList<Parameter>(this.parameters);
-        if (!parameters.contains(parameter)) {
-            parameters.add(parameter);
-        }
-        return new HTTPRequest(requestURI, method, parameters, headers, conditionals, preferences, challenge, payload, requestTime);
-    }
-
-    public HTTPRequest addParameter(String name, String value) {
-        return addParameter(new Parameter(name, value));
-    }
-
     public HTTPRequest addHeader(Header header) {
         Headers headers = new Headers(this.headers).add(header);
-        return new HTTPRequest(requestURI, method, parameters, headers, conditionals, preferences, challenge, payload, requestTime);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
     }
 
     public HTTPRequest addHeader(String name, String value) {
@@ -183,8 +138,8 @@ public class HTTPRequest {
         return challenge;
     }
 
-    public HTTPRequest challenge(Challenge challenge) {
-        return new HTTPRequest(requestURI, method, parameters, headers, conditionals, preferences, challenge, payload, requestTime);
+    public HTTPRequest challenge(UsernamePasswordChallenge challenge) {
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
     }
 
     public Payload getPayload() {
@@ -192,16 +147,17 @@ public class HTTPRequest {
     }
 
     public HTTPRequest conditionals(Conditionals conditionals) {
-        return new HTTPRequest(requestURI, method, parameters, headers, conditionals, preferences, challenge, payload, requestTime);
+        Validate.notNull(conditionals, "You may not set null conditionals");
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
     }
 
     public HTTPRequest payload(Payload payload) {
-        return new HTTPRequest(requestURI, method, parameters, headers, conditionals, preferences, challenge, payload, requestTime);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
     }
 
     public HTTPRequest headers(final Headers headers) {
         Validate.notNull(headers, "You may not set null headers");
-        return new HTTPRequest(requestURI, method, parameters, headers, conditionals, preferences, challenge, payload, requestTime);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
     }
 
     public boolean hasPayload() {
