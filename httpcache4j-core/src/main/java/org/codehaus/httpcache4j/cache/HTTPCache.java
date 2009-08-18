@@ -110,7 +110,7 @@ public class HTTPCache {
             CacheItem item = storage.get(request);
             HTTPRequest req = request;
             if (item != null) {
-                if (item.isStale()) {
+                if (item.isStale(request.getRequestTime())) {
                     //If the cached value is stale, execute the request and try to cache it.
                     HTTPResponse staleResponse = item.getResponse();
                     //If the payload has been deleted for some reason, we want to do a unconditional GET

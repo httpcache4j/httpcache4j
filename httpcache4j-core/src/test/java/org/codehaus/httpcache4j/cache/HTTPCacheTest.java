@@ -83,7 +83,7 @@ public class HTTPCacheTest {
         Payload payload = mock(Payload.class);
         when(payload.isAvailable()).thenReturn(false);
         CacheItem item = new CacheItem(new HTTPResponse(payload, Status.OK, new Headers()));
-        assertTrue("The cached item was not stale", item.isStale());
+        assertTrue("The cached item was not stale", item.isStale(new DateTime()));
         when(cacheStorage.get(request)).thenReturn(item);
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers()));
         HTTPResponse response = cache.doCachedRequest(request);
@@ -166,6 +166,7 @@ public class HTTPCacheTest {
         request.getConditionals().addIfNoneMatch(new Tag("1234"));
         Headers responseHeaders = new Headers();
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
+        responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
         HTTPResponse response = cache.doCachedRequest(request);
@@ -180,6 +181,7 @@ public class HTTPCacheTest {
         request.getConditionals().addIfNoneMatch(new Tag("12345"));
         Headers responseHeaders = new Headers();
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
+        responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
         HTTPResponse response = cache.doCachedRequest(request);
@@ -257,7 +259,8 @@ public class HTTPCacheTest {
     public void testHEADWithETagAndGET() throws IOException {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.HEAD);
         Headers headers = new Headers();
-        headers.add(new Header("ETag", "\"foo\""));
+        headers = headers.add(new Header("ETag", "\"foo\""));
+        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
         HTTPResponse cachedResponse = new HTTPResponse(null, Status.OK, headers);
         when(responseResolver.resolve(request)).thenReturn(cachedResponse);
         when(cacheStorage.get(request)).thenReturn(new CacheItem(cachedResponse));
@@ -275,11 +278,12 @@ public class HTTPCacheTest {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.HEAD);
         Headers headers = new Headers();
         headers = headers.add(new Header("Cache-Control", "private, max-age=65000"));
+        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
         HTTPResponse cachedResponse = new HTTPResponse(null, Status.OK, headers);
 
         CacheItem item = new CacheItem(cachedResponse);
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(item);
-        assertFalse(item.isStale());
+        assertFalse(item.isStale(new DateTime()));
         cache.doCachedRequest(request);
         verify(responseResolver, never()).resolve(request);        
     }

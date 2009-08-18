@@ -17,6 +17,7 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
+import static org.codehaus.httpcache4j.HeaderConstants.*;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 import org.junit.Assert;
@@ -25,43 +26,49 @@ import org.junit.Test;
 public class CacheItemTest {
     private CacheItem item;
     private DateTime storageTime = new DateTime(2008, 10, 12, 15, 0, 0, 0);
-    private DateTime now = new DateTime(2008, 10, 12, 15, 10, 0, 0);
+    private DateTime now = storageTime.plusMinutes(1);
 
     public void setupItem(Headers headers) {
-        DateTimeUtils.setCurrentMillisFixed(storageTime.getMillis());
-        item = new CacheItem(new HTTPResponse(null, Status.OK, headers));
+        item = new CacheItem(new HTTPResponse(null, Status.OK, headers), storageTime);
         DateTimeUtils.setCurrentMillisFixed(now.getMillis());
     }
 
     @Test
     public void testIsNotStale() {
-        Headers headers = new Headers().add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=3600"));
+        Headers headers = createDefaultHeaders().add(new Header(CACHE_CONTROL, "private, max-age=3600"));
         setupItem(headers);
-        Assert.assertTrue("Item was stale", !item.isStale());
+        DateTime requestTime = new DateTime();
+        DateTimeUtils.setCurrentMillisFixed(now.plusMinutes(1).getMillis());
+        Assert.assertTrue("Item was stale", !item.isStale(requestTime));
+    }
+
+    private Headers createDefaultHeaders() {
+        return new Headers().add(HeaderUtils.toHttpDate(DATE, new DateTime()));
     }
 
     @Test
     public void testIsStale() {
-        Headers headers = new Headers().add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
+        Headers headers = createDefaultHeaders().add(new Header(CACHE_CONTROL, "private, max-age=60"));
         setupItem(headers);
-        Assert.assertTrue("Item was stale", item.isStale());
+        DateTimeUtils.setCurrentMillisFixed(now.plusMinutes(1).getMillis());
+        Assert.assertTrue("Item was not stale", item.isStale(storageTime.minusSeconds(2)));
     }
 
     @Test
     public void testIsStaleExpiresHeader() {
-        Headers headers = new Headers().add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, now));
+        Headers headers = createDefaultHeaders().add(HeaderUtils.toHttpDate(EXPIRES, now));
         setupItem(headers);
-        Assert.assertTrue("Item was not stale", item.isStale());
+        Assert.assertTrue("Item was not stale", item.isStale(new DateTime()));
     }
 
     @Test
     public void testIsNotStaleExpiresHeader() {
-        Headers headers = new Headers();
+        Headers headers = createDefaultHeaders();
         DateTime future = new DateTime(now);
         future = future.plusHours(1);
-        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, future));
+        headers = headers.add(HeaderUtils.toHttpDate(EXPIRES, future));
         setupItem(headers);
-        Assert.assertTrue("Item was stale", !item.isStale());
+        Assert.assertTrue("Item was stale", !item.isStale(new DateTime()));
     }
 
     @Test
@@ -69,28 +76,30 @@ public class CacheItemTest {
         Headers headers = new Headers();
         DateTime future = new DateTime(now);
         future = future.plusHours(1);
-        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, future));
-        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, future));
+        headers = headers.add(HeaderUtils.toHttpDate(EXPIRES, future));
+        headers = headers.add(HeaderUtils.toHttpDate(DATE, future));
         setupItem(headers);
-        Assert.assertTrue("Item was stale", item.isStale());
+        Assert.assertTrue("Item was stale", item.isStale(new DateTime()));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testIsStaleExpiresHeaderWithInvalidDate() {
-        Headers headers = new Headers().add(new Header(HeaderConstants.EXPIRES, "foo"));
+        Headers headers = new Headers().add(new Header(EXPIRES, "foo"));
         setupItem(headers);
-        Assert.assertTrue("Item was stale", item.isStale());
+        Assert.assertTrue("Item was stale", item.isStale(new DateTime()));
     }
 
     @Test
     public void testIsStaleExpiresHeaderWithCacheControl() {
-        Headers headers = new Headers();
+        DateTime requestTime = storageTime.minus(1000);
+        DateTimeUtils.setCurrentMillisFixed(requestTime.getMillis());
+        Headers headers = createDefaultHeaders();
         //This should be preferred by the isStale method.
-        headers = headers.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
+        headers = headers.add(new Header(CACHE_CONTROL, "private, max-age=60"));
         DateTime future = new DateTime(now);
-        future = future.plusHours(1); //We now say that the expires is not stale.
-        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, future));
+        future = future.plusHours(24); //We now say that the expires is not stale.
+        headers = headers.add(HeaderUtils.toHttpDate(EXPIRES, future));
         setupItem(headers);
-        Assert.assertTrue("Item was stale", item.isStale());
+        Assert.assertTrue("Item was not stale", item.isStale(requestTime));
     }
 }
