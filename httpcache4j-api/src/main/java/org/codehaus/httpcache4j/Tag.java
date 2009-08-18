@@ -16,6 +16,8 @@
 
 package org.codehaus.httpcache4j;
 
+import java.io.Serializable;
+
 
 /**
  * Validation tag equivalent to the HTTP entity tag. "A strong entity tag may be
@@ -31,13 +33,14 @@ package org.codehaus.httpcache4j;
  *      href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.3.2">HTTP
  *      Entity Tag Cache Validators</a>
  */
-public final class Tag extends Metadata {
+public final class Tag implements Serializable {
     private static final long serialVersionUID = 673213161743597801L;
 
     /** Tag matching any other tag, used in call's condition data. */
     public static final Tag ALL = Tag.parse("*");
     /** The tag weakness. */
     private boolean weak;
+    private String opaqueTag;
 
     /**
      * Parses a tag formatted as defined by the HTTP standard.
@@ -81,7 +84,7 @@ public final class Tag extends Metadata {
      * @param weak      The weakness indicator.
      */
     public Tag(final String opaqueTag, boolean weak) {
-        super(opaqueTag);
+        this.opaqueTag = opaqueTag;
         this.weak = weak;
     }
 
@@ -174,7 +177,7 @@ public final class Tag extends Metadata {
      * @return The name, corresponding to an HTTP opaque tag value.
      */
     public String getName() {
-        return super.getName();
+        return opaqueTag;
     }
 
     @Override
