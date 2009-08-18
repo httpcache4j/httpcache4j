@@ -49,18 +49,17 @@ public abstract class ConcurrentCacheStorageAbstractTest {
     }
 
     protected void testIterations(int numberOfIterations, int expected) throws InterruptedException {
-        Vary vary = new Vary();
         List<Callable<HTTPResponse>> calls = new ArrayList<Callable<HTTPResponse>>();
         for (int i = 0; i < numberOfIterations; i++) {
             final HTTPResponse response = createCacheResponse();
             final URI uri = URI.create(String.valueOf(i));
-            final Key key = new Key(uri, vary);
+            final HTTPRequest request = new HTTPRequest(uri);
             Callable<HTTPResponse> call = new Callable<HTTPResponse>() {
                 public HTTPResponse call() throws Exception {
-                    HTTPResponse cached = cacheStorage.insert(key, response);
+                    HTTPResponse cached = cacheStorage.insert(request, response);
                     CacheItem cacheItem = cacheStorage.get(new HTTPRequest(uri));
                     assertSame(cached, cacheItem.getResponse());
-                    cached = cacheStorage.insert(key, createCacheResponse());
+                    cached = cacheStorage.insert(request, createCacheResponse());
                     assertNotSame(cached, cacheItem.getResponse());
                     return cached;
                 }

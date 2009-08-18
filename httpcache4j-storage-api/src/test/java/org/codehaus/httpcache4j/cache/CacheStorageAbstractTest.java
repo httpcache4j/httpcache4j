@@ -18,6 +18,7 @@ import org.mockito.Mockito;
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public abstract class CacheStorageAbstractTest {
     protected CacheStorage storage;
+    protected static final HTTPRequest REQUEST = new HTTPRequest(URI.create("foo"));
 
     @Before
     public void setup() {
@@ -36,7 +37,7 @@ public abstract class CacheStorageAbstractTest {
     @Test
     public void testPutCacheItem() {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
-        storage.insert(Key.create(URI.create("foo"), new Vary()), response);
+        storage.insert(REQUEST, response);
         assertEquals(1, storage.size());
     }
 
@@ -51,7 +52,7 @@ public abstract class CacheStorageAbstractTest {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
         URI requestURI = URI.create("foo");
         Mockito.when(request.getRequestURI()).thenReturn(requestURI);
-        storage.insert(Key.create(requestURI, new Vary()), response);
+        storage.insert(REQUEST, response);
         assertEquals(1, storage.size());
         return storage.get(request);
     }
@@ -63,7 +64,7 @@ public abstract class CacheStorageAbstractTest {
         URI requestURI = URI.create("foo");
         Mockito.when(request.getRequestURI()).thenReturn(requestURI);
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
-        storage.update(Key.create(requestURI, new Vary()), response);
+        storage.update(REQUEST, response);
         final CacheItem cacheItem = storage.get(request);
         assertNotSame("Items were the same", cacheItem.getCachedTime(), item.getCachedTime());
     }
@@ -72,7 +73,7 @@ public abstract class CacheStorageAbstractTest {
     public void testInvalidate() {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
         URI requestURI = URI.create("foo");
-        storage.insert(Key.create(requestURI, new Vary()), response);
+        storage.insert(REQUEST, response);
         assertEquals(1, storage.size());
         storage.invalidate(requestURI);
         assertEquals(0, storage.size());

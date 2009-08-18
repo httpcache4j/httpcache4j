@@ -20,17 +20,16 @@ import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 
 import java.net.URI;
-import java.util.Map;
 import java.util.Iterator;
 import java.util.Collections;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class NullCacheStorage implements CacheStorage {
-    public HTTPResponse insert(Key key, HTTPResponse response) {
+    public HTTPResponse insert(HTTPRequest request, HTTPResponse response) {
         return response;
     }
 
-    public HTTPResponse update(Key key, HTTPResponse response) {
+    public HTTPResponse update(HTTPRequest request, HTTPResponse response) {
         return response;
     }
 

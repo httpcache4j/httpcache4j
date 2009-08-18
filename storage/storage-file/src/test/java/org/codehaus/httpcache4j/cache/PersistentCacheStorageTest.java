@@ -48,7 +48,7 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
     @Test
     public void testPUTWithRealPayload() throws Exception {
         HTTPResponse response = createRealResponse();
-        storage.insert(Key.create(URI.create("foo"), new Vary()), response);
+        storage.insert(REQUEST, response);
         Assert.assertEquals(1, storage.size());
     }
 
@@ -58,7 +58,7 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
         HTTPResponse res = null;
         for (int i = 0; i < 100; i++) {
             HTTPResponse response = createRealResponse();
-            res = storage.insert(key, response);
+            res = storage.insert(REQUEST, response);
         }
         assertNotNull("Result may not be null", res);
         if (res.hasPayload()) {

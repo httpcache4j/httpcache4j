@@ -19,14 +19,13 @@ import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.util.StorageUtil;
+import org.joda.time.DateTime;
 
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.File;
 
-import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Cache;
-import net.sf.ehcache.event.RegisteredEventListeners;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 
 /**
@@ -37,23 +36,26 @@ public class PersistentEhCacheStorage extends AbstractEhCacheStorage {
     private static final long PERSISTENT_TIMEOUT = 60000L;
     private static final int PERSISTENT_TRESHOLD = 100;
     
-    private final File diskStoragePath;
     private transient int modCount;
     private long lastSerialization = 0L;
+    private final FileManager fileManager;
 
     public PersistentEhCacheStorage(File diskStoragePath) {
         super(new Cache("http", 1000, MemoryStoreEvictionPolicy.LRU, true, diskStoragePath.getAbsolutePath(), false, 3600L, 100L, true, 5L, null));
-        StorageUtil.ensureDirectoryExists(diskStoragePath);
-        this.diskStoragePath = diskStoragePath;
+        fileManager = new FileManager(diskStoragePath);
     }
 
     protected Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException {
-        throw new UnsupportedOperationException();
+        File file = fileManager.createFile(key, stream);
+        if (file != null && file.exists()) {
+            return new CleanableFilePayload(file, payload.getMimeType());
+        }
+        return null;
     }
 
     @Override
-    protected HTTPResponse putImpl(Key key, HTTPResponse response) {
-        HTTPResponse puttedResponse = super.putImpl(key, response);
+    protected HTTPResponse putImpl(Key key, DateTime requestTime, HTTPResponse response) {
+        HTTPResponse puttedResponse = super.putImpl(key, requestTime, response);
         if (modCount++ % PERSISTENT_TRESHOLD == 0) {
             if (System.currentTimeMillis() > lastSerialization + PERSISTENT_TIMEOUT) {
                 lastSerialization = System.currentTimeMillis();
@@ -77,6 +79,6 @@ public class PersistentEhCacheStorage extends AbstractEhCacheStorage {
     @Override
     public void clear() {
         super.clear();
-        diskStoragePath.listFiles(new DeletingFileFilter());
+        fileManager.clear();
     }
 }

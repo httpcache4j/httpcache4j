@@ -37,9 +37,8 @@ import net.sf.ehcache.Element;
  */
 public class MemoryEhCacheStorage extends AbstractEhCacheStorage {
     public MemoryEhCacheStorage() {
-        super(new Cache("http", 1000, false, false, 3600L, 100L));
+        super(new Cache("http", 1000, false, true, -1L, -1L));
     }
-
 
     protected Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException {
         return new ByteArrayPayload(stream, payload.getMimeType());

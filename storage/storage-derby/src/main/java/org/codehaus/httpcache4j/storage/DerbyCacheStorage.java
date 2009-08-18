@@ -110,11 +110,13 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
 
     }
 
+    @Override
     protected HTTPResponse rewriteResponse(Key key, HTTPResponse response) {
         return response;
     }
 
-    protected HTTPResponse putImpl(final Key key, final HTTPResponse response) {
+    @Override
+    protected HTTPResponse putImpl(final Key key, DateTime requestTime, final HTTPResponse response) {
         JdbcOperations jdbcOperations = jdbcTemplate.getJdbcOperations();
         jdbcOperations.execute("insert into response(uri, vary, status, headers, payload, mimeType, cachetime) values (?, ?, ?, ?, ?, ?, ?)", new PreparedStatementCallback() {
             public Object doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
@@ -144,7 +146,8 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
     }
 
     @Override
-    public HTTPResponse update(Key key, HTTPResponse response) {
+    public HTTPResponse update(HTTPRequest request, HTTPResponse response) {
+        Key key = Key.create(request, response);
         jdbcTemplate.update("update response set headers = ?, cachetime = ? where uri = ? and vary = ?",
                             response.getHeaders().toString(),
                             new Timestamp(DateTimeUtils.currentTimeMillis()),
@@ -168,15 +171,18 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
         }
     }
 
-    public void invalidate(Key key) {
+    @Override
+    protected void invalidate(Key key) {
         jdbcTemplate.update("delete from response where uri = ? and vary = ?", key.getURI().toString(), key.getVary().toString());
     }
 
 
+    @Override
     public void invalidate(final URI uri) {
         jdbcTemplate.update("delete from response where uri = ?", uri.toString());
     }
 
+    @Override
     public CacheItem get(final HTTPRequest request) {
         List<CacheItemHolder> list = jdbcTemplate.query("select * from response where uri = ?", responseMapper, request.getRequestURI().toString());
         for (CacheItemHolder holder : list) {
@@ -187,14 +193,17 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
         return null;
     }
 
+    @Override
     public void clear() {
         jdbcTemplate.update("delete from response");
     }
 
+    @Override
     public int size() {
         return jdbcTemplate.queryForInt("select count(*) from response");
     }
 
+    @Override
     public Iterator<Key> iterator() {
         List<Key> keyList = jdbcTemplate.query("select uri,vary from response", new ParameterizedRowMapper<Key>() {
             public Key mapRow(ResultSet rs, int row) throws SQLException {

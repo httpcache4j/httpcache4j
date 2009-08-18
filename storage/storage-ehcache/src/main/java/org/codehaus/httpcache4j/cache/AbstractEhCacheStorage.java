@@ -17,6 +17,7 @@ package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.HTTPRequest;
+import org.joda.time.DateTime;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
@@ -38,7 +39,7 @@ public abstract class AbstractEhCacheStorage extends AbstractMapBasedCacheStorag
         this.cache = cacheManager.getEhcache(cache.getName());
     }
 
-    protected HTTPResponse putImpl(Key key, HTTPResponse response) {
+    protected HTTPResponse putImpl(Key key, DateTime requestTime, HTTPResponse response) {
         cache.put(new Element(key, new CacheItem(response)));
         return response;
     }

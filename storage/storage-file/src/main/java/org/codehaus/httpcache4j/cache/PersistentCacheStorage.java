@@ -17,10 +17,6 @@
 package org.codehaus.httpcache4j.cache;
 
 import java.io.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.Lock;
-import java.net.URI;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -28,6 +24,7 @@ import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.Payload;
+import org.joda.time.DateTime;
 
 /**
  * Persistent version of the in memory cache. This stores a serialized version of the
@@ -83,9 +80,9 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     }
 
     @Override
-    public HTTPResponse putImpl(Key key, HTTPResponse response) {
+    public HTTPResponse putImpl(Key key, DateTime requestTime, HTTPResponse response) {
         write.lock();
-        HTTPResponse res = super.putImpl(key, response);
+        HTTPResponse res = super.putImpl(key, requestTime, response);
         try {
             if (modCount++ % PERSISTENT_TRESHOLD == 0) {
                 if (System.currentTimeMillis() > lastSerialization + PERSISTENT_TIMEOUT) {

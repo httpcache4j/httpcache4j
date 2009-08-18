@@ -40,7 +40,7 @@ import junit.framework.*;
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class DerbyStorageTestCase extends CacheStorageAbstractTest{
+public class DerbyCacheStorageTestCase extends CacheStorageAbstractTest{
     private static File storageDirectory;
 
     @BeforeClass
@@ -64,7 +64,7 @@ public class DerbyStorageTestCase extends CacheStorageAbstractTest{
     @Test
     public void testPUTWithRealPayload() throws Exception {
         HTTPResponse response = new HTTPResponse(new InputStreamPayload(new NullInputStream(10), MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
-        storage.insert(Key.create(URI.create("foo"), new Vary()), response);
+        storage.insert(REQUEST, response);
         assertEquals(1, storage.size());
     }
     

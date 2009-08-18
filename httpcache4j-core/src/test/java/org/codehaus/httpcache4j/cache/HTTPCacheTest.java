@@ -108,12 +108,12 @@ public class HTTPCacheTest {
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(item);
         final HTTPResponse resolvedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, headers);
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(resolvedResponse);
-        when(cacheStorage.insert(Key.create(request, resolvedResponse), resolvedResponse)).thenReturn(resolvedResponse);
+        when(cacheStorage.insert(isA(HTTPRequest.class), eq(resolvedResponse))).thenReturn(resolvedResponse);
 
         HTTPResponse response = cache.doCachedRequest(request);
         assertTrue("None match was not empty",request.getConditionals().getNoneMatch().isEmpty());
         verify(responseResolver, atLeast(1)).resolve(isA(HTTPRequest.class));
-        verify(cacheStorage, times(1)).insert(isA(Key.class), eq(resolvedResponse));
+        verify(cacheStorage, times(1)).insert(isA(HTTPRequest.class), eq(resolvedResponse));
         assertTrue("Response did not have a payload", response.hasPayload());
         assertTrue("Payload was not available", response.getPayload().isAvailable());
     }       
@@ -199,9 +199,9 @@ public class HTTPCacheTest {
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
         HTTPResponse resolvedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders);
         when(responseResolver.resolve(request)).thenReturn(resolvedResponse);
-        when(cacheStorage.insert(eq(Key.create(REQUEST_URI, new Vary())), eq(resolvedResponse))).thenReturn(resolvedResponse);
+        when(cacheStorage.insert(eq(request), eq(resolvedResponse))).thenReturn(resolvedResponse);
         HTTPResponse response = cache.doCachedRequest(request);
-        verify(cacheStorage, times(1)).insert(eq(Key.create(REQUEST_URI, new Vary())), eq(resolvedResponse));
+        verify(cacheStorage, times(1)).insert(eq(request), eq(resolvedResponse));
         Assert.assertNotNull("Response was null", response);
         Assert.assertEquals("Wrong status", Status.OK, response.getStatus());
         Assert.assertNotNull("The payload was null", response.getPayload());
