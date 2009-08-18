@@ -79,23 +79,9 @@ class HTTPCacheHelper {
     }
 
 
-    HTTPResponse calculateAge(final HTTPResponse pCachedResponse) {
-        Headers heads = new Headers(pCachedResponse.getHeaders());
-        DateTime now = new DateTime();
-        DateTime cached = HeaderUtils.fromHttpDate(pCachedResponse.getHeaders().getFirstHeader(HeaderConstants.DATE));
-        String age;
-        if (cached == null) {
-            age = "0";
-        }
-        else {
-            age = String.valueOf(Seconds.secondsBetween(cached, now).getSeconds());
-        }
-        if (age != null) {
-            return new HTTPResponse(pCachedResponse.getPayload(), pCachedResponse.getStatus(), heads.add(HeaderConstants.AGE, age)); 
-        }
-        else {
-            return pCachedResponse;
-        }
+    HTTPResponse calculateAge(final HTTPRequest request, final HTTPResponse response, final DateTime cacheTime) {
+        long age = CacheItem.calulcateAGE(response, cacheTime, request.getRequestTime());
+        return new HTTPResponse(response.getPayload(), response.getStatus(), response.getHeaders().add(HeaderConstants.AGE, Long.toString(age)));
     }
 
     Headers removeUnmodifiableHeaders(Headers headers) {
@@ -133,7 +119,7 @@ class HTTPCacheHelper {
         Tag tag = eTagHeader == null ? null : Tag.parse(eTagHeader.getValue());
         Conditionals conditionals = request.getConditionals();
         if (tag != null && tag != Tag.ALL) {
-            conditionals.addIfNoneMatch(tag);
+            conditionals = conditionals.addIfNoneMatch(tag);
         }
         return conditionals;
     }
@@ -149,11 +135,10 @@ class HTTPCacheHelper {
                 conditionals = addIfNoneMatchHeader(staleResponse.getHeaders().getFirstHeader(ETAG), request);
             }
             else if (staleResponse.getLastModified() != null) {
-                conditionals.ifModifiedSince(staleResponse.getLastModified());
+                conditionals = conditionals.ifModifiedSince(staleResponse.getLastModified());
             }
             return request.conditionals(conditionals);
         }
         return request;
     }
-
 }
