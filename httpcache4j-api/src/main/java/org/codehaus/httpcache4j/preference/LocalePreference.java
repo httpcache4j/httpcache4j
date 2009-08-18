@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, The Codehaus. All Rights Reserved.
+ * Copyright (c) 2009. The Codehaus. All Rights Reserved.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -11,12 +11,10 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
  */
 
 package org.codehaus.httpcache4j.preference;
 
-import org.codehaus.httpcache4j.HeaderConstants;
 
 import java.util.Locale;
 
@@ -28,12 +26,12 @@ import java.util.Locale;
 public class LocalePreference extends Preference<Locale> {
     public static Locale ALL = new Locale("*");
 
-    public LocalePreference(Locale preference) {
-        super(preference);
+    public LocalePreference(Locale us) {
+        super(us);
     }
 
-    protected String getHeaderName() {
-        return HeaderConstants.ACCEPT_LANGUAGE;
+    public LocalePreference(Locale preference, double quality) {
+        super(preference, quality);
     }
 
     @Override
