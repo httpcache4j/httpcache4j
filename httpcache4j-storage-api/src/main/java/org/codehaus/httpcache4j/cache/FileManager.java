@@ -16,6 +16,7 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.util.StorageUtil;
+import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.Validate;
@@ -30,13 +31,20 @@ import java.io.*;
 final class FileManager implements Serializable {
     private final FileResolver fileResolver;
     private static final long serialVersionUID = -5273056780013227862L;
+    private final File baseDirectory;
 
     public FileManager(final File baseDirectory) {
         Validate.notNull(baseDirectory, "Base directory may not be null");
-        StorageUtil.ensureDirectoryExists(baseDirectory);
+        this.baseDirectory = baseDirectory;
+        StorageUtil.ensureDirectoryExists(this.baseDirectory);
+        File files = createFilesDirectory();
+        this.fileResolver = new FileResolver(files);
+    }
+
+    private File createFilesDirectory() {
         File files = new File(baseDirectory, "files");
         StorageUtil.ensureDirectoryExists(files);
-        this.fileResolver = new FileResolver(files);
+        return files;
     }
 
     File createFile(Key key, InputStream stream) throws IOException {
@@ -56,30 +64,9 @@ final class FileManager implements Serializable {
         return file;
     }
 
-/*
-    private void removeUnknownFiles(CacheStorage storage) {
-        List<File> knownFiles = new ArrayList<File>();
-        List<Pair<URI, CacheItem>> invalidations = new ArrayList<Pair<URI, CacheItem>>();
-        for (Key key : storage) {
-            for (Map.Entry<Vary, CacheItem> entry : cacheValue.getValue()) {
-                HTTPResponse response = entry.getValue().getResponse();
-                if (response.hasPayload()) {
-                    if (response.getPayload() instanceof CleanableFilePayload) {
-                        CleanableFilePayload payload = (CleanableFilePayload) response.getPayload();
-                        if (payload.getFile().exists()) {
-                            knownFiles.add(payload.getFile());
-                        }
-                        else {
-                          invalidations.add(Pair.of(cacheValue.getKey(), entry.getValue()));
-                        }
-                    }
-                }
-            }
-        }
-        for (Map.Entry<URI, CacheItem> invalidation : invalidations) {
-            storage.invalidate(invalidation.getKey(), invalidation.getValue());
-        }
-        fileResolver.getBaseDirectory().listFiles(new DeletingFileFilter(knownFiles));        
+    void clear() {
+        baseDirectory.listFiles(new DeletingFileFilter());
+        createFilesDirectory();
     }
-*/
+
 }

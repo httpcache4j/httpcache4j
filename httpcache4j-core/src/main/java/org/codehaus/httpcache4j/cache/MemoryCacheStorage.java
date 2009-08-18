@@ -20,6 +20,7 @@ import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.ByteArrayPayload;
+import org.joda.time.DateTime;
 
 import java.net.URI;
 import java.util.*;
@@ -50,7 +51,7 @@ public class MemoryCacheStorage extends AbstractMapBasedCacheStorage  {
         cache = new InvalidateOnRemoveLRUHashMap(this.capacity);
     }
 
-    protected HTTPResponse putImpl(Key key, HTTPResponse cachedResponse) {
+    protected HTTPResponse putImpl(Key key, DateTime requestTime, HTTPResponse cachedResponse) {
         write.lock();
 
         try {

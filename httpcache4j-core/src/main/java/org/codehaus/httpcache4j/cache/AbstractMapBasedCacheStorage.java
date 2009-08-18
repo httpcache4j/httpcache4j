@@ -17,6 +17,7 @@ package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.HTTPRequest;
 import org.apache.commons.io.IOUtils;
 
 import java.io.InputStream;
@@ -47,8 +48,9 @@ public abstract class AbstractMapBasedCacheStorage extends AbstractCacheStorage 
         throw new IllegalArgumentException("Unable to cache response");
     }
 
-    public final HTTPResponse update(Key key, HTTPResponse response) {
-        return putImpl(key, response);
+    public final HTTPResponse update(HTTPRequest request, HTTPResponse response) {
+        Key key = Key.create(request, response);
+        return putImpl(key, request.getRequestTime(), response);
     }
 
     protected abstract Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException;
