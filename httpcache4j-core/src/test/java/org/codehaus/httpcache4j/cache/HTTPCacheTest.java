@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Assert;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.eq;
 import org.joda.time.DateTime;
 import org.joda.time.MutableDateTime;
 
@@ -39,6 +40,7 @@ public class HTTPCacheTest {
     private CacheStorage cacheStorage;
     private HTTPCache cache;
     private static final URI REQUEST_URI = URI.create("http://some/uri/123");
+    private static final URI DUMMY_URI = URI.create("dummy://url");
 
     @Before
     public void init() {
@@ -79,13 +81,15 @@ public class HTTPCacheTest {
 
     @Test
     public void testResponseWherePayloadHasBeenRemoved() throws IOException {
-        HTTPRequest request = new HTTPRequest(URI.create("dummy://url"));
+        HTTPRequest request = new HTTPRequest(DUMMY_URI);
         Payload payload = mock(Payload.class);
         when(payload.isAvailable()).thenReturn(false);
         CacheItem item = new CacheItem(new HTTPResponse(payload, Status.OK, new Headers()));
         assertTrue("The cached item was not stale", item.isStale(new DateTime()));
         when(cacheStorage.get(request)).thenReturn(item);
-        when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers()));
+        HTTPResponse resolvedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
+        when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(resolvedResponse);
+        when(cacheStorage.insert(isA(HTTPRequest.class), eq(resolvedResponse))).thenReturn(resolvedResponse);
         HTTPResponse response = cache.doCachedRequest(request);
         assertTrue("None match was not empty",request.getConditionals().getNoneMatch().isEmpty());
         verify(responseResolver, atLeast(1)).resolve(isA(HTTPRequest.class));
@@ -96,7 +100,7 @@ public class HTTPCacheTest {
 
     @Test
     public void testConditionalRequestWhereResponsePayloadHasBeenRemoved() throws IOException {
-        HTTPRequest request = new HTTPRequest(URI.create("dummy://url"));
+        HTTPRequest request = new HTTPRequest(DUMMY_URI);
 
         Headers headers = new Headers();
         headers = headers.add(HeaderConstants.ETAG, new Tag("foo", false).format());
@@ -120,17 +124,19 @@ public class HTTPCacheTest {
 
     @Test
     public void testExternalConditionalRequestWhereResponsePayloadHasBeenRemoved() throws IOException {
-        HTTPRequest request = new HTTPRequest(URI.create("dummy://url"));
+        HTTPRequest request = new HTTPRequest(DUMMY_URI);
         Tag tag = new Tag("foo", false);
         Conditionals conditionals = request.getConditionals().addIfNoneMatch(tag);
         request = request.conditionals(conditionals);
         Headers headers = new Headers();
-        headers.add(HeaderConstants.ETAG, tag.format());
-        headers.add(HeaderConstants.CACHE_CONTROL, "max-age=10");
+        headers = headers.add(HeaderConstants.ETAG, tag.format());
+        headers = headers.add(HeaderConstants.CACHE_CONTROL, "max-age=10");
         Payload payload = mock(Payload.class);
         when(payload.isAvailable()).thenReturn(false);
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(new HTTPResponse(payload, Status.OK, headers)));
-        when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers()));
+        HTTPResponse resolvedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
+        when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(resolvedResponse);
+        when(cacheStorage.insert(isA(HTTPRequest.class), eq(resolvedResponse))).thenReturn(resolvedResponse);
         HTTPResponse response = cache.doCachedRequest(request);
 //        assertTrue("None match was not empty",request.getConditionals().getNoneMatch().isEmpty());
         verify(responseResolver, atLeast(1)).resolve(isA(HTTPRequest.class));
@@ -264,7 +270,7 @@ public class HTTPCacheTest {
         headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
         HTTPResponse cachedResponse = new HTTPResponse(null, Status.OK, headers);
         when(responseResolver.resolve(request)).thenReturn(cachedResponse);
-        when(cacheStorage.get(request)).thenReturn(new CacheItem(cachedResponse));
+        when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(cachedResponse));
         HTTPResponse response = cache.doCachedRequest(request);
         assertEquals("Conditionals was set, incorrect", 0, request.getConditionals().toHeaders().size());        
         assertFalse(response.hasPayload());
@@ -293,7 +299,9 @@ public class HTTPCacheTest {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.GET);
         Payload payload = mock(Payload.class);
         try {
-            when(responseResolver.resolve(request)).thenReturn(new HTTPResponse(payload, status, responseHeaders));
+            HTTPResponse resolvedResponse = new HTTPResponse(payload, status, responseHeaders);
+            when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(resolvedResponse);
+            when(cacheStorage.insert(isA(HTTPRequest.class), eq(resolvedResponse))).thenReturn(resolvedResponse);
         } catch (IOException e) {
             fail(e.getMessage());
         }
