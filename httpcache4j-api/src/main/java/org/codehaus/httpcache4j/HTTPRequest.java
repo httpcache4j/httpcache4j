@@ -138,7 +138,7 @@ public class HTTPRequest {
         return challenge;
     }
 
-    public HTTPRequest challenge(UsernamePasswordChallenge challenge) {
+    public HTTPRequest challenge(Challenge challenge) {
         return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
     }
 
