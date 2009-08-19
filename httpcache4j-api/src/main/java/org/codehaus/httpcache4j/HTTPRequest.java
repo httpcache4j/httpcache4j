@@ -126,12 +126,21 @@ public class HTTPRequest {
         return conditionals;
     }
 
+    public HTTPRequest conditionals(Conditionals conditionals) {
+        Validate.notNull(conditionals, "You may not set null conditionals");
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
+    }
+
     public HTTPMethod getMethod() {
         return method;
     }
 
     public Preferences getPreferences() {
         return preferences;
+    }
+
+    public HTTPRequest preferences(Preferences preferences) {
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
     }
 
     public Challenge getChallenge() {
@@ -144,11 +153,6 @@ public class HTTPRequest {
 
     public Payload getPayload() {
         return payload;
-    }
-
-    public HTTPRequest conditionals(Conditionals conditionals) {
-        Validate.notNull(conditionals, "You may not set null conditionals");
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
     }
 
     public HTTPRequest payload(Payload payload) {
