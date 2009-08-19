@@ -70,10 +70,11 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 
     @Override
     public void clear() {
-        write.lock();
         super.clear();
+        write.lock();
         try {
             serializationFile.delete();
+            fileManager.clear();
         } finally {
             write.unlock();
         }
