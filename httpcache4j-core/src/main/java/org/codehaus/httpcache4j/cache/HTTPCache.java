@@ -17,13 +17,16 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
+import org.codehaus.httpcache4j.util.CacheStatisticsMXBean;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
 import org.apache.commons.lang.Validate;
 import org.joda.time.DateTime;
 
+import javax.management.*;
 import java.util.*;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 
 /**
  * TODO:
@@ -44,22 +47,41 @@ public class HTTPCache {
     public static final String HEADER_DIRECTIVE_MAX_AGE = "max-age";
 
     private final HTTPCacheHelper helper = new HTTPCacheHelper();
+    private final CacheStatistics statistics = new CacheStatistics();
     private final CacheStorage storage;
     private ResponseResolver resolver;
 
     public HTTPCache(CacheStorage storage, ResponseResolver resolver) {
         Validate.notNull(storage, "Cache storage may not be null");
-        Validate.notNull(resolver, "Resolver may not be null");
         this.storage = storage;
-        this.resolver = resolver;       
+        this.resolver = resolver;
+      handleMbeanRegistry();
     }
 
-    public HTTPCache(CacheStorage storage) {
-        Validate.notNull(storage, "Cache storage may not be null");
-        this.storage = storage;
+  public HTTPCache(CacheStorage storage) {
+        this(storage, null);
     }
 
-    public void clear() {
+  private void handleMbeanRegistry() {
+    try {
+      final ObjectName objectname = ObjectName.getInstance("org.codehaus.httpcache4j.cache:type=statistics");
+      ManagementFactory.getPlatformMBeanServer().registerMBean(statistics, objectname);
+      Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+        public void run() {
+          try {
+            ManagementFactory.getPlatformMBeanServer().unregisterMBean(objectname);
+          }
+          catch (Exception ignored) {
+          }
+        }
+      }));
+    }
+    catch (Exception ignored) {
+      //throw new HTTPException("Unable to register statistics Mbean", e);
+    }
+  }
+
+  public void clear() {
         storage.clear();
     }
 
@@ -111,6 +133,7 @@ public class HTTPCache {
             CacheItem item = storage.get(request);
             HTTPRequest req = request;
             if (item != null) {
+                statistics.hit();
                 if (item.isStale(request.getRequestTime())) {
                     //If the cached value is stale, execute the request and try to cache it.
                     HTTPResponse staleResponse = item.getResponse();
@@ -130,6 +153,7 @@ public class HTTPCache {
                 }
             }
             else {
+                statistics.miss();
                 response = unconditionalResolve(request);
             }
         }
