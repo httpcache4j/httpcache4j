@@ -41,10 +41,16 @@ class FileResolver implements Serializable {
     }
 
     public File resolve(Key key) {
-        String uriSha = DigestUtils.shaHex(key.getURI().toString());
-        String varySha = DigestUtils.shaHex(key.getVary().toString());
-        File uriFolder = new File(baseDirectory, uriSha);
+        String uriHex = DigestUtils.md5Hex(key.getURI().toString());
+        String vary;
+        if (key.getVary().isEmpty()) {
+            vary = "default";
+        }
+        else {
+            vary = DigestUtils.md5Hex(key.getVary().toString());
+        }
+        File uriFolder = new File(baseDirectory, uriHex);
         StorageUtil.ensureDirectoryExists(uriFolder);
-        return new File(uriFolder, varySha);
+        return new File(uriFolder, vary);
     }
 }

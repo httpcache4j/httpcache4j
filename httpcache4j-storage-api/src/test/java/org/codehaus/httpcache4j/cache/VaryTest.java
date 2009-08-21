@@ -3,10 +3,13 @@ package org.codehaus.httpcache4j.cache;
 import org.junit.Test;
 import org.junit.Assert;
 import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.util.TestUtil;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Collections;
 import java.net.URI;
+import java.io.File;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -88,5 +91,19 @@ public class VaryTest {
         request = request.addHeader("Accept-Charset", "UTF-8");
 
         Assert.assertFalse(vary.matches(request));
+    }
+
+    @Test
+    public void testVaryFileResolve() {
+        FileResolver resolver = new FileResolver(TestUtil.getTestFile("target"));
+        File file = resolver.resolve(Key.create(URI.create("foo"), new Vary()));
+        File file2 = resolver.resolve(Key.create(URI.create("foo"), new Vary()));
+        File file3 = resolver.resolve(Key.create(URI.create("foo"), new Vary(new HashMap<String, String>())));
+        File file4 = resolver.resolve(Key.create(URI.create("foo"), new Vary(Collections.singletonMap("Accept-Language", "en"))));
+        Assert.assertEquals(file.getAbsolutePath(), file2.getAbsolutePath());
+        Assert.assertEquals(file.getAbsolutePath(), file3.getAbsolutePath());
+        Assert.assertEquals(file2.getAbsolutePath(), file3.getAbsolutePath());
+        Assert.assertEquals(file2.getAbsolutePath(), file3.getAbsolutePath());
+        Assert.assertFalse(file4.getAbsolutePath().equals(file3.getAbsolutePath()));
     }
 }
