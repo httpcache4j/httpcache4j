@@ -75,6 +75,13 @@ public class CleanableFilePayload implements CleanablePayload, Serializable {
     public void clean() {
         if (isAvailable()) {
             file.delete();
+            File parent = file.getParentFile();
+            if (parent != null && parent.isDirectory() && parent.exists()) {
+                String[] list = parent.list();
+                if (list == null || list.length == 0) {
+                    parent.delete();
+                }
+            }
         }
     }
 

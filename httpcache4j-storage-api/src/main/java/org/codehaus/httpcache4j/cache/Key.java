@@ -37,6 +37,8 @@ public class Key implements Serializable {
     private Vary vary;
 
     public static Key create(URI uri, Vary vary) {
+        Validate.notNull(uri, "URI may not be null");
+        Validate.notNull(vary, "vary may not be null");
         return new Key(uri, vary);
     }
     public static Key create(HTTPRequest request, HTTPResponse response) {
