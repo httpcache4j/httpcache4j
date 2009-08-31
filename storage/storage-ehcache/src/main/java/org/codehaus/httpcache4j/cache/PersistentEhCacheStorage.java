@@ -29,6 +29,10 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 
 /**
+ *
+ * Experimental.
+ * Do not use in production.
+ *
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
