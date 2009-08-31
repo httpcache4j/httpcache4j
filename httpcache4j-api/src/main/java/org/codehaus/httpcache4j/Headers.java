@@ -121,7 +121,7 @@ public final class Headers implements Serializable, Iterable<Header> {
     }
 
     public Headers add(Iterable<Header> headers) {
-        HeaderHashMap map = new HeaderHashMap();
+        HeaderHashMap map = copyMap();
         for (Header header : headers) {
             List<String> list = new ArrayList<String>(map.get(header.getName()));
             if (!list.contains(header.getValue())) {

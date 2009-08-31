@@ -19,19 +19,35 @@ package org.codehaus.httpcache4j;
 import org.junit.Test;
 import org.junit.Assert;
 import static org.junit.Assert.*;
+import org.codehaus.httpcache4j.preference.Preferences;
 
 import java.net.URI;
+import java.util.Locale;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class HTTPRequestTest {
+    private static final URI REQUEST_URI = URI.create("foo");
+
     @Test
     public void testNotSameObject() {
-        HTTPRequest request = new HTTPRequest(URI.create("foo"));
+        HTTPRequest request = new HTTPRequest(REQUEST_URI);
         HTTPRequest request2 = request.addHeader(new Header("foo", "bar"));
         Assert.assertNotSame("Request objects were the same", request, request2);
         request = request.conditionals(new Conditionals().addIfNoneMatch(Tag.ALL));
         Assert.assertNotSame("Request objects were the same", request, request2);
         request2 = request.challenge(new UsernamePasswordChallenge("foo", "bar", ChallengeMethod.BASIC));
         Assert.assertNotSame("Request objects were the same", request, request2);
+    }
+
+    @Test
+    public void testAllHeaders() {
+        Conditionals conditionals = new Conditionals().addIfMatch(new Tag("2345"));
+        Preferences preferences = new Preferences().addLocale(Locale.UK).addMIMEType(MIMEType.valueOf("application/xml"));
+        HTTPRequest request = new HTTPRequest(REQUEST_URI);
+        request = request.addHeader("X-Foo-Bar", "Foo");
+        request = request.conditionals(conditionals);
+        request = request.preferences(preferences);
+        Headers headers = new Headers().add("X-Foo-Bar", "Foo").add("If-Match", new Tag("2345").format()).add(HeaderConstants.ACCEPT_LANGUAGE, "en").add(HeaderConstants.ACCEPT, "application/xml");
+        Assert.assertEquals(headers, request.getAllHeaders());
     }
 }
