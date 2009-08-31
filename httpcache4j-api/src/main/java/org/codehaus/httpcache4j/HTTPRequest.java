@@ -101,7 +101,7 @@ public class HTTPRequest {
         Headers preferencesHeaders = getPreferences().toHeaders();
 
         requestHeaders = merge(merge(requestHeaders, conditionalHeaders), preferencesHeaders);
-        if (!hasPayload()) {
+        if (hasPayload()) {
             requestHeaders.remove(HeaderConstants.CONTENT_TYPE);
             requestHeaders = requestHeaders.add(HeaderConstants.CONTENT_TYPE, getPayload().getMimeType().toString());
         }
@@ -111,7 +111,7 @@ public class HTTPRequest {
     }
 
     private Headers merge(final Headers base, final Headers toMerge) {
-        return new Headers(base).add(toMerge);        
+        return new Headers().add(base).add(toMerge);        
     }
 
     public HTTPRequest addHeader(Header header) {
