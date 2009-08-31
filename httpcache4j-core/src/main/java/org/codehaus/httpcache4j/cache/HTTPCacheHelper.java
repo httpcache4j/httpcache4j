@@ -70,9 +70,9 @@ class HTTPCacheHelper {
 
     HTTPResponse warn(HTTPResponse response, IOException e) {
         Headers headers = new Headers(response.getHeaders().getHeadersAsMap());
-        headers.add(Warning.STALE_WARNING.toHeader());
+        headers = headers.add(Warning.STALE_WARNING.toHeader());
         if (e instanceof SocketException) {
-            headers.add(Warning.DISCONNECT_OPERATION_WARNING.toHeader());
+            headers = headers.add(Warning.DISCONNECT_OPERATION_WARNING.toHeader());
         }
         return new HTTPResponse(response.getPayload(), response.getStatus(), headers);
     }
@@ -89,7 +89,7 @@ class HTTPCacheHelper {
         usableHeaders.removeAll(unmodifiableHeaders);
         for (String removableHeader : usableHeaders) {
             if (headers.hasHeader(removableHeader)) {
-                washedHeaders.add(removableHeader, headers.getHeaders((removableHeader)));
+                washedHeaders = washedHeaders.add(removableHeader, headers.getHeaders((removableHeader)));
             }
         }
         return washedHeaders;
