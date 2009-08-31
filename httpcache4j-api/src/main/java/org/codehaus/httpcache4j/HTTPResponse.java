@@ -17,6 +17,7 @@
 package org.codehaus.httpcache4j;
 
 import org.apache.commons.lang.Validate;
+import org.apache.commons.io.IOUtils;
 
 import static org.codehaus.httpcache4j.HeaderConstants.*;
 import org.codehaus.httpcache4j.payload.Payload;
@@ -101,6 +102,14 @@ public final class HTTPResponse implements Serializable {
 
     public Set<HTTPMethod> getAllowedMethods() {
         return allowedMethods != null ? allowedMethods : Collections.<HTTPMethod>emptySet();
+    }
+
+    public void consume() {
+        if (hasPayload()) {
+            if (payload.isAvailable()) {
+                IOUtils.closeQuietly(payload.getInputStream());
+            }
+        }
     }
 
     @Override
