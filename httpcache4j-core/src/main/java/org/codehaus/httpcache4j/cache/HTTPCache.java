@@ -232,7 +232,6 @@ public class HTTPCache {
         headers = headers.add(helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders()));
         HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers);
 
-        storage.update(request, updatedResponse);
-        return updatedResponse;
+        return storage.update(request, updatedResponse);
     }
 }
