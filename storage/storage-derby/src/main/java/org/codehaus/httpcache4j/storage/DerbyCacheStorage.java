@@ -41,6 +41,12 @@ import java.io.IOException;
  * We have one table, Response.
  * The tables are created on startup if they do not exist.
  *
+ * NOTE:
+ * This is experimental and should not be used in production.
+ * There is generally no way of throwing stuff out of cache at the moment.
+ * Stuff will be thrown out on "insert" and "clear".
+ * This storage also requires Java 6 or higher.
+ *
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
@@ -50,6 +56,10 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
     private ResponseMapper responseMapper;
 
     public DerbyCacheStorage(File storageDirectory) {
+        this(storageDirectory, false);
+    }
+
+    public DerbyCacheStorage(File storageDirectory, boolean dropTables) {
         File database = new File(storageDirectory, "database");
         StorageUtil.ensureDirectoryExists(database);
         System.setProperty("derby.system.home", database.getAbsolutePath());
@@ -59,7 +69,7 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
         ds.setPassword("");
         ds.setCreateDatabase("create");
         jdbcTemplate = new SimpleJdbcTemplate(ds);
-        maybeCreateTables(false);
+        maybeCreateTables(dropTables);
         responseMapper = new ResponseMapper();
     }
 
