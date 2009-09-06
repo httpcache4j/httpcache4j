@@ -1,0 +1,13 @@
+ -----
+ Extending Httpcache4j
+ -----
+ Erlend Hamnaberg
+
+ 
+Extending HTTPCache4j
+
+ Create a new {{{./create_response_resolver.html}response resolver}}
+ 
+ Create a new  {{{./create_cache_storage.html}Cache storage}}
+ 
+  
