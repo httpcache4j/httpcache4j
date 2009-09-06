@@ -55,33 +55,33 @@ public class HTTPCache {
         Validate.notNull(storage, "Cache storage may not be null");
         this.storage = storage;
         this.resolver = resolver;
-      handleMbeanRegistry();
+        handleMbeanRegistry();
     }
 
-  public HTTPCache(CacheStorage storage) {
+    public HTTPCache(CacheStorage storage) {
         this(storage, null);
     }
 
-  private void handleMbeanRegistry() {
-    try {
-      final ObjectName objectname = ObjectName.getInstance("org.codehaus.httpcache4j.cache:type=statistics");
-      ManagementFactory.getPlatformMBeanServer().registerMBean(statistics, objectname);
-      Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-        public void run() {
-          try {
-            ManagementFactory.getPlatformMBeanServer().unregisterMBean(objectname);
-          }
-          catch (Exception ignored) {
-          }
+    private void handleMbeanRegistry() {
+        try {
+            final ObjectName objectname = ObjectName.getInstance("org.codehaus.httpcache4j.cache:type=statistics");
+            ManagementFactory.getPlatformMBeanServer().registerMBean(statistics, objectname);
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        ManagementFactory.getPlatformMBeanServer().unregisterMBean(objectname);
+                    }
+                    catch (Exception ignored) {
+                    }
+                }
+            }));
         }
-      }));
+        catch (Exception ignored) {
+            //throw new HTTPException("Unable to register statistics Mbean", e);
+        }
     }
-    catch (Exception ignored) {
-      //throw new HTTPException("Unable to register statistics Mbean", e);
-    }
-  }
 
-  public void clear() {
+    public void clear() {
         storage.clear();
     }
 
@@ -216,7 +216,7 @@ public class HTTPCache {
                 //Response was not cacheable
                 response = resolvedResponse;
             }
-            
+
             if (item != null) {
                 if (resolvedResponse.getStatus() == Status.NOT_MODIFIED) {
                     response = updateHeadersFromResolved(request, item, resolvedResponse);
