@@ -115,7 +115,7 @@ public class HTTPRequest {
     }
 
     public HTTPRequest addHeader(Header header) {
-        Headers headers = new Headers(this.headers).add(header);
+        Headers headers = this.headers.add(header);
         return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
     }
 

@@ -29,6 +29,7 @@ import com.google.common.base.Function;
 
 /**
  * A collection of headers.
+ * All methods that modify the headers return a new Headers object. 
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
@@ -41,10 +42,10 @@ public final class Headers implements Serializable, Iterable<Header> {
 
     public Headers(final Headers headers) {
         Validate.notNull(headers, "The headers may not be null");
-        this.headers.putAll(headers.getHeadersAsMap());
+        this.headers.putAll(headers.copyMap());
     }
 
-    public Headers(final Map<String, List<String>> headers) {
+    private Headers(final HeaderHashMap headers) {
         Validate.notNull(headers, "The header map may not be null");
         this.headers.putAll(headers);
     }
@@ -70,7 +71,7 @@ public final class Headers implements Serializable, Iterable<Header> {
     }
 
     public Headers add(Header header) {
-        Map<String, List<String>> headers = copyMap();
+        HeaderHashMap headers = copyMap();
         List<String> list = new ArrayList<String>(headers.get(header.getName()));
         if (!list.contains(header.getValue())) {
             list.add(header.getValue());
@@ -86,10 +87,6 @@ public final class Headers implements Serializable, Iterable<Header> {
     public boolean contains(Header header) {
         List<Header> values = getHeaders(header.getName());
         return values.contains(header);
-    }
-
-    public Map<String, List<String>> getHeadersAsMap() {
-        return Collections.unmodifiableMap(headers);
     }
 
     private HeaderHashMap copyMap() {
@@ -115,7 +112,7 @@ public final class Headers implements Serializable, Iterable<Header> {
     }
 
     public Headers remove(String name) {
-        Map<String, List<String>> heads = copyMap();
+        HeaderHashMap heads = copyMap();
         heads.remove(name);
         return new Headers(heads);
     }
