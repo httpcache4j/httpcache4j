@@ -26,12 +26,9 @@ Getting started
   You then need to instantiate a HTTPCache with a storage back-end and a response resolver. 
 
 ----------------------------------------
-CacheStorage storage = new MemoryCacheStorage()
 HTTPCache cache = new HTTPCache(
-  storage,
-  new HTTPClientResolver(
-    new HttpClient(), 
-    new DefaultResponseCreator(SystemUtils.getJavaIoTmpDir(), storage)
+  CacheStorage storage = new MemoryCacheStorage(),
+  new HTTPClientResolver(new HttpClient())
 );
 ----------------------------------------
 
