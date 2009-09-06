@@ -19,7 +19,7 @@ Creating a new Response Resolver.
  
 ---------------------------------------
  public interface ResponseResolver {
-    HTTPResponse resolve(HTTPRequest request);
+    HTTPResponse resolve(HTTPRequest request) throws IOException;
  }
 ---------------------------------------
 
