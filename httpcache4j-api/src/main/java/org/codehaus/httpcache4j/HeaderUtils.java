@@ -85,7 +85,7 @@ public final class HeaderUtils {
      * @return {@code true} if the headers were cacheable, {@code false} if not. 
      */
     public static boolean hasCacheableHeaders(Headers headers) {
-        if (headers.contains(new Header(VARY, "*"))) {
+        if (headers.contains(new Header(VARY, "*")) || !headers.hasHeader(DATE)) {
             return false;
         }
         if (headers.hasHeader(CACHE_CONTROL)) {
@@ -94,16 +94,20 @@ public final class HeaderUtils {
                 return false;
             }
         }
-        //TODO: Support this? Defined by HTTP 1.0.. What does Varnish do?
-        if (headers.hasHeader(PRAGMA)) {
-            final Header header = headers.getFirstHeader(PRAGMA);
-            if (header.getValue().contains(NO_STORE_HEADER_VALUE) || header.getValue().contains(NO_CACHE_HEADER_VALUE)) {
-                return false;
-            }
+        if (headers.hasHeader(EXPIRES)) {
+          Header expires = headers.getFirstHeader(EXPIRES);
+          DateTime expiresValue = HeaderUtils.fromHttpDate(expires);
+          Header date = headers.getFirstHeader(DATE);
+          if (date == null) {
+            return false;
+          }
+          DateTime dateValue = HeaderUtils.fromHttpDate(date);
+          if (expiresValue.isBefore(dateValue)) {
+            return false;
+          }
         }
         //To cache we need a cache-validator.
         return headers.getFirstHeader(ETAG) != null
-                || headers.getFirstHeader(EXPIRES) != null
                 || headers.getFirstHeader(LAST_MODIFIED) != null;
     }
 }

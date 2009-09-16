@@ -100,13 +100,16 @@ public final class CacheItem implements Serializable {
         Headers headers = response.getHeaders();
 
         DateTime date_value = HeaderUtils.fromHttpDate(headers.getFirstHeader(DATE));
-        long age_value = NumberUtils.toLong(headers.getFirstHeaderValue(AGE), 0);
-        long apparent_age = Math.max(0, cachedTime.getMillis() - date_value.getMillis());
-        long corrected_recieved_age = Math.max(apparent_age, age_value);
-        long response_delay = cachedTime.getMillis() - requestTime.getMillis();
-        long corrected_inital_age = corrected_recieved_age + response_delay;
-        long resident_time = DateTimeUtils.currentTimeMillis() - cachedTime.getMillis();
-        return (corrected_inital_age + resident_time) / 1000;
+        if (date_value != null) {
+          long age_value = NumberUtils.toLong(headers.getFirstHeaderValue(AGE), 0);
+          long apparent_age = Math.max(0, cachedTime.getMillis() - date_value.getMillis());
+          long corrected_recieved_age = Math.max(apparent_age, age_value);
+          long response_delay = cachedTime.getMillis() - requestTime.getMillis();
+          long corrected_inital_age = corrected_recieved_age + response_delay;
+          long resident_time = DateTimeUtils.currentTimeMillis() - cachedTime.getMillis();
+          return (corrected_inital_age + resident_time) / 1000;
+        }
+        return Long.MAX_VALUE;
     }
 
 
