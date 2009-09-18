@@ -126,7 +126,7 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
     }
 
     @Override
-    protected HTTPResponse putImpl(final Key key, DateTime requestTime, final HTTPResponse response) {
+    protected HTTPResponse putImpl(final Key key, final HTTPResponse response) {
         JdbcOperations jdbcOperations = jdbcTemplate.getJdbcOperations();
         jdbcOperations.execute("insert into response(uri, vary, status, headers, payload, mimeType, cachetime) values (?, ?, ?, ?, ?, ?, ?)", new PreparedStatementCallback() {
             public Object doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {

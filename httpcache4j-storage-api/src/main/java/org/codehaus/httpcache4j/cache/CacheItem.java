@@ -44,11 +44,6 @@ public final class CacheItem implements Serializable {
     private final HTTPResponse response;
     private final int ttl;
 
-    /**
-     * Creates a new CacheItem with cachetime now() and TTL 24hrs seconds.
-     *
-     * @param response
-     */
     public CacheItem(HTTPResponse response) {
         this(response, new DateTime());
     }
@@ -61,57 +56,17 @@ public final class CacheItem implements Serializable {
         this.ttl = getTTL(response, 0);
     }
 
-    public boolean isStale(DateTime requestTime) {
+
+    public boolean isStale() {
         if (response.hasPayload() && !response.getPayload().isAvailable()) {
             return true;
         }
-        long age = calulcateAGE(response, cachedTime, requestTime);
-        return ttl - age <= 0;
+        return ttl - getAge() <= 0;
     }
 
-    /**
-     * age_value
-     * is the value of Age: header received by the cache with
-     * this response.
-     * date_value
-     * is the value of the origin server's Date: header
-     * request_time
-     * is the (local) time when the cache made the request
-     * that resulted in this cached response
-     * response_time
-     * is the (local) time when the cache received the
-     * response
-     * now
-     * is the current (local) time
-     * <p/>
-     * apparent_age = max(0, response_time - date_value);
-     * corrected_received_age = max(apparent_age, age_value);
-     * response_delay = response_time - request_time;
-     * corrected_initial_age = corrected_received_age + response_delay;
-     * resident_time = now - response_time;
-     * current_age   = corrected_initial_age + resident_time;
-     *
-     * @param response    the item to calculate the age from.
-     * @param cachedTime  the time when the item was cached.
-     * @param requestTime the time when the request was started.
-     * @return the age value
-     */
-    public static long calulcateAGE(HTTPResponse response, DateTime cachedTime, DateTime requestTime) {
-        Headers headers = response.getHeaders();
-
-        DateTime date_value = HeaderUtils.fromHttpDate(headers.getFirstHeader(DATE));
-        if (date_value != null) {
-          long age_value = NumberUtils.toLong(headers.getFirstHeaderValue(AGE), 0);
-          long apparent_age = Math.max(0, cachedTime.getMillis() - date_value.getMillis());
-          long corrected_recieved_age = Math.max(apparent_age, age_value);
-          long response_delay = cachedTime.getMillis() - requestTime.getMillis();
-          long corrected_inital_age = corrected_recieved_age + response_delay;
-          long resident_time = DateTimeUtils.currentTimeMillis() - cachedTime.getMillis();
-          return (corrected_inital_age + resident_time) / 1000;
-        }
-        return Long.MAX_VALUE;
+    public int getAge() {
+        return Seconds.secondsBetween(cachedTime, new DateTime()).getSeconds();
     }
-
 
     public static int getTTL(HTTPResponse response, int defaultTTLinSeconds) {
         final Headers headers = response.getHeaders();

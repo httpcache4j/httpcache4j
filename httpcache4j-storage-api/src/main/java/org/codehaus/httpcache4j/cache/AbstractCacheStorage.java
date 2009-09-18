@@ -17,7 +17,6 @@ package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.HTTPRequest;
-import org.joda.time.DateTime;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
@@ -29,12 +28,12 @@ public abstract class AbstractCacheStorage implements CacheStorage {
         Key key = Key.create(request, response);
         invalidate(key);
         HTTPResponse cacheableResponse = rewriteResponse(key, response);
-        return putImpl(key, request.getRequestTime(), cacheableResponse);
+        return putImpl(key, cacheableResponse);
     }
 
     protected abstract HTTPResponse rewriteResponse(Key key, HTTPResponse response);
 
-    protected abstract HTTPResponse putImpl(Key key, DateTime requestTime, HTTPResponse response);
+    protected abstract HTTPResponse putImpl(Key key, HTTPResponse response);
 
     protected abstract void invalidate(Key key);
   
