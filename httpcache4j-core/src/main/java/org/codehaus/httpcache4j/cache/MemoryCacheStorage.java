@@ -20,7 +20,7 @@ import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.ByteArrayPayload;
-import org.joda.time.DateTime;
+import org.apache.commons.io.IOUtils;
 
 import java.net.URI;
 import java.util.*;
@@ -34,13 +34,13 @@ import java.io.IOException;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public class MemoryCacheStorage extends AbstractMapBasedCacheStorage  {
+public class MemoryCacheStorage implements CacheStorage {
 
     protected final int capacity;
     protected InvalidateOnRemoveLRUHashMap cache;
     private final ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock();
     private final Lock read = rwlock.readLock();
-    protected final Lock write = rwlock.writeLock();
+    private final Lock write = rwlock.writeLock();
 
     public MemoryCacheStorage() {
         this(1000);
@@ -51,15 +51,47 @@ public class MemoryCacheStorage extends AbstractMapBasedCacheStorage  {
         cache = new InvalidateOnRemoveLRUHashMap(this.capacity);
     }
 
-    protected HTTPResponse putImpl(Key key, DateTime requestTime, HTTPResponse cachedResponse) {
+    private HTTPResponse rewriteResponse(Key key, HTTPResponse response) {
+        if (response.hasPayload()) {
+            Payload payload = response.getPayload();
+            InputStream stream = null;
+            try {
+                stream = payload.getInputStream();
+                return new HTTPResponse(createPayload(key, payload, stream), response.getStatus(), response.getHeaders());
+            } catch (IOException ignore) {
+            }
+            finally {
+                IOUtils.closeQuietly(stream);
+            }
+        }
+        else {
+            return response;
+        }
+        throw new IllegalArgumentException("Unable to cache response");
+    }
+
+
+    public HTTPResponse insert(final HTTPRequest request, final HTTPResponse response) {
         write.lock();
+        Key key = Key.create(request, response);
+        invalidate(key);
+        HTTPResponse cacheableResponse = rewriteResponse(key, response);
 
         try {
-            cache.put(key, new CacheItem(cachedResponse));
-            return cachedResponse;
+            return putImpl(key, cacheableResponse);
         } finally {
             write.unlock();
         }
+    }
+
+    protected HTTPResponse putImpl(final Key pKey, final HTTPResponse pCacheableResponse) {
+        cache.put(pKey, new CacheItem(pCacheableResponse));
+        return pCacheableResponse;
+    }
+
+    public HTTPResponse update(final HTTPRequest request, final HTTPResponse response) {
+        Key key = Key.create(request, response);
+        return putImpl(key, response);
     }
 
     protected Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException {
@@ -127,7 +159,7 @@ public class MemoryCacheStorage extends AbstractMapBasedCacheStorage  {
         }
     }
 
-    public void clear() {
+    public final void clear() {
         write.lock();
 
         try {
@@ -135,9 +167,14 @@ public class MemoryCacheStorage extends AbstractMapBasedCacheStorage  {
             for (Key uri : uris) {
                 cache.remove(uri);
             }
+            afterClear();
         } finally {
             write.unlock();
         }
+    }
+
+
+    protected void afterClear() {
     }
 
     public int size() {
