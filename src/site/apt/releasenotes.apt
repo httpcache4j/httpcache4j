@@ -6,12 +6,48 @@
 
 Release notes
 
+
+* 2.1
+
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-41}HTCJ-41}} |  If the response does not contain a Date Header the response |
+|                                                      |   is not cacheable                                           |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-42}HTCJ-42}} | New Age algorithm doesn't work                               |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-47}HTCJ-47}} | EhCacheStorage doesnt work                                   |
+*------------------------------------------------------+--------------------------------------------------------------+
+
+
+* 2.0
+
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-38}HTCJ-38}} |  HttpCache does not cache when Cache-Control does not contain|
+|                                                      |  max-age directive                                           |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-16}HTCJ-16}} | All comparison of headers should use case insensitive values |                                              |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-39}HTCJ-39}} | API objects should be immutable                              |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-40}HTCJ-40}} | Fix the storage API CacheStorage                             |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-46}HTCJ-46}} | Separate the PersistentCacheStorge into its own module       |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-43}HTCJ-43}}  | Add experimental EHCache Support                             |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-44}HTCJ-44}} |  Add experimental Apache Derby Support                       |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-45}HTCJ-45}} | Upgrade HttpComponents HttpResolver to 4.0 final             |
+*------------------------------------------------------+--------------------------------------------------------------+
+
+** API breakage
+
+  - All API classes are now immutable, meaning modifiactions will return a NEW object of the object itself.
+
 * 1.7
 
 *------------------------------------------------------+--------------------------------------------------------------+
 | {{{http://jira.codehaus.org/browse/HTCJ-34}HTCJ-34}} |  Support all cacheable statuses                              |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-33}HTCJ-33}} | Status object should be an enum                              |
 *------------------------------------------------------+--------------------------------------------------------------+
 | {{{http://jira.codehaus.org/browse/HTCJ-32}HTCJ-32}} | Unconditional requests must be passed through to the         |
 |                                                      | origin server                                                |
@@ -51,11 +87,11 @@ Release notes
   
   - Custom CacheStorages need to implement Iterable.
 
-1.5.1
+* 1.5.1
 
   Made the caching work again
 
-1.5
+* 1.5
 
 *------------------------------------------------------+--------------------------------------------------------------+
 | {{{http://jira.codehaus.org/browse/HTCJ-22}HTCJ-22}} | Make the memory based storage implementations be LRU based   |
@@ -72,7 +108,7 @@ Release notes
 *------------------------------------------------------+--------------------------------------------------------------+
 
 
-1.1
+* 1.1
 
 *------------------------------------------------------+--------------------------------------------------------------+
 | {{{http://jira.codehaus.org/browse/HTCJ-11}HTCJ-11}} | Status.SERVER_UNRESPONSIVE should be replaced with an        |
@@ -88,7 +124,7 @@ Release notes
 
 
 
-1.0
+* 1.0
 
 *------------------------------------------------------+--------------------------------------------------------------+
 | {{{http://jira.codehaus.org/browse/HTCJ-3}HTCJ-3}}   | NPE in FileGenerationManager.Generation.delete()             |
