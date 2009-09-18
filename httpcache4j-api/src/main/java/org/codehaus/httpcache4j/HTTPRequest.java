@@ -40,10 +40,9 @@ public class HTTPRequest {
     private final Headers headers;
     private final Challenge challenge;
     private final Payload payload;
-    private final DateTime requestTime;
 
     public HTTPRequest(URI requestURI, HTTPMethod method) {
-        this(requestURI, method, new Headers(), new Conditionals(), new Preferences(), null, null, new DateTime());
+        this(requestURI, method, new Headers(), new Conditionals(), new Preferences(), null, null);
     }
 
     public HTTPRequest(HTTPRequest request) {
@@ -53,8 +52,7 @@ public class HTTPRequest {
              request.getConditionals(),
              request.getPreferences(),
              request.getChallenge(),
-             request.getPayload(),
-             request.getRequestTime()
+             request.getPayload()
         );
     }
 
@@ -64,8 +62,7 @@ public class HTTPRequest {
                        Conditionals conditionals,
                        Preferences preferences,
                        Challenge challenge,
-                       Payload payload,
-                       DateTime requestTime) {
+                       Payload payload) {
 
         this.method = method;
         this.requestURI = requestURI;
@@ -74,7 +71,6 @@ public class HTTPRequest {
         this.preferences = preferences;
         this.challenge = challenge;
         this.payload = payload;
-        this.requestTime = requestTime;
     }
 
     public HTTPRequest(URI requestURI) {
@@ -116,7 +112,7 @@ public class HTTPRequest {
 
     public HTTPRequest addHeader(Header header) {
         Headers headers = this.headers.add(header);
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload);
     }
 
     public HTTPRequest addHeader(String name, String value) {
@@ -129,7 +125,7 @@ public class HTTPRequest {
 
     public HTTPRequest conditionals(Conditionals conditionals) {
         Validate.notNull(conditionals, "You may not set null conditionals");
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload);
     }
 
     public HTTPMethod getMethod() {
@@ -141,7 +137,7 @@ public class HTTPRequest {
     }
 
     public HTTPRequest preferences(Preferences preferences) {
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload);
     }
 
     public Challenge getChallenge() {
@@ -149,7 +145,7 @@ public class HTTPRequest {
     }
 
     public HTTPRequest challenge(Challenge challenge) {
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload);
     }
 
     public Payload getPayload() {
@@ -157,19 +153,15 @@ public class HTTPRequest {
     }
 
     public HTTPRequest payload(Payload payload) {
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload);
     }
 
     public HTTPRequest headers(final Headers headers) {
         Validate.notNull(headers, "You may not set null headers");
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload);
     }
 
     public boolean hasPayload() {
         return payload != null;
-    }
-
-    public DateTime getRequestTime() {
-        return requestTime;
     }
 }

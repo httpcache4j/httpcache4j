@@ -24,7 +24,6 @@ import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.Payload;
-import org.joda.time.DateTime;
 
 /**
  * Persistent version of the in memory cache. This stores a serialized version of the
@@ -44,8 +43,6 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 
     private transient int modCount;
     private long lastSerialization = 0L;
-    //private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    //private final Lock write = lock.writeLock();
 
     public PersistentCacheStorage(File storageDirectory) {
         this(1000, storageDirectory, "persistent.ser");
@@ -69,32 +66,21 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     }
 
     @Override
-    public void clear() {
-        super.clear();
-        write.lock();
-        try {
-            serializationFile.delete();
-            fileManager.clear();
-        } finally {
-            write.unlock();
-        }
+    protected void afterClear() {
+        serializationFile.delete();
+        fileManager.clear();
     }
 
     @Override
-    public HTTPResponse putImpl(Key key, DateTime requestTime, HTTPResponse response) {
-        write.lock();
-        HTTPResponse res = super.putImpl(key, requestTime, response);
-        try {
-            if (modCount++ % PERSISTENT_TRESHOLD == 0) {
-                if (System.currentTimeMillis() > lastSerialization + PERSISTENT_TIMEOUT) {
-                    lastSerialization = System.currentTimeMillis();
-                    saveCacheToDisk();
-                }
-            }
-            return res;
-        } finally {
-            write.unlock();
+    public HTTPResponse putImpl(Key key, HTTPResponse response) {
+      HTTPResponse res = super.putImpl(key, response);
+      if (modCount++ % PERSISTENT_TRESHOLD == 0) {
+        if (System.currentTimeMillis() > lastSerialization + PERSISTENT_TIMEOUT) {
+          lastSerialization = System.currentTimeMillis();
+          saveCacheToDisk();
         }
+      }
+      return res;
     }
 
     @Override
