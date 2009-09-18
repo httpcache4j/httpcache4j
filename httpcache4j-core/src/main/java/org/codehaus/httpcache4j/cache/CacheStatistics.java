@@ -43,6 +43,10 @@ class CacheStatistics implements CacheStatisticsMXBean {
         return misses.get();
     }
 
+    public double getHitRatio() {
+        return getMisses() / (double)(getMisses() + getHits());
+    }
+
     public void clear() {
         hits.set(0L);
         misses.set(0L);
