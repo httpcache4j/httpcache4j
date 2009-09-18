@@ -50,7 +50,7 @@ public abstract class AbstractMapBasedCacheStorage extends AbstractCacheStorage 
 
     public final HTTPResponse update(HTTPRequest request, HTTPResponse response) {
         Key key = Key.create(request, response);
-        return putImpl(key, request.getRequestTime(), response);
+        return putImpl(key, response);
     }
 
     protected abstract Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException;

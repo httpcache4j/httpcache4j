@@ -16,8 +16,6 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
-import static org.codehaus.httpcache4j.HeaderConstants.ETAG;
-import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -78,9 +76,8 @@ class HTTPCacheHelper {
     }
 
 
-    HTTPResponse calculateAge(final HTTPRequest request, final HTTPResponse response, final DateTime cacheTime) {
-        long age = CacheItem.calulcateAGE(response, cacheTime, request.getRequestTime());
-        return new HTTPResponse(response.getPayload(), response.getStatus(), response.getHeaders().add(HeaderConstants.AGE, Long.toString(age)));
+    HTTPResponse calculateAge(final HTTPResponse response, final CacheItem cacheItem) {
+        return new HTTPResponse(response.getPayload(), response.getStatus(), response.getHeaders().add(HeaderConstants.AGE, Integer.toString(cacheItem.getAge())));
     }
 
     Headers removeUnmodifiableHeaders(Headers headers) {
@@ -114,15 +111,6 @@ class HTTPCacheHelper {
 
     }
 
-    private Conditionals addIfNoneMatchHeader(final Header eTagHeader, HTTPRequest request) {
-        Tag tag = eTagHeader == null ? null : Tag.parse(eTagHeader.getValue());
-        Conditionals conditionals = request.getConditionals();
-        if (tag != null && tag != Tag.ALL) {
-            conditionals = conditionals.addIfNoneMatch(tag);
-        }
-        return conditionals;
-    }
-
     boolean isSafeRequest(HTTPRequest request) {
         return safeMethods.contains(request.getMethod());
     }
@@ -130,8 +118,8 @@ class HTTPCacheHelper {
     HTTPRequest prepareConditionalRequest(HTTPRequest request, HTTPResponse staleResponse) {
         Conditionals conditionals = request.getConditionals();
         if (request.getMethod() == HTTPMethod.GET && conditionals.toHeaders().isEmpty()) {
-            if (staleResponse.getHeaders().hasHeader(ETAG)) {
-                conditionals = addIfNoneMatchHeader(staleResponse.getHeaders().getFirstHeader(ETAG), request);
+            if (staleResponse.getETag() != null) {
+                conditionals = new Conditionals().addIfNoneMatch(staleResponse.getETag());
             }
             else if (staleResponse.getLastModified() != null) {
                 conditionals = conditionals.ifModifiedSince(staleResponse.getLastModified());

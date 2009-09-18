@@ -85,7 +85,7 @@ public class HTTPCacheTest {
         Payload payload = mock(Payload.class);
         when(payload.isAvailable()).thenReturn(false);
         CacheItem item = new CacheItem(new HTTPResponse(payload, Status.OK, new Headers()));
-        assertTrue("The cached item was not stale", item.isStale(new DateTime()));
+        assertTrue("The cached item was not stale", item.isStale());
         when(cacheStorage.get(request)).thenReturn(item);
         HTTPResponse resolvedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(resolvedResponse);
@@ -103,6 +103,7 @@ public class HTTPCacheTest {
         HTTPRequest request = new HTTPRequest(DUMMY_URI);
 
         Headers headers = new Headers();
+        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
         headers = headers.add(HeaderConstants.ETAG, new Tag("foo", false).format());
         headers = headers.add(HeaderConstants.CACHE_CONTROL, "max-age=10");
         Payload payload = mock(Payload.class);
@@ -202,6 +203,7 @@ public class HTTPCacheTest {
         HTTPRequest request = new HTTPRequest(REQUEST_URI);
         request.getConditionals().addIfNoneMatch(Tag.ALL);
         Headers responseHeaders = new Headers();
+        responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
         HTTPResponse resolvedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders);
@@ -290,7 +292,7 @@ public class HTTPCacheTest {
 
         CacheItem item = new CacheItem(cachedResponse);
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(item);
-        assertFalse(item.isStale(new DateTime()));
+        assertFalse(item.isStale());
         cache.doCachedRequest(request);
         verify(responseResolver, never()).resolve(request);        
     }

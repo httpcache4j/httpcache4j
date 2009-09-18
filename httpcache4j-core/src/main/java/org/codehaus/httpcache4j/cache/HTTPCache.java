@@ -17,7 +17,6 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.util.CacheStatisticsMXBean;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
 import org.apache.commons.lang.Validate;
@@ -134,7 +133,7 @@ public class HTTPCache {
             HTTPRequest req = request;
             if (item != null) {
                 statistics.hit();
-                if (item.isStale(request.getRequestTime())) {
+                if (item.isStale()) {
                     //If the cached value is stale, execute the request and try to cache it.
                     HTTPResponse staleResponse = item.getResponse();
                     //If the payload has been deleted for some reason, we want to do a unconditional GET
@@ -154,7 +153,7 @@ public class HTTPCache {
             }
             else {
                 statistics.miss();
-                response = unconditionalResolve(request);
+                response = unconditionalResolve(req);
             }
         }
         return response;
@@ -178,7 +177,7 @@ public class HTTPCache {
                 }
             }
         }
-        return helper.calculateAge(request, response, item.getCachedTime());
+        return helper.calculateAge(response, item);
     }
 
     private HTTPResponse unconditionalResolve(final HTTPRequest request) {

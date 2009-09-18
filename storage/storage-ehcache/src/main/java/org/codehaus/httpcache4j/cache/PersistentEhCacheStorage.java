@@ -17,9 +17,6 @@ package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.util.DeletingFileFilter;
-import org.codehaus.httpcache4j.util.StorageUtil;
-import org.joda.time.DateTime;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -58,8 +55,8 @@ public class PersistentEhCacheStorage extends AbstractEhCacheStorage {
     }
 
     @Override
-    protected HTTPResponse putImpl(Key key, DateTime requestTime, HTTPResponse response) {
-        HTTPResponse puttedResponse = super.putImpl(key, requestTime, response);
+    protected HTTPResponse putImpl(Key key, HTTPResponse response) {
+        HTTPResponse puttedResponse = super.putImpl(key, response);
         if (modCount++ % PERSISTENT_TRESHOLD == 0) {
             if (System.currentTimeMillis() > lastSerialization + PERSISTENT_TIMEOUT) {
                 lastSerialization = System.currentTimeMillis();

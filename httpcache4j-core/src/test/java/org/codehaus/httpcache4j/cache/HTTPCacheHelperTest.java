@@ -21,8 +21,6 @@ import org.codehaus.httpcache4j.*;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 
-import java.net.URI;
-
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
@@ -33,9 +31,9 @@ public class HTTPCacheHelperTest {
     @Test
     public void testAgeCalculation() {
         Headers headers = new Headers().add(HeaderUtils.toHttpDate("Date", createDateTime(0)));
-        DateTimeUtils.setCurrentMillisFixed(createDateTime(0).getMillis());
+        DateTimeUtils.setCurrentMillisFixed(createDateTime(10).getMillis());
         HTTPResponse cachedResponse = createResponse(headers);
-        HTTPResponse responseWithCalculatedAge = helper.calculateAge(new HTTPRequest(URI.create("foo")), cachedResponse, createDateTime(10));
+        HTTPResponse responseWithCalculatedAge = helper.calculateAge(cachedResponse, new CacheItem(cachedResponse, createDateTime(0)));
         Assert.assertEquals("10", responseWithCalculatedAge.getHeaders().getFirstHeaderValue("Age"));
     }
     
@@ -51,6 +49,7 @@ public class HTTPCacheHelperTest {
         headers = headers.add(HeaderConstants.CACHE_CONTROL, "private, max-age=39");
         headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, createDateTime(40)));
         headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, createDateTime(0)));
+        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.LAST_MODIFIED, createDateTime(0)));
         assertCacheableHeaders(headers);
 
         headers = new Headers();
