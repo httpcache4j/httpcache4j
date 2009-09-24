@@ -15,6 +15,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.Assert;
 import org.codehaus.httpcache4j.*;
@@ -27,6 +28,20 @@ import org.joda.time.DateTimeUtils;
  */
 public class HTTPCacheHelperTest {
     private final HTTPCacheHelper helper = new HTTPCacheHelper();
+
+    @Test
+    public void testRemoveUnmodifiableHeadersLeavesLinkHeader() {
+        Headers headers = new Headers().add("LINK", "<foo>");
+        Headers washedHeaders = helper.removeUnmodifiableHeaders(headers);
+        Assert.assertTrue("Link header was removed, it should remain", washedHeaders.keySet().contains("link"));
+    }
+
+    @Test
+    public void testRemoveUnmodifiableHeadersRemovesConnectionHeader() {
+        Headers headers = new Headers().add("CONNECTION", "close");
+        Headers washedHeaders = helper.removeUnmodifiableHeaders(headers);
+        Assert.assertFalse("Connection header was not removed, it should be.", washedHeaders.keySet().contains("connection"));
+    }
 
     @Test
     public void testAgeCalculation() {

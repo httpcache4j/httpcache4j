@@ -43,14 +43,14 @@ class HTTPCacheHelper {
         // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.3
         // We are a transparent cache
         Set<String> headers = new HashSet<String>();
-        headers.add("Connection");
-        headers.add("Keep-Alive");
-        headers.add("Proxy-Authenticate");
-        headers.add("Proxy-Authorization");
-        headers.add("TE");
-        headers.add("Trailers");
-        headers.add("Transfer-Encoding");
-        headers.add("Upgrade");
+        headers.add("connection");
+        headers.add("keep-alive");
+        headers.add("proxy-authenticate");
+        headers.add("proxy-authorization");
+        headers.add("te");
+        headers.add("trailers");
+        headers.add("transfer-encoding");
+        headers.add("upgrade");
         unmodifiableHeaders = Collections.unmodifiableSet(headers);
 
         /**
