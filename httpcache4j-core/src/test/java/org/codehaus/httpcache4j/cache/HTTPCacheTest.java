@@ -303,7 +303,7 @@ public class HTTPCacheTest {
         Headers headers = new Headers().add("Link", "<foo>");
         Headers updatedHeaders = new Headers().add("Link", "<bar>");
         Headers merged = dryCleanHeaders(headers, updatedHeaders);
-        assertEquals("<bar>", merged.getFirstHeaderValue("Link"));
+        assertEquals(2, merged.getHeaders("Link").size());
     }
 
 
@@ -317,13 +317,14 @@ public class HTTPCacheTest {
 
 
     private Headers dryCleanHeaders(Headers headers, Headers updatedHeaders) {
+        CacheStorage storage = new NullCacheStorage();
+        cache = new HTTPCache(storage, responseResolver);
+        cacheStorage = storage;
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.GET);
         HTTPResponse cachedResponse = new HTTPResponse(null, Status.OK, headers);
         CacheItem item = new CacheItem(cachedResponse);
         HTTPResponse updatedResponse = new HTTPResponse(null, Status.OK, updatedHeaders);
-       
-        when(cacheStorage.update(isA(HTTPRequest.class), isA(HTTPResponse.class))).thenReturn(updatedResponse);
-        HTTPResponse washedResponse = cache.updateHeadersFromResolved(request, item, cachedResponse);
+        HTTPResponse washedResponse = cache.updateHeadersFromResolved(request, item, updatedResponse);
         return washedResponse.getHeaders();
     }
 

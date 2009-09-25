@@ -225,12 +225,11 @@ public class HTTPCache {
         return response;
     }
 
-    private HTTPResponse updateHeadersFromResolved(final HTTPRequest request, final CacheItem item, final HTTPResponse resolvedResponse) {
+    protected HTTPResponse updateHeadersFromResolved(final HTTPRequest request, final CacheItem item, final HTTPResponse resolvedResponse) {
         HTTPResponse cachedResponse = item.getResponse();
-        Headers headers = new Headers(resolvedResponse.getHeaders());
+        Headers headers = new Headers(cachedResponse.getHeaders());
         headers = headers.add(helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders()));
         HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers);
-
         return storage.update(request, updatedResponse);
     }
 }
