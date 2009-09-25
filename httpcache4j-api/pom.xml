@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.codehaus.httpcache4j</groupId>
     <artifactId>httpcache4j</artifactId>
-    <version>2.2-SNAPSHOT</version>
+    <version>2.1.1</version>
   </parent>
   <artifactId>httpcache4j-api</artifactId>
   <packaging>jar</packaging>
