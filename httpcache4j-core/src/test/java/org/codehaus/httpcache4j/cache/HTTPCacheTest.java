@@ -297,6 +297,36 @@ public class HTTPCacheTest {
         verify(responseResolver, never()).resolve(request);        
     }
 
+
+    @Test
+    public void testUpdateHeadersFromResolvedUpdatesHeaders() throws Exception {
+        Headers headers = new Headers().add("Link", "<foo>");
+        Headers updatedHeaders = new Headers().add("Link", "<bar>");
+        Headers merged = dryCleanHeaders(headers, updatedHeaders);
+        assertEquals("<bar>", merged.getFirstHeaderValue("Link"));
+    }
+
+
+    @Test
+    public void testUpdateHeadersFromResolvedRetainsHeaders() throws Exception {
+        Headers headers = new Headers().add("Link", "<foo>");
+        Headers updatedHeaders = new Headers().add("Allow", "GET");
+        Headers merged = dryCleanHeaders(headers, updatedHeaders);
+        assertEquals("<foo>", merged.getFirstHeaderValue("link"));
+    }
+
+
+    private Headers dryCleanHeaders(Headers headers, Headers updatedHeaders) {
+        HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.GET);
+        HTTPResponse cachedResponse = new HTTPResponse(null, Status.OK, headers);
+        CacheItem item = new CacheItem(cachedResponse);
+        HTTPResponse updatedResponse = new HTTPResponse(null, Status.OK, updatedHeaders);
+       
+        when(cacheStorage.update(isA(HTTPRequest.class), isA(HTTPResponse.class))).thenReturn(updatedResponse);
+        HTTPResponse washedResponse = cache.updateHeadersFromResolved(request, item, cachedResponse);
+        return washedResponse.getHeaders();
+    }
+
     private HTTPResponse doGet(Headers responseHeaders, Status status, int numberItemsInCache) {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.GET);
         Payload payload = mock(Payload.class);
