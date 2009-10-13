@@ -27,6 +27,7 @@ import org.apache.http.auth.AuthScheme;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.auth.AuthenticationException;
 import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.entity.BasicHttpEntity;
 import org.apache.commons.lang.Validate;
 
 import java.io.IOException;
@@ -75,7 +76,12 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
         if (request.hasPayload() && realRequest instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest req = (HttpEntityEnclosingRequest) realRequest;
-            req.setEntity(new InputStreamEntity(request.getPayload().getInputStream(), -1));
+            BasicHttpEntity entity = new BasicHttpEntity();
+            entity.setChunked(false);
+            entity.setContentLength(-1);
+            entity.setContentType(request.getPayload().getMimeType().toString());
+            entity.setContent(request.getPayload().getInputStream());
+            req.setEntity(entity);
         }
         return realRequest;
     }
