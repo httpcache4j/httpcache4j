@@ -29,9 +29,11 @@ import org.apache.http.auth.AuthenticationException;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.commons.lang.Validate;
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 
 /**
@@ -76,12 +78,14 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
         if (request.hasPayload() && realRequest instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest req = (HttpEntityEnclosingRequest) realRequest;
-            BasicHttpEntity entity = new BasicHttpEntity();
-            entity.setChunked(false);
-            entity.setContentLength(-1);
-            entity.setContentType(request.getPayload().getMimeType().toString());
-            entity.setContent(request.getPayload().getInputStream());
-            req.setEntity(entity);
+            InputStreamEntity e = new InputStreamEntity(request.getPayload().getInputStream(), -1) {
+                @Override
+                public void writeTo(OutputStream outstream) throws IOException {
+                    IOUtils.copy(getContent(), outstream);
+                }
+            };
+            e.setContentType(request.getPayload().getMimeType().toString());
+            req.setEntity(e);
         }
         return realRequest;
     }
