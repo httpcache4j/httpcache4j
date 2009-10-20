@@ -148,7 +148,7 @@ public class HTTPCache {
                 }
                 else {
                     //TODO: handle rewrite of Status... HEAD should probably always return 200 OK.
-                    response = rewriteResponse(req, item);
+                    response = rewriteResponse(request, item);
                 }
             }
             else {
