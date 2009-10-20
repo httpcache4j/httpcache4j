@@ -220,6 +220,7 @@
         <version>2.0-beta-9</version>
         <configuration>
           <preparationGoals>clean install</preparationGoals>
+          <goals>deploy</goals>
           <releaseProfiles>release</releaseProfiles>          
         </configuration>
       </plugin>      
