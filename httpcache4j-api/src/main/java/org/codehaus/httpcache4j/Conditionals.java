@@ -18,6 +18,7 @@ package org.codehaus.httpcache4j;
 
 import org.apache.commons.lang.Validate;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -156,6 +157,8 @@ public final class Conditionals {
     public Conditionals ifModifiedSince(DateTime time) {
         Validate.isTrue(match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_MATCH));
         Validate.isTrue(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_UNMODIFIED_SINCE));
+        time = time.toDateTime(DateTimeZone.forID("UTC"));
+        time = time.withMillisOfSecond(0);
         return new Conditionals(empty(), noneMatch, time, null);        
     }
 
@@ -174,6 +177,8 @@ public final class Conditionals {
     public Conditionals ifUnModifiedSince(DateTime time) {
         Validate.isTrue(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_NON_MATCH));
         Validate.isTrue(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_MODIFIED_SINCE));
+        time = time.toDateTime(DateTimeZone.forID("UTC"));
+        time = time.withMillisOfSecond(0);
         return new Conditionals(match, empty(), null, time);
     }
 

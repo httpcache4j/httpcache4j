@@ -29,6 +29,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Matchers.eq;
 import org.joda.time.DateTime;
 import org.joda.time.MutableDateTime;
+import org.joda.time.DateTimeUtils;
 
 import java.net.URI;
 import java.io.IOException;
@@ -157,7 +158,7 @@ public class HTTPCacheTest {
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
         MutableDateTime changedHeader = prev.toMutableDateTime();
-        changedHeader.addMinutes(50);
+        changedHeader.addMinutes(2);
 
         Headers updatedHeaders = new Headers(responseHeaders);
         updatedHeaders = updatedHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, changedHeader.toDateTime()));
@@ -177,6 +178,43 @@ public class HTTPCacheTest {
         responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
+        HTTPResponse response = cache.doCachedRequest(request);
+        Assert.assertNotNull("Response was null", response);
+        Assert.assertNull("The payload was not null", response.getPayload());
+        Assert.assertEquals("Wrong status", Status.NOT_MODIFIED, response.getStatus());
+    }
+
+    @Test
+    public void testConditionalGetWithLastModified() throws IOException {
+        HTTPRequest request = new HTTPRequest(URI.create("foo"));        
+        Headers responseHeaders = new Headers();
+        responseHeaders = responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
+        DateTime dateHeader = new DateTime();
+        responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, dateHeader));
+        responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.LAST_MODIFIED, dateHeader.minusSeconds(2)));
+        when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
+        Headers updatedHeaders = new Headers(responseHeaders);
+        updatedHeaders = updatedHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, dateHeader.plusMinutes(2).toDateTime()));
+        when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(null, Status.NOT_MODIFIED, updatedHeaders));
+
+        HTTPResponse response = cache.doCachedRequest(request);
+        Assert.assertNotNull("Response was null", response);
+        Assert.assertNotNull("The payload was null", response.getPayload());
+        Assert.assertEquals("Wrong status", Status.OK, response.getStatus());
+    }
+    
+    @Test
+    public void testExternalConditionalGetWithLastModified() throws IOException {
+        DateTime dateHeader = new DateTime();
+        DateTime lastModified = dateHeader.minusSeconds(2);
+        HTTPRequest request = new HTTPRequest(URI.create("foo"));
+        request = request.conditionals(request.getConditionals().ifModifiedSince(lastModified));
+        Headers responseHeaders = new Headers();
+        responseHeaders = responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
+        responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, dateHeader));
+        responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.LAST_MODIFIED, lastModified));
+        when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
+        
         HTTPResponse response = cache.doCachedRequest(request);
         Assert.assertNotNull("Response was null", response);
         Assert.assertNull("The payload was not null", response.getPayload());
