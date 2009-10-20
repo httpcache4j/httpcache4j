@@ -32,12 +32,7 @@ public class CacheControl {
     private int minFresh = -1;
     //TODO: what semantic meaning does this have over max-age? I think it overrides
     private int sMaxAge = -1; //http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.3 //ignored for now
-    private Set<Directive> directives = new HashSet<Directive>();
-
-    public CacheControl(Map<Directive, String> directives) {
-        this.directives.addAll(directives.keySet());
-        parseDirectiveMap(directives);
-    }
+    private Map<Directive, String> directives = new HashMap<Directive, String>();
 
     public CacheControl(Header header) {
         parse(header);
@@ -49,8 +44,8 @@ public class CacheControl {
 
     private void parse(Header header) {
         Map<Directive, String> directiveMap = convertDirectiveMap(header);
+        directives.putAll(directiveMap);
         parseDirectiveMap(directiveMap);
-        directives.addAll(directiveMap.keySet());
         if (directives.isEmpty()) {
             throw new IllegalArgumentException("Unkown value from header: " + header.getValue());
         }
@@ -69,8 +64,8 @@ public class CacheControl {
 
     private Map<Directive, String> convertDirectiveMap(Header header) {
         Map<Directive, String> directives = new HashMap<Directive, String>();
-        for (Directive directive : Directive.values()) {
-            directives.put(directive, header.getDirectives().get(directive.getValue()));
+        for (Map.Entry<String,String> directive : header.getDirectives().entrySet()) {
+            directives.put(Directive.toDirective(directive.getKey()), directive.getValue());
         }
         return directives;
     }
@@ -92,11 +87,28 @@ public class CacheControl {
     }
 
     public boolean isPrivate() {
-        return directives.contains(Directive.PRIVATE);
+        return directives.containsKey(Directive.PRIVATE);
     }
 
     public Header toHeader() {
-        return null;
+        if (directives.isEmpty()) {
+            throw new IllegalStateException("No directives set, unable to add header");
+        }        
+        return new Header(HeaderConstants.CACHE_CONTROL, format());
+    }
+
+    private String format() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<Directive,String> directive : directives.entrySet()) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            sb.append(directive.getKey().getValue());
+            if (directive.getValue() != null) {
+                sb.append("=").append(directive.getValue());
+            }
+        }
+        return sb.toString();
     }
 
     public enum Directive {
@@ -121,6 +133,15 @@ public class CacheControl {
 
         public String getValue() {
             return value;
+        }
+
+        public static Directive toDirective(String directive) {
+            for (Directive dir : values()) {
+                if (dir.getValue().equals(directive)) {
+                    return dir;
+                }
+            }
+            throw new IllegalArgumentException(String.format("No such directive %s", directive));
         }
     }
 }
