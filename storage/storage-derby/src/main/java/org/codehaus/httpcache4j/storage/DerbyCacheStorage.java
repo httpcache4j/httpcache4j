@@ -15,32 +15,44 @@
 
 package org.codehaus.httpcache4j.storage;
 
-import org.codehaus.httpcache4j.cache.*;
-import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.payload.InputStreamPayload;
-import org.codehaus.httpcache4j.util.StorageUtil;
-import org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
-import org.springframework.jdbc.core.JdbcOperations;
-import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.codehaus.httpcache4j.*;
+import org.codehaus.httpcache4j.cache.CacheItem;
+import org.codehaus.httpcache4j.cache.CacheStorage;
+import org.codehaus.httpcache4j.cache.Key;
+import org.codehaus.httpcache4j.cache.Vary;
+import org.codehaus.httpcache4j.payload.DelegatingInputStream;
+import org.codehaus.httpcache4j.payload.FilePayload;
+import org.codehaus.httpcache4j.payload.Payload;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcOperations;
+import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import java.net.URI;
-import java.util.*;
-import java.sql.*;
+import javax.sql.DataSource;
 import java.io.File;
-import java.io.InputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.sql.*;
+import java.util.*;
 
 /**
  * We have one table, Response.
  * The tables are created on startup if they do not exist.
- *
+ * <p/>
  * NOTE:
  * This is experimental and should not be used in production.
  * There is generally no way of throwing stuff out of cache at the moment.
@@ -50,10 +62,11 @@ import java.io.IOException;
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class DerbyCacheStorage extends AbstractCacheStorage {
-    private static String[] TABLES = {"response"};
+public class DerbyCacheStorage implements CacheStorage {
+    private final static String[] TABLES = {"response"};
     private final SimpleJdbcTemplate jdbcTemplate;
-    private ResponseMapper responseMapper;
+    private final TransactionTemplate transaction;
+    private final ResponseMapper responseMapper;
 
     public DerbyCacheStorage(File storageDirectory) {
         this(storageDirectory, false);
@@ -61,16 +74,22 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
 
     public DerbyCacheStorage(File storageDirectory, boolean dropTables) {
         File database = new File(storageDirectory, "database");
-        StorageUtil.ensureDirectoryExists(database);
-        System.setProperty("derby.system.home", database.getAbsolutePath());
-        EmbeddedConnectionPoolDataSource ds = new EmbeddedConnectionPoolDataSource();
-        ds.setDatabaseName("httpcache4j");
-        ds.setUser("");
-        ds.setPassword("");
-        ds.setCreateDatabase("create");
+        DataSource ds = createDataSource(database);
         jdbcTemplate = new SimpleJdbcTemplate(ds);
         maybeCreateTables(dropTables);
         responseMapper = new ResponseMapper();
+        DefaultTransactionDefinition definition = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
+        definition.setIsolationLevel(TransactionDefinition.ISOLATION_SERIALIZABLE);
+        transaction = new TransactionTemplate(new DataSourceTransactionManager(ds), definition);
+    }
+
+    private static DataSource createDataSource(File database) {
+        DriverManagerDataSource ds = new DriverManagerDataSource();
+        ds.setDriverClassName("org.apache.derby.jdbc.EmbeddedDriver");
+        ds.setUrl(String.format("jdbc:derby:%s;create=true", database.getAbsolutePath()));
+        ds.setUsername("");
+        ds.setPassword("");
+        return ds;
     }
 
     private void maybeCreateTables(boolean dropTables) {
@@ -80,7 +99,7 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
         } catch (DataAccessException e) {
             createTables = true;
         }
-        if (dropTables) {
+        if (dropTables && !createTables) {
             //TODO: Logging....
             System.err.println("--- dropping tables:");
             List<String> tables = new ArrayList<String>(Arrays.asList(TABLES));
@@ -120,54 +139,95 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
 
     }
 
-    @Override
-    protected HTTPResponse rewriteResponse(Key key, HTTPResponse response) {
+    protected HTTPResponse rewriteResponse(HTTPResponse response) {
+        if (response.hasPayload()) {
+            Headers headers = response.getHeaders();
+            Status status = response.getStatus();
+            Payload payload = response.getPayload();
+            try {
+                File file = writeStreamToTempFile(payload.getInputStream());
+                return new HTTPResponse(new DerbyFilePayload(file, payload.getMimeType()), status, headers);
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        }
         return response;
     }
 
-    @Override
-    protected HTTPResponse putImpl(final Key key, final HTTPResponse response) {
-        JdbcOperations jdbcOperations = jdbcTemplate.getJdbcOperations();
-        jdbcOperations.execute("insert into response(uri, vary, status, headers, payload, mimeType, cachetime) values (?, ?, ?, ?, ?, ?, ?)", new PreparedStatementCallback() {
-            public Object doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
-                preparedStatement.setString(1, key.getURI().toString());
-                preparedStatement.setString(2, key.getVary().toString());
-                preparedStatement.setInt(3, response.getStatus().getCode());
-                preparedStatement.setString(4, response.getHeaders().toString());
-                if (response.hasPayload()) {
-                    InputStream stream = response.getPayload().getInputStream();
-                    try {
-                        preparedStatement.setBlob(5, stream);
-                        preparedStatement.setString(6, response.getPayload().getMimeType().toString());
-                    } finally {
-                        IOUtils.closeQuietly(stream);
-                    }
-                }
-                else {
-                    preparedStatement.setNull(5, Types.BLOB);
-                    preparedStatement.setNull(6, Types.VARCHAR);
-                }
-                preparedStatement.setTimestamp(7, new Timestamp(DateTimeUtils.currentTimeMillis()));
+    public HTTPResponse insert(final HTTPRequest request, final HTTPResponse response) {
+        final Key key = Key.create(request, response);
+        transaction.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                invalidate(key);
+                JdbcOperations jdbcOperations = jdbcTemplate.getJdbcOperations();
+                jdbcOperations.execute("insert into response(uri, vary, status, headers, payload, mimeType, cachetime) values (?, ?, ?, ?, ?, ?, ?)", new PreparedStatementCallback() {
+                    public Object doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
+                        preparedStatement.setString(1, key.getURI().toString());
+                        preparedStatement.setString(2, key.getVary().toString());
+                        preparedStatement.setInt(3, response.getStatus().getCode());
+                        preparedStatement.setString(4, response.getHeaders().toString());
+                        InputStream inputStream = null;
+                        if (response.hasPayload() && response.getPayload().isAvailable()) {
+                            preparedStatement.setString(6, response.getPayload().getMimeType().toString());
+                            inputStream = response.getPayload().getInputStream();
+                            preparedStatement.setBinaryStream(5, inputStream);
+                        }
+                        else {
+                            preparedStatement.setNull(5, Types.BLOB);
+                            preparedStatement.setNull(6, Types.VARCHAR);
+                        }
+                        preparedStatement.setTimestamp(7, new Timestamp(DateTimeUtils.currentTimeMillis()));
 
-                return preparedStatement.executeUpdate();
+                        try {
+                            return preparedStatement.executeUpdate();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            // throw e;
+                        }
+                        finally {
+                            IOUtils.closeQuietly(inputStream);
+                        }
+                        return null;
+                    }
+                });
             }
         });
-        return get(key);
+        return getImpl(key);
+    }
+
+    private static File writeStreamToTempFile(InputStream stream) throws IOException {
+        FileOutputStream out = null;
+        File tempFile = null;
+        try {
+            tempFile = File.createTempFile("foo", "bar");
+            out = FileUtils.openOutputStream(tempFile);
+            IOUtils.copy(stream, out);
+        } finally {
+            IOUtils.closeQuietly(out);
+            IOUtils.closeQuietly(stream);
+        }
+        return tempFile;
     }
 
     @Override
-    public HTTPResponse update(HTTPRequest request, HTTPResponse response) {
-        Key key = Key.create(request, response);
-        jdbcTemplate.update("update response set headers = ?, cachetime = ? where uri = ? and vary = ?",
-                            response.getHeaders().toString(),
-                            new Timestamp(DateTimeUtils.currentTimeMillis()),
-                            key.getURI().toString(),
-                            key.getVary().toString()
-        );
-        return get(key);
+    public HTTPResponse update(final HTTPRequest request, final HTTPResponse response) {
+        final Key key = Key.create(request, response);
+        transaction.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                jdbcTemplate.update("update response set headers = ?, cachetime = ? where uri = ? and vary = ?",
+                                    response.getHeaders().toString(),
+                                    new Timestamp(DateTimeUtils.currentTimeMillis()),
+                                    key.getURI().toString(),
+                                    key.getVary().toString()
+                );
+            }
+        });
+        return getImpl(key);
     }
 
-    protected HTTPResponse get(Key key) {
+    private HTTPResponse getImpl(final Key key) {
         try {
             CacheItemHolder holder = jdbcTemplate.queryForObject(
                     "select * from response where uri = ? and vary = ?",
@@ -175,21 +235,25 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
                     key.getURI().toString(),
                     key.getVary().toString()
             );
-            return holder.getCacheItem().getResponse();
+            return rewriteResponse(holder.getCacheItem().getResponse());
         } catch (DataAccessException e) {
             return null;
         }
     }
 
-    @Override
-    protected void invalidate(Key key) {
+    protected void invalidate(final Key key) {
         jdbcTemplate.update("delete from response where uri = ? and vary = ?", key.getURI().toString(), key.getVary().toString());
     }
 
 
     @Override
     public void invalidate(final URI uri) {
-        jdbcTemplate.update("delete from response where uri = ?", uri.toString());
+        transaction.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                jdbcTemplate.update("delete from response where uri = ?", uri.toString());
+            }
+        });
     }
 
     @Override
@@ -205,7 +269,13 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
 
     @Override
     public void clear() {
-        jdbcTemplate.update("delete from response");
+        transaction.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                jdbcTemplate.update("delete from response");
+
+            }
+        });
     }
 
     @Override
@@ -256,11 +326,15 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
         public CacheItemHolder mapRow(ResultSet rs, int row) throws SQLException {
             URI uri = URI.create(rs.getString("uri"));
             Vary vary = convertToVary(rs.getString("vary"));
-            InputStream stream = rs.getBinaryStream("payload");
+            Blob stream = rs.getBlob("payload");
 
             Payload payload = null;
-            if (stream != null) {
-                payload = new InputStreamPayload(stream, MIMEType.valueOf(rs.getString("mimetype")));
+            if (stream != null && stream.length() > 0) {
+                try {
+                    payload = new DerbyFilePayload(writeStreamToTempFile(stream.getBinaryStream()), MIMEType.valueOf(rs.getString("mimetype")));
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
+                }
             }
             Status status = Status.valueOf(rs.getInt("status"));
             Headers headers = convertToHeaders(rs.getString("headers"));
@@ -290,6 +364,23 @@ public class DerbyCacheStorage extends AbstractCacheStorage {
 
         public CacheItem getCacheItem() {
             return cacheItem;
+        }
+    }
+
+    private static class DerbyFilePayload extends FilePayload {
+        public DerbyFilePayload(File file, final MIMEType mimeType) {
+            super(file, mimeType);
+        }
+
+        @Override
+        public InputStream getInputStream() {
+            return new DelegatingInputStream(super.getInputStream()) {
+                @Override
+                public void close() throws IOException {
+                    super.close();
+                    getFile().delete();
+                }
+            };
         }
     }
 }
