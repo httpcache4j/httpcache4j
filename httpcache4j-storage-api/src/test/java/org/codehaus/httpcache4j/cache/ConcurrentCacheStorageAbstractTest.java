@@ -16,10 +16,12 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.io.IOUtils;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.junit.After;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,6 +29,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
@@ -51,21 +55,47 @@ public abstract class ConcurrentCacheStorageAbstractTest {
     protected void testIterations(int numberOfIterations, int expected) throws InterruptedException {
         List<Callable<HTTPResponse>> calls = new ArrayList<Callable<HTTPResponse>>();
         for (int i = 0; i < numberOfIterations; i++) {
-            final HTTPResponse response = createCacheResponse();
             final URI uri = URI.create(String.valueOf(i));
             final HTTPRequest request = new HTTPRequest(uri);
             Callable<HTTPResponse> call = new Callable<HTTPResponse>() {
                 public HTTPResponse call() throws Exception {
-                    HTTPResponse cached = cacheStorage.insert(request, response);
-                    CacheItem cacheItem = cacheStorage.get(new HTTPRequest(uri));
-                    assertSame(cached, cacheItem.getResponse());
+                    HTTPResponse cached = cacheStorage.insert(request, createCacheResponse());
+                    assertResponse(cached);
+                    CacheItem cacheItem = cacheStorage.get(request);
+                    HTTPResponse response = cacheItem.getResponse();
+                    assertResponse(response);
                     cached = cacheStorage.insert(request, createCacheResponse());
                     assertNotSame(cached, cacheItem.getResponse());
+                    assertResponse(cached);
                     return cached;
                 }
             };
             calls.add(call);
         }
+        List<Future<HTTPResponse>> responses = service.invokeAll(calls);
+        for (Future<HTTPResponse> response : responses) {
+            try {
+                response.get();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+                fail(e.getCause().getMessage());
+            }
+        }
+        assertEquals(expected, cacheStorage.size());
+    }
+
+    @Test
+    public void test1000InsertsOfSameURI() throws InterruptedException {
+        final HTTPRequest request = new HTTPRequest(URI.create("GET"));
+        List<Callable<HTTPResponse>> calls = new ArrayList<Callable<HTTPResponse>>();
+        for (int i = 0; i < 1000; i++) {
+            calls.add(new Callable<HTTPResponse>() {
+                public HTTPResponse call() throws Exception {
+                    return cacheStorage.insert(request, createCacheResponse());
+                }
+            });
+        }
+
         List<Future<HTTPResponse>> responses = service.invokeAll(calls);
         for (Future<HTTPResponse> response : responses) {
             try {
@@ -75,10 +105,9 @@ public abstract class ConcurrentCacheStorageAbstractTest {
                 fail(e.getCause().getMessage());
             }
         }
-
-        assertEquals(expected, cacheStorage.size());
-        assertEquals(expected, cacheStorage.size());
+        assertEquals(1, cacheStorage.size());
     }
+
 
     private HTTPResponse createCacheResponse() {
         return new HTTPResponse(new InputStreamPayload(new NullInputStream(40), MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
@@ -88,11 +117,23 @@ public abstract class ConcurrentCacheStorageAbstractTest {
         assertNotNull("Response was null", response);
         assertTrue("Payload was not here", response.hasPayload());
         assertTrue("Payload was not available", response.getPayload().isAvailable());
+        InputStream is = response.getPayload().getInputStream();
+        try {
+            IOUtils.toString(is);
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail("unable to write string from stream");
+        }
+        finally {
+            IOUtils.closeQuietly(is);
+        }
     }
 
     @After
     public void tearDown() {
-        cacheStorage.clear();
+        if (cacheStorage != null) {
+            cacheStorage.clear();
+        }
         service.shutdownNow();
     }
 }
