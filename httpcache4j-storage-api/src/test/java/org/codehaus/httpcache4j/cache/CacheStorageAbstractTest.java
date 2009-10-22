@@ -30,7 +30,9 @@ public abstract class CacheStorageAbstractTest {
 
     @After
     public void after() {
-        storage.clear();
+        if (storage != null) {
+            storage.clear();
+        }
         afterTest();
     }
 
