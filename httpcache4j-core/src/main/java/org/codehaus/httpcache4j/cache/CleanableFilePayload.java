@@ -57,7 +57,7 @@ public class CleanableFilePayload implements CleanablePayload, Serializable {
     }
 
     public InputStream getInputStream() {
-        if (file.exists() && file.canRead()) {
+        if (isAvailable()) {
             try {
                 return FileUtils.openInputStream(file);
             }
@@ -86,6 +86,6 @@ public class CleanableFilePayload implements CleanablePayload, Serializable {
     }
 
     public boolean isAvailable() {
-        return file.exists() && file.canRead();
+        return file.exists() && file.canRead() && file.canWrite();
     }
 }
