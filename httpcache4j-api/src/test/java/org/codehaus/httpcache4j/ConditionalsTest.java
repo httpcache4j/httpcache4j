@@ -134,7 +134,6 @@ public class ConditionalsTest {
         Conditionals conditionals = new Conditionals();
         DateTime dateTime = new DateTime();
         conditionals = conditionals.ifModifiedSince(dateTime);
-        assertEquals(dateTime, conditionals.getModifiedSince());
         Header header = HeaderUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, dateTime);
         assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_MODIFIED_SINCE));
     }
@@ -144,7 +143,6 @@ public class ConditionalsTest {
         Conditionals conditionals = new Conditionals();
         DateTime dateTime = new DateTime();
         conditionals = conditionals.ifUnModifiedSince(dateTime);
-        assertEquals(dateTime, conditionals.getUnModifiedSince());
         Header header = HeaderUtils.toHttpDate(HeaderConstants.IF_UNMODIFIED_SINCE, dateTime);
         assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_UNMODIFIED_SINCE));
     }
@@ -171,7 +169,7 @@ public class ConditionalsTest {
         assertEquals(1, conditionals.getNoneMatch().size());
         DateTime dateTime = new DateTime();
         conditionals = conditionals.ifModifiedSince(dateTime);
-        assertEquals(dateTime, conditionals.getModifiedSince());
+        assertNotNull(conditionals.getModifiedSince());
     }
 
     @Test
@@ -181,7 +179,7 @@ public class ConditionalsTest {
         assertEquals(1, conditionals.getMatch().size());
         DateTime dateTime = new DateTime();
         conditionals = conditionals.ifUnModifiedSince(dateTime);
-        assertEquals(dateTime, conditionals.getUnModifiedSince());
+        assertNotNull(conditionals.getUnModifiedSince());
     }
 
     @Test
@@ -204,7 +202,7 @@ public class ConditionalsTest {
         Conditionals conditionals = new Conditionals();
         DateTime dateTime = new DateTime();
         conditionals = conditionals.ifUnModifiedSince(dateTime);
-        assertEquals(dateTime, conditionals.getUnModifiedSince());
+        assertNotNull(conditionals.getUnModifiedSince());
         try {
             conditionals.ifModifiedSince(dateTime);
             fail("Expected IllegalArgumentException");
@@ -227,7 +225,7 @@ public class ConditionalsTest {
         assertEquals(0, conditionals2.getNoneMatch().size());
         assertEquals(0, conditionals2.getMatch().size());
         assertNull(conditionals2.getModifiedSince());
-        assertEquals(dateTime, conditionals2.getUnModifiedSince());
+        assertNotNull(conditionals2.getUnModifiedSince());
 
     }
 }
