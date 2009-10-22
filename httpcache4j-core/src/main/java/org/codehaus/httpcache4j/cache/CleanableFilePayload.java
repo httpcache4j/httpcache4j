@@ -68,10 +68,6 @@ public class CleanableFilePayload implements CleanablePayload, Serializable {
         throw new HTTPException(String.format("File '%s' is gone...", file.getAbsolutePath()));
     }
 
-    public boolean isTransient() {
-        return false;
-    }
-
     public void clean() {
         if (isAvailable()) {
             file.delete();

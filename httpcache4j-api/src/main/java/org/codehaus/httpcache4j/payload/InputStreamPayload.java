@@ -61,10 +61,6 @@ public class InputStreamPayload implements Payload {
         return available;
     }
 
-    public boolean isTransient() {
-        return !stream.markSupported();
-    }
-
     public InputStream getInputStream() {
         if (available) {
             return stream;
@@ -79,14 +75,14 @@ public class InputStreamPayload implements Payload {
         }
 
         public int read() throws IOException {
-            if (isAvailable() && !isTransient()) {
+            if (isAvailable()) {
                 available = false;
             }
             return super.read();
         }
 
         public int read(byte[] b) throws IOException {
-            if (isAvailable() && !isTransient()) {
+            if (isAvailable()) {
                 available = false;
             }
 
@@ -94,14 +90,14 @@ public class InputStreamPayload implements Payload {
         }
 
         public int read(byte[] b, int off, int len) throws IOException {
-            if (isAvailable() && !isTransient()) {
+            if (isAvailable()) {
                 available = false;
             }
             return super.read(b, off, len);
         }
 
         public long skip(long n) throws IOException {
-            if (isAvailable() && !isTransient()) {
+            if (isAvailable()) {
                 available = false;
             }
             return super.skip(n);
