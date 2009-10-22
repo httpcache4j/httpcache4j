@@ -47,11 +47,4 @@ public interface Payload {
      * @return {@code true} if the payload is available. {@code false} if not.
      */
     public boolean isAvailable();
-
-    /**
-     * Returns the transientness of the payload. I.E if the payload can be re-read.
-     *
-     * @return {@code true} if the payload can be re-read. {@code false} if not.
-     */
-    public boolean isTransient();
 }

@@ -47,8 +47,4 @@ public class ClosedInputStreamPayload implements Payload, Serializable{
     public boolean isAvailable() {
         return true;
     }
-
-    public boolean isTransient() {
-        return false;
-    }
 }

@@ -30,7 +30,7 @@ import java.io.InputStream;
  * This can be used by the {@link org.codehaus.httpcache4j.HTTPRequest request}
  */
 public class FilePayload implements Payload {
-    protected File file;
+    protected final File file;
     private MIMEType mimeType;
 
     /**
@@ -63,7 +63,7 @@ public class FilePayload implements Payload {
         return file.exists() && file.canRead();
     }
 
-    public boolean isTransient() {
-        return false;
+    public File getFile() {
+        return file;
     }
 }
