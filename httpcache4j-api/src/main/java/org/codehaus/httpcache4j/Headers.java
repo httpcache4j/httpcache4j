@@ -41,8 +41,7 @@ public final class Headers implements Serializable, Iterable<Header> {
     }
 
     public Headers(final Headers headers) {
-        Validate.notNull(headers, "The headers may not be null");
-        this.headers.putAll(headers.copyMap());
+        this(headers.copyMap());
     }
 
     private Headers(final HeaderHashMap headers) {
@@ -98,7 +97,7 @@ public final class Headers implements Serializable, Iterable<Header> {
     }
 
     public Set<String> keySet() {
-        return headers.keySet();
+        return headers.keys();
     }
 
     public boolean hasHeader(String headerName) {
@@ -168,7 +167,7 @@ public final class Headers implements Serializable, Iterable<Header> {
         return builder.toString();
     }
 
-    public static class HeaderHashMap extends LinkedHashMap<String, List<String>> {
+    private static class HeaderHashMap extends LinkedHashMap<Name, List<String>> {
         private static final long serialVersionUID = 2714358409043444835L;
 
         private static final Function<Header,String> headerToString = new Function<Header, String>() {
@@ -184,29 +183,41 @@ public final class Headers implements Serializable, Iterable<Header> {
             super(headerHashMap);
         }
 
+        public List<String> get(String key) {
+            return get(new Name(key));
+        }
+
+        public Set<String> keys() {
+            Set<String> strings = new HashSet<String>();
+            for (Name name : super.keySet()) {
+                strings.add(name.getName());
+            }
+            return strings;
+        }
+
         @Override
         public List<String> get(Object key) {
-            List<String> value = super.get(((String) key).toLowerCase());
+            List<String> value = super.get(key);
             return value != null ? value : Collections.<String>emptyList();
         }
 
         List<Header> getAsHeaders(final String key) {
             List<Header> headers = new ArrayList<Header>();
-            headers.addAll(Lists.transform(get(key), stringToHeader(key)));
+            Name name = new Name(key);
+            headers.addAll(Lists.transform(get(name), nameToHeader(name)));
             return Collections.unmodifiableList(headers);
         }
 
-        private Function<String, Header> stringToHeader(final String key) {
+        private Function<String, Header> nameToHeader(final Name key) {
             return new Function<String, Header>() {
                     public Header apply(String from) {
-                        return new Header(key, from);
+                        return new Header(key.getName(), from);
                     }
                 };
         }
 
-        @Override
         public List<String> put(String key, List<String> value) {
-            return super.put(key.toLowerCase(), value);
+            return super.put(new Name(key), value);
         }
 
         List<String> putImpl(String key, List<Header> value) {
@@ -214,12 +225,52 @@ public final class Headers implements Serializable, Iterable<Header> {
             return put(key, new ArrayList<String>(stringList));
         }
 
+        public List<String> remove(String key) {
+            return remove(new Name(key));
+        }
+
         Iterator<Header> getAsHeaders() {
             List<Header> headers = new ArrayList<Header>();
-            for (Map.Entry<String, List<String>> entry : this.entrySet()) {
-                headers.addAll(Lists.transform(entry.getValue(), stringToHeader(entry.getKey())));
+            for (Map.Entry<Name, List<String>> entry : this.entrySet()) {
+                headers.addAll(Lists.transform(entry.getValue(), nameToHeader(entry.getKey())));
             }
             return headers.iterator();
+        }
+    }
+
+    private static class Name {
+        private final String name;
+
+        public Name(final String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            Name name1 = (Name) o;
+
+            return !(name != null ? !name.equalsIgnoreCase(name1.name) : name1.name != null);
+        }
+
+        @Override
+        public int hashCode() {
+            return name != null ? name.toLowerCase(Locale.ENGLISH).hashCode() : 0;
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
     }
 }
