@@ -26,6 +26,8 @@ import java.util.List;
  * @version $Revision: $
  */
 public class FormDataPayloadTest {
+    static final String newline = "%0D%0A";
+
     @Test
     public void testSimpleFormPayload() {
         List<FormDataPayload.FormParameter> parameters = new ArrayList<FormDataPayload.FormParameter>();
@@ -51,5 +53,14 @@ public class FormDataPayloadTest {
         parameters.add(new FormDataPayload.FormParameter("bar", "foo"));
         FormDataPayload payload = new FormDataPayload(parameters);
         Assert.assertEquals("selected+song=hey+jude&bar=foo",payload.getValues());
+    }
+
+    @Test
+    public void testEscapedWithNewLines() {
+        List<FormDataPayload.FormParameter> parameters = new ArrayList<FormDataPayload.FormParameter>();
+        parameters.add(new FormDataPayload.FormParameter("lyrics", "Hello!\r\nIs there anybody out there?\r\nIs there anyone at home"));
+        parameters.add(new FormDataPayload.FormParameter("bar", "foo"));
+        FormDataPayload payload = new FormDataPayload(parameters);
+        Assert.assertEquals("lyrics=Hello%21"+ newline + "Is+there+anybody+out+there%3F"+ newline +"Is+there+anyone+at+home&bar=foo", payload.getValues());
     }
 }
