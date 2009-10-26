@@ -27,6 +27,19 @@ import org.junit.Test;
 public class HeadersTest {
 
     @Test
+    public void testHeaderEquality() {
+        Header header1 = new Header("foo", "bar");
+        Header header2 = new Header("FOO", "bar");
+        Header header3 = new Header("FoO", "bar");
+        assertEquals(header1, header2);
+        assertEquals(header1, header3);
+        assertEquals(header2, header3);
+        assertEquals(header1.hashCode(), header2.hashCode());
+        assertEquals(header1.hashCode(), header3.hashCode());
+        assertEquals(header3.hashCode(), header2.hashCode());
+    }
+
+    @Test
     public void testAddSimpleHeader() {
         Headers headers = new Headers().add(new Header("foo", "bar"));
         assertNotNull("Header list was null", headers.getHeaders("foo"));
@@ -41,6 +54,12 @@ public class HeadersTest {
         assertNotNull("Header was null", header);
         assertEquals("Sun, 12 Oct 2008 15:00:00 GMT", header.getValue());
         assertEquals(now.getMillis(), HeaderUtils.getHeaderAsDate(header));
+    }
+
+    @Test
+    public void testWronglyformattedDateHeader() {
+        DateTime header = HeaderUtils.fromHttpDate(new Header(HeaderConstants.EXPIRES, "-1"));
+        assertNull("Header value was not null", header);
     }
 
     @Test

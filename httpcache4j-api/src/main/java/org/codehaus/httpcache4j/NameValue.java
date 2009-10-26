@@ -4,6 +4,7 @@ import org.apache.commons.lang.Validate;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.Serializable;
+import java.util.Locale;
 
 /**
  * Represents a name/value pair.
@@ -11,16 +12,15 @@ import java.io.Serializable;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public abstract class NameValue implements Serializable {
-    protected String name;
-    protected String value;
     private static final long serialVersionUID = 8126643664459915558L;
+    protected final String name;
+    protected final String value;
 
-    public NameValue(String name, String value) {
+    protected NameValue(final String name, String value) {
         Validate.notEmpty(name, "You may not have an empty name in a name value combination");
         if (StringUtils.isBlank(value)) {
             value = "";
         }
-
         this.value = value;
         this.name = name;
     }
@@ -43,7 +43,7 @@ public abstract class NameValue implements Serializable {
 
         NameValue header = (NameValue) o;
 
-        if (name != null ? !name.equals(header.name) : header.name != null) {
+        if (name != null ? !name.equalsIgnoreCase(header.name) : header.name != null) {
             return false;
         }
         if (value != null ? !value.equals(header.value) : header.value != null) {
@@ -55,7 +55,7 @@ public abstract class NameValue implements Serializable {
 
     public int hashCode() {
         int result;
-        result = (name != null ? name.hashCode() : 0);
+        result = (name != null ? name.toLowerCase(Locale.ENGLISH).hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
         return result;
     }
