@@ -37,7 +37,7 @@ import java.util.Map;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public final class CacheItem implements Serializable {
+public class CacheItem implements Serializable {
     private static final long serialVersionUID = 5891522215450656044L;
 
     private final DateTime cachedTime;

@@ -89,7 +89,6 @@ public class CacheItemTest {
         Assert.assertTrue("Item was stale", item.isStale());
     }
 
-    @Test(expected = IllegalArgumentException.class)
     public void testIsStaleExpiresHeaderWithInvalidDate() {
         Headers headers = new Headers().add(new Header(EXPIRES, "foo"));
         setupItem(headers);

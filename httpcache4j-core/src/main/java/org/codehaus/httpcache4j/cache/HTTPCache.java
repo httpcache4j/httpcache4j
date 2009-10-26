@@ -118,7 +118,7 @@ public class HTTPCache {
             response = getFromCache(request, force);
         }
         if (response == null) {
-            return new HTTPResponse(null, Status.INTERNAL_SERVER_ERROR, new Headers());
+            throw new HTTPException("No response produced");
         }
         return response;
     }
@@ -147,7 +147,6 @@ public class HTTPCache {
                     response = handleResolve(req, item);
                 }
                 else {
-                    //TODO: handle rewrite of Status... HEAD should probably always return 200 OK.
                     response = rewriteResponse(request, item);
                 }
             }
@@ -176,6 +175,9 @@ public class HTTPCache {
                     response = new HTTPResponse(null, Status.NOT_MODIFIED, response.getHeaders());
                 }
             }
+        }
+        else if (request.getMethod() == HTTPMethod.HEAD) {
+            response = new HTTPResponse(null, response.getStatus(), response.getHeaders());
         }
         return helper.calculateAge(response, item);
     }
