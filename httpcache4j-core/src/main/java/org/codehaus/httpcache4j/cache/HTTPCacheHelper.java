@@ -84,9 +84,9 @@ class HTTPCacheHelper {
         Headers washedHeaders = new Headers();
         Set<String> usableHeaders = new HashSet<String>(headers.keySet());
         usableHeaders.removeAll(unmodifiableHeaders);
-        for (String removableHeader : usableHeaders) {
-            if (headers.hasHeader(removableHeader)) {
-                washedHeaders = washedHeaders.add(removableHeader, headers.getHeaders((removableHeader)));
+        for (String headerName : usableHeaders) {
+            if (headers.hasHeader(headerName)) {
+                washedHeaders = washedHeaders.add(headerName, headers.getHeaders((headerName)));
             }
         }
         return washedHeaders;

@@ -266,16 +266,18 @@ public class HTTPCacheTest {
     }
 
     @Test
-    public void testPOST() {
+    public void testPOST() throws IOException {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.POST);
+        when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(null, Status.CREATED, new Headers()));
         cache.doCachedRequest(request);
         when(cacheStorage.size()).thenReturn(0);
         assertEquals(0, cacheStorage.size());
     }
 
     @Test
-    public void testTRACE() {
+    public void testTRACE() throws IOException {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.TRACE);
+        when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(null, Status.CREATED, new Headers()));
         cache.doCachedRequest(request);
         when(cacheStorage.size()).thenReturn(0);
         assertEquals(0, cacheStorage.size());
@@ -303,14 +305,19 @@ public class HTTPCacheTest {
     }
 
     @Test
-    public void testHEADWithETagAndGET() throws IOException {
+    public void testHEADWithETagAndGETWithItemInCache() throws IOException {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.HEAD);
         Headers headers = new Headers();
         headers = headers.add(new Header("ETag", "\"foo\""));
         headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
-        HTTPResponse cachedResponse = new HTTPResponse(null, Status.OK, headers);
-        when(responseResolver.resolve(request)).thenReturn(cachedResponse);
-        when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(cachedResponse));
+        HTTPResponse cachedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, headers);
+        //when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(cachedResponse);
+        when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(cachedResponse) {
+            @Override
+            public boolean isStale() {
+                return false;
+            }
+        });
         HTTPResponse response = cache.doCachedRequest(request);
         assertEquals("Conditionals was set, incorrect", 0, request.getConditionals().toHeaders().size());        
         assertFalse(response.hasPayload());

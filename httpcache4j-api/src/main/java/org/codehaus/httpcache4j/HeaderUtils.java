@@ -42,7 +42,13 @@ public final class HeaderUtils {
         DateTimeFormatter formatter = DateTimeFormat.forPattern(PATTERN_RFC1123).
                 withZone(DateTimeZone.forID("UTC")).
                 withLocale(Locale.US);
-        return formatter.parseDateTime(header.getValue());
+        DateTime formattedDate = null;
+        try {
+            formattedDate = formatter.parseDateTime(header.getValue());
+        } catch (IllegalArgumentException ignore) {            
+        }
+
+        return formattedDate;
     }
 
 
@@ -98,7 +104,7 @@ public final class HeaderUtils {
           Header expires = headers.getFirstHeader(EXPIRES);
           DateTime expiresValue = HeaderUtils.fromHttpDate(expires);
           Header date = headers.getFirstHeader(DATE);
-          if (date == null) {
+          if (expiresValue == null || date == null) {
             return false;
           }
           DateTime dateValue = HeaderUtils.fromHttpDate(date);
