@@ -38,6 +38,7 @@ import com.google.common.collect.Lists;
 public class FormDataPayload implements Payload {
     private final MIMEType mimeType = new MIMEType("application/x-www-form-urlencoded");
     private final String values;
+    
 
     public FormDataPayload(Map<String, List<String>> parameters) {
         this(toIterable(parameters));
@@ -80,11 +81,18 @@ public class FormDataPayload implements Payload {
         return true;
     }
 
+
+    /**
+     * Represents a Form Url-encoded data parameter.
+     * http://www.w3.org/TR/html401/interact/forms.html#h-17.13.3.4
+     *
+     * new line character MUST be {@code \r\n}.
+     */
     public static class FormParameter extends Parameter {
         private static final long serialVersionUID = -174492565886663398L;
 
-        public FormParameter(String key, String from) {
-            super(key, from);
+        public FormParameter(String key, String value) {
+            super(key, value);
         }
 
         private String encode(String value) {
