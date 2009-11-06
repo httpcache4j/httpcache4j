@@ -69,10 +69,11 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 UsernamePasswordChallenge upc = (UsernamePasswordChallenge) challenge;
                 AuthScheme scheme = getScheme(challenge.getMethod());
                 try {
-                    scheme.authenticate(new UsernamePasswordCredentials(challenge.getIdentifier(), upc.getPassword() != null ? new String(upc.getPassword()) : null), realRequest);
+                  org.apache.http.Header header = scheme.authenticate(new UsernamePasswordCredentials(challenge.getIdentifier(), upc.getPassword() != null ? new String(upc.getPassword()) : null), realRequest);
+                  realRequest.addHeader(header);
                 } catch (AuthenticationException e) {
                     throw new HTTPException("Unable to authenticate from challenge" + challenge);
-                }                
+                }
             }
         }
 
