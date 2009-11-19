@@ -13,11 +13,12 @@
  *   limitations under the License.
  */
 
-package org.codehaus.httpcache4j.resolver;
+package org.codehaus.httpcache4j.auth;
 
 import org.codehaus.httpcache4j.*;
 
 import java.util.List;
+import java.util.Collections;
 
 import com.google.common.collect.Lists;
 
@@ -29,11 +30,11 @@ public class DefaultAuthenticator implements Authenticator {
     private final List<AuthenticatorStrategy> strategies = Lists.newArrayList();
 
     public DefaultAuthenticator() {
-        createStrategies();
+        strategies.addAll(createStrategies());
     }
 
-    private void createStrategies() {
-
+    protected List<AuthenticatorStrategy> createStrategies() {
+        return Collections.<AuthenticatorStrategy>singletonList(new BasicAuthenticatorStrategy());
     }
 
     public final HTTPRequest prepareAuthentication(final HTTPRequest request, final HTTPResponse response) {
