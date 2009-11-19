@@ -50,15 +50,15 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         if (openConnection instanceof HttpURLConnection) {
             HttpURLConnection connection = (HttpURLConnection) openConnection;
             if (configuration.isPreemtiveAuthentication() && request.getChallenge() != null) {
-                addAuthorizationHeader(request);
+                request = addAuthorizationHeader(request);
             }
             doRequest(request, connection);
             Status status = Status.valueOf(connection.getResponseCode());
             if (status == Status.UNAUTHORIZED && request.getChallenge() != null && !configuration.isPreemtiveAuthentication()) {
-                addAuthorizationHeader(request);
+                request = addAuthorizationHeader(request);
                 connection.disconnect();
                 connection = (HttpURLConnection) url.openConnection();
-                doRequest(request, connection);                
+                doRequest(request, connection);
             }
             return convertResponse(connection);
         }
@@ -83,13 +83,13 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         return getResponseCreator().createResponse(status, responseHeaders, wrapReponseStream(connection, status));
     }
 
-    private void addAuthorizationHeader(HTTPRequest request) {
+    private HTTPRequest addAuthorizationHeader(final HTTPRequest request) {
         if (request.getChallenge().getMethod() == ChallengeMethod.BASIC) {
             UsernamePasswordChallenge upc = (UsernamePasswordChallenge) request.getChallenge();
             String basicString = request.getChallenge().getIdentifier() + ":" + new String(upc.getPassword());
             try {
                 basicString = new String(Base64.encodeBase64(basicString.getBytes("UTF-8")));
-                request.getHeaders().add("Authorization", request.getChallenge().getMethod().name() + " " + basicString);
+                return request.addHeader("Authorization", request.getChallenge().getMethod().name() + " " + basicString);
             } catch (UnsupportedEncodingException e) {
                 throw new Error("UTF-8 is not supported on this platform", e);
             }
@@ -97,6 +97,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         else if (request.getChallenge().getMethod() == ChallengeMethod.DIGEST) {
             throw new UnsupportedOperationException("Digest is not yet supported");
         }
+        return request;
     }
 
     private InputStream wrapReponseStream(HttpURLConnection connection, Status status) {
@@ -142,7 +143,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         if (configuration.getReadTimeout() > 0) {
             connection.setReadTimeout(configuration.getReadTimeout());
         }
-        connection.setAllowUserInteraction(false);        
+        connection.setAllowUserInteraction(false);
     }
 
     private static class HttpURLConnectionStream extends DelegatingInputStream {
