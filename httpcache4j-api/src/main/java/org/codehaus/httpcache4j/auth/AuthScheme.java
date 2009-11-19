@@ -13,15 +13,31 @@
  *   limitations under the License.
  */
 
-package org.codehaus.httpcache4j.resolver;
+package org.codehaus.httpcache4j.auth;
 
-import org.codehaus.httpcache4j.HTTPRequest;
-import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.Header;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public interface Authenticator {
-    HTTPRequest prepareAuthentication(HTTPRequest request, HTTPResponse response);
+public class AuthScheme {
+    private final Header header;
+    private String type;
+
+    public AuthScheme(final Header pHeader) {
+        header = pHeader;
+        String headervalue = pHeader.getValue();
+        if (headervalue.contains(" ")) {
+            type = headervalue.substring(0, headervalue.indexOf(" ") - 1);
+        }
+    }
+
+    public Header getHeader() {
+        return header;
+    }
+
+    public String getType() {
+        return type;
+    }
 }

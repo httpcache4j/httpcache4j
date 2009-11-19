@@ -16,6 +16,9 @@
 
 package org.codehaus.httpcache4j.resolver;
 
+import org.codehaus.httpcache4j.auth.Authenticator;
+import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
+
 /**
  * Implementors should implement this instead of using the ResponseResolver interface directly.
  *
@@ -23,9 +26,21 @@ package org.codehaus.httpcache4j.resolver;
  */
 public abstract class AbstractResponseResolver implements ResponseResolver {
     private final ResponseCreator responseCreator = new ResponseCreator();
+    private final Authenticator authenticator;
+
+    protected AbstractResponseResolver() {
+        authenticator = createAuthenticator();
+    }
+
+    protected Authenticator createAuthenticator() {
+        return new DefaultAuthenticator();
+    }
 
     protected ResponseCreator getResponseCreator() {
         return responseCreator;
     }
 
+    protected Authenticator getAuthenticator() {
+        return authenticator;
+    }
 }

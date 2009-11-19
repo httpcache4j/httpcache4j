@@ -13,23 +13,16 @@
  *   limitations under the License.
  */
 
-package org.codehaus.httpcache4j.resolver;
+package org.codehaus.httpcache4j.auth;
 
 import org.codehaus.httpcache4j.HTTPRequest;
-import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.Status;
 
 /**
- * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
+ * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public abstract class AbstractProxyAuthenticator implements Authenticator {
-    public final HTTPRequest prepareAuthentication(final HTTPRequest request, final HTTPResponse response) {
-        if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) {
-            return prepareProxyAuthentication(request, response);
-        }
-        return request;
-    }
+public interface AuthenticatorStrategy {
+    boolean supports(AuthScheme scheme);
 
-    protected abstract HTTPRequest prepareProxyAuthentication(final HTTPRequest request, final HTTPResponse response);
+    HTTPRequest prepare(HTTPRequest request, AuthScheme scheme);
 }

@@ -13,7 +13,7 @@
  *   limitations under the License.
  */
 
-package org.codehaus.httpcache4j.resolver;
+package org.codehaus.httpcache4j.auth;
 
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.Challenge;
