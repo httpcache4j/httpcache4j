@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, The Codehaus. All Rights Reserved.
+ * Copyright (c) 2009. The Codehaus. All Rights Reserved.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -11,23 +11,17 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
  */
 
-package org.codehaus.httpcache4j;
+package org.codehaus.httpcache4j.resolver;
+
+import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.HTTPResponse;
 
 /**
- * An enum describing the different challenge types that the cache supports. 
- *
- *
- * @deprecated replaced by an Authenticator framework.
- * @see org.codehaus.httpcache4j.resolver.DefaultAuthenticator
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
- * @author last modified by $Author: $
- * @version $Id: $
+ * @version $Revision: $
  */
-@Deprecated
-public enum ChallengeMethod {
-    BASIC,
-    DIGEST
+public interface Authenticator {
+    HTTPRequest prepareAuthentication(HTTPRequest request, HTTPResponse response);
 }
