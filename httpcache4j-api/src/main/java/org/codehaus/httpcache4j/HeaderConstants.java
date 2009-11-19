@@ -17,8 +17,9 @@
 package org.codehaus.httpcache4j;
 
 public final class HeaderConstants {
-    private HeaderConstants(){}
-    
+    private HeaderConstants() {
+    }
+
     public static final String ACCEPT = "Accept";
     public static final String ACCEPT_LANGUAGE = "Accept-Language";
     public static final String ACCEPT_CHARSET = "Accept-Charset";
@@ -38,6 +39,8 @@ public final class HeaderConstants {
     public static final String PRAGMA = "Pragma";
     public static final String VARY = "Vary";
     public static final String WARNING = "Warning";
+    public static final String WWW_AUTHENTICATE = "WWW-Authenticate";
+
 
     /**
      * The Retry-After response-header field can be used with a 503 (Service Unavailable)
