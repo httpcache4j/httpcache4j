@@ -17,6 +17,10 @@ package org.codehaus.httpcache4j.auth;
 
 import org.codehaus.httpcache4j.Header;
 
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.Collections;
+
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
@@ -24,12 +28,15 @@ import org.codehaus.httpcache4j.Header;
 public class AuthScheme {
     private final Header header;
     private String type;
+    private final Map<String, String> directives = new LinkedHashMap<String, String>();
 
     public AuthScheme(final Header pHeader) {
         header = pHeader;
         String headervalue = pHeader.getValue();
         if (headervalue.contains(" ")) {
-            type = headervalue.substring(0, headervalue.indexOf(" ") - 1);
+            final int index = headervalue.indexOf(" ");
+            type = headervalue.substring(0, index);
+            directives.putAll(Header.parseDirectives(headervalue.substring(index+1)));
         }
     }
 
@@ -39,5 +46,13 @@ public class AuthScheme {
 
     public String getType() {
         return type;
+    }
+
+    public String getRealm() {
+        return directives.get("realm");
+    }
+
+    public Map<String, String> getDirectives() {
+        return Collections.unmodifiableMap(directives);
     }
 }

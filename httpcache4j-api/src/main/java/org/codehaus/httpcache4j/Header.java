@@ -30,18 +30,7 @@ public final class Header extends NameValue {
     public Header(String name, String value) {
         super(name, value);
         Validate.notEmpty(value, "The value of a Header may not be empty");
-        parseDirectives(value);
-    }
-
-    private void parseDirectives(String value) {
-        List<String> directives = Arrays.asList(value.split(","));
-        for (String directive : directives) {
-            directive = directive.trim();
-            if (directive.length() > 0) {
-                String[] directiveParts = directive.split("=", 2);
-                this.directives.put(directiveParts[0], directiveParts.length > 1 ? directiveParts[1] : null);
-            }
-        }
+        directives.putAll(parseDirectives(value));
     }
 
     @Override
@@ -51,5 +40,18 @@ public final class Header extends NameValue {
 
     public Map<String, String> getDirectives() {
         return Collections.unmodifiableMap(directives);
+    }
+
+    public static Map<String, String> parseDirectives(String value) {
+        Map<String, String> map = new LinkedHashMap<String, String>();
+        List<String> directives = Arrays.asList(value.split(","));
+        for (String directive : directives) {
+            directive = directive.trim();
+            if (directive.length() > 0) {
+                String[] directiveParts = directive.split("=", 2);
+                map.put(directiveParts[0], directiveParts.length > 1 ? directiveParts[1] : null);
+            }
+        }
+        return map;
     }
 }

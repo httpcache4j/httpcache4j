@@ -15,20 +15,18 @@
 
 package org.codehaus.httpcache4j.urlconnection;
 
-import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
-import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.Validate;
+import org.codehaus.httpcache4j.*;
+import org.codehaus.httpcache4j.auth.ChallengeProvider;
+import org.codehaus.httpcache4j.auth.ProxyConfiguration;
+import org.codehaus.httpcache4j.payload.DelegatingInputStream;
+import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.HttpURLConnection;
+import java.net.*;
 import java.util.List;
 import java.util.Map;
 
@@ -40,27 +38,58 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
     private final URLConnectionConfigurator configuration;
 
     public URLConnectionResponseResolver(URLConnectionConfigurator configuration) {
+        super(configuration.getProxyConfiguration());
         Validate.notNull(configuration, "Configuration may not be null");
         this.configuration = configuration;
     }
 
-    public HTTPResponse resolve(HTTPRequest request) throws IOException {
+    public HTTPResponse resolve(final HTTPRequest request) throws IOException {
+        HTTPRequest req = request;
+        if (isPreemptiveAuthentication()) {
+            req = getAuthenticator().preparePreemptiveAuthentication(request);
+            req = getAuthenticator().preparePreemptiveAuthentication(req);
+        }
         URL url = request.getRequestURI().toURL();
         URLConnection openConnection = url.openConnection();
         if (openConnection instanceof HttpURLConnection) {
             HttpURLConnection connection = (HttpURLConnection) openConnection;
-            if (configuration.isPreemtiveAuthentication() && request.getChallenge() != null) {
-                request = addAuthorizationHeader(request);
-            }
-            doRequest(request, connection);
+            doRequest(req, connection);
             Status status = Status.valueOf(connection.getResponseCode());
-            if (status == Status.UNAUTHORIZED && request.getChallenge() != null && !configuration.isPreemtiveAuthentication()) {
-                request = addAuthorizationHeader(request);
-                connection.disconnect();
-                connection = (HttpURLConnection) url.openConnection();
-                doRequest(request, connection);
+            HTTPResponse response = convertResponse(connection);
+
+            if (status == Status.PROXY_AUTHENTICATION_REQUIRED) {
+                req = getProxyAuthenticator().prepareAuthentication(req, response);
+                if (req != request) {
+                    connection = (HttpURLConnection) url.openConnection();
+                    response.consume();
+                    doRequest(req, connection);
+                    response = convertResponse(connection);
+                    if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
+                        getProxyAuthenticator().invalidateAuthentication();
+                        setPreemptiveAuthentication(false);
+                    }
+                    else {
+                        setPreemptiveAuthentication(true);
+                    }
+                }
             }
-            return convertResponse(connection);
+            if (status == Status.UNAUTHORIZED) {
+                req = getAuthenticator().prepareAuthentication(req, response);
+                if (req != request) {
+                    connection = (HttpURLConnection) url.openConnection();
+                    response.consume();
+                    doRequest(req, connection);
+                    response = convertResponse(connection);
+                    if (response.getStatus() == Status.UNAUTHORIZED) {
+                        setPreemptiveAuthentication(false);
+                    }
+                    else {
+                        setPreemptiveAuthentication(true);
+                    }
+                }
+            }
+
+            return response;
         }
         throw new HTTPException("This resolver only supports HTTP calls");
     }
@@ -81,23 +110,6 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         Status status = Status.valueOf(connection.getResponseCode());
         Headers responseHeaders = getResponseHeaders(connection);
         return getResponseCreator().createResponse(status, responseHeaders, wrapReponseStream(connection, status));
-    }
-
-    private HTTPRequest addAuthorizationHeader(final HTTPRequest request) {
-        if (request.getChallenge().getMethod() == ChallengeMethod.BASIC) {
-            UsernamePasswordChallenge upc = (UsernamePasswordChallenge) request.getChallenge();
-            String basicString = request.getChallenge().getIdentifier() + ":" + new String(upc.getPassword());
-            try {
-                basicString = new String(Base64.encodeBase64(basicString.getBytes("UTF-8")));
-                return request.addHeader("Authorization", request.getChallenge().getMethod().name() + " " + basicString);
-            } catch (UnsupportedEncodingException e) {
-                throw new Error("UTF-8 is not supported on this platform", e);
-            }
-        }
-        else if (request.getChallenge().getMethod() == ChallengeMethod.DIGEST) {
-            throw new UnsupportedOperationException("Digest is not yet supported");
-        }
-        return request;
     }
 
     private InputStream wrapReponseStream(HttpURLConnection connection, Status status) {

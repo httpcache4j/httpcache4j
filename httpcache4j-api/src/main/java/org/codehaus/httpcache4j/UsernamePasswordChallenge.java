@@ -26,18 +26,15 @@ package org.codehaus.httpcache4j;
 public class UsernamePasswordChallenge implements Challenge {
     private String identifier;
     private char[] password;
-    private ChallengeMethod method;
 
-    public UsernamePasswordChallenge(String identifier, char[] password, ChallengeMethod method) {
+    public UsernamePasswordChallenge(String identifier, char[] password) {
         this.identifier = identifier;
         this.password = password != null ? password.clone() : null;
-        this.method = method;
     }
-    
-    public UsernamePasswordChallenge(String identifier, String password, ChallengeMethod method) {
+
+    public UsernamePasswordChallenge(String identifier, String password) {
         this.identifier = identifier;
         this.password = password != null ? password.toCharArray() : null;
-        this.method = method;
     }
 
     public String getIdentifier() {
@@ -47,13 +44,9 @@ public class UsernamePasswordChallenge implements Challenge {
     public char[] getPassword() {
         return password != null ? password.clone() : null;
     }
-
-    public ChallengeMethod getMethod() {
-        return method;
-    }
-
+    
     @Override
     public String toString() {
-        return String.format("Authentication using %s as %s ", method, identifier);
+        return String.format("Authenticating as %s ", identifier);
     }
 }

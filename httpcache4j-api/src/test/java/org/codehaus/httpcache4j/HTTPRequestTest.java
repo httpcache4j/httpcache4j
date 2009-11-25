@@ -35,7 +35,7 @@ public class HTTPRequestTest {
         Assert.assertNotSame("Request objects were the same", request, request2);
         request = request.conditionals(new Conditionals().addIfNoneMatch(Tag.ALL));
         Assert.assertNotSame("Request objects were the same", request, request2);
-        request2 = request.challenge(new UsernamePasswordChallenge("foo", "bar", ChallengeMethod.BASIC));
+        request2 = request.challenge(new UsernamePasswordChallenge("foo", "bar"));
         Assert.assertNotSame("Request objects were the same", request, request2);
     }
 

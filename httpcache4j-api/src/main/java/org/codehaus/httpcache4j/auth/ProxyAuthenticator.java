@@ -24,4 +24,10 @@ import org.codehaus.httpcache4j.HTTPResponse;
  */
 public interface ProxyAuthenticator {
     HTTPRequest prepareAuthentication(HTTPRequest request, HTTPResponse response);
+
+    HTTPRequest preparePreemptiveAuthentication(HTTPRequest request);
+
+    void invalidateAuthentication();
+
+    ProxyConfiguration getConfiguration();
 }

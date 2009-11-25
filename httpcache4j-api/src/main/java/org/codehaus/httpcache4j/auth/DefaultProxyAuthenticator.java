@@ -23,6 +23,7 @@ import org.apache.commons.lang.Validate;
 
 import java.util.List;
 import java.util.Collections;
+import java.net.URI;
 
 import com.google.common.collect.Lists;
 
@@ -31,13 +32,16 @@ import com.google.common.collect.Lists;
  * @version $Revision: $
  */
 public class DefaultProxyAuthenticator implements ProxyAuthenticator {
-    private final ChallengeProvider provider;
-    private Challenge proxyChallenge;
-    private final List<AuthenticatorStrategy> strategies = Lists.newArrayList();
 
-    protected DefaultProxyAuthenticator(ChallengeProvider provider) {
-        Validate.notNull(provider, "Challenge provider may not be null");
-        this.provider = provider;
+    private final ProxyConfiguration configuration;
+    private final List<AuthenticatorStrategy> strategies = Lists.newArrayList();
+    private final SchemeRegistry registry = new SchemeRegistry();
+
+    private Challenge proxyChallenge;
+
+    public DefaultProxyAuthenticator(ProxyConfiguration configuration) {
+        Validate.notNull(configuration, "Configuration may not be null");
+        this.configuration = configuration;
         strategies.addAll(createStrategies());
     }
 
@@ -45,20 +49,47 @@ public class DefaultProxyAuthenticator implements ProxyAuthenticator {
         return Collections.<AuthenticatorStrategy>singletonList(new BasicAuthenticatorStrategy());
     }
 
-    public final HTTPRequest prepareAuthentication(final HTTPRequest request, final HTTPResponse response) {
-        if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) {
-            if (proxyChallenge == null) {
-                proxyChallenge = provider.getChallenge();
+    public final HTTPRequest prepareAuthentication(final HTTPRequest request, final HTTPResponse response) {        
+        if (configuration.getHost() != null) {
+            if (response == null && registry.matches(configuration.getHost())) {
+                //preemtive auth.
+                AuthScheme authScheme = registry.get(configuration.getHost());
+                return doAuth(request, authScheme);
             }
-            AuthScheme scheme = new AuthScheme(response.getHeaders().getFirstHeader("Proxy-Authenticate"));
-            for (AuthenticatorStrategy strategy : strategies) {
-                if (strategy.supports(scheme)) {
-                    return strategy.prepare(request, scheme);
+            if (response != null && response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) {
+                if (proxyChallenge == null) {
+                    proxyChallenge = configuration.getProvider().getChallenge();
+                }
+                if (proxyChallenge != null) {
+                    AuthScheme scheme = new AuthScheme(response.getHeaders().getFirstHeader("Proxy-Authenticate"));
+                    registry.register(configuration.getHost(), scheme);
+                    return doAuth(request, scheme);
                 }
             }
         }
         return request;
     }
 
+    public HTTPRequest preparePreemptiveAuthentication(HTTPRequest request) {
+        return prepareAuthentication(request, null);
+    }
 
+    private HTTPRequest doAuth(HTTPRequest request, AuthScheme scheme) {
+        if (!configuration.isHostIgnored(request.getRequestURI().getHost())) {
+            for (AuthenticatorStrategy strategy : strategies) {
+                if (strategy.supports(scheme)) {
+                    return strategy.prepareWithProxy(request, proxyChallenge, scheme);
+                }
+            }
+        }
+        return request;
+    }
+
+    public void invalidateAuthentication() {
+        proxyChallenge = null;
+    }
+
+    public ProxyConfiguration getConfiguration() {
+        return configuration;
+    }
 }

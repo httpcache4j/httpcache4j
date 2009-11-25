@@ -238,7 +238,8 @@ public final class Headers implements Serializable, Iterable<Header> {
         }
     }
 
-    private static class Name {
+    private static class Name implements Serializable {
+        private static final long serialVersionUID = 429640405363982150L;
         private final String name;
 
         public Name(final String name) {
