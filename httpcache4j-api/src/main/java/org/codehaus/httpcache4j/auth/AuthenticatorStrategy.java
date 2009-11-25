@@ -16,13 +16,16 @@
 package org.codehaus.httpcache4j.auth;
 
 import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.Challenge;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public interface AuthenticatorStrategy {
     boolean supports(AuthScheme scheme);
 
     HTTPRequest prepare(HTTPRequest request, AuthScheme scheme);
+
+    HTTPRequest prepareWithProxy(HTTPRequest request, Challenge challenge, AuthScheme scheme);
 }

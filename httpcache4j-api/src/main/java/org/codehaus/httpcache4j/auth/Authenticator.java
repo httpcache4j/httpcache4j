@@ -24,4 +24,5 @@ import org.codehaus.httpcache4j.HTTPResponse;
  */
 public interface Authenticator {
     HTTPRequest prepareAuthentication(HTTPRequest request, HTTPResponse response);
+    HTTPRequest preparePreemptiveAuthentication(HTTPRequest request);
 }

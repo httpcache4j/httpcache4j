@@ -23,23 +23,37 @@ import org.apache.commons.codec.binary.Base64;
 import java.io.UnsupportedEncodingException;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class BasicAuthenticatorStrategy implements AuthenticatorStrategy {
+    
     public boolean supports(final AuthScheme scheme) {
         return "basic".equalsIgnoreCase(scheme.getType());
     }
 
-    public HTTPRequest prepare(final HTTPRequest request, final AuthScheme scheme) {
-        HTTPRequest req = request;
-        Challenge challenge = request.getChallenge();
+    public HTTPRequest prepare(HTTPRequest request, AuthScheme scheme) {
+        return prepare(request, request.getChallenge(), false);
+    }
+
+    public HTTPRequest prepareWithProxy(HTTPRequest request, Challenge challenge, AuthScheme scheme) {
+        return prepare(request, challenge, true);
+    }
+
+    private HTTPRequest prepare(final HTTPRequest request, Challenge challenge, boolean proxy) {
+        HTTPRequest req = request;        
         if (challenge instanceof UsernamePasswordChallenge) {
             UsernamePasswordChallenge upc = (UsernamePasswordChallenge) challenge;
-            String basicString = request.getChallenge().getIdentifier() + ":" + new String(upc.getPassword());
+            String basicString = upc.getIdentifier() + ":" + new String(upc.getPassword());
             try {
                 basicString = new String(Base64.encodeBase64(basicString.getBytes("UTF-8")));
-                req = request.addHeader("Authorization", "Basic" + " " + basicString);
+                final String authValue = "Basic" + " " + basicString;
+                if (proxy) {
+                    req = request.addHeader("Proxy-Authorization", authValue);
+                }
+                else {
+                    req = request.addHeader("Authorization", authValue);
+                }
             } catch (UnsupportedEncodingException e) {
                 throw new Error("UTF-8 is not supported on this platform", e);
             }

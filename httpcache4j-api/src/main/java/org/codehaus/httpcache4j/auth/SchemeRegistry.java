@@ -15,18 +15,32 @@
 
 package org.codehaus.httpcache4j.auth;
 
-import org.codehaus.httpcache4j.Challenge;
+import org.codehaus.httpcache4j.HTTPHost;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.net.URI;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public interface ChallengeProvider {
-    Challenge getChallenge();
+public class SchemeRegistry {
+    private ConcurrentMap<HTTPHost, AuthScheme> registry = new ConcurrentHashMap<HTTPHost, AuthScheme>();
 
-    public class Stub implements ChallengeProvider {
-        public Challenge getChallenge() {
-            return null;
-        }
+    public void register(HTTPHost host, AuthScheme scheme) {
+        registry.put(host, scheme);
+    }
+
+    public boolean matches(HTTPHost host) {
+        return registry.containsKey(host);
+    }
+
+    public void clear() {
+        registry.clear();
+    }
+
+    public AuthScheme get(HTTPHost host) {
+        return registry.get(host);
     }
 }

@@ -21,6 +21,4 @@ package org.codehaus.httpcache4j;
  */
 public interface Challenge {
     String getIdentifier();
-
-    ChallengeMethod getMethod();
 }

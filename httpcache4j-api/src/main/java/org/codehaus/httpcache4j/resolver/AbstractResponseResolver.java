@@ -16,8 +16,8 @@
 
 package org.codehaus.httpcache4j.resolver;
 
-import org.codehaus.httpcache4j.auth.Authenticator;
-import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
+import org.codehaus.httpcache4j.auth.*;
+import org.apache.commons.lang.Validate;
 
 /**
  * Implementors should implement this instead of using the ResponseResolver interface directly.
@@ -27,13 +27,29 @@ import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
 public abstract class AbstractResponseResolver implements ResponseResolver {
     private final ResponseCreator responseCreator = new ResponseCreator();
     private final Authenticator authenticator;
+    private final ProxyAuthenticator proxyAuthenticator;
+    private boolean preemptiveAuthentication = false;
 
-    protected AbstractResponseResolver() {
+    protected AbstractResponseResolver(ProxyConfiguration proxyConfiguration) {
+        Validate.notNull(proxyConfiguration, "Proxy Config may not be null");
         authenticator = createAuthenticator();
+        proxyAuthenticator = createProxyAuthenticator(proxyConfiguration);
+    }
+    
+    protected AbstractResponseResolver() {
+        this(new ProxyConfiguration());
+    }
+
+    protected ProxyAuthenticator createProxyAuthenticator(ProxyConfiguration configuration) {
+        return new DefaultProxyAuthenticator(configuration);
     }
 
     protected Authenticator createAuthenticator() {
         return new DefaultAuthenticator();
+    }
+
+    protected ProxyAuthenticator getProxyAuthenticator() {
+        return proxyAuthenticator;
     }
 
     protected ResponseCreator getResponseCreator() {
@@ -42,5 +58,13 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
 
     protected Authenticator getAuthenticator() {
         return authenticator;
+    }
+
+    protected boolean isPreemptiveAuthentication() {
+        return preemptiveAuthentication;
+    }
+
+    protected void setPreemptiveAuthentication(boolean preemptiveAuthentication) {
+        this.preemptiveAuthentication = preemptiveAuthentication;
     }
 }

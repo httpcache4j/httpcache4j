@@ -18,19 +18,17 @@ package org.codehaus.httpcache4j.client;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.lang.Validate;
 
 import org.codehaus.httpcache4j.*;
+import org.codehaus.httpcache4j.auth.ProxyConfiguration;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * An implementation of the ResponseResolver using the Commons HTTPClient (http://hc.apache.org/httpclient-3.x/)
@@ -43,41 +41,79 @@ import java.util.ArrayList;
 //TODO: add default user agent. This should maybe only be the cache? Maybe the client type as well. Add support for the client of the cache???
 public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private final HttpClient client;
-    private boolean useRequestChallenge = true;
+
+    public HTTPClientResponseResolver(HttpClient client, ProxyConfiguration configuration) {
+        super(configuration);
+        Validate.notNull(client, "You may not create with a null HttpClient");
+        this.client = client;
+        HTTPHost proxyHost = configuration.getHost();
+        if (proxyHost != null) {
+            client.getHostConfiguration().setProxy(proxyHost.getHost(), proxyHost.getPort());
+        }
+    }
 
     /**
-     * If you use this payload creator from multiple threads you need to create a multithreaded HttpClient.
+     * If you use this the cache from multiple threads you need to create a multithreaded HttpClient.
      * example: <br/>
      * {@code
      * HttpClient client = new HttpClient(new MultiThreadedConnectionManager());
-     * ResponseResolver resolver = HTTPClientResponseResolver(client, new DefaultPayloadCreator);
+     * ResponseResolver resolver = HTTPClientResponseResolver(client);
      * }
      *
      * @param client the HttpClient instance to use. may not be {@code null}
      */
     public HTTPClientResponseResolver(HttpClient client) {
-        Validate.notNull(client, "You may not create with a null HttpClient");
-        this.client = client;
+        this(client, new ProxyConfiguration());
     }
 
-    public HTTPResponse resolve(HTTPRequest request) throws IOException {
-        HttpMethod method = convertRequest(request);
+    public HTTPResponse resolve(final HTTPRequest request) throws IOException {
+        HTTPRequest req = request;
+        if (isPreemptiveAuthentication()) {
+            req = getAuthenticator().preparePreemptiveAuthentication(request);
+            req = getProxyAuthenticator().preparePreemptiveAuthentication(req);
+        }
+
+        HttpMethod method = convertRequest(req);
         client.executeMethod(method);
-        return convertResponse(method);
-    }
+        HTTPResponse response = convertResponse(method);
 
-    public boolean isUseRequestChallenge() {
-        return useRequestChallenge;
-    }
+        if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) {
+            req = getProxyAuthenticator().prepareAuthentication(req, response);
+            if (req != request) {
+                response.consume();
+                method = convertRequest(req);
+                method.setDoAuthentication(true);
+                client.executeMethod(method);
+                response = convertResponse(method);
+                if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
+                    getProxyAuthenticator().invalidateAuthentication();
+                    setPreemptiveAuthentication(false);
+                }
+                else {
+                    setPreemptiveAuthentication(true);
+                }
+            }
+        }       
+        if (response.getStatus() == Status.UNAUTHORIZED) {
+            req = getAuthenticator().prepareAuthentication(req, response);
 
-    /**
-     * Sets wether the response resolver should ignore authentication set on the request.
-     * This is useful if you have a global authentication scheme. See the HttpClient documentation for more details.
-     *
-     * @param useRequestChallenge {@code true} if the request should control the authentication, false if not.
-     */
-    public void setUseRequestChallenge(boolean useRequestChallenge) {
-        this.useRequestChallenge = useRequestChallenge;
+            if (req != request) {
+                response.consume();
+                method = convertRequest(req);
+                method.setDoAuthentication(true);
+                client.executeMethod(method);
+                response = convertResponse(method);
+                if (response.getStatus() == Status.UNAUTHORIZED) {
+                    setPreemptiveAuthentication(false);
+                }
+                else {
+                    setPreemptiveAuthentication(true);
+                }
+            }
+        }
+
+        return response;
+        
     }
 
     private HttpMethod convertRequest(HTTPRequest request) {
@@ -85,18 +121,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         HttpMethod method = getMethod(request.getMethod(), requestURI);
         Headers requestHeaders = request.getAllHeaders();
         addHeaders(requestHeaders, method);
-        if (isUseRequestChallenge()) {
-            Challenge challenge = request.getChallenge();
-            if (challenge != null && challenge instanceof UsernamePasswordChallenge) {
-                UsernamePasswordChallenge upc = (UsernamePasswordChallenge) challenge;
-                method.setDoAuthentication(true);
-                Credentials usernamePassword = new UsernamePasswordCredentials(challenge.getIdentifier(), upc.getPassword() != null ? new String(upc.getPassword()) : null);
-                client.getState().setCredentials(new AuthScope(requestURI.getHost(), requestURI.getPort(), AuthScope.ANY_REALM), usernamePassword);
-            }
-        }
-        else {
-            method.setDoAuthentication(true);
-        }
+        method.setDoAuthentication(true);
         if (method instanceof EntityEnclosingMethod && request.hasPayload()) {
             InputStream payload = request.getPayload().getInputStream();
             EntityEnclosingMethod carrier = (EntityEnclosingMethod) method;

@@ -17,18 +17,26 @@ package org.codehaus.httpcache4j.resolver;
 
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.Header;
+import org.codehaus.httpcache4j.auth.ChallengeProvider;
+import org.codehaus.httpcache4j.auth.ProxyConfiguration;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.client.methods.*;
 import org.apache.http.*;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.ExecutionContext;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.auth.*;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.DefaultProxyAuthenticationHandler;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.auth.DigestScheme;
-import org.apache.http.auth.AuthScheme;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.auth.AuthenticationException;
+import org.apache.http.impl.conn.ProxySelectorRoutePlanner;
 import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.entity.BasicHttpEntity;
-import org.apache.commons.lang.Validate;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -42,18 +50,65 @@ import java.net.URI;
  */
 public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private HttpClient httpClient;
-    private boolean useRequestChallenge;
+
+    public HTTPClientResponseResolver(HttpClient httpClient, ProxyConfiguration proxyConfiguration) {
+        super(proxyConfiguration);
+        this.httpClient = httpClient;
+        HTTPHost proxyHost = proxyConfiguration.getHost();
+        if (proxyHost != null) {
+            HttpHost host = new HttpHost(proxyHost.getHost(), proxyHost.getPort(), "http");
+            httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, host);
+        }
+    }
 
     public HTTPClientResponseResolver(HttpClient httpClient) {
-        Validate.notNull(httpClient, "HttpClient may not be null");
-        this.httpClient = httpClient;
-
+        this(httpClient, new ProxyConfiguration());
     }
 
     public HTTPResponse resolve(final HTTPRequest request) throws IOException {
-        HttpUriRequest realRequest = convertRequest(request);
+        HTTPRequest req = request;
+        if (isPreemptiveAuthentication()) {
+            req = getAuthenticator().preparePreemptiveAuthentication(request);
+            req = getProxyAuthenticator().preparePreemptiveAuthentication(req);
+        }
+
+        HttpUriRequest realRequest = convertRequest(req);        
         HttpResponse response = httpClient.execute(realRequest);
-        return convertResponse(realRequest, response);
+        HTTPResponse convertedResponse = convertResponse(realRequest, response);
+
+        if (convertedResponse.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) {
+            req = getProxyAuthenticator().prepareAuthentication(req, convertedResponse);
+            if (req != request) {
+                convertedResponse.consume();
+                realRequest = convertRequest(req);
+                response = httpClient.execute(realRequest);
+                convertedResponse = convertResponse(realRequest, response);
+                if (convertedResponse.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
+                    getProxyAuthenticator().invalidateAuthentication();
+                    setPreemptiveAuthentication(false);
+                }
+                else {
+                    setPreemptiveAuthentication(true);
+                }
+            }
+        }
+        if (convertedResponse.getStatus() == Status.UNAUTHORIZED) {
+            req = getAuthenticator().prepareAuthentication(req, convertedResponse);
+            if (req != request) {
+                convertedResponse.consume();
+                realRequest = convertRequest(req);
+                response = httpClient.execute(realRequest);
+                convertedResponse = convertResponse(realRequest, response);
+                if (convertedResponse.getStatus() == Status.UNAUTHORIZED) { //We failed
+                    setPreemptiveAuthentication(false);
+                }
+                else {
+                    setPreemptiveAuthentication(true);
+                }
+            }
+        }
+
+        return convertedResponse;
     }
 
     private HttpUriRequest convertRequest(HTTPRequest request) {
@@ -62,19 +117,6 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         Headers headers = request.getAllHeaders();
         for (Header header : headers) {
             realRequest.addHeader(header.getName(), header.getValue());
-        }
-        if (useRequestChallenge && request.getChallenge() != null) {
-            Challenge challenge = request.getChallenge();
-            if (challenge instanceof UsernamePasswordChallenge) {
-                UsernamePasswordChallenge upc = (UsernamePasswordChallenge) challenge;
-                AuthScheme scheme = getScheme(challenge.getMethod());
-                try {
-                  org.apache.http.Header header = scheme.authenticate(new UsernamePasswordCredentials(challenge.getIdentifier(), upc.getPassword() != null ? new String(upc.getPassword()) : null), realRequest);
-                  realRequest.addHeader(header);
-                } catch (AuthenticationException e) {
-                    throw new HTTPException("Unable to authenticate from challenge" + challenge);
-                }
-            }
         }
 
         if (request.hasPayload() && realRequest instanceof HttpEntityEnclosingRequest) {
@@ -89,17 +131,6 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             req.setEntity(e);
         }
         return realRequest;
-    }
-
-    private AuthScheme getScheme(ChallengeMethod method) {
-        switch (method) {
-            case BASIC:
-                return new BasicScheme();
-            case DIGEST:
-                return new DigestScheme();
-            default:
-                throw new HTTPException("Not supported authentication scheme");
-        }
     }
 
     /**
@@ -156,10 +187,6 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             realRequest.abort();
             throw e;
         }
-    }
-
-    public void setUseRequestChallenge(boolean useRequestChallenge) {
-        this.useRequestChallenge = useRequestChallenge;
     }
 
     private static class HttpEntityInputStream extends DelegatingInputStream {

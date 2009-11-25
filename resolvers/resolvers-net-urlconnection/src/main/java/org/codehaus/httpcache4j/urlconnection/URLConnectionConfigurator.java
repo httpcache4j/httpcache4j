@@ -16,6 +16,7 @@
 package org.codehaus.httpcache4j.urlconnection;
 
 import org.apache.commons.lang.Validate;
+import org.codehaus.httpcache4j.auth.ProxyConfiguration;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
@@ -24,16 +25,16 @@ import org.apache.commons.lang.Validate;
 public class URLConnectionConfigurator {
     private final int readTimeout;
     private final int connectTimeout;
-    private final boolean preemtiveAuthentication;
+    private final ProxyConfiguration proxyConfiguration;
 
     public URLConnectionConfigurator() {
-        this.preemtiveAuthentication = false;
+        this.proxyConfiguration = new ProxyConfiguration();
         readTimeout = 0;
         connectTimeout = 0;
     }
 
-    public URLConnectionConfigurator(int readTimeout, int connectTimeout, boolean preemtiveAuthentication) {
-        this.preemtiveAuthentication = preemtiveAuthentication;
+    public URLConnectionConfigurator(int readTimeout, int connectTimeout, ProxyConfiguration proxyConfiguration) {
+        this.proxyConfiguration = proxyConfiguration;
         Validate.isTrue(readTimeout > 0, "Read timeout must be postive");
         Validate.isTrue(connectTimeout > 0, "Connect timeout must be postive");
         this.readTimeout = readTimeout;
@@ -48,7 +49,7 @@ public class URLConnectionConfigurator {
         return connectTimeout;
     }
 
-    public boolean isPreemtiveAuthentication() {
-        return preemtiveAuthentication;
+    public ProxyConfiguration getProxyConfiguration() {
+        return proxyConfiguration;
     }
 }
