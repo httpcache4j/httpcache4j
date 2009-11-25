@@ -110,7 +110,7 @@ public abstract class ConcurrentCacheStorageAbstractTest {
 
 
     private HTTPResponse createCacheResponse() {
-        return new HTTPResponse(new InputStreamPayload(new NullInputStream(40), MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
+        return new HTTPResponse(new InputStreamPayload(new NullInputStream(40), MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers().add("Foo", "Bar"));
     }
 
     protected void assertResponse(final HTTPResponse response) {
