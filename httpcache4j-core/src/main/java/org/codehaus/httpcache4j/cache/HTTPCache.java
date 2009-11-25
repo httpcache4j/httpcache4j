@@ -115,7 +115,9 @@ public class HTTPCache {
         }
         else {
             //request is cacheable
-            response = getFromCache(request, force);
+            synchronized (this) {
+                response = getFromCache(request, force || request.getConditionals().isUnconditional());
+            }
         }
         if (response == null) {
             throw new HTTPException("No response produced");
@@ -125,10 +127,22 @@ public class HTTPCache {
 
     private HTTPResponse getFromCache(final HTTPRequest request, final boolean force) {
         HTTPResponse response;
-        if (force || request.getConditionals().isUnconditional()) {
+        if (force) {
             response = unconditionalResolve(request);
         }
         else {
+            //TODO: race condition...
+            //is a request matching the current request already executing?
+            //URI, method.
+            //wait until that request was executed, then run this block... unless force.
+            //throttle.isEmpty(request) //proceed
+            //
+            //object.wait() // blocks thread, not what we want...
+            //make the cache single-requested... (reduces throughput).
+            //make the cache async... execute(HTTPRequest).return immediately with Future<Response>.
+            //Future.get() then blocks calling thread.
+            //what if the calling thread is the same as the cache executable thread? (called from Main())?
+            //enforce by having the cache run its own Executor.
             CacheItem item = storage.get(request);
             HTTPRequest req = request;
             if (item != null) {
