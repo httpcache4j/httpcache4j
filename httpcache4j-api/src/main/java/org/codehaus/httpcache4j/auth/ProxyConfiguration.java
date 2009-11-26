@@ -49,7 +49,12 @@ public class ProxyConfiguration {
 
     private Collection<String> parseIgnoreableHosts(String ignoredHosts) {
         if (ignoredHosts != null) {
-            return Arrays.asList(ignoredHosts.split("\\|"));
+            if (ignoredHosts.contains("|")) {
+                return Arrays.asList(ignoredHosts.split("\\|"));
+            }
+            else if (ignoredHosts.contains(",")) {
+                return Arrays.asList(ignoredHosts.split(","));
+            }
         }
         return Collections.emptySet();
     }
