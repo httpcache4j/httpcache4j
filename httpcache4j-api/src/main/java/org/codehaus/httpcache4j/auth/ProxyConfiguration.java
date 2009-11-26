@@ -16,6 +16,7 @@
 package org.codehaus.httpcache4j.auth;
 
 import org.codehaus.httpcache4j.HTTPHost;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Set;
 import java.util.Collection;
@@ -48,7 +49,7 @@ public class ProxyConfiguration {
     }
 
     private Collection<String> parseIgnoreableHosts(String ignoredHosts) {
-        if (ignoredHosts != null) {
+        if (StringUtils.isNotBlank(ignoredHosts)) {
             if (ignoredHosts.contains("|")) {
                 return Arrays.asList(ignoredHosts.split("\\|"));
             }
@@ -61,6 +62,7 @@ public class ProxyConfiguration {
 
     public boolean isHostIgnored(String host) {
         for (String candidate : ignoredHosts) {
+            candidate = candidate.trim();
             if (candidate.startsWith("*") && host.contains(candidate.substring(1))) {
                 return true;
             }
