@@ -24,8 +24,10 @@ import org.joda.time.DateTime;
 
 import javax.management.*;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.URI;
 
 /**
  * TODO:
@@ -49,6 +51,7 @@ public class HTTPCache {
     private final CacheStatistics statistics = new CacheStatistics();
     private final CacheStorage storage;
     private ResponseResolver resolver;
+    private final Mutex<URI> mutex = new Mutex<URI>();
 
     public HTTPCache(CacheStorage storage, ResponseResolver resolver) {
         Validate.notNull(storage, "Cache storage may not be null");
@@ -115,8 +118,11 @@ public class HTTPCache {
         }
         else {
             //request is cacheable
-            synchronized (this) {
+            mutex.acquire(request.getRequestURI());
+            try {
                 response = getFromCache(request, force || request.getConditionals().isUnconditional());
+            } finally {
+                mutex.release(request.getRequestURI());
             }
         }
         if (response == null) {
@@ -130,19 +136,7 @@ public class HTTPCache {
         if (force) {
             response = unconditionalResolve(request);
         }
-        else {
-            //TODO: race condition...
-            //is a request matching the current request already executing?
-            //URI, method.
-            //wait until that request was executed, then run this block... unless force.
-            //throttle.isEmpty(request) //proceed
-            //
-            //object.wait() // blocks thread, not what we want...
-            //make the cache single-requested... (reduces throughput).
-            //make the cache async... execute(HTTPRequest).return immediately with Future<Response>.
-            //Future.get() then blocks calling thread.
-            //what if the calling thread is the same as the cache executable thread? (called from Main())?
-            //enforce by having the cache run its own Executor.
+        else {                    
             CacheItem item = storage.get(request);
             HTTPRequest req = request;
             if (item != null) {
