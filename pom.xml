@@ -324,7 +324,7 @@
     <module>resolvers</module>
     <module>storage</module>
     <module>httpcache4j-dist</module>
-   <!-- <module>httpcache4j-it</module>-->
+    <module>httpcache4j-it</module>
   </modules>
 
 
