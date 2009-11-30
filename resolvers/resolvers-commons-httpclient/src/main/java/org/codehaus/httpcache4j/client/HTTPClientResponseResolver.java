@@ -170,6 +170,16 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     }
 
     /**
+     * @deprecated ignored, do not use. replaced by authentication framework.
+     * This will be removed in the next release.
+     * @param useRequestChallenge
+     */
+    @Deprecated
+    public void setUseRequestChallenge(boolean useRequestChallenge) {
+
+    }
+
+    /**
      * Determines the HttpClient's request method from the HTTPMethod enum.
      *
      * @param method     the HTTPCache enum that determines
