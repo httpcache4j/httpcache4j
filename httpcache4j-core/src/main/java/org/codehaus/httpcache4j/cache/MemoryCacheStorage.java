@@ -18,6 +18,7 @@ package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.ByteArrayPayload;
 import org.apache.commons.io.IOUtils;
@@ -57,7 +58,7 @@ public class MemoryCacheStorage implements CacheStorage {
             InputStream stream = null;
             try {
                 stream = payload.getInputStream();
-                return new HTTPResponse(createPayload(key, payload, stream), response.getStatus(), response.getHeaders());
+                return new HTTPResponse(createPayload(key, payload, stream), response.getStatus(), new Headers(response.getHeaders()));
             } catch (IOException ignore) {
             }
             finally {
