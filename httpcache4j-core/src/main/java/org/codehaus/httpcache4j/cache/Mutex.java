@@ -32,35 +32,34 @@ class Mutex<T> {
     private Lock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
 
-    public void acquire(T uri) {
+    public void acquire(T object) {
         lock.lock();
         try {
-            while (locks.contains(uri)) {
+            while (locks.contains(object)) {
                 try {
                     condition.await();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             }
-            locks.add(uri);
+            locks.add(object);
         }
         finally {
             lock.unlock();
         }
     }
 
-    public void release(T uri) {
-        this.lock.lock();
+    public void release(T object) {
+        lock.lock();
         try {
-            if (locks.contains(uri)) {
-                if(locks.remove(uri)) {
+            if (locks.contains(object)) {
+                if (locks.remove(object)) {
                     condition.signal();
                 }
             }
 
         } finally {
-            this.lock.unlock();
+            lock.unlock();
         }
     }
-
 }
