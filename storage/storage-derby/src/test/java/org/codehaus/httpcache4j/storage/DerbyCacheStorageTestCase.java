@@ -30,6 +30,7 @@ import org.codehaus.httpcache4j.Status;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.net.URI;
@@ -50,7 +51,7 @@ public class DerbyCacheStorageTestCase extends CacheStorageAbstractTest{
 
     @AfterClass
     public static void afterClass() {
-        storageDirectory.listFiles(new DeletingFileFilter());
+        FileUtils.deleteQuietly(storageDirectory);
     }
 
     protected CacheStorage createCacheStorage() {
