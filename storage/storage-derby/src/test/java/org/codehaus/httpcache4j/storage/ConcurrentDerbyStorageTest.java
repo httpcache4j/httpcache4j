@@ -18,6 +18,7 @@ package org.codehaus.httpcache4j.storage;
 import org.codehaus.httpcache4j.cache.ConcurrentCacheStorageAbstractTest;
 import org.codehaus.httpcache4j.cache.CacheStorage;
 import org.codehaus.httpcache4j.util.TestUtil;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 
@@ -32,5 +33,11 @@ public class ConcurrentDerbyStorageTest extends ConcurrentCacheStorageAbstractTe
     protected CacheStorage createCacheStorage() {
         testFile = TestUtil.getTestFile("target/storage");
         return new DerbyCacheStorage(testFile, true);
+    }
+
+    @Override
+    public void tearDown() {
+        super.tearDown();
+        FileUtils.deleteQuietly(testFile);
     }
 }
