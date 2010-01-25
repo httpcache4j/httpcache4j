@@ -15,18 +15,21 @@
 
 package org.codehaus.httpcache4j.auth;
 
+import org.apache.commons.codec.binary.Hex;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.Challenge;
 import org.codehaus.httpcache4j.UsernamePasswordChallenge;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class BasicAuthenticatorStrategy implements AuthenticatorStrategy {
+    private final Charset UTF_8 = Charset.forName("UTF-8");
     
     public boolean supports(final AuthScheme scheme) {
         return "basic".equalsIgnoreCase(scheme.getType());
@@ -45,17 +48,12 @@ public class BasicAuthenticatorStrategy implements AuthenticatorStrategy {
         if (challenge instanceof UsernamePasswordChallenge) {
             UsernamePasswordChallenge upc = (UsernamePasswordChallenge) challenge;
             String basicString = upc.getIdentifier() + ":" + new String(upc.getPassword());
-            try {
-                basicString = new String(Base64.encodeBase64(basicString.getBytes("UTF-8")));
-                final String authValue = "Basic" + " " + basicString;
-                if (proxy) {
-                    req = request.addHeader("Proxy-Authorization", authValue);
-                }
-                else {
-                    req = request.addHeader("Authorization", authValue);
-                }
-            } catch (UnsupportedEncodingException e) {
-                throw new Error("UTF-8 is not supported on this platform", e);
+            String authValue = "Basic " + Base64.encodeBase64String(basicString.getBytes(UTF_8));
+            if (proxy) {
+                req = request.addHeader("Proxy-Authorization", authValue);
+            }
+            else {
+                req = request.addHeader("Authorization", authValue);
             }
         }
         return req;

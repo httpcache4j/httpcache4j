@@ -105,14 +105,6 @@
         <enabled>false</enabled>
       </releases>
     </repository>
-    <repository>
-      <id>google code</id>
-      <url>http://google-maven-repository.googlecode.com/svn/repository/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-
   </repositories>
   <pluginRepositories>
     <pluginRepository>
@@ -275,14 +267,14 @@
         <version>1.4</version>
       </dependency>
       <dependency>
-        <groupId>com.google.code.google-collections</groupId>
-        <artifactId>google-collect</artifactId>
-        <version>1.0-RC2</version>
+        <groupId>com.google.collections</groupId>
+        <artifactId>google-collections</artifactId>
+        <version>1.0</version>
       </dependency>      
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.3</version>
+        <version>1.4</version>
       </dependency>
       <dependency>
         <groupId>javax.activation</groupId>
