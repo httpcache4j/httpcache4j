@@ -23,7 +23,7 @@ Creating a new Response Resolver.
  }
 ---------------------------------------
 
- The most usual approach is to extend {{{./xref/org/codehaus/httpcache4j/resolver/AbstractResponseResolver.html} AbstractResponseResolver}}, which adds a dependency on
- the PayloadCreator interface. See the {{{./apidocs/} Javadoc}} for more information.
+ The most usual approach is to extend {{{./xref/org/codehaus/httpcache4j/resolver/AbstractResponseResolver.html} AbstractResponseResolver}}.
+ See the {{{./apidocs/} Javadoc}} for more information.
  
  
