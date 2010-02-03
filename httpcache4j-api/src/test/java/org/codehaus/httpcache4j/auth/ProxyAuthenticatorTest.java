@@ -28,7 +28,6 @@ import java.net.URI;
 public class ProxyAuthenticatorTest {
     private HTTPRequest defaultRequest = new HTTPRequest(URI.create("foo"));
 
-
     @Test
     public void testNoAuthExpectTheSameRequest() {
         final HTTPRequest req = new DefaultProxyAuthenticator(new ProxyConfiguration()).prepareAuthentication(defaultRequest, new HTTPResponse(null, Status.CREATED, new Headers()));
@@ -38,7 +37,7 @@ public class ProxyAuthenticatorTest {
     @Test
     public void testAuthBasic() {
         final HTTPRequest request = defaultRequest.challenge(new UsernamePasswordChallenge("foo", "bar"));
-        final HTTPRequest req = new DefaultProxyAuthenticator(new ProxyConfiguration(new HTTPHost("foo", 0), null, new ChallengeProvider() {
+        final HTTPRequest req = new DefaultProxyAuthenticator(new ProxyConfiguration(new HTTPHost("http", "foo", -1), null, new ChallengeProvider() {
             public Challenge getChallenge() {
                 return new UsernamePasswordChallenge("foo", "bar");
             }
