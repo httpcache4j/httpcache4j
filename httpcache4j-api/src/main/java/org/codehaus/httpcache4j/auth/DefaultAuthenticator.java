@@ -15,6 +15,7 @@
 
 package org.codehaus.httpcache4j.auth;
 
+import com.google.common.collect.ImmutableList;
 import org.codehaus.httpcache4j.*;
 
 import java.util.List;
@@ -35,7 +36,7 @@ public class DefaultAuthenticator implements Authenticator {
     }
 
     protected List<AuthenticatorStrategy> createStrategies() {
-        return Collections.<AuthenticatorStrategy>singletonList(new BasicAuthenticatorStrategy());
+        return ImmutableList.of(new DigestAuthenticatorStrategy(), new BasicAuthenticatorStrategy());
     }
 
     public final HTTPRequest prepareAuthentication(final HTTPRequest request, final HTTPResponse response) {
@@ -53,12 +54,12 @@ public class DefaultAuthenticator implements Authenticator {
             Header authenticateHeader = response.getHeaders().getFirstHeader(HeaderConstants.WWW_AUTHENTICATE);
             if (authenticateHeader != null && request.getChallenge() != null) {
                 AuthScheme scheme = new AuthScheme(authenticateHeader);
-                registry.register(host, scheme);
                 for (AuthenticatorStrategy strategy : strategies) {
                     if (strategy.supports(scheme)) {
                         return strategy.prepare(request, scheme);
                     }
                 }
+                registry.register(host, scheme);                
             }
         }
         return request;
