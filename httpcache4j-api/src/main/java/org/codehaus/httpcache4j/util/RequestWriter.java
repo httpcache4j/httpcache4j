@@ -13,7 +13,7 @@
  *   limitations under the License.
  */
 
-package org.codehaus.httpcache4j.cache;
+package org.codehaus.httpcache4j.util;
 
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HeaderUtils;
@@ -57,7 +57,7 @@ public class RequestWriter {
     }
 
     private void writeRequestLine(PrintWriter writer) {
-        writer.println(String.format("%s %s HTTP/1.1", request.getMethod().name(), request.getRequestURI()));
+        writer.println(String.format("%s %s HTTP/1.1", request.getMethod().name(), request.getRequestURI().getPath()));
     }
 
     private void writeGeneralHeaders(PrintWriter writer) {

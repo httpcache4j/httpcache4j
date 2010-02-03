@@ -13,7 +13,7 @@
  *   limitations under the License.
  */
 
-package org.codehaus.httpcache4j.cache;
+package org.codehaus.httpcache4j.util;
 
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.*;
