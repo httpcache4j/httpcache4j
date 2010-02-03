@@ -56,7 +56,7 @@ public class HTTPRequest {
         );
     }
 
-    private HTTPRequest(URI requestURI,
+    protected HTTPRequest(URI requestURI,
                        HTTPMethod method,
                        Headers headers,
                        Conditionals conditionals,
@@ -153,6 +153,9 @@ public class HTTPRequest {
     }
 
     public HTTPRequest payload(Payload payload) {
+        if (!method.canHavePayload()) {
+            throw new IllegalStateException(String.format("Unable to add payload to a %s request", method));
+        }        
         return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload);
     }
 
