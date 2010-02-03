@@ -27,7 +27,7 @@ import java.net.URI;
  */
 public class DefaultAuthenticatorTest {
 
-    private HTTPRequest defaultRequest = new HTTPRequest(URI.create("foo"));   
+    private HTTPRequest defaultRequest = new HTTPRequest(URI.create("http://foo"));   
 
 
     @Test
