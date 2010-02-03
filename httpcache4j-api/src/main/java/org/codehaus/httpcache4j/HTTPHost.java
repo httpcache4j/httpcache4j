@@ -16,22 +16,43 @@
 package org.codehaus.httpcache4j;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class HTTPHost {
+    private final String scheme;
     private final String host;
     private final int port;
 
-    public HTTPHost(String host, int port) {
+    public HTTPHost(String scheme, String host, int port) {
+        this.scheme = scheme;
         this.host = host;
-        this.port = port == -1 ? 80 : port;
+        if (port == -1) {
+            if ("http".equals(scheme) || "https".equals(scheme)) {
+                this.port = port;
+            }
+            else {
+                throw new IllegalArgumentException("Unknown scheme for host " + scheme);
+            }
+        }
+        else {
+            this.port = port;            
+        }
+    }
+
+    public HTTPHost(String scheme, String host) {
+        this(scheme, host, -1);
     }
 
     public HTTPHost(URI uri) {
-        this(uri.getHost(), uri.getPort());
+        this(uri.getScheme(), uri.getHost(), uri.getPort());
+    }
+
+    public String getScheme() {
+        return scheme;
     }
 
     public String getHost() {
@@ -40,6 +61,14 @@ public class HTTPHost {
 
     public int getPort() {
         return port;
+    }
+
+    public URI toURI() {
+        try {
+            return new URI(scheme, null, host, port, null, null, null);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Unable to create uri");
+        }
     }
 
     @Override
@@ -68,5 +97,10 @@ public class HTTPHost {
         int result = host != null ? host.hashCode() : 0;
         result = 31 * result + port;
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return toURI().toString();
     }
 }
