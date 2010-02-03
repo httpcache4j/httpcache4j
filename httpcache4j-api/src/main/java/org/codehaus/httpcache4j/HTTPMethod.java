@@ -23,11 +23,16 @@ package org.codehaus.httpcache4j;
  *
  */
 public enum HTTPMethod {
+    CONNECT,
     GET,
     PUT,
     POST,
     DELETE,
     HEAD,
     TRACE,
-    OPTIONS
+    OPTIONS;
+
+    public boolean canHavePayload() {
+        return this == POST || this == PUT;
+    }
 }

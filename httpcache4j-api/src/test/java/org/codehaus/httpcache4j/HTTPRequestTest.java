@@ -16,6 +16,8 @@
 
 package org.codehaus.httpcache4j;
 
+import org.codehaus.httpcache4j.payload.ClosedInputStreamPayload;
+import org.codehaus.httpcache4j.payload.Payload;
 import org.junit.Test;
 import org.junit.Assert;
 import static org.junit.Assert.*;
@@ -49,5 +51,25 @@ public class HTTPRequestTest {
         request = request.preferences(preferences);
         Headers headers = new Headers().add("X-Foo-Bar", "Foo").add("If-Match", new Tag("2345").format()).add(HeaderConstants.ACCEPT_LANGUAGE, "en").add(HeaderConstants.ACCEPT, "application/xml");
         Assert.assertEquals(headers, request.getAllHeaders());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testISEWhenSettingPayloadOnGETRequest() {
+        HTTPRequest request = new HTTPRequest(REQUEST_URI);
+        try {
+            request.payload(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM));
+        } catch (IllegalStateException e) {
+            Assert.assertTrue(e.getMessage().contains("GET"));
+            throw e;
+        }
+    }
+
+    @Test
+    public void testSettingPayloadOnPUTAndPOSTRequestIsOK() {
+        HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.POST);
+        Payload payload = new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM);
+        request.payload(payload);
+        request = new HTTPRequest(REQUEST_URI, HTTPMethod.PUT);
+        request.payload(payload);
     }
 }
