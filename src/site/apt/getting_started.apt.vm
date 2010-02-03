@@ -27,7 +27,7 @@ Getting started
 
 ----------------------------------------
 HTTPCache cache = new HTTPCache(
-  CacheStorage storage = new MemoryCacheStorage(),
+  new MemoryCacheStorage(),
   new HTTPClientResolver(new HttpClient())
 );
 ----------------------------------------
@@ -42,7 +42,7 @@ cache.doCachedRequest(request);
 ----------------------------------------
 
  The cache will then perform a HTTP GET to http://www.vg.no and cache this if possible.
- The next request will then be served from the cache, if the TTL has not exipired.
+ The next request will then be served from the cache, if the TTL has not expired.
  If you want to bypass the cache, but still want the response to be cached, you can use
 
 ---------------------------------------- 
