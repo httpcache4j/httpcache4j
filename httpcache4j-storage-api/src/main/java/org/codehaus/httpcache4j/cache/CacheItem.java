@@ -19,18 +19,14 @@ package org.codehaus.httpcache4j.cache;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang.Validate;
 
-import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.HeaderUtils;
-import org.codehaus.httpcache4j.Header;
+import org.codehaus.httpcache4j.*;
+
 import static org.codehaus.httpcache4j.HeaderConstants.*;
-import org.codehaus.httpcache4j.Headers;
 
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
-import org.joda.time.DateTimeUtils;
 
 import java.io.Serializable;
-import java.util.Map;
 
 /**
  * This is an internal class, and should not be used by clients.
@@ -72,7 +68,7 @@ public class CacheItem implements Serializable {
         final Headers headers = response.getHeaders();
         if (headers.hasHeader(CACHE_CONTROL)) {
             Header ccHeader = headers.getFirstHeader(CACHE_CONTROL);
-            Map<String, String> directives = ccHeader.getDirectives();
+            Directives directives = ccHeader.getDirectives();
             String maxAgeDirective = directives.get("max-age");
             if (maxAgeDirective != null) {
                 int maxAge = NumberUtils.toInt(maxAgeDirective, -1);

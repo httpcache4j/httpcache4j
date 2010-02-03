@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, The Codehaus. All Rights Reserved.
+ * Copyright (c) 2010. The Codehaus. All Rights Reserved.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -11,34 +11,26 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
  */
 
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.lang.Validate;
-
-import java.util.*;
-
 /**
- * Represents a HTTP Header.
+ * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @version $Revision: $
  */
-public final class Header extends NameValue {
-    private static final long serialVersionUID = 3652406179988246039L;
-    private Directives directives;
-
-    public Header(String name, String value) {
+public class QuotedDirective extends Directive {
+    public QuotedDirective(String name, String value) {
         super(name, value);
-        Validate.notEmpty(value, "The value of a Header may not be empty");
-        directives = new Directives(value);
+    }
+
+    public String getQuotedValue() {
+        return "\"" + value + "\"";
     }
 
     @Override
-    public final String toString() {
-        return getName() + ": " + getValue();
+    public String toString() {
+        return name + "=" + getQuotedValue();
     }
 
-    public Directives getDirectives() {
-        return directives;
-    }
 }
