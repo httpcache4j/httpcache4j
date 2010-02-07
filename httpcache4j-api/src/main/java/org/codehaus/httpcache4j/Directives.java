@@ -17,23 +17,30 @@ package org.codehaus.httpcache4j;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import org.codehaus.httpcache4j.util.DirectivesParser;
 
 import java.io.Serializable;
 import java.util.*;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class Directives implements Iterable<Directive>, Serializable {
-    private final Map<String, String> directives = new LinkedHashMap<String, String>();
+    private final Map<String, Directive> directives = new LinkedHashMap<String, Directive>();
 
     public Directives() {
         this("");
     }
 
+    public Directives(Iterable<Directive> directives) {
+        for (Directive directive : directives) {
+            this.directives.put(directive.getName(), directive);
+        }
+    }
+
     public Directives(String value) {
-        parse(value);
+        this(DirectivesParser.DEFAULT.parse(value));
     }
 
     public boolean hasDirective(String key) {
@@ -41,34 +48,24 @@ public class Directives implements Iterable<Directive>, Serializable {
     }
 
     public String get(String key) {
-        return new Directive(key, directives.get(key)).getValue();
+        Directive directive = directives.get(key);
+        if (directive == null) {
+            return "";
+        }
+        return directive.getValue();
     }
 
     public int size() {
         return directives.size();
     }
 
+    /**
+     * @return a new Immutable iterator
+     */
     public Iterator<Directive> iterator() {
-        ImmutableList.Builder<Directive> builder = ImmutableList.builder();
-        for (Map.Entry<String, String> entry : directives.entrySet()) {
-            builder.add(new Directive(entry.getKey(), entry.getValue()));            
-        }
-        return builder.build().iterator();
+        return ImmutableList.copyOf(directives.values()).iterator();
     }
-
-    private void parse(String value) {
-        Map<String, String> parsedDirectives = new LinkedHashMap<String, String>();
-        List<String> directives = Arrays.asList(value.split(","));
-        for (String directive : directives) {
-            directive = directive.trim();
-            if (directive.length() > 0) {
-                String[] directiveParts = directive.split("=", 2);
-                parsedDirectives.put(directiveParts[0], directiveParts.length > 1 ? directiveParts[1] : null);
-            }
-        }
-        this.directives.putAll(parsedDirectives);
-    }
-
+    
     @Override
     public String toString() {
         return Iterables.toString(this);
