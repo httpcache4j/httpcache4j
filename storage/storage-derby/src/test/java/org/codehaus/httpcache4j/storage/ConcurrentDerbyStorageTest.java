@@ -23,7 +23,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class ConcurrentDerbyStorageTest extends ConcurrentCacheStorageAbstractTest {
