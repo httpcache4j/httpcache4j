@@ -19,7 +19,7 @@ import org.mortbay.jetty.webapp.WebAppContext;
 import org.codehaus.httpcache4j.util.TestUtil;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class Server {

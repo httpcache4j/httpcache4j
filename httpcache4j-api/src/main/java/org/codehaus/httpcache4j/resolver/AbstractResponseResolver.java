@@ -48,7 +48,7 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
         return new DefaultAuthenticator();
     }
 
-    protected ProxyAuthenticator getProxyAuthenticator() {
+    protected final ProxyAuthenticator getProxyAuthenticator() {
         return proxyAuthenticator;
     }
 
@@ -56,11 +56,11 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
         return responseCreator;
     }
 
-    protected Authenticator getAuthenticator() {
+    protected final Authenticator getAuthenticator() {
         return authenticator;
     }
 
-    protected boolean isPreemptiveAuthentication() {
+    protected final boolean isPreemptiveAuthentication() {
         return preemptiveAuthentication;
     }
 
