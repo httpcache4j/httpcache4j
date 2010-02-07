@@ -49,10 +49,9 @@ public class DirectivesTest {
     }
 
     @Test
-    @Ignore
     public void testSingleDirectiveWithQuotedValueWithComma() {
-        Directives dir = new Directives("foo=\"bar,baz\"");
-        assertEquals(1, dir.size());
+        Directives dir = new Directives("foo=\"bar,baz\",bar=foo");
+        assertEquals(2, dir.size());
         assertEquals("bar,baz", dir.get("foo"));
     }
 }
