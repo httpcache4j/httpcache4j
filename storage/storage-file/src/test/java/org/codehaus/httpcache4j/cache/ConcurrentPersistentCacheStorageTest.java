@@ -45,9 +45,11 @@ public class ConcurrentPersistentCacheStorageTest extends ConcurrentCacheStorage
     @Override
     protected void assertResponse(final HTTPResponse response) {
         super.assertResponse(response);
-        CleanableFilePayload payload = (CleanableFilePayload) response.getPayload();
-        final File parent = payload.getFile().getParentFile();
-        assertEquals(1, parent.list().length);
+        if (response.getPayload() instanceof CleanableFilePayload) {
+            CleanableFilePayload payload = (CleanableFilePayload) response.getPayload();
+            final File parent = payload.getFile().getParentFile();
+            assertEquals(1, parent.list().length);            
+        }
     }
 
     @Override

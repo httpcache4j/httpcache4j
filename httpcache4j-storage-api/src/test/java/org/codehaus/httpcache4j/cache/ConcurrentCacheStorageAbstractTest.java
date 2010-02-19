@@ -60,11 +60,11 @@ public abstract class ConcurrentCacheStorageAbstractTest {
             Callable<HTTPResponse> call = new Callable<HTTPResponse>() {
                 public HTTPResponse call() throws Exception {
                     HTTPResponse cached = cacheStorage.insert(request, createCacheResponse());
-                    assertResponse(cached);
+                    assertResponse(cached);                    
                     CacheItem cacheItem = cacheStorage.get(request);
                     HTTPResponse response = cacheItem.getResponse();
                     assertResponse(response);
-                    cached = cacheStorage.insert(request, createCacheResponse());
+                    cached = cacheStorage.update(request, createCacheResponse());
                     assertNotSame(cached, cacheItem.getResponse());
                     assertResponse(cached);
                     return cached;
@@ -73,9 +73,9 @@ public abstract class ConcurrentCacheStorageAbstractTest {
             calls.add(call);
         }
         List<Future<HTTPResponse>> responses = service.invokeAll(calls);
-        for (Future<HTTPResponse> response : responses) {
+        for (Future<HTTPResponse> responseFuture : responses) {
             try {
-                response.get();
+                HTTPResponse response = responseFuture.get();
             } catch (ExecutionException e) {
                 e.printStackTrace();
                 fail(e.getCause().getMessage());
