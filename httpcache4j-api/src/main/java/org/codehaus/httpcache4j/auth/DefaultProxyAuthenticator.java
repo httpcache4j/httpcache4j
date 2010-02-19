@@ -21,9 +21,8 @@ import org.codehaus.httpcache4j.Status;
 import org.codehaus.httpcache4j.Challenge;
 import org.apache.commons.lang.Validate;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Collections;
-import java.net.URI;
 
 import com.google.common.collect.Lists;
 
@@ -40,13 +39,17 @@ public class DefaultProxyAuthenticator implements ProxyAuthenticator {
     private Challenge proxyChallenge;
 
     public DefaultProxyAuthenticator(ProxyConfiguration configuration) {
-        Validate.notNull(configuration, "Configuration may not be null");
-        this.configuration = configuration;
-        strategies.addAll(createStrategies());
+        this(configuration, defaultStrategies());
     }
 
-    protected List<AuthenticatorStrategy> createStrategies() {
-        return Collections.<AuthenticatorStrategy>singletonList(new BasicAuthenticatorStrategy());
+    public DefaultProxyAuthenticator(ProxyConfiguration configuration, final List<AuthenticatorStrategy> strategies) {
+        Validate.notNull(configuration, "Configuration may not be null");
+        this.configuration = configuration;
+        this.strategies.addAll(strategies);
+    }
+
+    private static List<AuthenticatorStrategy> defaultStrategies() {
+        return Arrays.asList(new DigestAuthenticatorStrategy(), new BasicAuthenticatorStrategy());
     }
 
     public final HTTPRequest prepareAuthentication(final HTTPRequest request, final HTTPResponse response) {        

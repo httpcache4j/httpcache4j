@@ -30,24 +30,13 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
     private final ProxyAuthenticator proxyAuthenticator;
     private boolean preemptiveAuthentication = false;
 
-    protected AbstractResponseResolver(ProxyConfiguration proxyConfiguration) {
-        Validate.notNull(proxyConfiguration, "Proxy Config may not be null");
-        authenticator = createAuthenticator();
-        proxyAuthenticator = createProxyAuthenticator(proxyConfiguration);
+    protected AbstractResponseResolver(ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
+        Validate.notNull(proxyAuthenticator, "Proxy Authenticator may not be null");
+        Validate.notNull(authenticator, "Authenticator may not be null");
+        this.authenticator = authenticator;
+        this.proxyAuthenticator = proxyAuthenticator;
     }
-    
-    protected AbstractResponseResolver() {
-        this(new ProxyConfiguration());
-    }
-
-    protected ProxyAuthenticator createProxyAuthenticator(ProxyConfiguration configuration) {
-        return new DefaultProxyAuthenticator(configuration);
-    }
-
-    protected Authenticator createAuthenticator() {
-        return new DefaultAuthenticator();
-    }
-
+          
     protected final ProxyAuthenticator getProxyAuthenticator() {
         return proxyAuthenticator;
     }
@@ -60,11 +49,15 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
         return authenticator;
     }
 
-    protected final boolean isPreemptiveAuthentication() {
+    protected final boolean isPreemptiveAuthenticationEnabled() {
         return preemptiveAuthentication;
     }
 
-    protected void setPreemptiveAuthentication(boolean preemptiveAuthentication) {
-        this.preemptiveAuthentication = preemptiveAuthentication;
+    protected void disablePreemtiveAuthentication() {
+        preemptiveAuthentication = true;
+    }
+
+    protected void enablePreemptiveAuthentication() {
+        preemptiveAuthentication = false;
     }
 }

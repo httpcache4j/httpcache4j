@@ -18,8 +18,8 @@ package org.codehaus.httpcache4j.urlconnection;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.auth.ChallengeProvider;
-import org.codehaus.httpcache4j.auth.ProxyConfiguration;
+import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
+import org.codehaus.httpcache4j.auth.DefaultProxyAuthenticator;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
 
@@ -38,14 +38,14 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
     private final URLConnectionConfigurator configuration;
 
     public URLConnectionResponseResolver(URLConnectionConfigurator configuration) {
-        super(configuration.getProxyConfiguration());
+        super(new DefaultProxyAuthenticator(configuration.getProxyConfiguration()), new DefaultAuthenticator());
         Validate.notNull(configuration, "Configuration may not be null");
         this.configuration = configuration;
     }
 
     public HTTPResponse resolve(final HTTPRequest request) throws IOException {
         HTTPRequest req = request;
-        if (isPreemptiveAuthentication()) {
+        if (isPreemptiveAuthenticationEnabled()) {
             req = getAuthenticator().preparePreemptiveAuthentication(request);
             req = getAuthenticator().preparePreemptiveAuthentication(req);
         }
@@ -66,10 +66,10 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
                     response = convertResponse(connection);
                     if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
                         getProxyAuthenticator().invalidateAuthentication();
-                        setPreemptiveAuthentication(false);
+                        disablePreemtiveAuthentication();
                     }
                     else {
-                        setPreemptiveAuthentication(true);
+                        enablePreemptiveAuthentication();
                     }
                 }
             }
@@ -81,10 +81,10 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
                     doRequest(req, connection);
                     response = convertResponse(connection);
                     if (response.getStatus() == Status.UNAUTHORIZED) {
-                        setPreemptiveAuthentication(false);
+                        disablePreemtiveAuthentication();
                     }
                     else {
-                        setPreemptiveAuthentication(true);
+                        enablePreemptiveAuthentication();
                     }
                 }
             }

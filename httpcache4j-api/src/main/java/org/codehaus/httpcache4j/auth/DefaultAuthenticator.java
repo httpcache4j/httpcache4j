@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableList;
 import org.codehaus.httpcache4j.*;
 
 import java.util.List;
-import java.util.Collections;
 
 import com.google.common.collect.Lists;
 
@@ -32,10 +31,14 @@ public class DefaultAuthenticator implements Authenticator {
     private final SchemeRegistry registry = new SchemeRegistry();
 
     public DefaultAuthenticator() {
-        strategies.addAll(createStrategies());
+        this(defaultStrategies());
     }
 
-    protected List<AuthenticatorStrategy> createStrategies() {
+    public DefaultAuthenticator(List<AuthenticatorStrategy> strategies) {
+        this.strategies.addAll(strategies);
+    }
+
+    private static List<AuthenticatorStrategy> defaultStrategies() {
         return ImmutableList.of(new DigestAuthenticatorStrategy(), new BasicAuthenticatorStrategy());
     }
 
@@ -59,7 +62,7 @@ public class DefaultAuthenticator implements Authenticator {
                         return strategy.prepare(request, scheme);
                     }
                 }
-                registry.register(host, scheme);                
+                registry.register(host, scheme);
             }
         }
         return request;
