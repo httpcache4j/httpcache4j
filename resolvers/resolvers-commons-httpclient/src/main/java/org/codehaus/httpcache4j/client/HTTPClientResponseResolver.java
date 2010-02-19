@@ -22,7 +22,7 @@ import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.lang.Validate;
 
 import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.auth.ProxyConfiguration;
+import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
 
@@ -42,14 +42,18 @@ import java.net.URI;
 public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private final HttpClient client;
 
-    public HTTPClientResponseResolver(HttpClient client, ProxyConfiguration configuration) {
-        super(configuration);
+    protected HTTPClientResponseResolver(HttpClient client, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
+        super(proxyAuthenticator, authenticator);
         Validate.notNull(client, "You may not create with a null HttpClient");
         this.client = client;
-        HTTPHost proxyHost = configuration.getHost();
+        HTTPHost proxyHost = proxyAuthenticator.getConfiguration().getHost();
         if (proxyHost != null) {
-            client.getHostConfiguration().setProxy(proxyHost.getHost(), proxyHost.getPort());
+            this.client.getHostConfiguration().setProxy(proxyHost.getHost(), proxyHost.getPort());
         }
+    }
+
+    public HTTPClientResponseResolver(HttpClient client, ProxyConfiguration configuration) {
+        this(client, new DefaultProxyAuthenticator(configuration), new DefaultAuthenticator());
     }
 
     /**
@@ -66,9 +70,17 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         this(client, new ProxyConfiguration());
     }
 
+    public static HTTPClientResponseResolver createMultithreadedInstance() {
+        return new HTTPClientResponseResolver(new HttpClient(new MultiThreadedHttpConnectionManager()));
+    }
+
+    public final HttpClient getClient() {
+        return client;
+    }
+
     public HTTPResponse resolve(final HTTPRequest request) throws IOException {
         HTTPRequest req = request;
-        if (isPreemptiveAuthentication()) {
+        if (isPreemptiveAuthenticationEnabled()) {
             req = getAuthenticator().preparePreemptiveAuthentication(request);
             req = getProxyAuthenticator().preparePreemptiveAuthentication(req);
         }
@@ -87,10 +99,10 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 response = convertResponse(method);
                 if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
                     getProxyAuthenticator().invalidateAuthentication();
-                    setPreemptiveAuthentication(false);
+                    disablePreemtiveAuthentication();
                 }
                 else {
-                    setPreemptiveAuthentication(true);
+                    enablePreemptiveAuthentication();
                 }
             }
         }       
@@ -104,10 +116,10 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 client.executeMethod(method);
                 response = convertResponse(method);
                 if (response.getStatus() == Status.UNAUTHORIZED) {
-                    setPreemptiveAuthentication(false);
+                    disablePreemtiveAuthentication();
                 }
                 else {
-                    setPreemptiveAuthentication(true);
+                    enablePreemptiveAuthentication();
                 }
             }
         }
@@ -168,17 +180,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             throw new HTTPException("Unable to get InputStream from HttpClient", e);
         }
     }
-
-    /**
-     * @deprecated ignored, do not use. replaced by authentication framework.
-     * This will be removed in the next release.
-     * @param useRequestChallenge
-     */
-    @Deprecated
-    public void setUseRequestChallenge(boolean useRequestChallenge) {
-
-    }
-
+    
     /**
      * Determines the HttpClient's request method from the HTTPMethod enum.
      *

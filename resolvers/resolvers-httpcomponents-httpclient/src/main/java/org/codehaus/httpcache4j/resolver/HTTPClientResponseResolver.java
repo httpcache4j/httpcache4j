@@ -15,27 +15,18 @@
 
 package org.codehaus.httpcache4j.resolver;
 
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.BasicHttpParams;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.Header;
-import org.codehaus.httpcache4j.auth.ChallengeProvider;
-import org.codehaus.httpcache4j.auth.ProxyConfiguration;
+import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.client.methods.*;
 import org.apache.http.*;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.ExecutionContext;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.auth.*;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.DefaultProxyAuthenticationHandler;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.conn.ProxySelectorRoutePlanner;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.commons.io.IOUtils;
 
@@ -51,23 +42,36 @@ import java.net.URI;
 public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private HttpClient httpClient;
 
-    public HTTPClientResponseResolver(HttpClient httpClient, ProxyConfiguration proxyConfiguration) {
-        super(proxyConfiguration);
+    public HTTPClientResponseResolver(HttpClient httpClient, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
+        super(proxyAuthenticator, authenticator);
         this.httpClient = httpClient;
-        HTTPHost proxyHost = proxyConfiguration.getHost();
+        HTTPHost proxyHost = proxyAuthenticator.getConfiguration().getHost();
         if (proxyHost != null) {
-            HttpHost host = new HttpHost(proxyHost.getHost(), proxyHost.getPort(), "http");
+            HttpHost host = new HttpHost(proxyHost.getHost(), proxyHost.getPort(), proxyHost.getScheme());
             httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, host);
         }
+    }
+    
+    public HTTPClientResponseResolver(HttpClient httpClient, ProxyConfiguration proxyConfiguration) {
+        this(httpClient, new DefaultProxyAuthenticator(proxyConfiguration), new DefaultAuthenticator());
     }
 
     public HTTPClientResponseResolver(HttpClient httpClient) {
         this(httpClient, new ProxyConfiguration());
     }
 
+    public static HTTPClientResponseResolver createMultithreadedInstance() {
+        return new HTTPClientResponseResolver(
+                new DefaultHttpClient(
+                        new ThreadSafeClientConnManager(new BasicHttpParams(), new SchemeRegistry()),
+                        new BasicHttpParams()
+                )
+        );
+    }
+
     public HTTPResponse resolve(final HTTPRequest request) throws IOException {
         HTTPRequest req = request;
-        if (isPreemptiveAuthentication()) {
+        if (isPreemptiveAuthenticationEnabled()) {
             req = getAuthenticator().preparePreemptiveAuthentication(request);
             req = getProxyAuthenticator().preparePreemptiveAuthentication(req);
         }
@@ -85,10 +89,10 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 convertedResponse = convertResponse(realRequest, response);
                 if (convertedResponse.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
                     getProxyAuthenticator().invalidateAuthentication();
-                    setPreemptiveAuthentication(false);
+                    disablePreemtiveAuthentication();
                 }
                 else {
-                    setPreemptiveAuthentication(true);
+                    enablePreemptiveAuthentication();
                 }
             }
         }
@@ -100,10 +104,10 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 response = httpClient.execute(realRequest);
                 convertedResponse = convertResponse(realRequest, response);
                 if (convertedResponse.getStatus() == Status.UNAUTHORIZED) { //We failed
-                    setPreemptiveAuthentication(false);
+                    disablePreemtiveAuthentication();
                 }
                 else {
-                    setPreemptiveAuthentication(true);
+                    enablePreemptiveAuthentication();
                 }
             }
         }
