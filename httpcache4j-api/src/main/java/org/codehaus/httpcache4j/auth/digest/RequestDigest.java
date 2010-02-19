@@ -36,12 +36,12 @@ public class RequestDigest {
     private static final String CNONCE_COUNT = "00000001";
     private final Map<String, Directive> directives = new LinkedHashMap<String, Directive>();
     private final UsernamePasswordChallenge challenge;
-    private final String method;
+    private final HTTPMethod method;
     private final URI requestURI;
     private final Digest serverDigest;
     private final Algorithm algorithm;
 
-    RequestDigest(UsernamePasswordChallenge challenge, String method, URI requestURI, Digest serverDigest) {
+    RequestDigest(UsernamePasswordChallenge challenge, HTTPMethod method, URI requestURI, Digest serverDigest) {
         this.challenge = challenge;
         this.method = method;
         this.requestURI = requestURI;
@@ -99,7 +99,7 @@ public class RequestDigest {
             }
             else {
                 throw new IllegalArgumentException("Unknown QOP: " + qopDirective.getValue());
-            }            
+            }
         }
         else {
             response = hash(algorithm, String.format("%s:%s:%s", ha1, nonce.getValue(), ha2), "US-ASCII");
@@ -153,7 +153,7 @@ public class RequestDigest {
         builder.append("Digest ");
         for (Directive directive : directives.values()) {
             if (builder.length() > "Digest ".length()) {
-                builder.append(", ");                
+                builder.append(", ");
             }
             builder.append(directive);
         }
@@ -161,16 +161,7 @@ public class RequestDigest {
     }
 
     public static RequestDigest newInstance(UsernamePasswordChallenge challenge, HTTPRequest request, Digest digest) {
-        return new RequestDigest(challenge, request.getMethod().name(), URI.create(request.getRequestURI().getPath()), digest);
-    }
-
-    private NumberFormat createFormatter() {
-        NumberFormat format = NumberFormat.getIntegerInstance();
-        format.setMaximumIntegerDigits(8);
-        format.setParseIntegerOnly(true);
-        format.setMinimumIntegerDigits(8);
-        format.setGroupingUsed(false);
-        return format;
+        return new RequestDigest(challenge, request.getMethod(), URI.create(request.getRequestURI().getPath()), digest);
     }
 
     private void addDirective(String name, String value, boolean quoted) {
