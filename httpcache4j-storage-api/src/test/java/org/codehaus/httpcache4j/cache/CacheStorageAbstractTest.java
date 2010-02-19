@@ -39,7 +39,8 @@ public abstract class CacheStorageAbstractTest {
     @Test
     public void testPutCacheItem() {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
-        storage.insert(REQUEST, response);
+        response = storage.insert(REQUEST, response);
+        response.consume();
         assertEquals(1, storage.size());
     }
 
@@ -48,13 +49,15 @@ public abstract class CacheStorageAbstractTest {
         CacheItem outItem = putAndGet(Mockito.mock(HTTPRequest.class));
         assertNotNull("OutItem was null", outItem);
         assertNotNull("OutItem response was null", outItem.getResponse());
+        outItem.getResponse().consume();
     }
 
     private CacheItem putAndGet(HTTPRequest request) {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
         URI requestURI = URI.create("foo");
         Mockito.when(request.getRequestURI()).thenReturn(requestURI);
-        storage.insert(REQUEST, response);
+        response = storage.insert(REQUEST, response);
+        response.consume();
         assertEquals(1, storage.size());
         return storage.get(request);
     }
@@ -63,19 +66,23 @@ public abstract class CacheStorageAbstractTest {
     public void testPutUpdatedCacheItem() {
         HTTPRequest request = Mockito.mock(HTTPRequest.class);
         CacheItem item = putAndGet(request);
+        item.getResponse().consume();
         URI requestURI = URI.create("foo");
         Mockito.when(request.getRequestURI()).thenReturn(requestURI);
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
-        storage.update(REQUEST, response);
+        HTTPResponse res = storage.update(REQUEST, response);
+        res.consume();
         final CacheItem cacheItem = storage.get(request);
         assertNotSame("Items were the same", cacheItem.getCachedTime(), item.getCachedTime());
+        cacheItem.getResponse().consume();
     }
 
     @Test
     public void testInvalidate() {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
         URI requestURI = URI.create("foo");
-        storage.insert(REQUEST, response);
+        HTTPResponse res = storage.insert(REQUEST, response);
+        res.consume();
         assertEquals(1, storage.size());
         storage.invalidate(requestURI);
         assertEquals(0, storage.size());
