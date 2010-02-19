@@ -26,6 +26,7 @@ import java.util.*;
 import java.text.Collator;
 
 import com.google.common.collect.Maps;
+import org.codehaus.httpcache4j.Headers;
 
 /**
  * Represents a HTTP Variation.
@@ -59,7 +60,15 @@ public final class Vary implements Serializable {
         h.putAll(headers);
         varyHeaders = Collections.unmodifiableMap(h);
     }
-    
+
+    public Vary(Headers headers) {
+        Map<String, String> h = Maps.newTreeMap(new VaryComparator());
+        for (Header header : headers) {
+            h.put(header.getName(), header.getValue());
+        }
+        varyHeaders = Collections.unmodifiableMap(h);
+    }
+
     public int size() {
         return varyHeaders.size();
     }
