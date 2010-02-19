@@ -38,7 +38,7 @@ public class RequestDigestTest {
         assertEquals("f2a3f18799759d4f1a1c068b92b573cb", digest.getNonce());
         RequestDigest requestDigest = new RequestDigest(
                 new UsernamePasswordChallenge("username", "password"),
-                HTTPMethod.GET.name(),
+                HTTPMethod.GET,
                 URI.create("/"),
                 digest
         );
@@ -52,7 +52,7 @@ public class RequestDigestTest {
         assertEquals("f2a3f18799759d4f1a1c068b92b573cb", digest.getNonce());
         RequestDigest requestDigest = new RequestDigest(
                 new UsernamePasswordChallenge("username", "password"),
-                HTTPMethod.GET.name(),
+                HTTPMethod.GET,
                 URI.create("/"),
                 digest
         );
@@ -68,7 +68,7 @@ public class RequestDigestTest {
         assertEquals("5ccc069c403ebaf9f0171e9517f40e41", digest.getOpaque());
         RequestDigest requestDigest = new RequestDigest(
                 new UsernamePasswordChallenge("Mufasa", "Circle Of Life"),
-                HTTPMethod.GET.name(),
+                HTTPMethod.GET,
                 URI.create("/dir/index.html"),
                 digest
         ) {
@@ -104,7 +104,7 @@ public class RequestDigestTest {
         assertEquals("74x09bV+BAA=00c61ef4d62ad0b8616a45d0714b47a39f833e91", digest.getNonce());
         RequestDigest requestDigest = new RequestDigest(
                 new UsernamePasswordChallenge("username", "password"),
-                HTTPMethod.GET.name(),
+                HTTPMethod.GET,
                 URI.create("/private/"),
                 digest
         ) {
@@ -114,19 +114,5 @@ public class RequestDigestTest {
           }
         };
         assertEquals("cca57e64ed1bbf0056100e2662326d85", requestDigest.calculateResponse());
-    }
-    @Test
-    public void testDigestAuthentication() {
-        AuthScheme scheme = new AuthScheme(new Header(HeaderConstants.WWW_AUTHENTICATE, "Digest realm=\"realm1\", nonce=\"f2a3f18799759d4f1a1c068b92b573cb\""));
-        Digest digest = new Digest(new HTTPHost("http", "localhost", -1), scheme);
-        assertEquals("f2a3f18799759d4f1a1c068b92b573cb", digest.getNonce());
-        RequestDigest requestDigest = new RequestDigest(
-                new UsernamePasswordChallenge("username", "password"),
-                "Simple",
-                URI.create("/"),
-                digest
-        );
-        System.out.println("requestDigest = " + requestDigest.toHeaderValue());
-        assertEquals("e95a7ddf37c2eab009568b1ed134f89a", requestDigest.calculateResponse());
     }
 }
