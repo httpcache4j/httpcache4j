@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009. The Codehaus. All Rights Reserved.
+ * Copyright (c) 2010. The Codehaus. All Rights Reserved.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -13,12 +13,12 @@
  *   limitations under the License.
  */
 
-package org.codehaus.httpcache4j.storage;
+package org.codehaus.httpcache4j.storage.jdbc;
 
-import org.codehaus.httpcache4j.cache.ConcurrentCacheStorageAbstractTest;
-import org.codehaus.httpcache4j.cache.CacheStorage;
-import org.codehaus.httpcache4j.util.TestUtil;
 import org.apache.commons.io.FileUtils;
+import org.codehaus.httpcache4j.cache.CacheStorage;
+import org.codehaus.httpcache4j.cache.ConcurrentCacheStorageAbstractTest;
+import org.codehaus.httpcache4j.util.TestUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -28,14 +28,14 @@ import java.io.File;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class ConcurrentDerbyStorageTest extends ConcurrentCacheStorageAbstractTest {
+public class ConcurrentH2StorageTest extends ConcurrentCacheStorageAbstractTest {
     private static File testFile;
-    private static DerbyCacheStorage storage;
+    private static H2CacheStorage storage;
 
     @BeforeClass
     public static void createDerbyCacheStorage() {
         testFile = TestUtil.getTestFile("target/storage");
-        storage = new DerbyCacheStorage(testFile, true);
+        storage = new H2CacheStorage(testFile, true);
     }
 
     @Override

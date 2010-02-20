@@ -39,6 +39,8 @@
 
   <modules>
     <module>storage-file</module>
+    <module>storage-jdbc</module>
+    <module>storage-h2</module>
     <module>storage-derby</module>
     <module>storage-ehcache</module>
   </modules>
