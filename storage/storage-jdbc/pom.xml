@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2008, The Codehaus. All Rights Reserved.
+  ~ Copyright (c) 2010. The Codehaus. All Rights Reserved.
   ~
   ~   Licensed under the Apache License, Version 2.0 (the "License");
   ~   you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
   ~   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   ~   See the License for the specific language governing permissions and
   ~   limitations under the License.
-  ~
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -23,10 +22,10 @@
     <artifactId>storage</artifactId>
     <version>2.3-SNAPSHOT</version>
   </parent>
-  <artifactId>storage-derby</artifactId>
+  <artifactId>storage-jdbc</artifactId>
   <packaging>jar</packaging>
-  <name>Java HTTP cache :: Storage Engines :: Derby</name>
-  <description>Storage using Apache Derby, note that this module requires Java 6</description>
+  <name>Java HTTP cache :: Storage Engines :: JDBC</name>
+  <description>Storage using JDBC, note that this module requires Java 6</description>
 
   <dependencies>
     <dependency>
@@ -40,25 +39,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.httpcache4j.storage</groupId>
-      <artifactId>storage-jdbc</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.derby</groupId>
-      <artifactId>derby</artifactId>
-      <version>10.5.3.0_1</version>
-    </dependency>
-    <dependency>
-        <groupId>com.h2database</groupId>
-        <artifactId>h2</artifactId>
-        <version>1.2.126</version>
-    </dependency>
-
-    
+    </dependency>    
   </dependencies>
   <build>
     <plugins>

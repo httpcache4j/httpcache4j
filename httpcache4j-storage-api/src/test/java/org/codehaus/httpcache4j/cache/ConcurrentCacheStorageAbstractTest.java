@@ -75,7 +75,7 @@ public abstract class ConcurrentCacheStorageAbstractTest {
         List<Future<HTTPResponse>> responses = service.invokeAll(calls);
         for (Future<HTTPResponse> responseFuture : responses) {
             try {
-                HTTPResponse response = responseFuture.get();
+                responseFuture.get();
             } catch (ExecutionException e) {
                 e.printStackTrace();
                 fail(e.getCause().getMessage());

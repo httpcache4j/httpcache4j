@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009. The Codehaus. All Rights Reserved.
+ * Copyright (c) 2010. The Codehaus. All Rights Reserved.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -13,33 +13,22 @@
  *   limitations under the License.
  */
 
-package org.codehaus.httpcache4j.storage;
+package org.codehaus.httpcache4j.storage.jdbc;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.derby.impl.jdbc.EmbedCallableStatement40;
-import org.apache.derby.jdbc.EmbeddedDataSource40;
-import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.cache.CacheItem;
-import org.codehaus.httpcache4j.cache.CacheStorage;
-import org.codehaus.httpcache4j.cache.Key;
-import org.codehaus.httpcache4j.cache.Vary;
-import org.codehaus.httpcache4j.payload.DelegatingInputStream;
-import org.codehaus.httpcache4j.payload.FilePayload;
-import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.storage.jdbc.DataAccessException;
-import org.codehaus.httpcache4j.storage.jdbc.JdbcCacheStorage;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeUtils;
+import org.h2.jdbcx.JdbcDataSource;
 
 import javax.sql.DataSource;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.codehaus.httpcache4j.storage.jdbc.JdbcUtil.*;
 
@@ -56,24 +45,24 @@ import static org.codehaus.httpcache4j.storage.jdbc.JdbcUtil.*;
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class DerbyCacheStorage extends JdbcCacheStorage {
+public class H2CacheStorage extends JdbcCacheStorage {
     private final static String[] TABLES = {"response"};
 
-    public DerbyCacheStorage(File storageDirectory) {
+    public H2CacheStorage(File storageDirectory) {
         this(storageDirectory, false);
     }
 
-    public DerbyCacheStorage(File storageDirectory, boolean dropTables) {
+    public H2CacheStorage(File storageDirectory, boolean dropTables) {
         super(createDataSource(new File(storageDirectory, "database")));
+
         maybeCreateTables(dropTables);
     }
 
     private static DataSource createDataSource(File database) {
-        EmbeddedDataSource40 ds = new EmbeddedDataSource40();
-        ds.setCreateDatabase("create");
-        ds.setDatabaseName(database.getAbsolutePath());
-        ds.setUser("");
+        JdbcDataSource ds = new JdbcDataSource();
+        ds.setUser("sa");
         ds.setPassword("");
+        ds.setURL("jdbc:h2:" + database);
         return ds;
     }
 
@@ -134,20 +123,6 @@ public class DerbyCacheStorage extends JdbcCacheStorage {
         }
     }
 
-    protected HTTPResponse rewriteResponse(HTTPResponse response) {
-        if (response.hasPayload()) {
-            Headers headers = response.getHeaders();
-            Status status = response.getStatus();
-            Payload payload = response.getPayload();
-            try {
-                File file = writeStreamToTempFile(payload.getInputStream());
-                return new HTTPResponse(new DerbyFilePayload(file, payload.getMimeType()), status, headers);
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
-        }
-        return response;
-    }
 
     private void dropTable(String table, Connection connection) {
         PreparedStatement statement = null;
@@ -172,37 +147,6 @@ public class DerbyCacheStorage extends JdbcCacheStorage {
         }
         finally {
             close(statement);
-        }
-    }
-
-    private static File writeStreamToTempFile(InputStream stream) throws IOException {
-        FileOutputStream out = null;
-        File tempFile = null;
-        try {
-            tempFile = File.createTempFile("foo", "bar");
-            out = FileUtils.openOutputStream(tempFile);
-            IOUtils.copy(stream, out);
-        } finally {
-            IOUtils.closeQuietly(out);
-            IOUtils.closeQuietly(stream);
-        }
-        return tempFile;
-    }
-
-    private static class DerbyFilePayload extends FilePayload {
-        public DerbyFilePayload(File file, final MIMEType mimeType) {
-            super(file, mimeType);
-        }
-
-        @Override
-        public InputStream getInputStream() {
-            return new DelegatingInputStream(super.getInputStream()) {
-                @Override
-                public void close() throws IOException {
-                    super.close();
-                    getFile().delete();
-                }
-            };
         }
     }
 }

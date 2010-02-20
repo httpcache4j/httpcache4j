@@ -246,6 +246,11 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.codehaus.httpcache4j.storage</groupId>
+        <artifactId>storage-jdbc</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.codehaus.httpcache4j</groupId>
         <artifactId>httpcache4j-storage-api</artifactId>
         <classifier>tests</classifier>
