@@ -15,6 +15,7 @@
 
 package org.codehaus.httpcache4j;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang.math.NumberUtils;
@@ -58,6 +59,10 @@ public class Directive extends NameValue {
 
     @Override
     public String toString() {
-        return name + "=" + value;
+        String output = name + "=" + value;
+        if (!parameters.isEmpty()) {
+            output = output + "; " + Joiner.on("; ").join(parameters);
+        }
+        return output;
     }
 }

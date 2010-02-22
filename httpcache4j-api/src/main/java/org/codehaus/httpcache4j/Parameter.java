@@ -29,4 +29,9 @@ public class Parameter extends NameValue {
     public Parameter(String name, String value) {
         super(name, value);
     }
+
+    @Override
+    public String toString() {
+        return name + "=" + value;
+    }
 }
