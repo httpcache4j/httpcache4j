@@ -24,15 +24,19 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.Before;
 
+import java.net.URI;
+
 public class CacheItemTest {
     private CacheItem item;
     private DateTime storageTime = new DateTime(2008, 10, 12, 15, 0, 0, 0);
     private DateTime now = storageTime.plusMinutes(1);
+    private HTTPRequest request;
 
     @Before
     public void before() {
         DateTimeUtils.setCurrentMillisFixed(now.getMillis());
 
+        request = new HTTPRequest(URI.create("foo"));
     }
 
     public void setupItem(Headers headers) {
@@ -43,10 +47,10 @@ public class CacheItemTest {
     public void testIsNotStale() {
         Headers headers = createDefaultHeaders().add(new Header(CACHE_CONTROL, "private, max-age=3600"));
         setupItem(headers);
-        Assert.assertFalse("Item was stale", item.isStale());
+        Assert.assertFalse("Item was stale", item.isStale(request));
         item = new CacheItem(item.getResponse());
         DateTimeUtils.setCurrentMillisFixed(now.plusSeconds(3600).getMillis());
-        Assert.assertTrue("Item was not stale", item.isStale());
+        Assert.assertTrue("Item was not stale", item.isStale(new HTTPRequest(request.getRequestURI())));
     }
 
     private Headers createDefaultHeaders() {
@@ -58,14 +62,14 @@ public class CacheItemTest {
         Headers headers = createDefaultHeaders().add(new Header(CACHE_CONTROL, "private, max-age=60"));
         setupItem(headers);
         DateTimeUtils.setCurrentMillisFixed(now.plusMinutes(1).getMillis());
-        Assert.assertTrue("Item was not stale", item.isStale());
+        Assert.assertTrue("Item was not stale", item.isStale(request));
     }
 
     @Test
     public void testIsStaleExpiresHeader() {
         Headers headers = createDefaultHeaders().add(HeaderUtils.toHttpDate(EXPIRES, now));
         setupItem(headers);
-        Assert.assertTrue("Item was not stale", item.isStale());
+        Assert.assertTrue("Item was not stale", item.isStale(request));
     }
 
     @Test
@@ -75,7 +79,7 @@ public class CacheItemTest {
         future = future.plusHours(1);
         headers = headers.add(HeaderUtils.toHttpDate(EXPIRES, future));
         setupItem(headers);
-        Assert.assertTrue("Item was stale", !item.isStale());
+        Assert.assertTrue("Item was stale", !item.isStale(request));
     }
 
     @Test
@@ -86,13 +90,13 @@ public class CacheItemTest {
         headers = headers.add(HeaderUtils.toHttpDate(EXPIRES, future));
         headers = headers.add(HeaderUtils.toHttpDate(DATE, future));
         setupItem(headers);
-        Assert.assertTrue("Item was stale", item.isStale());
+        Assert.assertTrue("Item was stale", item.isStale(request));
     }
 
     public void testIsStaleExpiresHeaderWithInvalidDate() {
         Headers headers = new Headers().add(new Header(EXPIRES, "foo"));
         setupItem(headers);
-        Assert.assertTrue("Item was stale", item.isStale());
+        Assert.assertTrue("Item was stale", item.isStale(request));
     }
 
     @Test
@@ -104,6 +108,6 @@ public class CacheItemTest {
         future = future.plusHours(24); //We now say that the expires is not stale.
         headers = headers.add(HeaderUtils.toHttpDate(EXPIRES, future));
         setupItem(headers);
-        Assert.assertTrue("Item was not stale", item.isStale());
+        Assert.assertTrue("Item was not stale", item.isStale(request));
     }
 }

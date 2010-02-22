@@ -15,6 +15,8 @@
 
 package org.codehaus.httpcache4j;
 
+import java.util.List;
+
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
@@ -22,6 +24,10 @@ package org.codehaus.httpcache4j;
 public class QuotedDirective extends Directive {
     public QuotedDirective(String name, String value) {
         super(name, value);
+    }
+
+    public QuotedDirective(String name, String value, List<Parameter> parameters) {
+        super(name, value, parameters);
     }
 
     public String getQuotedValue() {

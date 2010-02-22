@@ -17,6 +17,7 @@ package org.codehaus.httpcache4j;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang.Validate;
+import org.apache.commons.lang.math.NumberUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +50,10 @@ public class Directive extends NameValue {
 
     public List<Parameter> getParameters() {
         return parameters;
+    }
+
+    public int getValueAsInteger() {
+        return NumberUtils.toInt(getValue(), -1);
     }
 
     @Override

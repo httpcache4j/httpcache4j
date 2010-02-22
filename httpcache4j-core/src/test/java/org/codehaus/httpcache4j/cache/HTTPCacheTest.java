@@ -86,7 +86,7 @@ public class HTTPCacheTest {
         Payload payload = mock(Payload.class);
         when(payload.isAvailable()).thenReturn(false);
         CacheItem item = new CacheItem(new HTTPResponse(payload, Status.OK, new Headers()));
-        assertTrue("The cached item was not stale", item.isStale());
+        assertTrue("The cached item was not stale", item.isStale(request));
         when(cacheStorage.get(request)).thenReturn(item);
         HTTPResponse resolvedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(resolvedResponse);
@@ -314,7 +314,7 @@ public class HTTPCacheTest {
         //when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(cachedResponse);
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(cachedResponse) {
             @Override
-            public boolean isStale() {
+            public boolean isStale(HTTPRequest request) {
                 return false;
             }
         });
@@ -337,10 +337,30 @@ public class HTTPCacheTest {
 
         CacheItem item = new CacheItem(cachedResponse);
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(item);
-        assertFalse(item.isStale());
+        assertFalse(item.isStale(request));
         cache.doCachedRequest(request);
         verify(responseResolver, never()).resolve(request);        
     }
+
+    @Test
+    public void testCacheWithRequestAllowingStaleReponse() throws IOException {
+        DateTimeUtils.setCurrentMillisFixed(new DateTime(2010, 2, 3, 10, 0, 0,0).getMillis());
+        Headers headers = new Headers();
+        headers = headers.add(new Header("Cache-Control", "private, max-age=5"));
+        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
+        HTTPResponse cachedResponse = new HTTPResponse(null, Status.OK, headers);
+
+        CacheItem item = new CacheItem(cachedResponse);
+        DateTimeUtils.setCurrentMillisFixed(new DateTime(2010, 2, 3, 10, 0, 10, 0).getMillis());
+        HTTPRequest request = new HTTPRequest(REQUEST_URI).headers(new Headers().add(HeaderConstants.CACHE_CONTROL, "max-stale=10"));
+        when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(item);
+        assertTrue("Item was not stale",item.isStale(request));
+        HTTPResponse response = cache.doCachedRequest(request);
+        verify(responseResolver, never()).resolve(request);
+        assertTrue("No warn header", response.getHeaders().hasHeader("warning"));
+        DateTimeUtils.setCurrentMillisSystem();
+    }
+
 
 
     @Test
@@ -388,4 +408,11 @@ public class HTTPCacheTest {
         assertEquals(numberItemsInCache, cacheStorage.size());
         return response;
     }
+
+    private static class TimeSettingRequest extends HTTPRequest {
+        public TimeSettingRequest(HTTPRequest request, DateTime requestTime) {
+            super(request.getRequestURI(), request.getMethod(), request.getHeaders(), request.getConditionals(), request.getPreferences(), request.getChallenge(), request.getPayload(), requestTime);
+        }
+    }
+
 }

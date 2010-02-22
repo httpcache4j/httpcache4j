@@ -17,6 +17,7 @@ package org.codehaus.httpcache4j.util;
 
 import org.codehaus.httpcache4j.Directive;
 import org.codehaus.httpcache4j.Parameter;
+import org.codehaus.httpcache4j.QuotedDirective;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -117,6 +118,9 @@ public class DirectivesParser {
             final String name,
             final String value,
             final List<Parameter> params) {
+        if (value.startsWith("\"") && value.endsWith("\"")) {
+            return new QuotedDirective(name, value, params);
+        }
         return new Directive(name, value, params);
     }
 
@@ -252,14 +256,7 @@ public class DirectivesParser {
         // Trim trailing white spaces
         while ((i2 > i1) && (isWhitespace(buffer.charAt(i2 - 1)))) {
             i2--;
-        }
-        // Strip away quotes if necessary
-        if (((i2 - i1) >= 2)
-                && (buffer.charAt(i1) == '"')
-                && (buffer.charAt(i2 - 1) == '"')) {
-            i1++;
-            i2--;
-        }
+        }        
         value = buffer.substring(i1, i2);
         if (terminated) {
             pos++;

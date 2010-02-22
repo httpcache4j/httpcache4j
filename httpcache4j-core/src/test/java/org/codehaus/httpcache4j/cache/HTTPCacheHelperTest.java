@@ -21,6 +21,8 @@ import org.codehaus.httpcache4j.*;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 
+import java.net.URI;
+
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
@@ -33,7 +35,7 @@ public class HTTPCacheHelperTest {
         Headers headers = new Headers().add(HeaderUtils.toHttpDate("Date", createDateTime(0)));
         DateTimeUtils.setCurrentMillisFixed(createDateTime(10).getMillis());
         HTTPResponse cachedResponse = createResponse(headers);
-        HTTPResponse responseWithCalculatedAge = helper.calculateAge(cachedResponse, new CacheItem(cachedResponse, createDateTime(0)));
+        HTTPResponse responseWithCalculatedAge = helper.calculateAge(new HTTPRequest(URI.create("foo")), cachedResponse, new CacheItem(cachedResponse, createDateTime(0)));
         Assert.assertEquals("10", responseWithCalculatedAge.getHeaders().getFirstHeaderValue("Age"));
     }
     

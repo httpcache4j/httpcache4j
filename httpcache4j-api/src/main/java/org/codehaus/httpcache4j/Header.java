@@ -30,7 +30,12 @@ public final class Header extends NameValue {
     public Header(String name, String value) {
         super(name, value);
         Validate.notEmpty(value, "The value of a Header may not be empty");
-        directives = new Directives(value);
+    }
+
+    public Header(String name, Directives directives) {
+        super(name, directives.toString());
+        Validate.notEmpty(value, "The value of a Header may not be empty");
+        this.directives = directives;
     }
 
     @Override
@@ -39,6 +44,9 @@ public final class Header extends NameValue {
     }
 
     public Directives getDirectives() {
+        if (directives == null) {
+            directives = new Directives(value);
+        }
         return directives;
     }
 }

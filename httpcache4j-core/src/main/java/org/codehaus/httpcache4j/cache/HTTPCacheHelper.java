@@ -76,8 +76,8 @@ class HTTPCacheHelper {
     }
 
 
-    HTTPResponse calculateAge(final HTTPResponse response, final CacheItem cacheItem) {
-        return new HTTPResponse(response.getPayload(), response.getStatus(), response.getHeaders().add(HeaderConstants.AGE, Integer.toString(cacheItem.getAge())));
+    HTTPResponse calculateAge(final HTTPRequest request, final HTTPResponse response, final CacheItem cacheItem) {
+        return new HTTPResponse(response.getPayload(), response.getStatus(), response.getHeaders().add(HeaderConstants.AGE, Integer.toString(cacheItem.getAge(request))));
     }
 
     Headers removeUnmodifiableHeaders(Headers headers) {
@@ -127,5 +127,9 @@ class HTTPCacheHelper {
             return request.conditionals(conditionals);
         }
         return request;
+    }
+
+    public HTTPResponse warnStale(HTTPResponse response) {
+        return warn(response, null);
     }
 }

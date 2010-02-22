@@ -49,6 +49,17 @@ public class DirectivesTest {
     }
 
     @Test
+    public void testMultipleDirectivesToString() {
+        String value = "key=value, bar=foo, foo=\"bar\"";
+        Directives dir = new Directives(value);
+        assertEquals(3, dir.size());
+        assertEquals("value", dir.get("key"));
+        assertEquals("foo", dir.get("bar"));
+        assertEquals("bar", dir.get("foo"));
+        assertEquals(value, dir.toString());
+    }
+
+    @Test
     public void testSingleDirectiveWithQuotedValueWithComma() {
         Directives dir = new Directives("foo=\"bar,baz\",bar=foo");
         assertEquals(2, dir.size());
