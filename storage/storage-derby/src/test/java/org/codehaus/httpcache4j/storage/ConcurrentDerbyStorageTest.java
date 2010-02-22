@@ -34,7 +34,7 @@ public class ConcurrentDerbyStorageTest extends ConcurrentCacheStorageAbstractTe
 
     @BeforeClass
     public static void createDerbyCacheStorage() {
-        testFile = TestUtil.getTestFile("target/storage");
+        testFile = TestUtil.getTestFile("target/storage/concurrent");
         storage = new DerbyCacheStorage(testFile, true);
     }
 
