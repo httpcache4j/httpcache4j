@@ -52,16 +52,19 @@ public class CacheItem implements Serializable {
         this.ttl = getTTL(response, 0);
     }
 
+    public int getTTL() {
+        return ttl;
+    }
 
-    public boolean isStale() {
+    public boolean isStale(HTTPRequest request) {
         if (response.hasPayload() && !response.getPayload().isAvailable()) {
             return true;
         }
-        return ttl - getAge() <= 0;
+        return ttl - getAge(request) <= 0;
     }
 
-    public int getAge() {
-        return Seconds.secondsBetween(cachedTime, new DateTime()).getSeconds();
+    public int getAge(HTTPRequest request) {
+        return Seconds.secondsBetween(cachedTime, request.getRequestTime()).getSeconds();
     }
 
     public static int getTTL(HTTPResponse response, int defaultTTLinSeconds) {
@@ -69,9 +72,9 @@ public class CacheItem implements Serializable {
         if (headers.hasHeader(CACHE_CONTROL)) {
             Header ccHeader = headers.getFirstHeader(CACHE_CONTROL);
             Directives directives = ccHeader.getDirectives();
-            String maxAgeDirective = directives.get("max-age");
+            Directive maxAgeDirective = directives.getAsDirective("max-age");
             if (maxAgeDirective != null) {
-                int maxAge = NumberUtils.toInt(maxAgeDirective, -1);
+                int maxAge = maxAgeDirective.getValueAsInteger();
                 if (maxAge > 0) {
                     return maxAge;
                 }

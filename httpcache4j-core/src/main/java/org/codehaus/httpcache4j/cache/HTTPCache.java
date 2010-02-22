@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URI;
 
+import static org.codehaus.httpcache4j.HeaderConstants.CACHE_CONTROL;
+
 /**
  * TODO:
  * Support Warning header http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.46 partly supported now...
@@ -141,7 +143,7 @@ public class HTTPCache {
             HTTPRequest req = request;
             if (item != null) {
                 statistics.hit();
-                if (item.isStale()) {
+                if (item.isStale(req)) {
                     //If the cached value is stale, execute the request and try to cache it.
                     HTTPResponse staleResponse = item.getResponse();
                     //If the payload has been deleted for some reason, we want to do a unconditional GET
@@ -151,11 +153,15 @@ public class HTTPCache {
                     else {
                         req = request.conditionals(new Conditionals());
                     }
-
-                    response = handleResolve(req, item);
+                    if (!allowStale(item, req)) {
+                        response = handleResolve(req, item);
+                    }
+                    else {
+                        response = rewriteResponse(request, item, true);
+                    }
                 }
                 else {
-                    response = rewriteResponse(request, item);
+                    response = rewriteResponse(request, item, false);
                 }
             }
             else {
@@ -166,7 +172,25 @@ public class HTTPCache {
         return response;
     }
 
-    private HTTPResponse rewriteResponse(HTTPRequest request, CacheItem item) {
+    private boolean allowStale(CacheItem item, HTTPRequest req) {
+        boolean allowStale = false;
+        Headers all = req.getAllHeaders();
+        if (all.hasHeader(CACHE_CONTROL)) {
+            Header cc = all.getFirstHeader(CACHE_CONTROL);
+            Directives directives = cc.getDirectives();
+            if (directives.hasDirective("max-stale")) {
+                int stale = directives.getAsDirective("max-stale").getValueAsInteger();
+                int ttl = item.getTTL();
+                int age = item.getAge(req);
+                if ((ttl - stale - age) < 0) {
+                    allowStale = true;
+                }
+            }
+        }
+        return allowStale;
+    }
+
+    private HTTPResponse rewriteResponse(HTTPRequest request, CacheItem item, boolean stale) {
         HTTPResponse response = item.getResponse();
         if (request.getMethod() == HTTPMethod.GET) {
             List<Tag> noneMatch = request.getConditionals().getNoneMatch();
@@ -187,7 +211,10 @@ public class HTTPCache {
         else if (request.getMethod() == HTTPMethod.HEAD) {
             response = new HTTPResponse(null, response.getStatus(), response.getHeaders());
         }
-        return helper.calculateAge(response, item);
+        if (stale) {
+            response = helper.warnStale(response);
+        }
+        return helper.calculateAge(request, response, item);
     }
 
     private HTTPResponse unconditionalResolve(final HTTPRequest request) {

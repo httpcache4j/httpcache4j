@@ -15,6 +15,7 @@
 
 package org.codehaus.httpcache4j;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import org.codehaus.httpcache4j.util.DirectivesParser;
@@ -55,6 +56,10 @@ public class Directives implements Iterable<Directive>, Serializable {
         return directive.getValue();
     }
 
+    public Directive getAsDirective(String key) {
+        return directives.get(key);
+    }
+
     public int size() {
         return directives.size();
     }
@@ -68,6 +73,6 @@ public class Directives implements Iterable<Directive>, Serializable {
     
     @Override
     public String toString() {
-        return Iterables.toString(this);
+        return Joiner.on(", ").join(directives.values());
     }
 }
