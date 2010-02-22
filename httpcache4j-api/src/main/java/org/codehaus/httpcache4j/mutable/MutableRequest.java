@@ -17,6 +17,7 @@ package org.codehaus.httpcache4j.mutable;
 
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
+import org.joda.time.DateTime;
 
 import java.net.URI;
 
@@ -101,7 +102,8 @@ public class MutableRequest {
                   conditionals.toConditionals(),
                   preferences.toPreferences(),
                   challenge,
-                  payload
+                  payload,
+                  new DateTime()
             );
         }
     }
