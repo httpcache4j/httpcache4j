@@ -15,6 +15,9 @@
 
 package org.codehaus.httpcache4j.resolver;
 
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.codehaus.httpcache4j.*;
@@ -61,9 +64,16 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     }
 
     public static HTTPClientResponseResolver createMultithreadedInstance() {
+        SchemeRegistry schemeRegistry = new SchemeRegistry();
+        schemeRegistry.register(
+                new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        schemeRegistry.register(
+                new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+
+    ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(new BasicHttpParams(), schemeRegistry);
         return new HTTPClientResponseResolver(
                 new DefaultHttpClient(
-                        new ThreadSafeClientConnManager(new BasicHttpParams(), new SchemeRegistry()),
+                        cm,
                         new BasicHttpParams()
                 )
         );
