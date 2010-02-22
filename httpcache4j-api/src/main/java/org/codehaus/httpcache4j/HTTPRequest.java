@@ -21,6 +21,7 @@ import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.preference.Preferences;
 import org.joda.time.DateTime;
+import org.joda.time.ReadableInstant;
 
 import java.net.URI;
 
@@ -40,11 +41,17 @@ public class HTTPRequest {
     private final Headers headers;
     private final Challenge challenge;
     private final Payload payload;
+    private DateTime requestTime;
 
     public HTTPRequest(URI requestURI, HTTPMethod method) {
-        this(requestURI, method, new Headers(), new Conditionals(), new Preferences(), null, null);
+        this(requestURI, method, new Headers(), new Conditionals(), new Preferences(), null, null, new DateTime());
     }
 
+    /**
+     * @deprecated Use the {@link #copy()} method instead
+     * @param request the request to copy
+     */
+    @Deprecated
     public HTTPRequest(HTTPRequest request) {
         this(request.getRequestURI(),
              request.getMethod(),
@@ -52,7 +59,8 @@ public class HTTPRequest {
              request.getConditionals(),
              request.getPreferences(),
              request.getChallenge(),
-             request.getPayload()
+             request.getPayload(),
+             request.getRequestTime()
         );
     }
 
@@ -62,7 +70,8 @@ public class HTTPRequest {
                        Conditionals conditionals,
                        Preferences preferences,
                        Challenge challenge,
-                       Payload payload) {
+                       Payload payload,
+                       DateTime requestTime) {
 
         this.method = method;
         this.requestURI = requestURI;
@@ -71,6 +80,18 @@ public class HTTPRequest {
         this.preferences = preferences;
         this.challenge = challenge;
         this.payload = payload;
+        this.requestTime = requestTime;
+    }
+
+    public HTTPRequest copy() {
+        return new HTTPRequest(getRequestURI(),
+             getMethod(),
+             getHeaders(),
+             getConditionals(),
+             getPreferences(),
+             getChallenge(),
+             getPayload(),
+             getRequestTime());
     }
 
     public HTTPRequest(URI requestURI) {
@@ -112,7 +133,7 @@ public class HTTPRequest {
 
     public HTTPRequest addHeader(Header header) {
         Headers headers = this.headers.add(header);
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
     }
 
     public HTTPRequest addHeader(String name, String value) {
@@ -125,7 +146,7 @@ public class HTTPRequest {
 
     public HTTPRequest conditionals(Conditionals conditionals) {
         Validate.notNull(conditionals, "You may not set null conditionals");
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
     }
 
     public HTTPMethod getMethod() {
@@ -137,7 +158,7 @@ public class HTTPRequest {
     }
 
     public HTTPRequest preferences(Preferences preferences) {
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
     }
 
     public Challenge getChallenge() {
@@ -145,7 +166,7 @@ public class HTTPRequest {
     }
 
     public HTTPRequest challenge(Challenge challenge) {
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
     }
 
     public Payload getPayload() {
@@ -156,15 +177,19 @@ public class HTTPRequest {
         if (!method.canHavePayload()) {
             throw new IllegalStateException(String.format("Unable to add payload to a %s request", method));
         }        
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
     }
 
     public HTTPRequest headers(final Headers headers) {
         Validate.notNull(headers, "You may not set null headers");
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
     }
 
     public boolean hasPayload() {
         return payload != null;
+    }
+
+    public DateTime getRequestTime() {
+        return requestTime;
     }
 }
