@@ -42,7 +42,7 @@ public class H2CacheStorageTestCase extends CacheStorageAbstractTest{
 
     @BeforeClass
     public static void beforeClass() {
-        storageDirectory = TestUtil.getTestFile("target/storage");
+        storageDirectory = TestUtil.getTestFile("target/storage/single");
     }
 
     @AfterClass

@@ -33,8 +33,8 @@ public class ConcurrentH2StorageTest extends ConcurrentCacheStorageAbstractTest 
     private static H2CacheStorage storage;
 
     @BeforeClass
-    public static void createDerbyCacheStorage() {
-        testFile = TestUtil.getTestFile("target/storage");
+    public static void createH2CacheStorage() {
+        testFile = TestUtil.getTestFile("target/storage/concurrent");
         storage = new H2CacheStorage(testFile, true);
     }
 

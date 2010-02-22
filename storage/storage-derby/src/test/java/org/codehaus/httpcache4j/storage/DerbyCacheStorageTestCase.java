@@ -46,7 +46,7 @@ public class DerbyCacheStorageTestCase extends CacheStorageAbstractTest{
 
     @BeforeClass
     public static void beforeClass() {
-        storageDirectory = TestUtil.getTestFile("target/storage");
+        storageDirectory = TestUtil.getTestFile("target/storage/single");
     }
 
     @AfterClass
