@@ -17,7 +17,10 @@ package org.codehaus.httpcache4j;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.util.DirectivesParser;
 
 import java.io.Serializable;
@@ -28,16 +31,18 @@ import java.util.*;
  * @version $Revision: $
  */
 public class Directives implements Iterable<Directive>, Serializable {
-    private final Map<String, Directive> directives = new LinkedHashMap<String, Directive>();
+    private final Map<String, Directive> directives;
+
+    public Directives(Iterable<Directive> directives) {
+        Map<String, Directive> directivesMap = new LinkedHashMap<String, Directive>();
+        for (Directive directive : directives) {
+            directivesMap.put(directive.getName(), directive);
+        }
+        this.directives = Collections.unmodifiableMap(directivesMap);
+    }
 
     public Directives() {
         this("");
-    }
-
-    public Directives(Iterable<Directive> directives) {
-        for (Directive directive : directives) {
-            this.directives.put(directive.getName(), directive);
-        }
     }
 
     public Directives(String value) {

@@ -15,8 +15,7 @@
 
 package org.codehaus.httpcache4j.auth;
 
-import org.codehaus.httpcache4j.HTTPRequest;
-import org.codehaus.httpcache4j.Challenge;
+import org.codehaus.httpcache4j.*;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -28,4 +27,8 @@ public interface AuthenticatorStrategy {
     HTTPRequest prepare(HTTPRequest request, AuthScheme scheme);
 
     HTTPRequest prepareWithProxy(HTTPRequest request, Challenge challenge, AuthScheme scheme);
+
+    AuthScheme afterSuccessfulAuthentication(AuthScheme scheme, Headers headers);
+
+    AuthScheme afterSuccessfulProxyAuthentication(AuthScheme scheme, Headers headers);
 }

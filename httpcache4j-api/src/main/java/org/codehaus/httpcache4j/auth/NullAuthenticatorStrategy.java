@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009. The Codehaus. All Rights Reserved.
+ * Copyright (c) 2010. The Codehaus. All Rights Reserved.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -15,20 +15,33 @@
 
 package org.codehaus.httpcache4j.auth;
 
+import org.codehaus.httpcache4j.Challenge;
+import org.codehaus.httpcache4j.HTTPHost;
 import org.codehaus.httpcache4j.HTTPRequest;
-import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public interface Authenticator {
-    HTTPRequest prepareAuthentication(HTTPRequest request, HTTPResponse response);
+class NullAuthenticatorStrategy implements AuthenticatorStrategy {
+    public boolean supports(AuthScheme scheme) {
+        return true;
+    }
 
-    HTTPRequest preparePreemptiveAuthentication(HTTPRequest request);
+    public HTTPRequest prepare(HTTPRequest request, AuthScheme scheme) {
+        return request;
+    }
 
-    void afterSuccessfulAuthentication(HTTPRequest request, Headers responseHeaders);
+    public HTTPRequest prepareWithProxy(HTTPRequest request, Challenge challenge, AuthScheme scheme) {
+        return request;
+    }
 
-    void afterFailedAuthentication(HTTPRequest request, Headers responseHeaders);
+    public AuthScheme afterSuccessfulAuthentication(AuthScheme scheme, Headers headers) {
+        return scheme;
+    }
+
+    public AuthScheme afterSuccessfulProxyAuthentication(AuthScheme scheme, Headers headers) {
+        return scheme;
+    }
 }

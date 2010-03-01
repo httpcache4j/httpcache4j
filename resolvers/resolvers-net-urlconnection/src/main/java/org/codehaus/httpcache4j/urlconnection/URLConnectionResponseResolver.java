@@ -65,10 +65,11 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
                     doRequest(req, connection);
                     response = convertResponse(connection);
                     if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
-                        getProxyAuthenticator().invalidateAuthentication();
+                        getProxyAuthenticator().afterFailedAuthentication(response.getHeaders());
                         disablePreemtiveAuthentication();
                     }
                     else {
+                        getProxyAuthenticator().afterSuccessfulAuthentication(response.getHeaders());
                         enablePreemptiveAuthentication();
                     }
                 }
@@ -81,9 +82,11 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
                     doRequest(req, connection);
                     response = convertResponse(connection);
                     if (response.getStatus() == Status.UNAUTHORIZED) {
+                        getAuthenticator().afterFailedAuthentication(req, response.getHeaders());
                         disablePreemtiveAuthentication();
                     }
                     else {
+                        getAuthenticator().afterSuccessfulAuthentication(req, response.getHeaders());
                         enablePreemptiveAuthentication();
                     }
                 }

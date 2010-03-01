@@ -15,17 +15,21 @@
 
 package org.codehaus.httpcache4j.auth;
 
+import com.google.common.collect.Lists;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.digest.Digest;
 import org.codehaus.httpcache4j.auth.digest.RequestDigest;
 
 import java.nio.charset.Charset;
+import java.util.*;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class DigestAuthenticatorStrategy implements AuthenticatorStrategy {
+    private static final String AUTHENTICATION_INFO = "Authentication-Info";
+    private static final String PROXY_AUTHENTICATION_INFO = "Proxy-Authentication-Info";
 
     public boolean supports(final AuthScheme scheme) {
         return "digest".equalsIgnoreCase(scheme.getType());
@@ -37,6 +41,14 @@ public class DigestAuthenticatorStrategy implements AuthenticatorStrategy {
 
     public HTTPRequest prepareWithProxy(HTTPRequest request, Challenge challenge, AuthScheme scheme) {
         return prepare(request, challenge, scheme, true);
+    }
+
+    public AuthScheme afterSuccessfulAuthentication(AuthScheme scheme, Headers headers) {
+        return afterSuccessfulAuthentication(scheme, headers, false);
+    }
+
+    public AuthScheme afterSuccessfulProxyAuthentication(AuthScheme scheme, Headers headers) {
+        return afterSuccessfulAuthentication(scheme, headers, true);
     }
 
     private HTTPRequest prepare(final HTTPRequest request, Challenge challenge, AuthScheme scheme, boolean proxy) {
@@ -52,8 +64,33 @@ public class DigestAuthenticatorStrategy implements AuthenticatorStrategy {
             else {
                 authHeader = new Header("Authorization", requestDigest.toHeaderValue());
             }
-            req = req.addHeader(authHeader);            
+            req = req.addHeader(authHeader);
         }
         return req;
+    }
+
+    public AuthScheme afterSuccessfulAuthentication(AuthScheme scheme, Headers headers, boolean proxy) {
+        Header header;
+        if (proxy) {
+            header = headers.getFirstHeader(PROXY_AUTHENTICATION_INFO);
+        }
+        else {
+            header = headers.getFirstHeader(AUTHENTICATION_INFO);
+        }
+        if (header != null) {
+            String nextNonce = header.getDirectives().get("nextnonce");
+            if (nextNonce != null) {
+                List<Directive> directives = Lists.newArrayList(scheme.getDirectives());
+                for (Directive directive : scheme.getDirectives()) {
+                    if ("nonce".equals(directive.getName())) {
+                        directives.remove(directive);
+                    }
+                }
+                directives.add(new Directive("nonce", nextNonce));
+                Directives dirs = new Directives(directives);
+                return new AuthScheme(new Header(scheme.getHeader().getName(), dirs));
+            }
+        }
+        return scheme;
     }
 }

@@ -98,11 +98,12 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 client.executeMethod(method);
                 response = convertResponse(method);
                 if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
-                    getProxyAuthenticator().invalidateAuthentication();
+                    getProxyAuthenticator().afterFailedAuthentication(response.getHeaders());
                     disablePreemtiveAuthentication();
                 }
                 else {
                     enablePreemptiveAuthentication();
+                    getProxyAuthenticator().afterSuccessfulAuthentication(response.getHeaders());
                 }
             }
         }       
@@ -117,9 +118,11 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 response = convertResponse(method);
                 if (response.getStatus() == Status.UNAUTHORIZED) {
                     disablePreemtiveAuthentication();
+                    getAuthenticator().afterFailedAuthentication(req, response.getHeaders());
                 }
                 else {
                     enablePreemptiveAuthentication();
+                    getAuthenticator().afterSuccessfulAuthentication(req, response.getHeaders());
                 }
             }
         }

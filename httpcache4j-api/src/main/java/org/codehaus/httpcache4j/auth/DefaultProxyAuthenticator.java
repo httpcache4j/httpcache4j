@@ -15,10 +15,7 @@
 
 package org.codehaus.httpcache4j.auth;
 
-import org.codehaus.httpcache4j.HTTPRequest;
-import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.Status;
-import org.codehaus.httpcache4j.Challenge;
+import org.codehaus.httpcache4j.*;
 import org.apache.commons.lang.Validate;
 
 import java.util.Arrays;
@@ -30,26 +27,21 @@ import com.google.common.collect.Lists;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class DefaultProxyAuthenticator implements ProxyAuthenticator {
+public class DefaultProxyAuthenticator extends AuthenticatorBase implements ProxyAuthenticator {
 
     private final ProxyConfiguration configuration;
-    private final List<AuthenticatorStrategy> strategies = Lists.newArrayList();
-    private final SchemeRegistry registry = new SchemeRegistry();
 
     private Challenge proxyChallenge;
 
     public DefaultProxyAuthenticator(ProxyConfiguration configuration) {
-        this(configuration, defaultStrategies());
+        super();
+        this.configuration = configuration; 
     }
 
     public DefaultProxyAuthenticator(ProxyConfiguration configuration, final List<AuthenticatorStrategy> strategies) {
+        super(strategies);
         Validate.notNull(configuration, "Configuration may not be null");
         this.configuration = configuration;
-        this.strategies.addAll(strategies);
-    }
-
-    private static List<AuthenticatorStrategy> defaultStrategies() {
-        return Arrays.asList(new DigestAuthenticatorStrategy(), new BasicAuthenticatorStrategy());
     }
 
     public final HTTPRequest prepareAuthentication(final HTTPRequest request, final HTTPResponse response) {        
@@ -79,13 +71,22 @@ public class DefaultProxyAuthenticator implements ProxyAuthenticator {
 
     private HTTPRequest doAuth(HTTPRequest request, AuthScheme scheme) {
         if (!configuration.isHostIgnored(request.getRequestURI().getHost())) {
-            for (AuthenticatorStrategy strategy : strategies) {
-                if (strategy.supports(scheme)) {
-                    return strategy.prepareWithProxy(request, proxyChallenge, scheme);
-                }
-            }
+            return select(scheme).prepareWithProxy(request, proxyChallenge, scheme);
         }
         return request;
+    }
+
+    public void afterSuccessfulAuthentication(Headers responseHeaders) {
+        if (registry.matches(configuration.getHost())) {
+            AuthScheme scheme = registry.get(configuration.getHost());
+            select(scheme).afterSuccessfulProxyAuthentication(scheme, responseHeaders);
+        }
+    }
+
+
+    public void afterFailedAuthentication(Headers responseHeaders) {
+        invalidateAuthentication();
+        registry.remove(configuration.getHost());
     }
 
     public void invalidateAuthentication() {
