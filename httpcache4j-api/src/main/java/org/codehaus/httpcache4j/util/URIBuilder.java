@@ -15,53 +15,79 @@
 
 package org.codehaus.httpcache4j.util;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import org.codehaus.httpcache4j.Parameter;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
+ * Immutable URI builder.
+ * Paths in this URI builder will be UTF-8 {@link org.codehaus.httpcache4j.util.URIEncoder URIEncoded}.
+ * Query Parameters needs to be URIEncoded before they are added.
+ *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class URIBuilder {
-    private String scheme;
-    private String host;
-    private int port;
-    private String path;
-    private String fragment;
-    private Map<String, List<Parameter>> parameters = new HashMap<String, List<Parameter>>();
+public final class URIBuilder {
+    private final String scheme;
+    private final String host;
+    private final int port;
+    private final List<Path> path;
+    private final String fragment;
+    private Map<String, List<String>> parameters;
 
-    private URIBuilder(String scheme, String host, int port, String path, String fragment) {
+    private URIBuilder(String scheme, String host, int port, List<Path> path, String fragment, Map<String, List<String>> parameters) {
         this.scheme = scheme;
         this.host = host;
         this.port = port;
         this.path = path;
         this.fragment = fragment;
-    }       
+        this.parameters = parameters;
+    }
 
-    public URIBuilder path(String path) {
-        this.path = path;
-        return this;
+    public URIBuilder scheme(String scheme) {        
+        return new URIBuilder(scheme, host, port, path, fragment, parameters);
+    }
+
+    public URIBuilder path(String... path) {
+        List<String> pathList = Arrays.asList(path);
+        List<Path> paths = Lists.transform(pathList, stringToPath);
+        return new URIBuilder(scheme, host, port, ImmutableList.copyOf(paths), fragment, parameters);
     }
 
     public URIBuilder host(String host) {
-        this.host = host;
-        return this;
+        return new URIBuilder(scheme, host, port, path, fragment, parameters);
     }
 
     public URIBuilder port(int port) {
-        this.port = port;
-        return this;
+        if ("http".equals(scheme) && port == 80) {
+            port = -1;
+        }
+        else if ("https".equals(scheme) && port == 443) {
+            port = -1;
+        }
+        return new URIBuilder(scheme, host, port, path, fragment, parameters);
     }
 
     public URIBuilder fragment(String fragment) {
-        this.fragment = fragment;
-        return this;
+        return new URIBuilder(scheme, host, port, path, fragment, parameters);
+    }
+
+    public URIBuilder noParameters() {
+        return parameters(Collections.<Parameter>emptyList());
+    }
+
+    public URIBuilder parameters(List<Parameter> parameters) {
+        Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>();
+        for (Parameter parameter : parameters) {
+            addToQueryMap(paraMap, parameter.getName(), parameter.getValue());
+        }
+        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(paraMap));
     }
 
     public URIBuilder addParameter(String name, String value) {
@@ -69,31 +95,55 @@ public class URIBuilder {
     }
 
     public URIBuilder addParameter(Parameter parameter) {
-        List<Parameter> list = parameters.get(parameter.getName());
-        if (list == null) {
-            list = new ArrayList<Parameter>();
+        Map<String, List<String>> parameters = new LinkedHashMap<String, List<String>>(this.parameters);
+        addToQueryMap(parameters, parameter.getName(), parameter.getValue());
+        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(parameters));
+    }
+
+    private String toPath() {
+        if (path.isEmpty()) {
+            return null;
         }
-        list.add(parameter);
-        return this;
-    }
-
-    public URIBuilder clearParameters() {
-        parameters.clear();
-        return this;
-    }
-
-    public URIBuilder copy() {
-        URIBuilder builder = new URIBuilder(scheme, host, port, path, fragment);
-        builder.parameters.putAll(parameters);
-        return builder;
+        StringBuilder builder = new StringBuilder();
+        for (Path pathElement : path) {
+            if (builder.length() > 0) {
+                builder.append("/");
+            }
+            builder.append(pathElement.getEncodedString());
+        }
+        if (host != null && builder.length() > 1) {
+            if (!"/".equals(builder.substring(0, 1))) {
+                builder.insert(0, "/");                
+            }
+        }
+        return builder.toString();
     }
 
     public URI toURI() {
         try {
-            return new URI(scheme, null, host, port, path, toQuery(), fragment);
+            return new URI(scheme, null, host, port, toPath(), toQuery(), fragment);
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    public boolean isRelative() {
+        return (scheme == null && host == null);
+    }
+
+    public URI toAbsoluteURI() {
+        if (isRelative()) {
+            try {
+                String path = toPath();
+                if (!path.startsWith("/")) {
+                    path = "/" + path;
+                }
+                return new URI(null, null, null, -1, path, toQuery(), fragment);
+            } catch (URISyntaxException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        return toURI();
     }
 
     private String toQuery() {
@@ -102,20 +152,100 @@ public class URIBuilder {
             if (builder.length() > 0) {
                 builder.append("&");
             }
-            builder.append(parameter.getName()).append("=").append(parameter.getValue());
+            builder.append(parameter);
+        }
+        if (builder.length() == 0) {
+            return null;
         }
         return builder.toString();
     }
 
     private List<Parameter> getParametersAsList() {
         List<Parameter> list = new ArrayList<Parameter>();
-        for (List<Parameter> pList : parameters.values()) {
-            list.addAll(pList);
+        for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
+            for (String value : entry.getValue()) {
+                list.add(new Parameter(entry.getKey(), value));
+            }
         }
         return list;
     }
 
     public static URIBuilder fromURI(URI uri) {
-        return new URIBuilder(uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath(), uri.getFragment());
+        return new URIBuilder(uri.getScheme(), uri.getHost(), uri.getPort(), toPathParts(uri.getPath()), uri.getFragment(), toQueryMap(uri.getQuery()));
+    }
+
+    private static Map<String, List<String>> toQueryMap(String query) {
+        Map<String, List<String>> map = new LinkedHashMap<String, List<String>>();
+        if (query != null) {
+            String[] parts = query.split("&");
+            for (String part : parts) {
+                String[] equalParts = part.split("=");
+                String name = null;
+                String value = null;
+                if (equalParts.length == 1) {
+                    name = equalParts[0];
+                }
+                else if (equalParts.length == 2) {
+                    name = equalParts[0];
+                    value = equalParts[1];
+                }
+                if (name != null) {
+                    addToQueryMap(map, URIDecoder.decodeUTF8(name), URIDecoder.decodeUTF8(value));
+                }
+            }
+        }
+
+        return Collections.unmodifiableMap(map);
+    }
+
+    private static void addToQueryMap(Map<String, List<String>> map, String name, String value) {
+        List<String> list = map.get(name);
+        if (list == null) {
+            list = new ArrayList<String>();
+        }
+        list.add(value);
+        map.put(name, list);
+    }
+
+    private static List<Path> toPathParts(String path) {
+        if (path == null) {
+            return Collections.emptyList();
+        }
+        if (!path.contains("/")) {
+            return Collections.singletonList(new Path(path));
+        }
+        else {
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            List<String> stringList = Arrays.asList(path.split("/"));
+            return ImmutableList.copyOf(Lists.transform(stringList, stringToPath));
+        }
+    }
+
+    public static URIBuilder empty() {
+        return new URIBuilder(null, null, -1, Collections.<Path>emptyList(), null, Collections.<String, List<String>>emptyMap());
+    }
+
+    private static Function<String, Path> stringToPath = new Function<String, Path>() {
+        public Path apply(String from) {
+            return new Path(from);
+        }
+    };
+
+    private static class Path {
+        private final String value;
+
+        private Path(String value) {
+            this.value = URIDecoder.decodeUTF8(value);
+        }
+
+        String getEncodedString() {
+            return URIEncoder.encodeUTF8(value);
+        }
+
+        String getValue() {
+            return value;
+        }
     }
 }

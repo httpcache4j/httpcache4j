@@ -15,21 +15,19 @@
 
 package org.codehaus.httpcache4j.payload;
 
-import org.codehaus.httpcache4j.MIMEType;
-import org.codehaus.httpcache4j.Parameter;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.Validate;
+import org.codehaus.httpcache4j.MIMEType;
+import org.codehaus.httpcache4j.Parameter;
+import org.codehaus.httpcache4j.util.URIEncoder;
 
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
-import java.net.URLEncoder;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -96,11 +94,7 @@ public class FormDataPayload implements Payload {
         }
 
         private String encode(String value) {
-            try {
-                return URLEncoder.encode(value, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new Error(e);
-            }
+            return URIEncoder.encodeUTF8(value);
         }
         
         @Override
