@@ -17,6 +17,7 @@ package org.codehaus.httpcache4j.auth;
 
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.Headers;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -30,4 +31,8 @@ public interface ProxyAuthenticator {
     void invalidateAuthentication();
 
     ProxyConfiguration getConfiguration();
+
+    void afterSuccessfulAuthentication(Headers responseHeaders);
+
+    void afterFailedAuthentication(Headers responseHeaders);    
 }

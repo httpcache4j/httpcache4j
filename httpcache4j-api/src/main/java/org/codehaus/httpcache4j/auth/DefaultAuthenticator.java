@@ -26,49 +26,56 @@ import com.google.common.collect.Lists;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class DefaultAuthenticator implements Authenticator {
-    private final List<AuthenticatorStrategy> strategies = Lists.newArrayList();
-    private final SchemeRegistry registry = new SchemeRegistry();
+public class DefaultAuthenticator extends AuthenticatorBase implements Authenticator {
 
     public DefaultAuthenticator() {
-        this(defaultStrategies());
+        super();
     }
 
     public DefaultAuthenticator(List<AuthenticatorStrategy> strategies) {
-        this.strategies.addAll(strategies);
-    }
-
-    private static List<AuthenticatorStrategy> defaultStrategies() {
-        return ImmutableList.of(new DigestAuthenticatorStrategy(), new BasicAuthenticatorStrategy());
+        super(strategies);
     }
 
     public final HTTPRequest prepareAuthentication(final HTTPRequest request, final HTTPResponse response) {
+        HTTPRequest req = request;
         HTTPHost host = new HTTPHost(request.getRequestURI());
         if (response == null && registry.matches(host)) {
             //preemptive auth.
             AuthScheme authScheme = registry.get(host);
-            for (AuthenticatorStrategy strategy : strategies) {
-                if (strategy.supports(authScheme)) {
-                    return strategy.prepare(request, authScheme);
-                }
-            }
+            AuthenticatorStrategy selected = select(authScheme);
+            return selected.prepare(request, authScheme);
+
         }
         if (response != null && response.getStatus() == Status.UNAUTHORIZED) {
             Header authenticateHeader = response.getHeaders().getFirstHeader(HeaderConstants.WWW_AUTHENTICATE);
             if (authenticateHeader != null && request.getChallenge() != null) {
                 AuthScheme scheme = new AuthScheme(authenticateHeader);
-                for (AuthenticatorStrategy strategy : strategies) {
-                    if (strategy.supports(scheme)) {
-                        return strategy.prepare(request, scheme);
-                    }
+                req = select(scheme).prepare(request, scheme);
+                if (req != request) { //If authentication header was added
+                    registry.register(host, scheme);                    
                 }
-                registry.register(host, scheme);
             }
         }
-        return request;
+        return req;
     }
 
     public HTTPRequest preparePreemptiveAuthentication(HTTPRequest request) {
         return prepareAuthentication(request, null);
+    }
+
+    public void afterSuccessfulAuthentication(HTTPRequest request, Headers responseHeaders) {
+        HTTPHost host = new HTTPHost(request.getRequestURI());
+        if (registry.matches(host)) {
+            AuthScheme scheme = registry.get(host);
+            AuthScheme updatedScheme = select(scheme).afterSuccessfulAuthentication(scheme, responseHeaders);
+            if (updatedScheme != scheme) {
+                registry.register(host, updatedScheme);                
+            }
+        }
+    }
+
+    public void afterFailedAuthentication(HTTPRequest request, Headers responseHeaders) {
+        HTTPHost host = new HTTPHost(request.getRequestURI());
+        registry.remove(host);
     }
 }

@@ -43,4 +43,8 @@ public class SchemeRegistry {
     public AuthScheme get(HTTPHost host) {
         return registry.get(host);
     }
+
+    public void remove(HTTPHost host) {
+        registry.remove(host);
+    }
 }

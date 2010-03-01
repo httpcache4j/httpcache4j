@@ -18,6 +18,7 @@ package org.codehaus.httpcache4j.auth;
 import org.apache.commons.codec.binary.Hex;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.Challenge;
+import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.UsernamePasswordChallenge;
 import org.apache.commons.codec.binary.Base64;
 
@@ -57,5 +58,13 @@ public class BasicAuthenticatorStrategy implements AuthenticatorStrategy {
             }
         }
         return req;
+    }
+
+    public AuthScheme afterSuccessfulAuthentication(AuthScheme scheme, Headers headers) {
+        return scheme;
+    }
+
+    public AuthScheme afterSuccessfulProxyAuthentication(AuthScheme scheme, Headers headers) {
+        return scheme;
     }
 }
