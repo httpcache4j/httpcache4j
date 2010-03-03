@@ -15,6 +15,7 @@
 
 package org.codehaus.httpcache4j.mutable;
 
+import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.Headers;
 
@@ -25,7 +26,16 @@ import java.util.List;
  * @version $Revision: $
  */
 public class MutableHeaders {
-    private Headers headers = new Headers();
+    private Headers headers;
+
+    public MutableHeaders() {
+        this(new Headers());
+    }
+
+    MutableHeaders(Headers headers) {
+        Validate.notNull(headers, "Headers may not be null");
+        this.headers = headers;
+    }
 
     public void add(Header header) {
         headers = headers.add(header);

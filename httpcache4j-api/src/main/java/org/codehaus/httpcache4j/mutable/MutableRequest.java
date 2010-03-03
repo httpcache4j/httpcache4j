@@ -28,9 +28,9 @@ import java.net.URI;
 public class MutableRequest {
     private final URI uri;
     private final HTTPMethod method;
-    private final MutableHeaders headers = new MutableHeaders();
-    private final MutableConditionals conditionals = new MutableConditionals();
-    private final MutablePreferences preferences = new MutablePreferences();
+    private final MutableHeaders headers;
+    private final MutableConditionals conditionals;
+    private final MutablePreferences preferences;
     private Challenge challenge;
     private Payload payload;
 
@@ -39,8 +39,19 @@ public class MutableRequest {
     }
 
     public MutableRequest(URI uri, HTTPMethod method) {
+        this(uri, method, new MutableHeaders(), new MutableConditionals(), new MutablePreferences());
+    }
+
+    private MutableRequest(URI uri,
+                           HTTPMethod method,
+                           MutableHeaders headers,
+                           MutableConditionals conditionals,
+                           MutablePreferences preferences) {
         this.uri = uri;
         this.method = method;
+        this.headers = headers;
+        this.conditionals = conditionals;
+        this.preferences = preferences;
     }
 
     public URI getUri() {
@@ -95,7 +106,7 @@ public class MutableRequest {
     }
 
     private class FromMutableRequest extends HTTPRequest {
-        public FromMutableRequest() {
+        private FromMutableRequest() {
             super(uri,
                   method,
                   headers.toHeaders(),
@@ -106,6 +117,21 @@ public class MutableRequest {
                   new DateTime()
             );
         }
+    }
+
+    public static MutableRequest fromHTTPRequest(HTTPRequest request) {
+        MutableRequest mutableRequest = new MutableRequest(
+                request.getRequestURI(),
+                request.getMethod(),
+                new MutableHeaders(request.getHeaders()),
+                new MutableConditionals(request.getConditionals()),
+                new MutablePreferences(request.getPreferences())
+        );
+        mutableRequest.setChallenge(request.getChallenge());
+        if (request.getMethod().canHavePayload()) {
+            mutableRequest.setPayload(request.getPayload());
+        }
+        return mutableRequest;
     }
 
 }

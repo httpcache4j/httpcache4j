@@ -15,6 +15,7 @@
 
 package org.codehaus.httpcache4j.mutable;
 
+import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.preference.Preference;
 import org.codehaus.httpcache4j.preference.Preferences;
@@ -27,7 +28,16 @@ import java.util.Locale;
  * @version $Revision: $
  */
 public class MutablePreferences {
-    private Preferences preferences = new Preferences();
+    private Preferences preferences;
+
+    public MutablePreferences() {
+        this(new Preferences());
+    }
+
+    MutablePreferences(Preferences preferences) {
+        Validate.notNull(preferences, "Preferences may not be null");
+        this.preferences = preferences;
+    }
 
     public void addLocale(Locale locale) {
         preferences = preferences.addLocale(locale);

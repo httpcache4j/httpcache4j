@@ -15,6 +15,7 @@
 
 package org.codehaus.httpcache4j.mutable;
 
+import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.Conditionals;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.Tag;
@@ -27,7 +28,16 @@ import java.util.List;
  * @version $Revision: $
  */
 public class MutableConditionals {
-    private Conditionals conditionals = new Conditionals();
+    private Conditionals conditionals;
+
+    public MutableConditionals() {
+        this(new Conditionals());
+    }
+
+    MutableConditionals(Conditionals conditionals) {
+        Validate.notNull(conditionals, "Conditionals may not be null");
+        this.conditionals = conditionals;
+    }
 
     public void addIfMatch(Tag tag) {
         conditionals = conditionals.addIfMatch(tag);
