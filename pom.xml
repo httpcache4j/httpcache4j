@@ -15,14 +15,9 @@
   ~
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.codehaus.httpcache4j</groupId>
-    <artifactId>httpcache4j-parent</artifactId>
-    <version>1</version>
-  </parent>
   <groupId>org.codehaus.httpcache4j</groupId>
   <artifactId>httpcache4j</artifactId>
   <packaging>pom</packaging>
@@ -84,86 +79,41 @@
     </developer>
   </developers>
 
-  <repositories>
-    <repository>
-      <id>codehaus</id>
-      <url>http://repository.codehaus.org</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </repository>
-    <repository>
-      <id>codehaus - snapshots</id>
-      <url>http://snapshots.repository.codehaus.org</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>codehaus</id>
-      <url>http://repository.codehaus.org</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </pluginRepository>
-    <pluginRepository>
-      <id>codehaus - snapshots</id>
-      <url>http://snapshots.repository.codehaus.org</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
-
   <reporting>
-     <plugins>
-       <plugin>
-         <groupId>org.codehaus.mojo</groupId>
-         <artifactId>emma-maven-plugin</artifactId>
-         <version>1.0-alpha-1</version>
-         <inherited>true</inherited>
-       </plugin>
-       <plugin>
-         <groupId>org.codehaus.mojo</groupId>
-         <artifactId>surefire-report-maven-plugin</artifactId>
-         <inherited>true</inherited>
-       </plugin>
-       <plugin>
-         <groupId>org.codehaus.mojo</groupId>
-         <artifactId>findbugs-maven-plugin</artifactId>
-         <version>2.0.1</version>
-         <inherited>true</inherited>
-       </plugin>
-       <plugin>
-         <groupId>org.codehaus.mojo</groupId>
-         <artifactId>taglist-maven-plugin</artifactId>
-         <version>2.3</version>
-         <configuration>
-           <tags>
-             <tag>TODO</tag>
-             <tag>FIXME</tag>
-             <tag>@todo</tag>
-             <tag>@deprecated</tag>
-           </tags>
-         </configuration>
-       </plugin>
-       
-     </plugins>
-   </reporting>  
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>emma-maven-plugin</artifactId>
+        <version>1.0-alpha-1</version>
+        <inherited>true</inherited>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>surefire-report-maven-plugin</artifactId>
+        <inherited>true</inherited>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>2.0.1</version>
+        <inherited>true</inherited>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>taglist-maven-plugin</artifactId>
+        <version>2.3</version>
+        <configuration>
+          <tags>
+            <tag>TODO</tag>
+            <tag>FIXME</tag>
+            <tag>@todo</tag>
+            <tag>@deprecated</tag>
+          </tags>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </reporting>
 
   <build>
     <extensions>
@@ -174,29 +124,58 @@
       </extension>
     </extensions>
     <pluginManagement>
-    	<plugins>
-    		<plugin>
-    			<groupId>org.apache.maven.plugins</groupId>
-    			<artifactId>maven-source-plugin</artifactId>
-    			<version>2.0.4</version>
-    		</plugin>
-    		<plugin>
-    			<groupId>org.apache.maven.plugins</groupId>
-    			<artifactId>maven-javadoc-plugin</artifactId>
-    			<version>2.5</version>
-    		</plugin>
-    	</plugins>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>2.0.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.5</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>tests</id>
+              <goals>
+                <goal>test-jar</goal>
+              </goals>
+              <phase>package</phase>
+            </execution>
+          </executions>
+          <inherited>true</inherited>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.1</version>
+          <configuration>
+            <source>1.5</source>
+            <target>1.5</target>
+            <encoding>ISO-8859-1</encoding>
+          </configuration>
+          <inherited>true</inherited>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.4</version>
+          <configuration>
+            <encoding>ISO-8859-1</encoding>
+          </configuration>
+          <inherited>true</inherited>
+        </plugin>
+      </plugins>
     </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.0.2</version>
-        <configuration>
-         <source>1.5</source>
-         <target>1.5</target>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
@@ -204,14 +183,14 @@
         <configuration>
           <preparationGoals>clean install</preparationGoals>
           <goals>deploy</goals>
-          <releaseProfiles>release</releaseProfiles>          
+          <releaseProfiles>release</releaseProfiles>
         </configuration>
-      </plugin>      
+      </plugin>
     </plugins>
   </build>
-   <properties>
+  <properties>
     <currentVersion>${version}</currentVersion>
-  </properties>  
+  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -259,7 +238,7 @@
         <groupId>com.google.collections</groupId>
         <artifactId>google-collections</artifactId>
         <version>1.0</version>
-      </dependency>      
+      </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
@@ -333,7 +312,7 @@
     </site>
   </distributionManagement>
 
-  <profiles>    
+  <profiles>
     <profile>
       <id>sign-pgp</id>
       <activation>
@@ -378,7 +357,7 @@
                 <phase>verify</phase>
                 <goals>
                   <goal>sign</goal>
-                </goals>                
+                </goals>
               </execution>
             </executions>
           </plugin>
