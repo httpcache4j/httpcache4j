@@ -30,7 +30,7 @@ import java.net.URI;
  * @version $Revision: $
  */
 public abstract class AbstractCacheIntegrationTest {
-    private static Server server;
+    private static JettyServer server;
     private static URI baseRequestURI;
     private static final String TEST_FILE = "testFile";
     private HTTPCache cache;
@@ -38,8 +38,8 @@ public abstract class AbstractCacheIntegrationTest {
 
     @BeforeClass
     public static void setupServer() {
-        baseRequestURI = URI.create(String.format("http://localhost:%s/", Server.PORT));
-        server = new Server();
+        baseRequestURI = URI.create(String.format("http://localhost:%s/", JettyServer.PORT));
+        server = new JettyServer();
         server.start();
     }
 
