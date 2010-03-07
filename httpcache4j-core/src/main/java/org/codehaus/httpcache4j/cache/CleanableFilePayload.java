@@ -43,7 +43,7 @@ public class CleanableFilePayload implements CleanablePayload, Serializable {
     private final File file;
     private final MIMEType mimeType;
 
-    public CleanableFilePayload(final File file, final MIMEType mimeType) throws IOException {
+    public CleanableFilePayload(final File file, final MIMEType mimeType) {
         this.file = file;
         this.mimeType = mimeType;
     }

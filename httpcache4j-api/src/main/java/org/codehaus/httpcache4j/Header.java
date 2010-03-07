@@ -17,6 +17,8 @@
 package org.codehaus.httpcache4j;
 
 import org.apache.commons.lang.Validate;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonValue;
 
 import java.util.*;
 
@@ -24,7 +26,6 @@ import java.util.*;
  * Represents a HTTP Header.
  */
 public final class Header extends NameValue {
-    private static final long serialVersionUID = 3652406179988246039L;
     private Directives directives;
 
     public Header(String name, String value) {
@@ -39,6 +40,7 @@ public final class Header extends NameValue {
     }
 
     @Override
+    @JsonValue
     public final String toString() {
         return getName() + ": " + getValue();
     }
@@ -48,5 +50,19 @@ public final class Header extends NameValue {
             directives = new Directives(value);
         }
         return directives;
+    }
+
+    @JsonCreator
+    private static Header valueOf(String json) {
+        String[] parts = json.split(":");
+        if (parts != null) {
+            if (parts.length == 1) {
+                return new Header(parts[0].trim(), "");
+            }
+            else if (parts.length == 2) {
+                return new Header(parts[0].trim(), parts[1].trim());
+            }
+        }
+        throw new IllegalArgumentException("Not a valid header string");
     }
 }

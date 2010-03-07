@@ -84,6 +84,11 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     }
 
     @Override
+    protected CacheItem createCacheItem(HTTPResponse pCacheableResponse) {
+        return new SerializableCacheItem(pCacheableResponse);
+    }
+
+    @Override
     protected Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException {
         File file = fileManager.createFile(key, stream);
         if (file != null && file.exists()) {

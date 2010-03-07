@@ -11,8 +11,7 @@ import java.util.Locale;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public abstract class NameValue implements Serializable {
-    private static final long serialVersionUID = 8126643664459915558L;
+public abstract class NameValue {
     protected final String name;
     protected final String value;
 

@@ -16,9 +16,6 @@
 
 package org.codehaus.httpcache4j;
 
-import java.io.Serializable;
-
-
 /**
  * Validation tag equivalent to the HTTP entity tag. "A strong entity tag may be
  * shared by two entities of a resource only if they are equivalent by octet
@@ -33,7 +30,7 @@ import java.io.Serializable;
  *      href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.3.2">HTTP
  *      Entity Tag Cache Validators</a>
  */
-public final class Tag implements Serializable {
+public final class Tag {
     private static final long serialVersionUID = 673213161743597801L;
 
     /** Tag matching any other tag, used in call's condition data. */

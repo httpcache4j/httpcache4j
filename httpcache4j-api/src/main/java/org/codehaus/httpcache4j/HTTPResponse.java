@@ -16,16 +16,16 @@
 
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.lang.Validate;
 import org.apache.commons.io.IOUtils;
-
-import static org.codehaus.httpcache4j.HeaderConstants.*;
+import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.payload.Payload;
-
 import org.joda.time.DateTime;
 
-import java.io.Serializable;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.codehaus.httpcache4j.HeaderConstants.*;
 
 /**
  * Represents a HTTP response delivered by the cache.
@@ -34,8 +34,7 @@ import java.util.*;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public final class HTTPResponse implements Serializable {
-    private static final long serialVersionUID = -7448511905298678448L;
+public final class HTTPResponse {
     
     private final Status status;
     private final Payload payload;

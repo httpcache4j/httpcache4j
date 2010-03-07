@@ -35,8 +35,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.codehaus.httpcache4j.storage.jdbc.JdbcUtil.close;
-
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
@@ -61,9 +59,9 @@ public class JdbcCacheStorage implements CacheStorage {
             invalidate(key, connection);
             statement = connection.prepareStatement(sql);
             statement.setString(1, key.getURI().toString());
-            statement.setString(2, key.getVary().toString());
+            statement.setString(2, key.getVary().toJSON());
             statement.setInt(3, response.getStatus().getCode());
-            statement.setString(4, response.getHeaders().toString());
+            statement.setString(4, response.getHeaders().toJSON());
             InputStream inputStream = null;
             if (response.hasPayload() && response.getPayload().isAvailable()) {
                 statement.setString(6, response.getPayload().getMimeType().toString());
@@ -102,10 +100,10 @@ public class JdbcCacheStorage implements CacheStorage {
         try {
             JdbcUtil.startTransaction(connection);
             statement = connection.prepareStatement("update response set headers = ?, cachetime = ? where uri = ? and vary = ?");
-            statement.setString(1, response.getHeaders().toString());
+            statement.setString(1, response.getHeaders().toJSON());
             statement.setTimestamp(2, new Timestamp(DateTimeUtils.currentTimeMillis()));
             statement.setString(3, key.getURI().toString());
-            statement.setString(4, key.getVary().toString());
+            statement.setString(4, key.getVary().toJSON());
             statement.executeUpdate();
             connection.commit();
             return getImpl(connection, key);
@@ -125,7 +123,7 @@ public class JdbcCacheStorage implements CacheStorage {
         try {
             statement = connection.prepareStatement("select * from response where uri = ? and vary = ?");
             statement.setString(1, key.getURI().toString());
-            statement.setString(2, key.getVary().toString());
+            statement.setString(2, key.getVary().toJSON());
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 CacheItemHolder holder = mapper.mapRow(rs, connection);
@@ -169,7 +167,7 @@ public class JdbcCacheStorage implements CacheStorage {
         try {
             statement = connection.prepareStatement("delete from response where uri = ? and vary = ?");
             statement.setString(1, key.getURI().toString());
-            statement.setString(2, key.getVary().toString());
+            statement.setString(2, key.getVary().toJSON());
             statement.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException(e);
@@ -274,23 +272,12 @@ public class JdbcCacheStorage implements CacheStorage {
     }
 
     private class ResponseMapper {
-
         private Vary convertToVary(String vary) {
-            return new Vary(convertToHeaders(vary));
+            return Vary.fromJSON(vary);
         }
 
         private Headers convertToHeaders(String input) {
-            Headers headers = new Headers();
-            String[] lines = input.split("\r\n");
-            if (lines != null && lines.length > 0) {
-                for (String line : lines) {
-                    String[] headerparts = line.split(":");
-                    if (headerparts != null && headerparts.length == 2) {
-                        headers.add(headerparts[0], headerparts[1]);
-                    }
-                }
-            }
-            return headers;
+            return Headers.fromJSON(input);
         }
 
         public CacheItemHolder mapRow(ResultSet rs, Connection connection) throws SQLException {
