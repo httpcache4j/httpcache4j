@@ -16,17 +16,19 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.lang.Validate;
-
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.Header;
-
-import java.io.Serializable;
-import java.util.*;
-import java.text.Collator;
-
-import com.google.common.collect.Maps;
 import org.codehaus.httpcache4j.Headers;
+import org.codehaus.httpcache4j.util.ToJSON;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.type.TypeFactory;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.text.Collator;
+import java.util.*;
 
 /**
  * Represents a HTTP Variation.
@@ -37,9 +39,7 @@ import org.codehaus.httpcache4j.Headers;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public final class Vary implements Serializable {
-    private static final long serialVersionUID = -5275022740812240365L;
-    
+public final class Vary implements ToJSON {
     private final Map<String, String> varyHeaders;
 
     /**
@@ -109,6 +109,26 @@ public final class Vary implements Serializable {
 
     public Map<String, String> getVaryHeaders() {
         return varyHeaders;
+    }
+
+    public static Vary fromJSON(String value) {
+        final ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> map;
+        try {
+            map = mapper.readValue(value, TypeFactory.mapType(LinkedHashMap.class, String.class, String.class));
+            return new Vary(map);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public String toJSON() {
+        final ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.writeValueAsString(varyHeaders);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public boolean equals(final Object o) {

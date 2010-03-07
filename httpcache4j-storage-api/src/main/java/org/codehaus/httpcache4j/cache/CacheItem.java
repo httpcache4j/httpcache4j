@@ -16,7 +16,6 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang.Validate;
 
 import org.codehaus.httpcache4j.*;
@@ -26,19 +25,16 @@ import static org.codehaus.httpcache4j.HeaderConstants.*;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
 
-import java.io.Serializable;
-
 /**
  * This is an internal class, and should not be used by clients.
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public class CacheItem implements Serializable {
-    private static final long serialVersionUID = 5891522215450656044L;
+public class CacheItem {
 
-    private final DateTime cachedTime;
-    private final HTTPResponse response;
-    private final int ttl;
+    protected DateTime cachedTime;
+    protected HTTPResponse response;
+    protected int ttl;
 
     public CacheItem(HTTPResponse response) {
         this(response, new DateTime());
@@ -108,7 +104,7 @@ public class CacheItem implements Serializable {
     public HTTPResponse getResponse() {
         return response;
     }
-
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) {

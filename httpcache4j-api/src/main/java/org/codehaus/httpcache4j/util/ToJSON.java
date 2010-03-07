@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, The Codehaus. All Rights Reserved.
+ * Copyright (c) 2010. The Codehaus. All Rights Reserved.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -11,26 +11,14 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
- *
  */
 
-package org.codehaus.httpcache4j;
+package org.codehaus.httpcache4j.util;
 
 /**
- * Represents a parameter. 
- *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
- * @author last modified by $Author: $
- * @version $Id: $
+ * @version $Revision: $
  */
-public class Parameter extends NameValue {
-
-    public Parameter(String name, String value) {
-        super(name, value);
-    }
-
-    @Override
-    public String toString() {
-        return name + "=" + value;
-    }
+public interface ToJSON {
+    String toJSON();
 }

@@ -86,8 +86,12 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     protected HTTPResponse putImpl(final Key pKey, final HTTPResponse pCacheableResponse) {
-        cache.put(pKey, new CacheItem(pCacheableResponse));
+        cache.put(pKey, createCacheItem(pCacheableResponse));
         return pCacheableResponse;
+    }
+
+    protected CacheItem createCacheItem(HTTPResponse pCacheableResponse) {
+        return new CacheItem(pCacheableResponse);
     }
 
     public HTTPResponse update(final HTTPRequest request, final HTTPResponse response) {

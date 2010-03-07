@@ -16,15 +16,16 @@
 
 package org.codehaus.httpcache4j;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang.Validate;
+import org.codehaus.httpcache4j.util.ToJSON;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.type.TypeFactory;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-import java.util.List;
-import java.util.Set;
-
-import com.google.common.collect.Lists;
-import com.google.common.base.Function;
 
 
 /**
@@ -33,8 +34,7 @@ import com.google.common.base.Function;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public final class Headers implements Serializable, Iterable<Header> {
-    private static final long serialVersionUID = -7175564984758939316L;
+public final class Headers implements Iterable<Header>, ToJSON {
     private final HeaderHashMap headers = new HeaderHashMap();
 
     public Headers() {
@@ -167,6 +167,26 @@ public final class Headers implements Serializable, Iterable<Header> {
         return builder.toString();
     }
 
+    public static Headers fromJSON(String value) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            List<Header> headers = mapper.readValue(value, TypeFactory.collectionType(List.class, Header.class));
+            return new Headers().add(headers);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public String toJSON() {
+        ObjectMapper mapper = new ObjectMapper();
+        List<Header> headers = Lists.newArrayList(this);
+        try {
+            return mapper.writeValueAsString(headers);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+    
     private static class HeaderHashMap extends LinkedHashMap<Name, List<String>> {
         private static final long serialVersionUID = 2714358409043444835L;
 
