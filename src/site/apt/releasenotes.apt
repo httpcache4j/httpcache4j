@@ -6,6 +6,36 @@
 
 Release notes
 
+* 3.0
+
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-64}HTCJ-64}} |  Move the RequestWriter and ResponseWriter class to API      |
+|                                                      |  util class                                                  |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-61}HTCJ-61}} |  Parsing of HTTP headers is way too naiive                   |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-58}HTCJ-58}} | Do not expose a Map as directives,                           |
+|                                                      | use a Directives class instead.                              |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-58}HTCJ-58}} |  Add support for the H2 Database                             |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-57}HTCJ-57}} |  Add HTTP Digest authentication                              |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-54}HTCJ-54}} |  Upgrade google collections to latest version                |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-65}HTCJ-65}} |  Make the URIBuilder immutable.                              |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-62}HTCJ-62}} |  Get back a mutable Request object                           |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-59}HTCJ-59}} |  Add a common jdbc layer                                     |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-63}HTCJ-63}} | Change storage format of Headers and Vary to JSON            |
+*------------------------------------------------------+--------------------------------------------------------------+
+| {{{http://jira.codehaus.org/browse/HTCJ-66}HTCJ-66}} | Provide hooks for Authenticator and ProxyAuthenticators to do|
+|                                                      | something on successful and failed authentication            |
+*------------------------------------------------------+--------------------------------------------------------------+
+
+
 * 2.2
 
 *------------------------------------------------------+--------------------------------------------------------------+
