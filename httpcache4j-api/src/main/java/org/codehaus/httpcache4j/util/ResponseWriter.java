@@ -36,6 +36,10 @@ public class ResponseWriter {
         this.response = response;
     }
 
+    public void write() {
+        write(new PrintWriter(System.out));
+    }
+
     public void write(Writer output) {
         PrintWriter writer = new PrintWriter(output);
         writeStatus(writer, response.getStatus());
