@@ -44,7 +44,7 @@ public class BasicAuthenticatorStrategy implements AuthenticatorStrategy {
         if (challenge instanceof UsernamePasswordChallenge) {
             UsernamePasswordChallenge upc = (UsernamePasswordChallenge) challenge;
             String basicString = upc.getIdentifier() + ":" + new String(upc.getPassword());
-            String authValue = "Basic " + Base64.encodeBase64String(basicString.getBytes(UTF_8));
+            String authValue = "Basic " + new String(Base64.encodeBase64(basicString.getBytes()));
             if (proxy) {
                 req = request.addHeader(HeaderConstants.PROXY_AUTHORIZATION, authValue);
             }
