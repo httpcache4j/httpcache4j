@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+ * Copyright (c) 2007, Escenic AS
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Escenic AS nor the names of its contributors may
+ *       be used to endorse or promote products derived from this software
+ *       without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY ESCENIC AS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ESCENIC AS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Simple HTTP Test Container</title>
+    <style type="text/css">
+      body {
+        margin: 3em 4em;
+      }
+      pre {
+        border: 1px dashed black;
+        background-color: #eee;
+        padding: 0.2em 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Simple HTTP Test Container</h1>
+    <p>
+      Welcome to the Simple HTTP Test Container for use by test applications that need to test aspects of their HTTP protocol.
+      This container allows you to PUT resources to file names and to GET them later.  This could be used by unit test frameworks
+      that need to be able to PUT and GET resources.
+    </p>
+    <h2>License</h2>
+    <p>
+      The container is released under a BSD license:
+    </p>
+    <pre>
+ * Copyright (c) 2007, Escenic AS
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Escenic AS nor the names of its contributors may
+ *       be used to endorse or promote products derived from this software
+ *       without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY ESCENIC AS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ESCENIC AS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    </pre>
+    <p>
+      The container has the notion of a flat file system.  Files are not structured in directories; they are ignored.
+      So you can PUT to /somefile or /my/directory/somefile and you would actually be putting the same resource.  Directories
+      are used for something completely different; namely enabling parts of HTTP.
+    </p>
+
+    <p>
+      For example if you want to enable use of the "Last-Modified" header you can GET your resource from the "lm" directory:
+      <tt>GET /lm/somefile</tt> will give you a "Last-Modified" header.  Also if you send in the "If-Modified-Since" header with
+      the same date as "Last-Modified" then you will get a <tt>HTTP 304 NOT MODIFIED</tt> response as specified by HTTP.
+    </p>
+
+    <p>
+      Likewise if you GET your resource from the "etag" directory you will get ETag responses based on the checksum of the file,
+      and the server will perform If-Match and If-None-Match requests accordingly.
+    </p>
+
+    <p>The following list of directories are supported:</p>
+    <dl>
+      <dt><tt>cc[,<em>seconds</em>]</tt></dt>
+      <dd>Cache-Control header.  The response will get a Cache-Control: max-age=18 response (or the number of seconds</dd>
+      <dt><tt>error,<em>code</em>[,message=SomeMessage]</tt></dt>
+      <dd>Error Response Generator.  Returns the specified error, optionally with a specific message.  For example /error,503/.  Also <tt>slow-error</tt> which adheres to the sleep directory.  Also the <tt>unconditional-error</tt> which </dd>
+      <dt><tt>etag</tt></dt>
+      <dd>Entity Tag support. The responses will get ETags and the requests are processed for preconditions If-Match and If-None-Match</dd>
+      <dt><tt>lm</tt></dt>
+      <dd>Last Modified support.  The responses will get Last Modified headers and the requests are processed for preconditions using If-Modified-Since and If-Unmodified-Since</dd>
+      <dt><tt>sleep[,<em>seconds</em>]</tt></dt>
+      <dd>Slow Origin Server.  Full responses will simply be delayed for a few seconds while conditional methods (304, 412) return immediately. (also <tt>unconditional-sleep</tt> which sleeps no matter what</dd>
+      <dt><tt>surrogate</tt></dt>
+      <dd>Surrogate support.  The requests are checked for Surrogate-Capability and if we find a surrogate that supports ESI/1.0 we add a response header indicating that we want the content to be processed by that surrogate</dd>
+    </dl>
+    <h2>Example Conversation</h2>
+    <p>Here is an example conversation between a user agent and this web application.  First we PUT some text to the file "hello.txt"</p>
+    <pre>
+PUT /hello.txt
+Host: localhost
+
+Hello World!
+------------------------------------
+204 No Content
+Date: Fri, 09 Nov 2007 12:37:45 GMT
+    </pre>
+<p>
+  We can now GET it if we like:
+</p>
+<pre>
+GET /hello.txt
+
+---------8&lt;---------------------
+200 OK
+Connection: close
+Date: Fri, 09 Nov 2007 12:40:45 GMT
+Content-Length: 12
+Content-Type: text/plain
+
+Hello World!
+</pre>
+<p>
+  The actual headers will probably vary based on your application server and user agent.
+</p>
+<h3>Last Modified</h3>
+<p>
+   The GET request can now be enhanced with a "Last-Modified" date by accessing the "hello.txt" file in the "lm" directory:
+</p>
+<pre>
+GET /lm/hello.txt
+
+---------8&lt;---------------------
+200 OK
+Connection: close
+Date: Fri, 09 Nov 2007 12:40:45 GMT
+Content-Length: 12
+Content-Type: text/plain
+Last-Modified: <b>Fri, 09 Nov 2007 12:37:45 GMT</b>
+
+Hello World!
+</pre>
+<p>
+  It is now of course possible to construct a Conditional GET which will trigger the server 304 response.  We take the
+  Last-Modified header of the response and put it into the If-Modified-Since header of the request:
+</p>
+<pre>
+GET /lm/hello.txt
+If-Modified-Since: <b>Fri, 09 Nov 2007 12:37:45 GMT</b>
+
+---------8&lt;---------------------
+304 NOT MODIFIED
+Connection: close
+Date: Fri, 09 Nov 2007 12:45:12 GMT
+Last-Modified: Fri, 09 Nov 2007 12:37:45 GMT
+
+</pre>
+<h3>Entity Tags</h3>
+<p>
+  Let's add entity tags by GETting the response from the "etag" directory.  It's the same resource that's why I can
+  reuse the If-Modified-Since from the previous example even though it looks as if I'm accessing a "different" resource.
+  Both /lm/hello.txt and /lm/etag/hello.txt are the same "thing" and have the same modification dates etc.
+</p>
+<pre>
+GET /lm/<b>etag</b>/hello.txt
+If-Modified-Since: Fri, 09 Nov 2007 12:37:45 GMT
+
+---------8&lt;---------------------
+304 NOT MODIFIED
+Connection: close
+Date: Fri, 09 Nov 2007 12:45:12 GMT
+ETag: <b>"ffffffffc63cb61d"</b>
+Last-Modified: Fri, 09 Nov 2007 12:37:45 GMT
+
+</pre>
+<p>
+  Since it was a conditional GET (If-Modified-Since) I didn't get any content but only updated headers: ETag.
+  The ETag is simply a hashcode of the content, and the string "Hello World!" gets the ETag <tt>"ffffffffc63cb61d"</tt>.
+  We can now construct a conditional GET which relies on ETags instead:
+</p>
+<pre>
+GET /lm/etag/hello.txt
+<b>If-None-Match: "ffffffffc63cb61d"</b>
+
+---------8&lt;---------------------
+304 NOT MODIFIED
+Connection: close
+Date: Fri, 09 Nov 2007 12:45:12 GMT
+ETag: "ffffffffc63cb61d"
+Last-Modified: Fri, 09 Nov 2007 12:37:45 GMT
+
+</pre>
+<p>
+  Conditional ETag matching is quite cool.  The cache can keep the last 10 representations in the hopes that one of
+  them might go back in style.  If so it sends the ETags of all of the cached responses as follows
+</p>
+<pre>
+GET /lm/etag/hello.txt
+If-None-Match: <b>"782f2dcc2"</b> "ffffffffc63cb61d" <b>"ffdb49dc" "a3cdbeef6"</b>
+
+---------8&lt;---------------------
+304 NOT MODIFIED
+Connection: close
+Date: Fri, 09 Nov 2007 12:45:12 GMT
+ETag: "ffffffffc63cb61d"
+Last-Modified: Fri, 09 Nov 2007 12:37:45 GMT
+
+</pre>
+<p>
+  The response from the server indicates which of them to use to the client by setting the ETag header just as it
+  would given the full entity.
+</p>
+<h3>Cache Control</h3>
+<p>
+  The "cc" directory enables a simple cache control which gives you 18 seconds of cache.  It only affects responses:
+</p>
+<pre>
+GET /cc/hello.txt
+
+---------8&lt;---------------------
+200 OK
+Connection: close
+Date: Fri, 09 Nov 2007 12:45:12 GMT
+Cache-Control: max-age=18
+
+Hello World!
+</pre>
+<p>
+  You can also specify the max-age parameter as follows:
+</p>
+<pre>
+GET /cc,100/hello.txt
+
+---------8&lt;---------------------
+200 OK
+Connection: close
+Date: Fri, 09 Nov 2007 12:45:12 GMT
+Cache-Control: max-age=100
+
+Hello World!
+</pre>
+<h3>Surrogates and ESI</h3>
+<p>
+  There is preliminary support for surrogates by accessing any resource from a 'surrogate' directory.  Surrogate checking
+  is only possible if you actually send in the "Surrogate-Capability" header.  Typically proxies use this to tell origin
+  servers that they are there and that they can do post processing.  If an origin server finds out that it wants to use
+  this functionality it adds a "Surrogate-Control" header in the response to tell it that it should activate one or more
+  transformations on the response before it is passed back to the client.
+</p>
+<p>
+  The surrogate support in the web application simply looks for a surrogate with the capability of processing ESI/1.0 and
+  returns all of that surrogate's capabilities in the Surrogate-Control header.  Let's just take a look at an example!
+</p>
+<pre>
+GET /surrogate/hello.txt
+Surrogate-Capability: varnish="ESI/1.0 Joe/2.0"
+
+---------8&lt;---------------------
+200 OK
+Connection: close
+Date: Fri, 09 Nov 2007 12:45:12 GMT
+Surrogate-Control: content="ESI/1.0 Joe/2.0"
+
+Hello World!
+</pre>
+<p>
+  As you can see the entire set of capabilities (ESI/1.0 and Joe/2.0) are echoed back to the server.
+  If the surrogate does not support ESI/1.0 then we don't consider it.  Here we have a surrogate which doesn't support ESI and
+  the response does <em>not</em> ask for any processing.
+</p>
+<pre>
+GET /surrogate/hello.txt
+Surrogate-Capability: varnish="VARNISH/1.0 Joe/2.0"
+
+---------8&lt;---------------------
+200 OK
+Connection: close
+Date: Fri, 09 Nov 2007 12:46:34 GMT
+
+Hello World!
+</pre>
+
+<p>
+  Finally, you can of course combine these things by adding stuff to the path.  The order of the path is not important, as
+  the order is strictly defined by the application itself (it checks for ETags before it checks for Last Modified and so on.
+  Here's a request with all of the options enabled:
+</p>
+<pre>
+GET /surrogate/cc,180/etag/lm/hello.txt
+Surrogate-Capability: foo="ESI/1.0"
+If-Modified-Since: Fri, 09 Nov 2007 12:37:45 GMT
+If-None-Match: "ffffffffc63cb61d"
+
+---------8&lt;---------------------
+304 NOT MODIFIED
+Connection: close
+Cache-Control: max-age=180
+Date: Fri, 09 Nov 2007 14:27:28 GMT
+ETag: "ffffffffc63cb61d"
+Surrogate-Control: content="ESI/1.0"
+
+</pre>
+<p>
+  As you can see the 304 response correctly includes the Surrogate-Control header indicating that the origin server still wants
+  surrogates to do ESI processing.
+</p>
+
+<h3>A Slow Origin Server</h3>
+<p>
+  It is possible to simulate a slow origin server by accessing anything from within the /sleep/ directory.  The sleeping server
+  is configurable; it is possible to tell the origin server to sleep for a specified number of seconds.  By default the server
+  will sleep for five seconds.  Here are some example URIs to help you get going:
+</p>
+<dl>
+  <dt><tt>GET /sleep/hello.txt</tt></dt>
+  <dd>Returns the hello.txt resource after five seconds.</dd>
+  <dt><tt>GET /sleep,10/hello.txt</tt></dt>
+  <dd>Returns the hello.txt resource after ten seconds.</dd>
+</dl>
+<p>
+  Slow origin servers can come in handy when testing for timeout and stale/freshness.  By default the slowness does <em>not</em>
+  affect conditional methods where a HTTP 304 is returned.  If you want HTTP 304 to be slow as well, use the
+  <tt>unconditional-sleep</tt> keyword which is the same as <tt>sleep</tt> except that it always happens.
+</p>
+<h3>Error Responses</h3>
+<p>
+
+  It is possible to generate arbitrary error codes on the server by accessing the /error/ directory.  You can also add
+  the HTTP response code you want as a parameter:
+</p>
+<dl>
+  <dt><tt>GET /error/hello.txt</tt></dt>
+  <dd>Returns a HTTP 500 error code.</dd>
+  <dt><tt>GET /error,503/hello.txt</tt></dt>
+  <dd>Returns HTTP 503</dd>
+  <dt><tt>GET /error,400,message=Oops,rate=50/sleep/hello.txt</tt></dt>
+  <dd>Returns "HTTP 400 Oops" half of the time</dd>
+</dl>
+<p>
+  Errors can be useful when testing how a surrogate reacts to different types of errors.
+</p>
+<p>
+  It is possible to specify the failure rate in percent when GETing a resource: /error,rate=10/ will return HTTP 500 error codes
+  ten percent of the times.  The rest of the times the GET will proceed as usual.
+</p>
+<p>
+  It is possible to specify a binary pattern which describes the error response rate specifically:
+  You can tell the resource to work once and fail several times, to allow for populating caches.  This is useful if you want to
+  test how errors are handled when there is stale content in the cache.
+</p>
+<dl>
+  <dt><tt>GET /error,pattern=0011/hello.txt</tt></dt>
+  <dd>The first and second requests will fail; then two will succeed, then two will fail and so on. </dd>
+  <dt><tt>GET /error,404,pattern=0100000000000000000/hello.txt</tt></dt>
+  <dd>The GET will fail once (404), then work once (200) and then fail quite a lot of times (404)</dd>
+</dl>
+<p>
+  There are three different keywords available for errors:
+</p>
+<dl>
+  <dt>error</dt>
+  <dt>Use this if you want the slow origin server to respond _fast_ to these errors</dt>
+  <dt>slow-error</dt>
+  <dt>These errors take into account errors taking a long time to generate.</dt>
+  <dt>conditional-error</dt>
+  <dt>Allow conditional methods to respond with HTTP 304 NOT MODIFIED without error, these errors are when serving the response
+    entity.</dt>
+</dl>
+<p>
+  It is possible to combine them into quite erratic origin server behaviour:
+  <tt>GET /lm/sleep,3/unconditional-sleep,1/error,503,rate=10/slow-error,404,rate=10/conditional-error,rate=50/</tt>  This means:
+</p>
+<ul>
+  <li>10% of the time, the server will respond with 503 immediately (error returns immediately on errors).</li>
+  <li>Otherwise 10% of the requests will sleep for 1 second and then return HTTP 500.</li>
+  <li>Of the remaining requests, any conditional methods will succeed (still after 1 second</li>
+  <li>Of the remaining requests, half will fail with  HTTP 500 (also after 1 second)</li>
+  <li>The rest will return 200 OK :-) (after 1 + 3 = 4 seconds)</li>
+</ul>
+<p>
+  If you need to debug, simply replace rate= with pattern= and give all the error paths different patterns (011, 101, 110) so
+  each error condition happens once in every three requests.
+</p>
+  </body>
+</html>

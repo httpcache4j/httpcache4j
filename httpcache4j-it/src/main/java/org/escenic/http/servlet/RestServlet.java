@@ -51,7 +51,7 @@ public class RestServlet extends HttpServlet {
     System.out.println("RestServlet.doGet");
     //pResponse.setDateHeader("Date", System.currentTimeMillis());
     String path = AbstractEsiFilter.getFileName(pRequest);
-    if (path == null || path.length() == 0 || path.equals("/")) {
+    if (path == null || path.length() == 0 || path.equals("/") || path.endsWith("index.html")) {
       InputStream input = getClass().getResourceAsStream("/index.html");
       ServletOutputStream output = pResponse.getOutputStream();
       int b;
