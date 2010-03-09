@@ -20,7 +20,6 @@ import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.digest.Digest;
 import org.codehaus.httpcache4j.auth.digest.RequestDigest;
 
-import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -28,8 +27,6 @@ import java.util.*;
  * @version $Revision: $
  */
 public class DigestAuthenticatorStrategy implements AuthenticatorStrategy {
-    private static final String AUTHENTICATION_INFO = "Authentication-Info";
-    private static final String PROXY_AUTHENTICATION_INFO = "Proxy-Authentication-Info";
 
     public boolean supports(final AuthScheme scheme) {
         return "digest".equalsIgnoreCase(scheme.getType());
@@ -59,10 +56,10 @@ public class DigestAuthenticatorStrategy implements AuthenticatorStrategy {
             RequestDigest requestDigest = RequestDigest.newInstance(upc, req, digest);
             Header authHeader;
             if (proxy) {
-                authHeader = new Header("Proxy-Authorization", requestDigest.toHeaderValue());
+                authHeader = new Header(HeaderConstants.PROXY_AUTHORIZATION, requestDigest.toHeaderValue());
             }
             else {
-                authHeader = new Header("Authorization", requestDigest.toHeaderValue());
+                authHeader = new Header(HeaderConstants.AUTHORIZATION, requestDigest.toHeaderValue());
             }
             req = req.addHeader(authHeader);
         }
@@ -72,10 +69,10 @@ public class DigestAuthenticatorStrategy implements AuthenticatorStrategy {
     public AuthScheme afterSuccessfulAuthentication(AuthScheme scheme, Headers headers, boolean proxy) {
         Header header;
         if (proxy) {
-            header = headers.getFirstHeader(PROXY_AUTHENTICATION_INFO);
+            header = headers.getFirstHeader(HeaderConstants.PROXY_AUTHENTICATION_INFO);
         }
         else {
-            header = headers.getFirstHeader(AUTHENTICATION_INFO);
+            header = headers.getFirstHeader(HeaderConstants.AUTHENTICATION_INFO);
         }
         if (header != null) {
             String nextNonce = header.getDirectives().get("nextnonce");

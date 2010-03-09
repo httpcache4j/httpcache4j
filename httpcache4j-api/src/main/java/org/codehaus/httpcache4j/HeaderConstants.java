@@ -17,6 +17,11 @@
 package org.codehaus.httpcache4j;
 
 public final class HeaderConstants {
+    public static final String AUTHORIZATION = "Authorization";
+    public static final String PROXY_AUTHORIZATION = "Proxy-Authorization";
+    public static final String AUTHENTICATION_INFO = "Authentication-Info";
+    public static final String PROXY_AUTHENTICATION_INFO = "Proxy-Authentication-Info";
+
     private HeaderConstants() {
     }
 
