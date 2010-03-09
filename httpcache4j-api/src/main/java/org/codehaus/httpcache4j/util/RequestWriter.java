@@ -44,6 +44,10 @@ public class RequestWriter {
         this.request = request;
     }
 
+    public void write() {
+        write(new PrintWriter(System.out));
+    }
+
     public void write(Writer target) {
         PrintWriter writer = new PrintWriter(target);
         writeRequestLine(writer);
