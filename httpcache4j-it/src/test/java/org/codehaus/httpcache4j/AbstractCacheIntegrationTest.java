@@ -20,10 +20,16 @@ import org.codehaus.httpcache4j.cache.CacheStorage;
 import org.codehaus.httpcache4j.cache.HTTPCache;
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.resolver.HTTPClientResponseResolver;
+import org.codehaus.httpcache4j.util.ResponseWriter;
 import org.codehaus.httpcache4j.util.TestUtil;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
+import java.io.PrintWriter;
 import java.net.URI;
+
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -57,46 +63,69 @@ public abstract class AbstractCacheIntegrationTest {
     @Test
     public void GETNotCacheableResponse() {
         HTTPResponse response = get(baseRequestURI.resolve(TEST_FILE));
-        Assert.assertNull(response.getETag());
-        Assert.assertNull(response.getLastModified());
-        Assert.assertEquals(Status.OK, response.getStatus());
-        Assert.assertEquals(0, storage.size());
+        assertNull(response.getETag());
+        assertNull(response.getLastModified());
+        assertEquals(Status.OK, response.getStatus());
+        assertEquals(0, storage.size());
     }
 
     @Test
     public void GETWithETagResponse() {
         HTTPResponse response = get(baseRequestURI.resolve(String.format("etag/%s", TEST_FILE)));
-        Assert.assertNotNull(response.getETag());
-        Assert.assertNull(response.getLastModified());
-        Assert.assertEquals(Status.OK, response.getStatus());
-        Assert.assertEquals(1, storage.size());
+        assertNotNull(response.getETag());
+        assertNull(response.getLastModified());
+        assertEquals(Status.OK, response.getStatus());
+        assertEquals(1, storage.size());
     }
 
     @Test
     public void GETWithETagThenPUTAndReGETResponse() {
         URI uri = baseRequestURI.resolve(String.format("etag/%s", TEST_FILE));
         HTTPResponse response = get(uri);
-        Assert.assertNotNull(response.getETag());
-        Assert.assertNull(response.getLastModified());
-        Assert.assertEquals(Status.OK, response.getStatus());
+        assertNotNull(response.getETag());
+        assertNull(response.getLastModified());
+        assertEquals(Status.OK, response.getStatus());
         
-        Assert.assertEquals(1, storage.size());
+        assertEquals(1, storage.size());
         response = cache.doCachedRequest(new HTTPRequest(uri, HTTPMethod.PUT));
-        Assert.assertEquals(0, storage.size());
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        assertEquals(0, storage.size());
+        assertEquals(Status.NO_CONTENT, response.getStatus());
         response = get(uri);
-        Assert.assertNotNull(response.getETag());
-        Assert.assertNull(response.getLastModified());
-        Assert.assertEquals(Status.OK, response.getStatus());
-        Assert.assertEquals(1, storage.size());
-
+        assertNotNull(response.getETag());
+        assertNull(response.getLastModified());
+        assertEquals(Status.OK, response.getStatus());
+        assertEquals(1, storage.size());
     }
 
+    @Test
+    public void GETWithBasicAuthentication() {
+        URI uri = baseRequestURI.resolve(String.format("etag/basic,u=u,p=p/%s", TEST_FILE));
+        HTTPResponse response = get(uri);
+        assertEquals(Status.UNAUTHORIZED, response.getStatus());
+        response.consume();
+        HTTPRequest request = new HTTPRequest(uri).challenge(new UsernamePasswordChallenge("u", "p"));
+        response = cache.doCachedRequest(request);
+        assertEquals(Status.OK, response.getStatus());
+        response.consume();
+    }
+
+    @Test
+    public void GETWithDigestAuthentication() {
+        URI uri = baseRequestURI.resolve(String.format("etag/digest,u=u,p=p/%s", TEST_FILE));
+        HTTPResponse response = get(uri);
+        assertEquals(Status.UNAUTHORIZED, response.getStatus());
+        response.consume();
+        HTTPRequest request = new HTTPRequest(uri).challenge(new UsernamePasswordChallenge("u", "p"));
+        response = cache.doCachedRequest(request);
+        assertEquals(Status.OK, response.getStatus());
+        response.consume();
+    }
+    
     private HTTPResponse get(URI uri) {
         HTTPRequest getRequest = new HTTPRequest(uri);
         HTTPResponse response = cache.doCachedRequest(getRequest);
-        Assert.assertNotNull(response);
-        Assert.assertFalse(response.getStatus().equals(Status.INTERNAL_SERVER_ERROR));
+        assertNotNull(response);
+        assertFalse(response.getStatus().equals(Status.INTERNAL_SERVER_ERROR));
         return response;
     }
 }

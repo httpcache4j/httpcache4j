@@ -40,6 +40,8 @@ public class JettyServer {
         addFilter(context, CacheControlFilter.class, "cc");
         addFilter(context, ETagFilter.class, "etag");
         addFilter(context, IfModifiedSinceFilter.class, "lm");
+        addFilter(context, BasicAuthFilter.class, "basic");
+        addFilter(context, DigestAuthFilter.class, "digest");
         context.addServlet(RestServlet.class, "/*");
 
         context.setContextPath("/");
