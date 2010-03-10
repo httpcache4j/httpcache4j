@@ -15,13 +15,12 @@
   ~
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.codehaus.httpcache4j</groupId>
   <artifactId>httpcache4j</artifactId>
   <packaging>pom</packaging>
-  <version>2.3-SNAPSHOT</version>
+  <version>3.0</version>
   <name>Java HTTP cache</name>
   <url>http://httpcache4j.codehaus.org</url>
   <description>HttpCache4j is a library for caching HTTP requests from a client.</description>
@@ -298,9 +297,9 @@
 
 
   <scm>
-    <connection>scm:svn:http://svn.codehaus.org/httpcache4j/trunk</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/httpcache4j/trunk</developerConnection>
-    <url>http://fisheye.codehaus.org/browse/httpcache4j/trunk</url>
+    <connection>scm:svn:http://svn.codehaus.org/httpcache4j/tags/httpcache4j-3.0</connection>
+    <developerConnection>scm:svn:https://svn.codehaus.org/httpcache4j/tags/httpcache4j-3.0</developerConnection>
+    <url>http://fisheye.codehaus.org/browse/httpcache4j/tags/httpcache4j-3.0</url>
   </scm>
 
   <distributionManagement>
