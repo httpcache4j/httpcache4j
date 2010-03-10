@@ -32,12 +32,13 @@ class HTTPCacheHelper {
 
     static {
         // ref http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.1
-        Set<HTTPMethod> f = new HashSet<HTTPMethod>();
-        f.add(HTTPMethod.GET);
-        f.add(HTTPMethod.HEAD);
-        f.add(HTTPMethod.OPTIONS);
-        f.add(HTTPMethod.TRACE);
-        safeMethods = Collections.unmodifiableSet(f);
+        safeMethods = EnumSet.of(
+                HTTPMethod.CONNECT,
+                HTTPMethod.GET,
+                HTTPMethod.HEAD,
+                HTTPMethod.OPTIONS,
+                HTTPMethod.TRACE
+        );
 
         // ref http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.1 and
         // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.3
@@ -56,12 +57,12 @@ class HTTPCacheHelper {
         /**
          * 200, 203, 206, 300, 301 or 410
          */
-        cacheableStatuses = Collections.unmodifiableSet(EnumSet.of(Status.OK,
+        cacheableStatuses = EnumSet.of(Status.OK,
                                        Status.NON_AUTHORITATIVE_INFORMATION,
                                        Status.MULTIPLE_CHOICES,
                                        Status.MOVED_PERMANENTLY,
                                        Status.GONE
-        ));
+        );
     }
 
 
