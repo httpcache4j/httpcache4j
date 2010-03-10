@@ -345,8 +345,8 @@
                   <fail>true</fail>
                   <rules>
                     <requireProperty>
-                      <property>gpg.name</property>
-                      <message>"You must have a gpg.name defined"</message>
+                      <property>gpg.keyname</property>
+                      <message>"You must have a gpg.keyname defined"</message>
                     </requireProperty>
                     <requireProperty>
                       <property>gpg.passphrase</property>
