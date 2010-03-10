@@ -293,7 +293,6 @@
     <module>httpcache4j-storage-api</module>
     <module>resolvers</module>
     <module>storage</module>
-    <module>httpcache4j-dist</module>
     <module>httpcache4j-it</module>
   </modules>
 
@@ -381,9 +380,10 @@
            mvn site -Preporting
            mvn site:deploy
            mvn site -Preporting-aggregate
+           mvn -Pdist assembly:single
            mvn -N site:deploy
 
-time mvn site -Preporting && time mvn site:deploy && time mvn site -Preporting-aggregate && time mvn -N site:deploy
+time mvn site -Preporting && time mvn site:deploy && time mvn site -Preporting-aggregate && && time mvn -N -Pdist assembly:single && time mvn -N site:deploy
       -->
       <reporting>
         <plugins>
@@ -409,6 +409,40 @@ time mvn site -Preporting && time mvn site:deploy && time mvn site -Preporting-a
           </plugin>
         </plugins>
       </reporting>
+    </profile>
+    <profile>
+      <id>dist</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>2.2-beta-3</version>
+            <configuration>
+              <appendAssemblyId>true</appendAssemblyId>
+              <attach>false</attach>              
+              <descriptors>
+                <descriptor>src/assembly/dist.xml</descriptor>
+              </descriptors>
+              <outputDirectory>${project.build.directory}/site/download</outputDirectory>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+
+      <dependencies>
+        <dependency>
+          <groupId>org.codehaus.httpcache4j</groupId>
+          <artifactId>httpcache4j-core</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.codehaus.httpcache4j.resolvers</groupId>
+          <artifactId>resolvers-commons-httpclient</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.codehaus.httpcache4j.resolvers</groupId>
+          <artifactId>resolvers-net-urlconnection</artifactId>
+        </dependency>
+      </dependencies>
     </profile>
   </profiles>
 </project>
