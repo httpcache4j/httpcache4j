@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2008, The Codehaus. All Rights Reserved.
+  ~ Copyright (c) 2010. The Codehaus. All Rights Reserved.
   ~
   ~   Licensed under the Apache License, Version 2.0 (the "License");
   ~   you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
   ~   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   ~   See the License for the specific language governing permissions and
   ~   limitations under the License.
-  ~
   -->
 
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
@@ -32,17 +31,17 @@
   </dependencySets>
   <files>
     <file>
-      <source>${basedir}/src/README.txt</source>
+      <source>${basedir}/src/assembly/resources/README.txt</source>
       <filtered>true</filtered>
       <outputDirectory>/</outputDirectory>
     </file>
     <file>
-      <source>${basedir}/src/NOTICE.txt</source>
+      <source>${basedir}/src/assembly/resources/NOTICE.txt</source>
       <filtered>true</filtered>
       <outputDirectory>/</outputDirectory>
     </file>
     <file>
-      <source>${basedir}/src/LICENSE.txt</source>
+      <source>${basedir}/src/assembly/resources/LICENSE.txt</source>
       <filtered>true</filtered>
       <outputDirectory>/</outputDirectory>
     </file>
