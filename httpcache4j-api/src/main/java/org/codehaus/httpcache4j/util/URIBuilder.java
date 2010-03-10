@@ -29,6 +29,8 @@ import java.util.*;
  * Immutable URI builder.
  * Paths in this URI builder will be UTF-8 {@link org.codehaus.httpcache4j.util.URIEncoder URIEncoded}.
  * Query Parameters needs to be URIEncoded before they are added.
+ * All methods return a NEW instance of the URI builder, meaning you can create a ROOT uri builder and use it
+ * to your heart's content, as the instance will never change.
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
@@ -39,7 +41,7 @@ public final class URIBuilder {
     private final int port;
     private final List<Path> path;
     private final String fragment;
-    private Map<String, List<String>> parameters;
+    private final Map<String, List<String>> parameters;
 
     private URIBuilder(String scheme, String host, int port, List<Path> path, String fragment, Map<String, List<String>> parameters) {
         this.scheme = scheme;
@@ -50,10 +52,23 @@ public final class URIBuilder {
         this.parameters = parameters;
     }
 
+    /**
+     * This is the scheme to use. Usually 'http' or 'https'.
+     * @param scheme the scheme
+     * @return a new URIBuilder with the new scheme set.
+     */
     public URIBuilder scheme(String scheme) {        
         return new URIBuilder(scheme, host, port, path, fragment, parameters);
     }
 
+    /**
+     * this adds the path to a uri.
+     * We do not expect the path separator '/' to appear here, as each element will be URLEncoded.
+     * If the '/' character do appear it will be URLEncoded with the rest of the path.
+     *
+     * @param path path elements.
+     * @return a new URI builder which contains the new path.
+     */
     public URIBuilder path(String... path) {
         List<String> pathList = Arrays.asList(path);
         List<Path> paths = Lists.transform(pathList, stringToPath);
@@ -64,6 +79,11 @@ public final class URIBuilder {
         return new URIBuilder(scheme, host, port, path, fragment, parameters);
     }
 
+    /**
+     * Sets the port. This is not required to set if you are using default ports for 'http' or 'https'
+     * @param port the port to set
+     * @return a new URIBuilder with the port set
+     */
     public URIBuilder port(int port) {
         if ("http".equals(scheme) && port == 80) {
             port = -1;
@@ -78,10 +98,19 @@ public final class URIBuilder {
         return new URIBuilder(scheme, host, port, path, fragment, parameters);
     }
 
+    /**
+     * Creates a new URIBuilder with no parameters, but all other values retained.
+     * @return new URIBuilder with no parameters.
+     */
     public URIBuilder noParameters() {
         return parameters(Collections.<Parameter>emptyList());
     }
 
+    /**
+     * Sets a list of parameters. This will clear out all previously set parameters in the new instance.
+     * @param parameters the list of parameters
+     * @return new URIBuilder with parameters.
+     */
     public URIBuilder parameters(List<Parameter> parameters) {
         Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>();
         for (Parameter parameter : parameters) {
@@ -90,10 +119,21 @@ public final class URIBuilder {
         return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(paraMap));
     }
 
+    /**
+     * Adds a new Parameter to the collection of parameters
+     * @param name the parameter name
+     * @param value the parameter value
+     * @return a new instance of the URIBuilder
+     */
     public URIBuilder addParameter(String name, String value) {
         return addParameter(new Parameter(name, value));
     }
 
+    /**
+     * Adds a new Parameter to the collection of parameters
+     * @param parameter the parameter
+     * @return a new instance of the URIBuilder
+     */
     public URIBuilder addParameter(Parameter parameter) {
         Map<String, List<String>> parameters = new LinkedHashMap<String, List<String>>(this.parameters);
         addToQueryMap(parameters, parameter.getName(), parameter.getValue());
@@ -127,6 +167,9 @@ public final class URIBuilder {
         }
     }
 
+    /**
+     * @return true if the scheme and host parts are not set.
+     */
     public boolean isRelative() {
         return (scheme == null && host == null);
     }
@@ -170,8 +213,21 @@ public final class URIBuilder {
         return list;
     }
 
+    /**
+     * Constructs a new URIBuilder from the given URI
+     * @param uri the uri to use
+     * @return a new URIBuilder which has the information from the URI.
+     */
     public static URIBuilder fromURI(URI uri) {
         return new URIBuilder(uri.getScheme(), uri.getHost(), uri.getPort(), toPathParts(uri.getPath()), uri.getFragment(), toQueryMap(uri.getQuery()));
+    }
+
+    /**
+     * Creates an empty URIBuilder.
+     * @return an empty URIBuilder which result of {@link #toURI()} ()} will return "".
+     */
+    public static URIBuilder empty() {
+        return new URIBuilder(null, null, -1, Collections.<Path>emptyList(), null, Collections.<String, List<String>>emptyMap());
     }
 
     private static Map<String, List<String>> toQueryMap(String query) {
@@ -221,10 +277,6 @@ public final class URIBuilder {
             List<String> stringList = Arrays.asList(path.split("/"));
             return ImmutableList.copyOf(Lists.transform(stringList, stringToPath));
         }
-    }
-
-    public static URIBuilder empty() {
-        return new URIBuilder(null, null, -1, Collections.<Path>emptyList(), null, Collections.<String, List<String>>emptyMap());
     }
 
     private static Function<String, Path> stringToPath = new Function<String, Path>() {
