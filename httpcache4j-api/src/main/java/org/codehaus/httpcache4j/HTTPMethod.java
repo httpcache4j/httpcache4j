@@ -24,15 +24,16 @@ package org.codehaus.httpcache4j;
  */
 public enum HTTPMethod {
     CONNECT,
+    DELETE,
     GET,
+    HEAD,
+    OPTIONS,
+    PATCH, //RFC proposed standard http://greenbytes.de/tech/webdav/draft-dusseault-http-patch-16.html
     PUT,
     POST,
-    DELETE,
-    HEAD,
-    TRACE,
-    OPTIONS;
+    TRACE;
 
     public boolean canHavePayload() {
-        return this == POST || this == PUT;
+        return this == POST || this == PUT || this == PATCH;
     }
 }
