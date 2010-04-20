@@ -17,11 +17,15 @@
 package org.codehaus.httpcache4j;
 
 import static org.codehaus.httpcache4j.HeaderConstants.*;
+
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang.Validate;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -115,5 +119,32 @@ public final class HeaderUtils {
         //To cache we need a cache-validator.
         return headers.getFirstHeader(ETAG) != null
                 || headers.getFirstHeader(LAST_MODIFIED) != null;
+    }
+
+    static String fixQuotedString(String value) {
+        if (value != null && value.startsWith("\"") && value.endsWith("\"")) {
+            return value.substring(1, value.length() - 1);
+        }
+        return value;
+    }
+
+    public static Header toLinkHeader(List<Link> links) {
+        StringBuilder builder = new StringBuilder();
+        for (Link link : links) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append(link);
+        }
+        return new Header("Link", builder.toString());
+    }
+
+    public static List<Link> toLinks(Header header) {
+        Validate.isTrue("Link".equals(header.getName()), "This must be a \"Link\" header");
+        ImmutableList.Builder<Link> links = ImmutableList.builder();
+        for (Directive directive : header.getDirectives()) {
+            links.add(new Link(directive));
+        }
+        return links.build();
     }
 }

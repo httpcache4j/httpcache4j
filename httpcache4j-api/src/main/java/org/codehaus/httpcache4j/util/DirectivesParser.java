@@ -18,6 +18,7 @@ package org.codehaus.httpcache4j.util;
 import org.codehaus.httpcache4j.Directive;
 import org.codehaus.httpcache4j.Parameter;
 import org.codehaus.httpcache4j.QuotedDirective;
+import org.codehaus.httpcache4j.QuotedParameter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +69,15 @@ public class DirectivesParser {
         return Collections.emptyList();
     }
 
+    public List<Parameter> parseParameters(String value) {        
+        if (value.length() > 0) {
+            StringBuilder builder = new StringBuilder(value);
+            ParserCursor cursor = new ParserCursor(0, value.length());
+            return parseParameters(builder, cursor);
+        }
+        return Collections.emptyList();
+    }
+
     private List<Directive> parseDirectives(final StringBuilder buffer, final ParserCursor cursor) {
 
         if (buffer == null) {
@@ -96,7 +106,7 @@ public class DirectivesParser {
             throw new IllegalArgumentException("Parser cursor may not be null");
         }
 
-        Parameter parameter = parseNameValuePair(buffer, cursor);
+        Parameter parameter = parseParameter(buffer, cursor, ALL_DELIMITERS);
         List<Parameter> params = Collections.emptyList();
         if (!cursor.atEnd()) {
             char ch = buffer.charAt(cursor.getPos() - 1);
@@ -118,7 +128,7 @@ public class DirectivesParser {
             final String name,
             final String value,
             final List<Parameter> params) {
-        if (value.startsWith("\"") && value.endsWith("\"")) {
+        if (isQuoted(value)) {
             return new QuotedDirective(name, value, params);
         }
         return new Directive(name, value, params);
@@ -152,8 +162,7 @@ public class DirectivesParser {
 
         List<Parameter> params = new ArrayList<Parameter>();
         while (!cursor.atEnd()) {
-            Parameter param = parseNameValuePair(buffer, cursor);
-            params.add(param);
+            params.add(parseParameter(buffer, cursor, ALL_DELIMITERS));
             char ch = buffer.charAt(cursor.getPos() - 1);
             if (ch == ELEM_DELIMITER) {
                 break;
@@ -161,11 +170,6 @@ public class DirectivesParser {
         }
 
         return params;
-    }    
-
-    private Parameter parseNameValuePair(final StringBuilder buffer,
-                                            final ParserCursor cursor) {
-        return parseParameter(buffer, cursor, ALL_DELIMITERS);
     }
 
     private static boolean isOneOf(final char ch, final char[] chs) {
@@ -221,6 +225,12 @@ public class DirectivesParser {
 
         if (terminated) {
             cursor.updatePos(pos);
+            int i = name.indexOf('<');
+            int j = name.indexOf('>');
+            if (i != -1 && j != -1) { //this is a Link header
+                return createParameter("link", name.substring(i + 1, j));
+            }
+            
             return createParameter(name, null);
         }
 
@@ -273,7 +283,14 @@ public class DirectivesParser {
      * @return a name-value pair representing the arguments
      */
     private Parameter createParameter(final String name, final String value) {
+        if (value != null && isQuoted(value)) {
+            return new QuotedParameter(name, value);
+        }
         return new Parameter(name, value);
+    }
+
+    private boolean isQuoted(String value) {
+        return value.startsWith("\"") && value.endsWith("\"");
     }
 
 }

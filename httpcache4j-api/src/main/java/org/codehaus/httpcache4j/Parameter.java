@@ -26,7 +26,7 @@ package org.codehaus.httpcache4j;
 public class Parameter extends NameValue {
 
     public Parameter(String name, String value) {
-        super(name, value);
+        super(name, HeaderUtils.fixQuotedString(value));
     }
 
     @Override
