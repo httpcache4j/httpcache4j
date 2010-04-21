@@ -55,7 +55,7 @@ public class DirectivesTest {
         assertEquals(3, dir.size());
         assertEquals("value", dir.get("key"));
         assertEquals("foo", dir.get("bar"));
-        assertEquals("\"bar\"", dir.get("foo"));
+        assertEquals("bar", dir.get("foo"));
         assertEquals(value, dir.toString());
     }
 

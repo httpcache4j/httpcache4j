@@ -114,6 +114,9 @@ public class DirectivesParser {
                 params = parseParameters(buffer, cursor);
             }
         }
+        if (parameter instanceof QuotedParameter) {
+            return createDirective(parameter.getName(), ((QuotedParameter) parameter).getQuotedValue(), params);
+        }
         return createDirective(parameter.getName(), parameter.getValue(), params);
     }
 
