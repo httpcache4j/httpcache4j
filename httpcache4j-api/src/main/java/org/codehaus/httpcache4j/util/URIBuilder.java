@@ -17,7 +17,6 @@ package org.codehaus.httpcache4j.util;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.codehaus.httpcache4j.Parameter;
 
@@ -62,15 +61,51 @@ public final class URIBuilder {
     }
 
     /**
-     * this adds the path to a uri.
+     * Appends the path part to the uri.
      * We do not expect the path separator '/' to appear here, as each element will be URLEncoded.
      * If the '/' character do appear it will be URLEncoded with the rest of the path.
      *
      * @param path path elements.
      * @return a new URI builder which contains the new path.
      */
+    public URIBuilder addPath(List<String> path) {
+        List<Path> appendedPath = Lists.transform(path, stringToPath);
+        ImmutableList.Builder<Path> currentPath = ImmutableList.builder();
+        currentPath.addAll(this.path);
+        currentPath.addAll(appendedPath);
+        return new URIBuilder(scheme, host, port, currentPath.build(), fragment, parameters);
+
+    }
+
+    /**
+     * @see #addPath(java.util.List)
+     *
+     * @param path path elements
+     * @return a new URI builder which contains the new path.
+     */
+    public URIBuilder addPath(String... path) {
+        return addPath(Arrays.asList(path));
+    }
+
+    /**
+     * @see #path(java.util.List)
+     *
+     * @param path path elements.
+     * @return a new URI builder which contains the new path.
+     */
     public URIBuilder path(String... path) {
-        List<String> pathList = Arrays.asList(path);
+        return path(Arrays.asList(path));
+    }
+
+    /**
+     * Sets the path of the uri.
+     * We do not expect the path separator '/' to appear here, as each element will be URLEncoded.
+     * If the '/' character do appear it will be URLEncoded with the rest of the path.
+     *
+     * @param pathList path elements.
+     * @return a new URI builder which contains the new path.
+     */
+    public URIBuilder path(List<String> pathList) {
         List<Path> paths = Lists.transform(pathList, stringToPath);
         return new URIBuilder(scheme, host, port, ImmutableList.copyOf(paths), fragment, parameters);
     }
@@ -149,7 +184,7 @@ public final class URIBuilder {
             if (builder.length() > 0) {
                 builder.append("/");
             }
-            builder.append(pathElement.getEncodedString());
+            builder.append(pathElement.getEncodedValue());
         }
         if (host != null && builder.length() > 1) {
             if (!"/".equals(builder.substring(0, 1))) {
@@ -230,6 +265,38 @@ public final class URIBuilder {
         return new URIBuilder(null, null, -1, Collections.<Path>emptyList(), null, Collections.<String, List<String>>emptyMap());
     }
 
+    public String getScheme() {
+        return scheme;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public List<String> getPath() {
+        return Lists.transform(path, pathToString);
+    }
+
+    public List<String> getEncodedPath() {
+        return Lists.transform(path, encodedPathToString);
+    }
+
+    public String getCurrentPath() {
+        return toPath();
+    }
+
+    public String getFragment() {
+        return fragment;
+    }
+
+    public List<Parameter> getParameters() {
+        return Collections.unmodifiableList(getParametersAsList());
+    }
+
     private static Map<String, List<String>> toQueryMap(String query) {
         Map<String, List<String>> map = new LinkedHashMap<String, List<String>>();
         if (query != null) {
@@ -285,6 +352,18 @@ public final class URIBuilder {
         }
     };
 
+    private static Function<Path, String> pathToString = new Function<Path, String>() {
+        public String apply(Path from) {
+            return from.getValue();
+        }
+    };
+
+    private static Function<Path, String> encodedPathToString = new Function<Path, String>() {
+        public String apply(Path from) {
+            return from.getEncodedValue();
+        }
+    };
+
     private static class Path {
         private final String value;
 
@@ -292,7 +371,7 @@ public final class URIBuilder {
             this.value = URIDecoder.decodeUTF8(value);
         }
 
-        String getEncodedString() {
+        String getEncodedValue() {
             return URIEncoder.encodeUTF8(value);
         }
 
