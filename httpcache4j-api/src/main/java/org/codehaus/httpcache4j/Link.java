@@ -71,7 +71,11 @@ public class Link {
     }
 
     public URI getAnchor() {
-        return URI.create(getParameterValue("anchor"));
+        String paramValue = getParameterValue("anchor");
+        if (paramValue != null) {
+            return URI.create(paramValue);
+        }
+        return null;
     }
 
     public Map<String, Parameter> getParameters() {
