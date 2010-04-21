@@ -70,8 +70,8 @@ public class Link {
         return getParameterValue("title");
     }
 
-    public String getAnchor() {
-        return getParameterValue("anchor");
+    public URI getAnchor() {
+        return URI.create(getParameterValue("anchor"));
     }
 
     public Map<String, Parameter> getParameters() {
