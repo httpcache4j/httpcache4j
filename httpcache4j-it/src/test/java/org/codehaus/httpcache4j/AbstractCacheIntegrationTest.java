@@ -20,6 +20,7 @@ import org.codehaus.httpcache4j.cache.CacheStorage;
 import org.codehaus.httpcache4j.cache.HTTPCache;
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.resolver.HTTPClientResponseResolver;
+import org.codehaus.httpcache4j.resolver.ResponseResolver;
 import org.codehaus.httpcache4j.util.ResponseWriter;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.junit.Before;
@@ -105,6 +106,8 @@ public abstract class AbstractCacheIntegrationTest {
         response.consume();
         HTTPRequest request = new HTTPRequest(uri).challenge(new UsernamePasswordChallenge("u", "p"));
         response = cache.doCachedRequest(request);
+        HTTPClientResponseResolver responseResolver = (HTTPClientResponseResolver) cache.getResolver();
+        assertTrue(responseResolver.isPreemptiveAuthenticationEnabled());
         assertEquals(Status.OK, response.getStatus());
         response.consume();
     }

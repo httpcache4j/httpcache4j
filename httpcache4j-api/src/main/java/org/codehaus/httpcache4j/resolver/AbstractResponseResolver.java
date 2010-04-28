@@ -49,15 +49,15 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
         return authenticator;
     }
 
-    protected final boolean isPreemptiveAuthenticationEnabled() {
+    public final boolean isPreemptiveAuthenticationEnabled() {
         return preemptiveAuthentication;
     }
 
-    protected void disablePreemtiveAuthentication() {
-        preemptiveAuthentication = true;
+    protected void disablePreemptiveAuthentication() {
+        preemptiveAuthentication = false;
     }
 
     protected void enablePreemptiveAuthentication() {
-        preemptiveAuthentication = false;
+        preemptiveAuthentication = true;
     }
 }

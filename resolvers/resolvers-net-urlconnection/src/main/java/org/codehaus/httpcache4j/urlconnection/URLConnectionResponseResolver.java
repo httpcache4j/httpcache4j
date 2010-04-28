@@ -66,7 +66,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
                     response = convertResponse(connection);
                     if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
                         getProxyAuthenticator().afterFailedAuthentication(response.getHeaders());
-                        disablePreemtiveAuthentication();
+                        disablePreemptiveAuthentication();
                     }
                     else {
                         getProxyAuthenticator().afterSuccessfulAuthentication(response.getHeaders());
@@ -83,7 +83,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
                     response = convertResponse(connection);
                     if (response.getStatus() == Status.UNAUTHORIZED) {
                         getAuthenticator().afterFailedAuthentication(req, response.getHeaders());
-                        disablePreemtiveAuthentication();
+                        disablePreemptiveAuthentication();
                     }
                     else {
                         getAuthenticator().afterSuccessfulAuthentication(req, response.getHeaders());

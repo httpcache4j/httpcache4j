@@ -99,6 +99,10 @@ public class HTTPCache {
         return storage;
     }
 
+    public ResponseResolver getResolver() {
+        return resolver;
+    }
+
     public HTTPResponse doCachedRequest(final HTTPRequest request) {
         return doCachedRequest(request, false);
     }
