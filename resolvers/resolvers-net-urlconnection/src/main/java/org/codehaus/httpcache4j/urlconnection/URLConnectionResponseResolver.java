@@ -23,6 +23,7 @@ import org.codehaus.httpcache4j.auth.DefaultProxyAuthenticator;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,55 +44,21 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         this.configuration = configuration;
     }
 
-    public HTTPResponse resolve(final HTTPRequest request) throws IOException {
-        HTTPRequest req = request;
-        if (getAuthenticator().canAuthenticatePreemptively(request)) {
-            req = getAuthenticator().preparePreemptiveAuthentication(request);
-        }
-        if (getProxyAuthenticator().canAuthenticatePreemptively()) {
-            req = getProxyAuthenticator().preparePreemptiveAuthentication(req);
-        }
+    @Override
+    protected HTTPResponse resolveImpl(HTTPRequest request) throws IOException {
         URL url = request.getRequestURI().toURL();
         URLConnection openConnection = url.openConnection();
-        if (openConnection instanceof HttpURLConnection) {
-            HttpURLConnection connection = (HttpURLConnection) openConnection;
-            doRequest(req, connection);
-            Status status = Status.valueOf(connection.getResponseCode());
-            HTTPResponse response = convertResponse(connection);
-
-            if (status == Status.PROXY_AUTHENTICATION_REQUIRED) {
-                req = getProxyAuthenticator().prepareAuthentication(req, response);
-                if (req != request) {
-                    connection = (HttpURLConnection) url.openConnection();
-                    response.consume();
-                    doRequest(req, connection);
-                    response = convertResponse(connection);
-                    if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
-                        getProxyAuthenticator().afterFailedAuthentication(response.getHeaders());
-                    }
-                    else {
-                        getProxyAuthenticator().afterSuccessfulAuthentication(response.getHeaders());
-                    }
-                }
-            }
-            if (status == Status.UNAUTHORIZED) {
-                req = getAuthenticator().prepareAuthentication(req, response);
-                if (req != request) {
-                    connection = (HttpURLConnection) url.openConnection();
-                    response.consume();
-                    doRequest(req, connection);
-                    response = convertResponse(connection);
-                    if (response.getStatus() == Status.UNAUTHORIZED) {
-                        getAuthenticator().afterFailedAuthentication(req, response.getHeaders());
-                    }
-                    else {
-                        getAuthenticator().afterSuccessfulAuthentication(req, response.getHeaders());
-                    }
-                }
-            }
-
-            return response;
+        if (openConnection instanceof HttpsURLConnection) {
+            HttpsURLConnection connection = (HttpsURLConnection) openConnection;
+            doRequest(request, connection);
+            return convertResponse(connection);
         }
+        else if (openConnection instanceof HttpURLConnection) {
+            HttpURLConnection connection = (HttpURLConnection) openConnection;
+            doRequest(request, connection);
+            return convertResponse(connection);
+        }
+
         throw new HTTPException("This resolver only supports HTTP calls");
     }
 
@@ -110,10 +77,10 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
     private HTTPResponse convertResponse(HttpURLConnection connection) throws IOException {
         Status status = Status.valueOf(connection.getResponseCode());
         Headers responseHeaders = getResponseHeaders(connection);
-        return getResponseCreator().createResponse(status, responseHeaders, wrapReponseStream(connection, status));
+        return getResponseCreator().createResponse(status, responseHeaders, wrapResponseStream(connection, status));
     }
 
-    private InputStream wrapReponseStream(HttpURLConnection connection, Status status) {
+    private InputStream wrapResponseStream(HttpURLConnection connection, Status status) {
         try {
             return new HttpURLConnectionStream(connection, status);
         } catch (IOException e) {

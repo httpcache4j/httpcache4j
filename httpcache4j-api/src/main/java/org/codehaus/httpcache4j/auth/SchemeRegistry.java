@@ -33,7 +33,7 @@ public class SchemeRegistry {
     }
 
     public boolean matches(HTTPHost host) {
-        return registry.containsKey(host);
+        return host != null && registry.containsKey(host);
     }
 
     public void clear() {

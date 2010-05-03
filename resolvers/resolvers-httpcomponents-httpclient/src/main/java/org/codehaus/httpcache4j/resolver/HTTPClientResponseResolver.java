@@ -32,6 +32,7 @@ import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.httpcache4j.payload.Payload;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,51 +80,11 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         );
     }
 
-    public HTTPResponse resolve(final HTTPRequest request) throws IOException {
-        HTTPRequest req = request;
-        if (getAuthenticator().canAuthenticatePreemptively(request)) {
-            req = getAuthenticator().preparePreemptiveAuthentication(request);
-        }
-        if (getProxyAuthenticator().canAuthenticatePreemptively()) {
-            req = getProxyAuthenticator().preparePreemptiveAuthentication(req);
-        }
-
-        HttpUriRequest realRequest = convertRequest(req);        
+    @Override
+    protected HTTPResponse resolveImpl(HTTPRequest request) throws IOException {
+        HttpUriRequest realRequest = convertRequest(request);
         HttpResponse response = httpClient.execute(realRequest);
-        HTTPResponse convertedResponse = convertResponse(realRequest, response);
-
-        if (convertedResponse.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) {
-            req = getProxyAuthenticator().prepareAuthentication(req, convertedResponse);
-            if (req != request) {
-                convertedResponse.consume();
-                realRequest = convertRequest(req);
-                response = httpClient.execute(realRequest);
-                convertedResponse = convertResponse(realRequest, response);
-                if (convertedResponse.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
-                    getProxyAuthenticator().afterFailedAuthentication(convertedResponse.getHeaders());
-                }
-                else {
-                    getProxyAuthenticator().afterSuccessfulAuthentication(convertedResponse.getHeaders());
-                }
-            }
-        }
-        if (convertedResponse.getStatus() == Status.UNAUTHORIZED) {
-            req = getAuthenticator().prepareAuthentication(req, convertedResponse);
-            if (req != request) {
-                convertedResponse.consume();
-                realRequest = convertRequest(req);
-                response = httpClient.execute(realRequest);
-                convertedResponse = convertResponse(realRequest, response);
-                if (convertedResponse.getStatus() == Status.UNAUTHORIZED) { //We failed
-                    getAuthenticator().afterFailedAuthentication(req, convertedResponse.getHeaders());
-                }
-                else {
-                    getAuthenticator().afterSuccessfulAuthentication(req, convertedResponse.getHeaders());
-                }
-            }
-        }
-
-        return convertedResponse;
+        return convertResponse(realRequest, response);
     }
 
     private HttpUriRequest convertRequest(HTTPRequest request) {
@@ -136,14 +97,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
         if (request.hasPayload() && realRequest instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest req = (HttpEntityEnclosingRequest) realRequest;
-            InputStreamEntity e = new InputStreamEntity(request.getPayload().getInputStream(), -1) {
-                @Override
-                public void writeTo(OutputStream outstream) throws IOException {
-                    IOUtils.copy(getContent(), outstream);
-                }
-            };
-            e.setContentType(request.getPayload().getMimeType().toString());
-            req.setEntity(e);
+            req.setEntity(new UnknownLengthInputStreamEntity(request.getPayload()));
         }
         return realRequest;
     }
@@ -215,6 +169,18 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         @Override
         public void close() throws IOException {
             entity.consumeContent();
+        }
+    }
+
+    private static class UnknownLengthInputStreamEntity extends InputStreamEntity {
+        public UnknownLengthInputStreamEntity(final Payload payload) {
+            super(payload.getInputStream(), -1);
+            setContentType(payload.getMimeType().toString());
+        }
+
+        @Override
+        public void writeTo(OutputStream outstream) throws IOException {
+            IOUtils.copy(getContent(), outstream);
         }
     }
 }

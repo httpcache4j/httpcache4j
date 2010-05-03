@@ -119,7 +119,7 @@ public abstract class AbstractCacheIntegrationTest {
         HTTPRequest request = new HTTPRequest(uri, HTTPMethod.PUT).challenge(new UsernamePasswordChallenge("u", "p"));
         request = request.payload(new InputStreamPayload(new FileInputStream(TestUtil.getTestFile("pom.xml")), MIMEType.valueOf("application/xml")));
         response = cache.doCachedRequest(request);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.NO_CONTENT, response.getStatus());
         response.consume();
     }
 

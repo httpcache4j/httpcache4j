@@ -78,56 +78,12 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         return client;
     }
 
-    public HTTPResponse resolve(final HTTPRequest request) throws IOException {
-        HTTPRequest req = request;
-        if (getAuthenticator().canAuthenticatePreemptively(request)) {
-            req = getAuthenticator().preparePreemptiveAuthentication(request);
-        }
-        if (getProxyAuthenticator().canAuthenticatePreemptively()) {
-            req = getProxyAuthenticator().preparePreemptiveAuthentication(req);            
-        }
-
-
-        HttpMethod method = convertRequest(req);
+    @Override
+    protected HTTPResponse resolveImpl(HTTPRequest request) throws IOException {
+        HttpMethod method = convertRequest(request);
+        method.setDoAuthentication(true);
         client.executeMethod(method);
-        HTTPResponse response = convertResponse(method);
-
-        if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) {
-            req = getProxyAuthenticator().prepareAuthentication(req, response);
-            if (req != request) {
-                response.consume();
-                method = convertRequest(req);
-                method.setDoAuthentication(true);
-                client.executeMethod(method);
-                response = convertResponse(method);
-                if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
-                    getProxyAuthenticator().afterFailedAuthentication(response.getHeaders());
-                }
-                else {
-                    getProxyAuthenticator().afterSuccessfulAuthentication(response.getHeaders());
-                }
-            }
-        }       
-        if (response.getStatus() == Status.UNAUTHORIZED) {
-            req = getAuthenticator().prepareAuthentication(req, response);
-
-            if (req != request) {
-                response.consume();
-                method = convertRequest(req);
-                method.setDoAuthentication(true);
-                client.executeMethod(method);
-                response = convertResponse(method);
-                if (response.getStatus() == Status.UNAUTHORIZED) {
-                    getAuthenticator().afterFailedAuthentication(req, response.getHeaders());
-                }
-                else {
-                    getAuthenticator().afterSuccessfulAuthentication(req, response.getHeaders());
-                }
-            }
-        }
-
-        return response;
-        
+        return convertResponse(method);
     }
 
     private HttpMethod convertRequest(HTTPRequest request) {
