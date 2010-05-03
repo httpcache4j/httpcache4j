@@ -14,6 +14,8 @@
  */
 package org.codehaus.httpcache4j;
 
+import com.google.common.collect.Lists;
+
 import java.net.URI;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -25,28 +27,19 @@ import java.util.Map;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class Link {
-    private final Map<String, Parameter> parameters;
+public class Link extends Directive {
     private final URI uri;
 
     public Link(Directive directive) {
-        parameters = toMap(directive.getParameters());
+        super("Link", directive.getValue(), directive.getParameters());
         uri = URI.create(directive.getValue());
     }
 
     public Link(URI uri, Iterable<Parameter> parameters) {
+        super("Link", "<" + uri + ">", Lists.newArrayList(parameters));
         this.uri = uri;
-        this.parameters = toMap(parameters); 
     }
 
-    private Map<String, Parameter> toMap(Iterable<Parameter> parameters) {
-        Map<String, Parameter> map = new LinkedHashMap<String, Parameter>();
-        for (Parameter parameter : parameters) {
-            map.put(parameter.getName(), parameter);
-        }
-        return map;
-    }
-    
     public URI getURI() {
         return uri;
     }
@@ -56,8 +49,10 @@ public class Link {
     }
 
     public String getParameterValue(final String key) {
-        if (parameters.containsKey(key)) {
-            return parameters.get(key).getValue();
+        for (Parameter param : getParameters()) {
+            if (param.getName().equals(key)) {
+                return param.getValue();
+            }
         }
         return null;
     }
@@ -78,14 +73,10 @@ public class Link {
         return null;
     }
 
-    public Map<String, Parameter> getParameters() {
-        return Collections.unmodifiableMap(parameters);
-    }
-
     public String toString() {
         StringBuilder value = new StringBuilder();
         value.append(String.format("<%s>", uri));
-        for (Parameter parameter : parameters.values()) {
+        for (Parameter parameter : getParameters()) {
             if (value.length() > 0) {
                 value.append("; ");
             }

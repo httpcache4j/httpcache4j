@@ -35,19 +35,19 @@ public class LinkBuilder {
     }
 
     public LinkBuilder rel(String rel) {
-        return parameter(new Parameter("rel", rel));
+        return parameter(new QuotedParameter("rel", rel));
     }
 
     public LinkBuilder rev(String rev) {
-        return parameter(new Parameter("rev", rev));
+        return parameter(new QuotedParameter("rev", rev));
     }
 
     public LinkBuilder title(String title) {
-        return parameter(new Parameter("title", title));
+        return parameter(new QuotedParameter("title", title));
     }
 
     public LinkBuilder anchor(URI anchor) {
-        return parameter(new Parameter("anchor", anchor.toString()));
+        return parameter(new QuotedParameter("anchor", anchor.toString()));
     }
 
     public LinkBuilder parameter(Parameter parameter) {

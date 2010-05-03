@@ -136,14 +136,19 @@ public final class HeaderUtils {
             }
             builder.append(link);
         }
-        return new Header("Link", builder.toString());
+        return new Header(LINK_HEADER, builder.toString());
     }
 
     public static List<Link> toLinks(Header header) {
-        Validate.isTrue("Link".equals(header.getName()), "This must be a \"Link\" header");
+        Validate.isTrue(LINK_HEADER.equals(header.getName()), "This must be a \"Link\" header");
         ImmutableList.Builder<Link> links = ImmutableList.builder();
         for (Directive directive : header.getDirectives()) {
-            links.add(new Link(directive));
+            if (directive instanceof Link) {
+                links.add((Link) directive);
+            }
+            else {
+                links.add(new Link(directive));                
+            }
         }
         return links.build();
     }

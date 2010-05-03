@@ -17,6 +17,8 @@
 package org.codehaus.httpcache4j;
 
 public final class HeaderConstants {
+    public static final String LINK_HEADER = "Link";
+
     private HeaderConstants() {
     }
 

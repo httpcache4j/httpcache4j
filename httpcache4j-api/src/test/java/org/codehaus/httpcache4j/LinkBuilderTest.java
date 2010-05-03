@@ -3,6 +3,8 @@ package org.codehaus.httpcache4j;
 import org.junit.Test;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -20,5 +22,8 @@ public class LinkBuilderTest {
       assertEquals("rel", link.getRel());
       assertEquals("rev", link.getRev());
       assertEquals(4, link.getParameters().size());
+      String expected = "<foo>; title=\"title\"; anchor=\"#hey\"; rel=\"rel\"; rev=\"rev\"";
+      assertEquals(expected, link.toString());
+      assertEquals(new Header("Link", new Directives(Arrays.<Directive>asList(link))), new Header("Link", expected));
   }
 }

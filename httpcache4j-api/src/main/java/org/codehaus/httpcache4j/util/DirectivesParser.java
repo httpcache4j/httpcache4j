@@ -15,10 +15,7 @@
 
 package org.codehaus.httpcache4j.util;
 
-import org.codehaus.httpcache4j.Directive;
-import org.codehaus.httpcache4j.Parameter;
-import org.codehaus.httpcache4j.QuotedDirective;
-import org.codehaus.httpcache4j.QuotedParameter;
+import org.codehaus.httpcache4j.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -134,6 +131,9 @@ public class DirectivesParser {
         if (isQuoted(value)) {
             return new QuotedDirective(name, value, params);
         }
+        if (HeaderConstants.LINK_HEADER.equals(name)) {
+            return new Link(new Directive(name, value, params));
+        }
         return new Directive(name, value, params);
     }
 
@@ -231,7 +231,7 @@ public class DirectivesParser {
             int i = name.indexOf('<');
             int j = name.indexOf('>');
             if (i != -1 && j != -1) { //this is a Link header
-                return createParameter("link", name.substring(i + 1, j));
+                return createParameter(HeaderConstants.LINK_HEADER, name.substring(i + 1, j));
             }
             
             return createParameter(name, null);
