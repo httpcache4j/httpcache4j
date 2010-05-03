@@ -19,15 +19,15 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.codehaus.httpcache4j.cache.CacheStorage;
 import org.codehaus.httpcache4j.cache.HTTPCache;
 import org.codehaus.httpcache4j.payload.FilePayload;
+import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.resolver.HTTPClientResponseResolver;
-import org.codehaus.httpcache4j.resolver.ResponseResolver;
-import org.codehaus.httpcache4j.util.ResponseWriter;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.PrintWriter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.URI;
 
 import static org.junit.Assert.*;
@@ -106,8 +106,19 @@ public abstract class AbstractCacheIntegrationTest {
         response.consume();
         HTTPRequest request = new HTTPRequest(uri).challenge(new UsernamePasswordChallenge("u", "p"));
         response = cache.doCachedRequest(request);
-        HTTPClientResponseResolver responseResolver = (HTTPClientResponseResolver) cache.getResolver();
-        assertTrue(responseResolver.isPreemptiveAuthenticationEnabled());
+        assertEquals(Status.OK, response.getStatus());
+        response.consume();
+    }
+
+    @Test
+    public void PUTWithBasicAuthentication() throws FileNotFoundException {
+        URI uri = baseRequestURI.resolve(String.format("etag/basic,u=u,p=p/%s", TEST_FILE));
+        HTTPResponse response = doRequest(uri, HTTPMethod.PUT);
+        assertEquals(Status.UNAUTHORIZED, response.getStatus());
+        response.consume();
+        HTTPRequest request = new HTTPRequest(uri, HTTPMethod.PUT).challenge(new UsernamePasswordChallenge("u", "p"));
+        request = request.payload(new InputStreamPayload(new FileInputStream(TestUtil.getTestFile("pom.xml")), MIMEType.valueOf("application/xml")));
+        response = cache.doCachedRequest(request);
         assertEquals(Status.OK, response.getStatus());
         response.consume();
     }
@@ -125,8 +136,12 @@ public abstract class AbstractCacheIntegrationTest {
     }
     
     private HTTPResponse get(URI uri) {
-        HTTPRequest getRequest = new HTTPRequest(uri);
-        HTTPResponse response = cache.doCachedRequest(getRequest);
+        return doRequest(uri, HTTPMethod.GET);
+    }
+    
+    private HTTPResponse doRequest(URI uri, HTTPMethod pMethod) {
+        HTTPRequest request = new HTTPRequest(uri, pMethod);
+        HTTPResponse response = cache.doCachedRequest(request);
         assertNotNull(response);
         assertFalse(response.getStatus().equals(Status.INTERNAL_SERVER_ERROR));
         return response;

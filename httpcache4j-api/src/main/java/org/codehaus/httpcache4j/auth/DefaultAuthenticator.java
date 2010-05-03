@@ -59,6 +59,10 @@ public class DefaultAuthenticator extends AuthenticatorBase implements Authentic
         return req;
     }
 
+    public boolean canAuthenticatePreemptively(HTTPRequest request) {
+        return canAuthenticatePreemptively(new HTTPHost(request.getRequestURI()));
+    }
+
     public HTTPRequest preparePreemptiveAuthentication(HTTPRequest request) {
         return prepareAuthentication(request, null);
     }

@@ -30,5 +30,7 @@ public interface Authenticator {
 
     void afterSuccessfulAuthentication(HTTPRequest request, Headers responseHeaders);
 
+    boolean canAuthenticatePreemptively(HTTPRequest request);  
+
     void afterFailedAuthentication(HTTPRequest request, Headers responseHeaders);
 }

@@ -80,10 +80,13 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
     public HTTPResponse resolve(final HTTPRequest request) throws IOException {
         HTTPRequest req = request;
-        if (isPreemptiveAuthenticationEnabled()) {
+        if (getAuthenticator().canAuthenticatePreemptively(request)) {
             req = getAuthenticator().preparePreemptiveAuthentication(request);
-            req = getProxyAuthenticator().preparePreemptiveAuthentication(req);
         }
+        if (getProxyAuthenticator().canAuthenticatePreemptively()) {
+            req = getProxyAuthenticator().preparePreemptiveAuthentication(req);            
+        }
+
 
         HttpMethod method = convertRequest(req);
         client.executeMethod(method);
@@ -99,10 +102,8 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 response = convertResponse(method);
                 if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
                     getProxyAuthenticator().afterFailedAuthentication(response.getHeaders());
-                    disablePreemptiveAuthentication();
                 }
                 else {
-                    enablePreemptiveAuthentication();
                     getProxyAuthenticator().afterSuccessfulAuthentication(response.getHeaders());
                 }
             }
@@ -117,11 +118,9 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 client.executeMethod(method);
                 response = convertResponse(method);
                 if (response.getStatus() == Status.UNAUTHORIZED) {
-                    disablePreemptiveAuthentication();
                     getAuthenticator().afterFailedAuthentication(req, response.getHeaders());
                 }
                 else {
-                    enablePreemptiveAuthentication();
                     getAuthenticator().afterSuccessfulAuthentication(req, response.getHeaders());
                 }
             }

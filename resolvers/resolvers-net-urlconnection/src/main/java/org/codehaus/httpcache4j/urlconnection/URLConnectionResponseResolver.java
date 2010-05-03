@@ -45,9 +45,11 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
 
     public HTTPResponse resolve(final HTTPRequest request) throws IOException {
         HTTPRequest req = request;
-        if (isPreemptiveAuthenticationEnabled()) {
+        if (getAuthenticator().canAuthenticatePreemptively(request)) {
             req = getAuthenticator().preparePreemptiveAuthentication(request);
-            req = getAuthenticator().preparePreemptiveAuthentication(req);
+        }
+        if (getProxyAuthenticator().canAuthenticatePreemptively()) {
+            req = getProxyAuthenticator().preparePreemptiveAuthentication(req);
         }
         URL url = request.getRequestURI().toURL();
         URLConnection openConnection = url.openConnection();
@@ -66,11 +68,9 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
                     response = convertResponse(connection);
                     if (response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
                         getProxyAuthenticator().afterFailedAuthentication(response.getHeaders());
-                        disablePreemptiveAuthentication();
                     }
                     else {
                         getProxyAuthenticator().afterSuccessfulAuthentication(response.getHeaders());
-                        enablePreemptiveAuthentication();
                     }
                 }
             }
@@ -83,11 +83,9 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
                     response = convertResponse(connection);
                     if (response.getStatus() == Status.UNAUTHORIZED) {
                         getAuthenticator().afterFailedAuthentication(req, response.getHeaders());
-                        disablePreemptiveAuthentication();
                     }
                     else {
                         getAuthenticator().afterSuccessfulAuthentication(req, response.getHeaders());
-                        enablePreemptiveAuthentication();
                     }
                 }
             }

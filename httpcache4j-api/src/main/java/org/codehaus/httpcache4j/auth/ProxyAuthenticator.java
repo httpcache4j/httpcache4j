@@ -32,6 +32,8 @@ public interface ProxyAuthenticator {
 
     ProxyConfiguration getConfiguration();
 
+    boolean canAuthenticatePreemptively();
+
     void afterSuccessfulAuthentication(Headers responseHeaders);
 
     void afterFailedAuthentication(Headers responseHeaders);    

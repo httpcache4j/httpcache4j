@@ -47,7 +47,7 @@ public class DefaultProxyAuthenticator extends AuthenticatorBase implements Prox
     public final HTTPRequest prepareAuthentication(final HTTPRequest request, final HTTPResponse response) {        
         if (configuration.getHost() != null) {
             if (response == null && registry.matches(configuration.getHost())) {
-                //preemtive auth.
+                //preemptive auth.
                 AuthScheme authScheme = registry.get(configuration.getHost());
                 return doAuth(request, authScheme);
             }
@@ -56,6 +56,9 @@ public class DefaultProxyAuthenticator extends AuthenticatorBase implements Prox
                     proxyChallenge = configuration.getProvider().getChallenge();
                 }
                 if (proxyChallenge != null) {
+                    //TODO: Find an algorithm for selecting the most secure supported authentication method.
+                    //I imagine the Set of ("Digest", "Basic"); and anything else is more secure than those.
+
                     AuthScheme scheme = new AuthScheme(response.getHeaders().getFirstHeader("Proxy-Authenticate"));
                     registry.register(configuration.getHost(), scheme);
                     return doAuth(request, scheme);
@@ -63,6 +66,10 @@ public class DefaultProxyAuthenticator extends AuthenticatorBase implements Prox
             }
         }
         return request;
+    }
+
+    public boolean canAuthenticatePreemptively() {
+        return canAuthenticatePreemptively(configuration.getHost());
     }
 
     public HTTPRequest preparePreemptiveAuthentication(HTTPRequest request) {

@@ -81,8 +81,10 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
     public HTTPResponse resolve(final HTTPRequest request) throws IOException {
         HTTPRequest req = request;
-        if (isPreemptiveAuthenticationEnabled()) {
+        if (getAuthenticator().canAuthenticatePreemptively(request)) {
             req = getAuthenticator().preparePreemptiveAuthentication(request);
+        }
+        if (getProxyAuthenticator().canAuthenticatePreemptively()) {
             req = getProxyAuthenticator().preparePreemptiveAuthentication(req);
         }
 
@@ -99,11 +101,9 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 convertedResponse = convertResponse(realRequest, response);
                 if (convertedResponse.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
                     getProxyAuthenticator().afterFailedAuthentication(convertedResponse.getHeaders());
-                    disablePreemptiveAuthentication();
                 }
                 else {
                     getProxyAuthenticator().afterSuccessfulAuthentication(convertedResponse.getHeaders());
-                    enablePreemptiveAuthentication();
                 }
             }
         }
@@ -116,11 +116,9 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 convertedResponse = convertResponse(realRequest, response);
                 if (convertedResponse.getStatus() == Status.UNAUTHORIZED) { //We failed
                     getAuthenticator().afterFailedAuthentication(req, convertedResponse.getHeaders());
-                    disablePreemptiveAuthentication();
                 }
                 else {
                     getAuthenticator().afterSuccessfulAuthentication(req, convertedResponse.getHeaders());
-                    enablePreemptiveAuthentication();
                 }
             }
         }

@@ -17,6 +17,8 @@ package org.codehaus.httpcache4j.auth;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import org.codehaus.httpcache4j.HTTPHost;
+import org.codehaus.httpcache4j.HTTPRequest;
 
 import java.util.List;
 
@@ -24,6 +26,8 @@ import java.util.List;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
+//TODO: Find an algorithm for selecting the most secure supported authentication method.
+//I imagine the Set of ("Digest", "Basic"); and anything else is more secure than those.
 class AuthenticatorBase {
     private final List<AuthenticatorStrategy> strategies = Lists.newArrayList();
     protected final SchemeRegistry registry = new SchemeRegistry();
@@ -52,5 +56,9 @@ class AuthenticatorBase {
             selected = new NullAuthenticatorStrategy();
         }
         return selected;
+    }
+
+    public boolean canAuthenticatePreemptively(HTTPHost host) {       
+        return registry.matches(host);
     }
 }

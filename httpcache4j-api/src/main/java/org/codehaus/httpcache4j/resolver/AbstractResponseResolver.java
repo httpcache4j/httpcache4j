@@ -28,7 +28,6 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
     private final ResponseCreator responseCreator = new ResponseCreator();
     private final Authenticator authenticator;
     private final ProxyAuthenticator proxyAuthenticator;
-    private boolean preemptiveAuthentication = false;
 
     protected AbstractResponseResolver(ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
         Validate.notNull(proxyAuthenticator, "Proxy Authenticator may not be null");
@@ -47,17 +46,5 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
 
     protected final Authenticator getAuthenticator() {
         return authenticator;
-    }
-
-    public final boolean isPreemptiveAuthenticationEnabled() {
-        return preemptiveAuthentication;
-    }
-
-    protected void disablePreemptiveAuthentication() {
-        preemptiveAuthentication = false;
-    }
-
-    protected void enablePreemptiveAuthentication() {
-        preemptiveAuthentication = true;
     }
 }
