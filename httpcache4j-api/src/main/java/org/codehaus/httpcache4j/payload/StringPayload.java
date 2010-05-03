@@ -11,8 +11,8 @@ import java.io.InputStream;
  * @version $Revision: $
  */
 public class StringPayload implements Payload {
-    private String value;
-    private MIMEType mimeType;
+    private final String value;
+    private final MIMEType mimeType;
 
     public StringPayload(String value, MIMEType mimeType) {
         Validate.notNull(value, "String value may not be null");
