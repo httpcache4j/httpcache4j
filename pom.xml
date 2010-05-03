@@ -417,7 +417,7 @@ time mvn site -Preporting && time mvn site:deploy && time mvn site -Preporting-a
             <artifactId>maven-assembly-plugin</artifactId>
             <version>2.2-beta-3</version>
             <configuration>
-              <appendAssemblyId>true</appendAssemblyId>
+              <appendAssemblyId>false</appendAssemblyId>
               <attach>false</attach>              
               <descriptors>
                 <descriptor>src/assembly/dist.xml</descriptor>

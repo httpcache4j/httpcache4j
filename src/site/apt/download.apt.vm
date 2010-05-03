@@ -5,8 +5,8 @@
 
 Download
 
- {{{download/$currentVersion/httpcache4j-dist-${currentVersion}.tar.gz}tar.gz format}}
+ {{{download/$currentVersion/httpcache4j-${currentVersion}.tar.gz}tar.gz format}}
 
- {{{download/$currentVersion/httpcache4j-dist-${currentVersion}.tar.bz2}tar.bz2 format}}
+ {{{download/$currentVersion/httpcache4j-${currentVersion}.tar.bz2}tar.bz2 format}}
 
- {{{download/$currentVersion/httpcache4j-dist-${currentVersion}.zip}zip format}}
+ {{{download/$currentVersion/httpcache4j-${currentVersion}.zip}zip format}}
