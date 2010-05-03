@@ -297,9 +297,9 @@
 
 
   <scm>
-    <connection>scm:svn:http://svn.codehaus.org/httpcache4j/trunk</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/httpcache4j/trunk</developerConnection>
-    <url>http://fisheye.codehaus.org/browse/httpcache4j/trunk</url>
+    <connection>git://git.codehaus.org/httpcache4j.git</connection>
+    <developerConnection>ssh://git@git.codehaus.org/httpcache4j.git</developerConnection>
+    <url>http://fisheye.codehaus.org/browse/httpcache4j</url>
   </scm>
 
   <distributionManagement>
