@@ -297,8 +297,8 @@
 
 
   <scm>
-    <connection>git://git.codehaus.org/httpcache4j.git</connection>
-    <developerConnection>ssh://git@git.codehaus.org/httpcache4j.git</developerConnection>
+    <connection>scm:git:git://git.codehaus.org/httpcache4j.git</connection>
+    <developerConnection>scm:git:ssh://git@git.codehaus.org/httpcache4j.git</developerConnection>
     <url>http://fisheye.codehaus.org/browse/httpcache4j</url>
   </scm>
 
