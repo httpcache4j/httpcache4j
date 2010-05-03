@@ -27,15 +27,15 @@ import java.util.Map;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class Link extends Directive {
+public class LinkDirective extends Directive {
     private final URI uri;
 
-    public Link(Directive directive) {
+    public LinkDirective(Directive directive) {
         super("Link", directive.getValue(), directive.getParameters());
         uri = URI.create(directive.getValue());
     }
 
-    public Link(URI uri, Iterable<Parameter> parameters) {
+    public LinkDirective(URI uri, Iterable<Parameter> parameters) {
         super("Link", "<" + uri + ">", Lists.newArrayList(parameters));
         this.uri = uri;
     }

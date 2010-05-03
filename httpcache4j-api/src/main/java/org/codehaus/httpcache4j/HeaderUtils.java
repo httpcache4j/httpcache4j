@@ -128,26 +128,26 @@ public final class HeaderUtils {
         return value;
     }
 
-    public static Header toLinkHeader(List<Link> links) {
+    public static Header toLinkHeader(List<LinkDirective> linkDirectives) {
         StringBuilder builder = new StringBuilder();
-        for (Link link : links) {
+        for (LinkDirective linkDirective : linkDirectives) {
             if (builder.length() > 0) {
                 builder.append(", ");
             }
-            builder.append(link);
+            builder.append(linkDirective);
         }
         return new Header(LINK_HEADER, builder.toString());
     }
 
-    public static List<Link> toLinks(Header header) {
+    public static List<LinkDirective> toLinkDirectives(Header header) {
         Validate.isTrue(LINK_HEADER.equals(header.getName()), "This must be a \"Link\" header");
-        ImmutableList.Builder<Link> links = ImmutableList.builder();
+        ImmutableList.Builder<LinkDirective> links = ImmutableList.builder();
         for (Directive directive : header.getDirectives()) {
-            if (directive instanceof Link) {
-                links.add((Link) directive);
+            if (directive instanceof LinkDirective) {
+                links.add((LinkDirective) directive);
             }
             else {
-                links.add(new Link(directive));                
+                links.add(new LinkDirective(directive));
             }
         }
         return links.build();

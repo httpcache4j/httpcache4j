@@ -132,7 +132,7 @@ public class DirectivesParser {
             return new QuotedDirective(name, value, params);
         }
         if (HeaderConstants.LINK_HEADER.equals(name)) {
-            return new Link(new Directive(name, value, params));
+            return new LinkDirective(new Directive(name, value, params));
         }
         return new Directive(name, value, params);
     }
