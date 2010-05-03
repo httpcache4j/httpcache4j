@@ -3,4 +3,7 @@
 *.iws
 .idea
 *.*~
+*.log
+*.releaseBackup
+release.properties
 target
