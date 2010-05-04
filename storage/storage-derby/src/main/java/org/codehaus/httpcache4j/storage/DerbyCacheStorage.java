@@ -63,8 +63,15 @@ public class DerbyCacheStorage extends JdbcCacheStorage {
         this(storageDirectory, false);
     }
 
+    /**
+     * Creates an In Memory Derby database.
+     */
+    public DerbyCacheStorage() {
+        this(null, false);
+    }
+
     public DerbyCacheStorage(File storageDirectory, boolean dropTables) {
-        super(createDataSource(new File(storageDirectory, "database")));
+        super(storageDirectory != null ? createDataSource(new File(storageDirectory, "database")) : createMemoryDataSource());
         maybeCreateTables(dropTables);
     }
 
@@ -72,6 +79,15 @@ public class DerbyCacheStorage extends JdbcCacheStorage {
         EmbeddedDataSource40 ds = new EmbeddedDataSource40();
         ds.setCreateDatabase("create");
         ds.setDatabaseName(database.getAbsolutePath());
+        ds.setUser("");
+        ds.setPassword("");
+        return ds;
+    }
+
+    private static DataSource createMemoryDataSource() {        
+        EmbeddedDataSource40 ds = new EmbeddedDataSource40();
+        ds.setCreateDatabase("create");
+        ds.setDatabaseName("memory:httpcache4j");
         ds.setUser("");
         ds.setPassword("");
         return ds;

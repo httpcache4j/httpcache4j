@@ -55,7 +55,7 @@ public class DerbyCacheStorageTestCase extends CacheStorageAbstractTest{
     }
 
     protected CacheStorage createCacheStorage() {
-        return new DerbyCacheStorage(storageDirectory);
+        return new DerbyCacheStorage();
     }
 
     @Override
