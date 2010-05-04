@@ -37,7 +37,7 @@ public class Directive extends NameValue {
 
     public Directive(final String name, String value, List<Parameter> parameters) {
         super(name, HeaderUtils.fixQuotedString(value));
-        Validate.notNull(parameters, "Paramaters may not be null");
+        Validate.notNull(parameters, "Parameters may not be null");
         Validate.noNullElements(parameters, "Parameters may not contain any null elements");
         this.parameters = ImmutableList.copyOf(parameters);
     }
