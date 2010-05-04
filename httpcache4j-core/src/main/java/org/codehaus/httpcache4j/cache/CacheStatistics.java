@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-class CacheStatistics implements CacheStatisticsMXBean {
+public class CacheStatistics implements CacheStatisticsMXBean {
     private final AtomicLong hits = new AtomicLong();
     private final AtomicLong misses = new AtomicLong();
 
