@@ -64,13 +64,10 @@ public class CacheItem {
     }
 
     public static int getTTL(HTTPResponse response, int defaultTTLinSeconds) {
-        final Headers headers = response.getHeaders();
-        if (headers.hasHeader(CACHE_CONTROL)) {
-            Header ccHeader = headers.getFirstHeader(CACHE_CONTROL);
-            Directives directives = ccHeader.getDirectives();
-            Directive maxAgeDirective = directives.getAsDirective("max-age");
-            if (maxAgeDirective != null) {
-                int maxAge = maxAgeDirective.getValueAsInteger();
+        final CacheControl cc = response.getCacheControl();
+        if (cc != null) {
+            int maxAge = cc.getMaxAge();
+            if (maxAge > -1) {
                 if (maxAge > 0) {
                     return maxAge;
                 }
@@ -83,10 +80,10 @@ public class CacheItem {
          * To mark a response as "never expires," an origin server sends an Expires date approximately one year from the time the response is sent.
          * HTTP/1.1 servers SHOULD NOT send Expires dates more than one year in the future.
          */
-        if (headers.hasHeader(EXPIRES)) {
-            DateTime expiryDate = HeaderUtils.fromHttpDate(headers.getFirstHeader(EXPIRES));
+        if (response.getExpires() != null) {
+            DateTime expiryDate = response.getExpires();
             if (expiryDate != null) {
-                DateTime date = HeaderUtils.fromHttpDate(headers.getFirstHeader(DATE));
+                DateTime date = response.getDate();
                 if (date != null && date.isBefore(expiryDate)) {
                     return Seconds.secondsBetween(date, expiryDate).getSeconds();
                 }

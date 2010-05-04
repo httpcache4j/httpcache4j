@@ -44,11 +44,6 @@ import static org.codehaus.httpcache4j.HeaderConstants.CACHE_CONTROL;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class HTTPCache {
-    /**
-     * Directive to the {@code "Cache-Control"} header
-     */
-    public static final String HEADER_DIRECTIVE_MAX_AGE = "max-age";
-
     private final HTTPCacheHelper helper = new HTTPCacheHelper();
     private final CacheStatistics statistics = new CacheStatistics();
     private final CacheStorage storage;
@@ -181,12 +176,12 @@ public class HTTPCache {
         Headers all = req.getAllHeaders();
         if (all.hasHeader(CACHE_CONTROL)) {
             Header cc = all.getFirstHeader(CACHE_CONTROL);
-            Directives directives = cc.getDirectives();
-            if (directives.hasDirective("max-stale")) {
-                int stale = directives.getAsDirective("max-stale").getValueAsInteger();
+            CacheControl control = new CacheControl(cc);
+            int maxStale = control.getMaxStale();
+            if (maxStale > -1) {
                 int ttl = item.getTTL();
                 int age = item.getAge(req);
-                if ((ttl - stale - age) < 0) {
+                if ((ttl - maxStale - age) < 0) {
                     allowStale = true;
                 }
             }

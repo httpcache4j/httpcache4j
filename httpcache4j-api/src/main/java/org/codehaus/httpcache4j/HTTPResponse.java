@@ -39,9 +39,12 @@ public final class HTTPResponse {
     private final Status status;
     private final Payload payload;
     private final Headers headers;
-    private Tag ETag;
+    private DateTime date;
+    private DateTime expires;
     private DateTime lastModified;
+    private Tag ETag;
     private Set<HTTPMethod> allowedMethods;
+    private CacheControl cacheControl;
 
     /**
      * Constructs an empty http response with the given status.
@@ -65,13 +68,21 @@ public final class HTTPResponse {
             lastModified = HeaderUtils.fromHttpDate(headers.getFirstHeader(LAST_MODIFIED));
         }
         if (headers.hasHeader(ALLOW)) {
-            String value = headers.getFirstHeader(ALLOW).getValue();
-            String[] parts = value.split(",");
+            Directives value = headers.getFirstHeader(ALLOW).getDirectives();
             Set<HTTPMethod> allowedMethods = new HashSet<HTTPMethod>();
-            for (String part : parts) {
-                allowedMethods.add(HTTPMethod.valueOf(part.trim()));
+            for (Directive part : value) {
+                allowedMethods.add(HTTPMethod.valueOf(part.getName()));
             }
             this.allowedMethods = Collections.unmodifiableSet(allowedMethods);
+        }
+        if (headers.hasHeader(CACHE_CONTROL)) {
+            cacheControl = new CacheControl(headers.getFirstHeader(CACHE_CONTROL).getDirectives());
+        }
+        if (headers.hasHeader(DATE)) {
+            date = HeaderUtils.fromHttpDate(headers.getFirstHeader(DATE));
+        }
+        if (headers.hasHeader(EXPIRES)) {
+            expires = HeaderUtils.fromHttpDate(headers.getFirstHeader(EXPIRES));
         }
     }
 
@@ -95,8 +106,20 @@ public final class HTTPResponse {
         return ETag;
     }
 
+    public DateTime getDate() {
+        return date;
+    }
+
+    public DateTime getExpires() {
+        return expires;
+    }
+
     public DateTime getLastModified() {
         return lastModified;
+    }
+
+    public CacheControl getCacheControl() {
+        return cacheControl;
     }
 
     public Set<HTTPMethod> getAllowedMethods() {
@@ -112,7 +135,7 @@ public final class HTTPResponse {
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
@@ -128,6 +151,15 @@ public final class HTTPResponse {
         if (allowedMethods != null ? !allowedMethods.equals(response.allowedMethods) : response.allowedMethods != null) {
             return false;
         }
+        if (cacheControl != null ? !cacheControl.equals(response.cacheControl) : response.cacheControl != null) {
+            return false;
+        }
+        if (date != null ? !date.equals(response.date) : response.date != null) {
+            return false;
+        }
+        if (expires != null ? !expires.equals(response.expires) : response.expires != null) {
+            return false;
+        }
         if (headers != null ? !headers.equals(response.headers) : response.headers != null) {
             return false;
         }
@@ -137,7 +169,7 @@ public final class HTTPResponse {
         if (payload != null ? !payload.equals(response.payload) : response.payload != null) {
             return false;
         }
-        if (status != null ? !status.equals(response.status) : response.status != null) {
+        if (status != response.status) {
             return false;
         }
 
@@ -152,6 +184,9 @@ public final class HTTPResponse {
         result = 31 * result + (ETag != null ? ETag.hashCode() : 0);
         result = 31 * result + (lastModified != null ? lastModified.hashCode() : 0);
         result = 31 * result + (allowedMethods != null ? allowedMethods.hashCode() : 0);
+        result = 31 * result + (cacheControl != null ? cacheControl.hashCode() : 0);
+        result = 31 * result + (date != null ? date.hashCode() : 0);
+        result = 31 * result + (expires != null ? expires.hashCode() : 0);
         return result;
     }
 }
