@@ -16,56 +16,60 @@
 
 package org.codehaus.httpcache4j;
 
-import java.util.EnumSet;
+import com.google.common.collect.Sets;
+
+import java.util.Set;
 
 /** HTTP Status to return after handling a call. */
-public enum Status {
+public final class Status implements Comparable<Status> {
 
-    CONTINUE(100, "Continue"),
-    SWITCHING_PROTOCOLS(101, "Switching Protocols"),
-    OK(200, "OK"),
-    CREATED(201, "Created"),
-    ACCEPTED(202, "Accepted"),
-    NON_AUTHORITATIVE_INFORMATION(203, "Non-Authoritative Information"),
-    NO_CONTENT(204, "No Content"),
-    RESET_CONTENT(205, "Reset Content"),
-    PARTIAL_CONTENT(206, "Partial Content"),
-    MULTIPLE_CHOICES(300, "Multiple Choices"),
-    MOVED_PERMANENTLY(301, "Moved Permanently"),
-    FOUND(302, "Found"),
-    SEE_OTHER(303, "See Other"),
-    NOT_MODIFIED(304, "Not Modified"),
-    USE_PROXY(305, "Use Proxy"),
-    TEMPORARY_REDIRECT(307, "Temporary Redirect"),
-    BAD_REQUEST(400, "Bad Request"),
-    UNAUTHORIZED(401, "Unauthorized"),
-    PAYMENT_REQUIRED(402, "Payment Required"), //Reserved for future use!
-    FORBIDDEN(403, "Forbidden"),
-    NOT_FOUND(404, "Not Found"),
-    METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
-    NOT_ACCEPTABLE(406, "Not Acceptable"),
-    PROXY_AUTHENTICATION_REQUIRED(407, "Proxy Authentication Required"),
-    REQUEST_TIMEOUT(408, "Request Timeout"),
-    CONFLICT(409, "Conflict"),
-    GONE(410, "Gone"),
-    LENGTH_REQUIRED(411, "Length Required"),
-    PRECONDITION_FAILED(412, "Precondition Failed"),
-    REQUEST_ENTITY_TOO_LARGE(413, "Request Entity Too Large"),
-    REQUEST_URI_TOO_LONG(414, "Request-URI Too Long"),
-    UNSUPPORTED_MEDIA_TYPE(415, "Unsupported Media Type"),
-    REQUESTED_RANGE_NOT_SATISFIABLE(416, "Requested Range Not Satisfiable"),
-    EXPECTATION_FAILED(417, "Expectation Failed"),
-    INTERNAL_SERVER_ERROR(500, "Internal Server Error"),
-    NOT_IMPLEMENTED(501, "Not Implemented"),
-    BAD_GATEWAY(502, "Bad Gateway"),
-    SERVICE_UNAVAILABLE(503, "Service Unavailable"),
-    GATEWAY_TIMEOUT(504, "Gateway Timeout"),
-    HTTP_VERSION_NOT_SUPPORTED(505, "HTTP Version Not Supported");
+    public static Status CONTINUE = new Status(100, "Continue");
+    public static Status SWITCHING_PROTOCOLS = new Status(101, "Switching Protocols");
+    public static Status OK = new Status(200, "OK");
+    public static Status CREATED = new Status(201, "Created");
+    public static Status ACCEPTED = new Status(202, "Accepted");
+    public static Status NON_AUTHORITATIVE_INFORMATION = new Status(203, "Non-Authoritative Information");
+    public static Status NO_CONTENT = new Status(204, "No Content");
+    public static Status RESET_CONTENT = new Status(205, "Reset Content");
+    public static Status PARTIAL_CONTENT = new Status(206, "Partial Content");
+    public static Status MULTIPLE_CHOICES = new Status(300, "Multiple Choices");
+    public static Status MOVED_PERMANENTLY = new Status(301, "Moved Permanently");
+    public static Status FOUND = new Status(302, "Found");
+    public static Status SEE_OTHER = new Status(303, "See Other");
+    public static Status NOT_MODIFIED = new Status(304, "Not Modified");
+    public static Status USE_PROXY = new Status(305, "Use Proxy");
+    public static Status TEMPORARY_REDIRECT = new Status(307, "Temporary Redirect");
+    public static Status BAD_REQUEST = new Status(400, "Bad Request");
+    public static Status UNAUTHORIZED = new Status(401, "Unauthorized");
+    public static Status PAYMENT_REQUIRED = new Status(402, "Payment Required"); //Reserved for future use!
+    public static Status FORBIDDEN = new Status(403, "Forbidden");
+    public static Status NOT_FOUND = new Status(404, "Not Found");
+    public static Status METHOD_NOT_ALLOWED = new Status(405, "Method Not Allowed");
+    public static Status NOT_ACCEPTABLE = new Status(406, "Not Acceptable");
+    public static Status PROXY_AUTHENTICATION_REQUIRED = new Status(407, "Proxy Authentication Required");
+    public static Status REQUEST_TIMEOUT = new Status(408, "Request Timeout");
+    public static Status CONFLICT = new Status(409, "Conflict");
+    public static Status GONE = new Status(410, "Gone");
+    public static Status LENGTH_REQUIRED = new Status(411, "Length Required");
+    public static Status PRECONDITION_FAILED = new Status(412, "Precondition Failed");
+    public static Status REQUEST_ENTITY_TOO_LARGE = new Status(413, "Request Entity Too Large");
+    public static Status REQUEST_URI_TOO_LONG = new Status(414, "Request-URI Too Long");
+    public static Status UNSUPPORTED_MEDIA_TYPE = new Status(415, "Unsupported Media Type");
+    public static Status REQUESTED_RANGE_NOT_SATISFIABLE = new Status(416, "Requested Range Not Satisfiable");
+    public static Status EXPECTATION_FAILED = new Status(417, "Expectation Failed");
+    public static Status INTERNAL_SERVER_ERROR = new Status(500, "Internal Server Error");
+    public static Status NOT_IMPLEMENTED = new Status(501, "Not Implemented");
+    public static Status BAD_GATEWAY = new Status(502, "Bad Gateway");
+    public static Status SERVICE_UNAVAILABLE = new Status(503, "Service Unavailable");
+    public static Status GATEWAY_TIMEOUT = new Status(504, "Gateway Timeout");
+    public static Status HTTP_VERSION_NOT_SUPPORTED = new Status(505, "HTTP Version Not Supported");
 
+    private static final Set<Status> STATUSES_WITHOUT_BODY = Sets.newHashSet(RESET_CONTENT, NO_CONTENT, NOT_MODIFIED);
+    
     private final int code;
     private final String name;
 
-    private Status(int code, String name) {
+    public Status(int code, String name) {
         this.code = code;
         this.name = name;
     }
@@ -87,7 +91,41 @@ public enum Status {
     }
 
     public boolean isBodyContentAllowed() {
-        return !EnumSet.of(RESET_CONTENT, NO_CONTENT, NOT_MODIFIED).contains(this);
+        return !STATUSES_WITHOUT_BODY.contains(this);
+    }
+
+    public int compareTo(Status o) {
+        if (code > o.code) return 1;
+        if (code == o.code) return 0;
+        return -1;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Status status = (Status) o;
+
+        if (code != status.code) {
+            return false;
+        }
+        if (name != null ? !name.equals(status.name) : status.name != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public final int hashCode() {
+        int result = code;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result;
     }
 
     @Override

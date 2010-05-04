@@ -15,6 +15,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import com.google.common.collect.ImmutableSet;
 import org.codehaus.httpcache4j.*;
 
 import java.io.IOException;
@@ -57,7 +58,7 @@ class HTTPCacheHelper {
         /**
          * 200, 203, 206, 300, 301 or 410
          */
-        cacheableStatuses = EnumSet.of(Status.OK,
+        cacheableStatuses = ImmutableSet.of(Status.OK,
                                        Status.NON_AUTHORITATIVE_INFORMATION,
                                        Status.MULTIPLE_CHOICES,
                                        Status.MOVED_PERMANENTLY,
