@@ -39,6 +39,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 
+import static org.codehaus.httpcache4j.HTTPMethod.*;
+import static org.codehaus.httpcache4j.HTTPMethod.TRACE;
+
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
@@ -109,24 +112,31 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
      * @param requestURI the request URI.
      * @return a new HttpMethod subclass.
      */
-    HttpUriRequest getMethod(HTTPMethod method, URI requestURI) {
-        switch (method) {
-            case GET:
-                return new HttpGet(requestURI);
-            case HEAD:
-                return new HttpHead(requestURI);
-            case OPTIONS:
-                return new HttpOptions(requestURI);
-            case TRACE:
-                return new HttpTrace(requestURI);
-            case PUT:
-                return new HttpPut(requestURI);
-            case POST:
-                return new HttpPost(requestURI);
-            case DELETE:
-                return new HttpDelete(requestURI);
-            default:
-                throw new IllegalArgumentException("Uknown method");
+    protected HttpUriRequest getMethod(HTTPMethod method, URI requestURI) {
+
+        if (DELETE.equals(method)) {
+            return new HttpDelete(requestURI);
+        }
+        else if (GET.equals(method)) {
+            return new HttpGet(requestURI);
+        }
+        else if (HEAD.equals(method)) {
+            return new HttpHead(requestURI);
+        }
+        else if (OPTIONS.equals(method)) {
+            return new HttpOptions(requestURI);
+        }
+        else if (POST.equals(method)) {
+            return new HttpPost(requestURI);
+        }
+        else if (PUT.equals(method)) {
+            return new HttpPut(requestURI);
+        }
+        else if (TRACE.equals(method)) {
+            return new HttpTrace(requestURI);
+        }
+        else {
+            throw new IllegalArgumentException("Cannot handle method: " + method);
         }
     }
 

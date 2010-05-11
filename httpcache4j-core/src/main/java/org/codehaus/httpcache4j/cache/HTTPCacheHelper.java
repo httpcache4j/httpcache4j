@@ -33,7 +33,7 @@ class HTTPCacheHelper {
 
     static {
         // ref http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.1
-        safeMethods = EnumSet.of(
+        safeMethods = ImmutableSet.of(
                 HTTPMethod.CONNECT,
                 HTTPMethod.GET,
                 HTTPMethod.HEAD,

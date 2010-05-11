@@ -99,9 +99,9 @@ public class HTTPClientResponseResolverTest {
         }
 
         @Override
-        HttpUriRequest getMethod(HTTPMethod method, URI requestURI) {
+        protected HttpUriRequest getMethod(HTTPMethod method, URI requestURI) {
             HttpUriRequest request = mock(HttpUriRequest.class);
-            when(request.getMethod()).thenReturn(method.name());
+            when(request.getMethod()).thenReturn(method.toString());
             when(request.getURI()).thenReturn(requestURI);
             return request;
         }

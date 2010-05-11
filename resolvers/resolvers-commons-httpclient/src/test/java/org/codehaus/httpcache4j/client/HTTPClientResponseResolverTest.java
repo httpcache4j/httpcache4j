@@ -109,7 +109,7 @@ public class HTTPClientResponseResolverTest {
         }
 
         @Override
-        HttpMethod getMethod(final HTTPMethod method, final URI requestURI) {
+        protected HttpMethod getMethod(final HTTPMethod method, final URI requestURI) {
             return httpMethod;
         }
     }       

@@ -64,7 +64,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
 
     private void doRequest(HTTPRequest request, HttpURLConnection connection) throws IOException {
         configureConnection(connection);
-        connection.setRequestMethod(request.getMethod().name());
+        connection.setRequestMethod(request.getMethod().getMethod());
         Headers requestHeaders = request.getAllHeaders();
 
         for (Header header : requestHeaders) {

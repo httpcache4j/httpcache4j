@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
+import static org.codehaus.httpcache4j.HTTPMethod.*;
+
 /**
  * An implementation of the ResponseResolver using the Commons HTTPClient (http://hc.apache.org/httpclient-3.x/)
  * <p/>
@@ -146,24 +148,35 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
      * @param requestURI the request URI.
      * @return a new HttpMethod subclass.
      */
-    HttpMethod getMethod(HTTPMethod method, URI requestURI) {
-        switch (method) {
-            case GET:
-                return new GetMethod(requestURI.toString());
-            case HEAD:
-                return new HeadMethod(requestURI.toString());
-            case OPTIONS:
-                return new OptionsMethod(requestURI.toString());
-            case TRACE:
-                return new TraceMethod(requestURI.toString());
-            case PUT:
-                return new PutMethod(requestURI.toString());
-            case POST:
-                return new PostMethod(requestURI.toString());
-            case DELETE:
-                return new DeleteMethod(requestURI.toString());
-            default:
-                throw new IllegalArgumentException("Uknown method");
+    protected HttpMethod getMethod(HTTPMethod method, URI requestURI) {
+        if (CONNECT.equals(method)) {
+            HostConfiguration config = new HostConfiguration();
+            config.setHost(requestURI.getHost(), requestURI.getPort(), requestURI.getScheme());
+            return new ConnectMethod(config);
+        }
+        else if (DELETE.equals(method)) {
+            return new DeleteMethod(requestURI.toString());
+        }
+        else if (GET.equals(method)) {
+            return new GetMethod(requestURI.toString());
+        }
+        else if (HEAD.equals(method)) {
+            return new HeadMethod(requestURI.toString());
+        }
+        else if (OPTIONS.equals(method)) {
+            return new OptionsMethod(requestURI.toString());
+        }
+        else if (POST.equals(method)) {
+            return new PostMethod(requestURI.toString());
+        }
+        else if (PUT.equals(method)) {
+            return new PutMethod(requestURI.toString());
+        }
+        else if (TRACE.equals(method)) {
+            return new TraceMethod(requestURI.toString());
+        }
+        else {
+            throw new IllegalArgumentException("Cannot handle method: " + method);
         }
     }
 
