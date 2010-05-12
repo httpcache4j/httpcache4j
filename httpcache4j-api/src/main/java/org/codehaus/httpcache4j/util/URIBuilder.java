@@ -61,7 +61,21 @@ public final class URIBuilder {
     }
 
     /**
-     * Appends the path part to the uri.
+     * Adds a raw path to the URI.
+     * @param path a path which may contain '/'
+     * @return a new URI builder which contains the added path.
+     */
+    public URIBuilder addRawPath(String path) {
+        List<Path> appendedPath = toPathParts(path);
+        ImmutableList.Builder<Path> currentPath = ImmutableList.builder();
+        currentPath.addAll(this.path);
+        currentPath.addAll(appendedPath);
+        return new URIBuilder(scheme, host, port, currentPath.build(), fragment, parameters);
+
+    }
+
+    /**
+     * Appends the path part to the URI.
      * We do not expect the path separator '/' to appear here, as each element will be URLEncoded.
      * If the '/' character do appear it will be URLEncoded with the rest of the path.
      *
@@ -74,7 +88,6 @@ public final class URIBuilder {
         currentPath.addAll(this.path);
         currentPath.addAll(appendedPath);
         return new URIBuilder(scheme, host, port, currentPath.build(), fragment, parameters);
-
     }
 
     /**
