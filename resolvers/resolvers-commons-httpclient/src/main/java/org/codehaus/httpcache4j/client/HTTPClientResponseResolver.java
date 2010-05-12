@@ -22,6 +22,7 @@ import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.lang.Validate;
 
 import org.codehaus.httpcache4j.*;
+import org.codehaus.httpcache4j.StatusLine;
 import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
@@ -122,7 +123,12 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         HTTPResponse response;
         try {
             stream = getInputStream(method);
-            response = getResponseCreator().createResponse(Status.valueOf(method.getStatusCode()), headers, stream);
+            StatusLine line = new StatusLine(
+                    HTTPVersion.get(method.getStatusLine().getHttpVersion()),
+                    Status.valueOf(method.getStatusCode()),
+                    method.getStatusText()
+            );
+            response = getResponseCreator().createResponse(line, headers, stream);
         } finally {
             if (stream == null) {
                 method.releaseConnection();

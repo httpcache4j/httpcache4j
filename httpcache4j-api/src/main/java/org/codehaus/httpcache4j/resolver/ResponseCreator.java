@@ -26,15 +26,15 @@ import java.io.InputStream;
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 public final class ResponseCreator {
-    public HTTPResponse createResponse(final Status status, final Headers responseHeaders, final InputStream stream) {
+    public HTTPResponse createResponse(final StatusLine line, final Headers responseHeaders, final InputStream stream) {
         Header contentTypeHeader = responseHeaders.getFirstHeader(HeaderConstants.CONTENT_TYPE);
         MIMEType type = contentTypeHeader != null ? MIMEType.valueOf(contentTypeHeader.getValue()) : MIMEType.APPLICATION_OCTET_STREAM;
         Payload payload = null;
-        if (status.isBodyContentAllowed()) {
+        if (line.getStatus().isBodyContentAllowed()) {
             if (stream != null) {
                 payload = new InputStreamPayload(stream, type);
             }
         }
-        return new HTTPResponse(payload, status, responseHeaders);
+        return new HTTPResponse(payload, line, responseHeaders);
     }    
 }

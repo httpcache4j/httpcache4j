@@ -76,8 +76,9 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
 
     private HTTPResponse convertResponse(HttpURLConnection connection) throws IOException {
         Status status = Status.valueOf(connection.getResponseCode());
+        String message = connection.getResponseMessage();
         Headers responseHeaders = getResponseHeaders(connection);
-        return getResponseCreator().createResponse(status, responseHeaders, wrapResponseStream(connection, status));
+        return getResponseCreator().createResponse(new StatusLine(status, message), responseHeaders, wrapResponseStream(connection, status));
     }
 
     private InputStream wrapResponseStream(HttpURLConnection connection, Status status) {

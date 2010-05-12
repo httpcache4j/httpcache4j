@@ -22,6 +22,7 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.Header;
+import org.codehaus.httpcache4j.StatusLine;
 import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.apache.http.client.HttpClient;
@@ -141,7 +142,6 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     }
 
     private HTTPResponse convertResponse(HttpUriRequest request, HttpResponse response) throws IOException {
-        Status status = Status.valueOf(response.getStatusLine().getStatusCode());
         Headers headers = new Headers();
         org.apache.http.Header[] realHeaders = response.getAllHeaders();
         for (org.apache.http.Header header : realHeaders) {
@@ -149,7 +149,12 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         }
 
         InputStream stream = getStream(request, response);
-        return getResponseCreator().createResponse(status, headers, stream);
+        ProtocolVersion protocolversion = response.getStatusLine().getProtocolVersion();
+        StatusLine line = new StatusLine(
+                HTTPVersion.get(protocolversion.getMajor() + "." + protocolversion.getMinor()),
+                Status.valueOf(response.getStatusLine().getStatusCode()),
+                response.getStatusLine().getReasonPhrase());
+        return getResponseCreator().createResponse(line, headers, stream);
     }
 
     private InputStream getStream(HttpUriRequest realRequest, HttpResponse response) throws IOException {

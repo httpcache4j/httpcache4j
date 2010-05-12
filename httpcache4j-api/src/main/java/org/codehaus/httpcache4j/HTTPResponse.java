@@ -36,7 +36,7 @@ import static org.codehaus.httpcache4j.HeaderConstants.*;
  */
 public final class HTTPResponse {
     
-    private final Status status;
+    private final StatusLine statusLine;
     private final Payload payload;
     private final Headers headers;
     private DateTime date;
@@ -46,18 +46,14 @@ public final class HTTPResponse {
     private Set<HTTPMethod> allowedMethods;
     private CacheControl cacheControl;
 
-    /**
-     * Constructs an empty http response with the given status.
-     * @param status the status to use.
-     */
-    HTTPResponse(Status status) {
-        this(null, status, new Headers());
+    public HTTPResponse(Payload payload, Status status, Headers headers) {
+        this(payload, new StatusLine(status), headers);
     }
 
-    public HTTPResponse(Payload payload, Status status, Headers headers) {
-        Validate.notNull(status, "You must supply a Status");
+    public HTTPResponse(Payload payload, StatusLine statusLine, Headers headers) {
+        Validate.notNull(statusLine, "You must supply a Status");
         Validate.notNull(headers, "You must supply some Headers");
-        this.status = status;
+        this.statusLine = statusLine;
         this.payload = payload;
         this.headers = headers;
 
@@ -91,7 +87,11 @@ public final class HTTPResponse {
     }
 
     public Status getStatus() {
-        return status;
+        return statusLine.getStatus();
+    }
+
+    public StatusLine getStatusLine() {
+        return statusLine;
     }
 
     public Payload getPayload() {
@@ -169,7 +169,7 @@ public final class HTTPResponse {
         if (payload != null ? !payload.equals(response.payload) : response.payload != null) {
             return false;
         }
-        if (status != response.status) {
+        if (statusLine != response.statusLine) {
             return false;
         }
 
@@ -178,7 +178,7 @@ public final class HTTPResponse {
 
     @Override
     public int hashCode() {
-        int result = status != null ? status.hashCode() : 0;
+        int result = statusLine != null ? statusLine.hashCode() : 0;
         result = 31 * result + (payload != null ? payload.hashCode() : 0);
         result = 31 * result + (headers != null ? headers.hashCode() : 0);
         result = 31 * result + (ETag != null ? ETag.hashCode() : 0);

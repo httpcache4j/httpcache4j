@@ -23,9 +23,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.net.URI;
 
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.codehaus.httpcache4j.*;
@@ -46,7 +45,7 @@ public class HTTPClientResponseResolverTest {
     public void testResolveGETWithNoHeaders() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.GET);
         final HttpMethod method = mock(GetMethod.class);
-        HTTPClientResponseResolver resolver = createResponseResolver(method, 200, new Header[0]);
+        HTTPClientResponseResolver resolver = createResponseResolver(method, Status.valueOf(200), new Header[0]);
         
         HTTPResponse response = resolver.resolve(request);
         assertNotNull("Response was null", response);
@@ -71,7 +70,7 @@ public class HTTPClientResponseResolverTest {
         request = request.payload(payload);
         when(payload.getMimeType()).thenReturn(new MIMEType("text/plain"));
         final HttpMethod method = mock(PostMethod.class);
-        HTTPClientResponseResolver resolver = createResponseResolver(method, 201, new Header[0]);
+        HTTPClientResponseResolver resolver = createResponseResolver(method, Status.valueOf(201), new Header[0]);
 
         HTTPResponse response = resolver.resolve(request);
         assertNotNull(response);
@@ -86,7 +85,7 @@ public class HTTPClientResponseResolverTest {
         request = request.payload(payload);
         when(payload.getMimeType()).thenReturn(new MIMEType("text/plain"));
         final HttpMethod method = mock(PostMethod.class);
-        HTTPClientResponseResolver resolver = createResponseResolver(method, 200, new Header[0]);
+        HTTPClientResponseResolver resolver = createResponseResolver(method, Status.valueOf(200), new Header[0]);
 
         HTTPResponse response = resolver.resolve(request);
         assertNotNull(response);
@@ -94,9 +93,14 @@ public class HTTPClientResponseResolverTest {
         assertEquals(0, response.getHeaders().size());
     }
 
-    private HTTPClientResponseResolver createResponseResolver(final HttpMethod httpMethod, final int statusCode, final Header[] headers) {
-        when(httpMethod.getStatusCode()).thenReturn(statusCode);
-        when(httpMethod.getResponseHeaders()).thenReturn(headers);        
+    private HTTPClientResponseResolver createResponseResolver(final HttpMethod httpMethod, final Status status, final Header[] headers) {
+        try {
+            when(httpMethod.getStatusLine()).thenReturn(new org.apache.commons.httpclient.StatusLine(String.format("HTTP/1.1 %s %s\r\n", status.getCode(), status.getName())));
+        } catch (HttpException e) {
+            throw new RuntimeException(e);
+        }
+        when(httpMethod.getStatusCode()).thenReturn(status.getCode());
+        when(httpMethod.getResponseHeaders()).thenReturn(headers);
         return new TestableHTTPClientResponseResolver(httpMethod);
     }
 
