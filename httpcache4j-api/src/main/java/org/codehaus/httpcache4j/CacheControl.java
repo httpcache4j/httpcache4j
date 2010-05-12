@@ -3,7 +3,7 @@ package org.codehaus.httpcache4j;
 import org.apache.commons.lang.math.NumberUtils;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class CacheControl {
