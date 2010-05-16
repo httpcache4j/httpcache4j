@@ -20,16 +20,9 @@ import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
 import org.apache.commons.lang.Validate;
-import org.joda.time.DateTime;
 
-import javax.management.*;
-import java.util.*;
-import java.util.concurrent.locks.Lock;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.net.URI;
-
-import static org.codehaus.httpcache4j.HeaderConstants.CACHE_CONTROL;
 
 /**
  * TODO:
@@ -91,15 +84,11 @@ public class HTTPCache {
             throw new IllegalStateException("The resolver was not set, no point of continuing with the request");
         }
         HTTPResponse response;
-        if (!HTTPUtil.isCacheableRequest(request)) {
+        if (!helper.isCacheableRequest(request)) {
             if (!helper.isSafeRequest(request)) {
                 storage.invalidate(request.getRequestURI());
             }
-            try {
-                response = resolver.resolve(request);
-            } catch (IOException e) {
-                throw new HTTPException(e);
-            }
+            response = unconditionalResolve(request);
         }
         else {
             //request is cacheable
@@ -130,21 +119,11 @@ public class HTTPCache {
                     //If the cached value is stale, execute the request and try to cache it.
                     HTTPResponse staleResponse = item.getResponse();
                     //If the payload has been deleted for some reason, we want to do a unconditional GET
-                    if (!staleResponse.hasPayload() || staleResponse.getPayload().isAvailable()) {
-                        req = helper.prepareConditionalRequest(request, staleResponse);
-                    }
-                    else {
-                        req = request.conditionals(new Conditionals());
-                    }
-                    if (!allowStale(item, req)) {
-                        response = handleResolve(req, item);
-                    }
-                    else {
-                        response = rewriteResponse(request, item, true);
-                    }
+                    req = maybePrepareConditionalResponse(request, staleResponse);
+                    response = rewriteResponse(request, item, req);
                 }
                 else {
-                    response = rewriteResponse(request, item, false);
+                    response = helper.rewriteResponse(request, item);
                 }
             }
             else {
@@ -155,49 +134,18 @@ public class HTTPCache {
         return response;
     }
 
-    private boolean allowStale(CacheItem item, HTTPRequest req) {
-        boolean allowStale = false;
-        Headers all = req.getAllHeaders();
-        if (all.hasHeader(CACHE_CONTROL)) {
-            Header cc = all.getFirstHeader(CACHE_CONTROL);
-            CacheControl control = new CacheControl(cc);
-            int maxStale = control.getMaxStale();
-            if (maxStale > -1) {
-                int ttl = item.getTTL();
-                int age = item.getAge(req);
-                if ((ttl - maxStale - age) < 0) {
-                    allowStale = true;
-                }
-            }
+    private HTTPResponse rewriteResponse(HTTPRequest request, CacheItem item, HTTPRequest req) {
+        if (!helper.allowStale(item, req)) {
+            return handleResolve(req, item);
         }
-        return allowStale;
+        return helper.rewriteStaleResponse(request, item);
     }
 
-    private HTTPResponse rewriteResponse(HTTPRequest request, CacheItem item, boolean stale) {
-        HTTPResponse response = item.getResponse();
-        if (request.getMethod() == HTTPMethod.GET) {
-            List<Tag> noneMatch = request.getConditionals().getNoneMatch();
-            Tag eTag = response.getETag();
-            if (eTag != null && !noneMatch.isEmpty()) {
-                if (noneMatch.contains(eTag) || noneMatch.contains(Tag.ALL)) {
-                    response = new HTTPResponse(null, Status.NOT_MODIFIED, response.getHeaders());
-                }
-            }
-            DateTime lastModified = response.getLastModified();
-            DateTime modifiedSince = request.getConditionals().getModifiedSince();
-            if (lastModified != null && modifiedSince != null) {
-                if (lastModified.equals(modifiedSince)) {
-                    response = new HTTPResponse(null, Status.NOT_MODIFIED, response.getHeaders());
-                }
-            }
+    private HTTPRequest maybePrepareConditionalResponse(HTTPRequest request, HTTPResponse staleResponse) {
+        if (!staleResponse.hasPayload() || staleResponse.getPayload().isAvailable()) {
+            return helper.prepareConditionalRequest(request, staleResponse);
         }
-        else if (request.getMethod() == HTTPMethod.HEAD) {
-            response = new HTTPResponse(null, response.getStatus(), response.getHeaders());
-        }
-        if (stale) {
-            response = helper.warnStale(response);
-        }
-        return helper.calculateAge(request, response, item);
+        return request.conditionals(new Conditionals());
     }
 
     private HTTPResponse unconditionalResolve(final HTTPRequest request) {

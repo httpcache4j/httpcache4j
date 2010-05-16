@@ -17,10 +17,13 @@ package org.codehaus.httpcache4j.cache;
 
 import com.google.common.collect.ImmutableSet;
 import org.codehaus.httpcache4j.*;
+import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.*;
+
+import static org.codehaus.httpcache4j.HeaderConstants.CACHE_CONTROL;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -131,7 +134,72 @@ class HTTPCacheHelper {
         return request;
     }
 
-    public HTTPResponse warnStale(HTTPResponse response) {
+    HTTPResponse warnStale(HTTPResponse response) {
         return warn(response, null);
+    }
+
+    boolean isCacheableRequest(HTTPRequest request) {
+        if (request.getMethod() == HTTPMethod.GET || request.getMethod() == HTTPMethod.HEAD) {
+            if (request.getHeaders().hasHeader(CACHE_CONTROL)) {
+                CacheControl cc = new CacheControl(request.getHeaders().getFirstHeader(CACHE_CONTROL));
+                //If the request tells us that we shouldn't cache the response, then we don't.
+                return !cc.isNoCache() || !cc.isNoStore();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    boolean allowStale(CacheItem item, HTTPRequest req) {
+        boolean allowStale = false;
+        Headers all = req.getAllHeaders();
+        if (all.hasHeader(CACHE_CONTROL)) {
+            Header cc = all.getFirstHeader(CACHE_CONTROL);
+            CacheControl control = new CacheControl(cc);
+            int maxStale = control.getMaxStale();
+            if (maxStale > -1) {
+                int ttl = item.getTTL();
+                int age = item.getAge(req);
+                if ((ttl - maxStale - age) < 0) {
+                    allowStale = true;
+                }
+            }
+        }
+        return allowStale;
+    }
+
+    HTTPResponse rewriteStaleResponse(HTTPRequest request, CacheItem item) {
+        return rewriteResponse(request, item, true);
+    }
+
+    HTTPResponse rewriteResponse(HTTPRequest request, CacheItem item) {
+        return rewriteResponse(request, item, false);
+    }
+
+    private HTTPResponse rewriteResponse(HTTPRequest request, CacheItem item, boolean stale) {
+        HTTPResponse response = item.getResponse();
+        if (request.getMethod() == HTTPMethod.GET) {
+            List<Tag> noneMatch = request.getConditionals().getNoneMatch();
+            Tag eTag = response.getETag();
+            if (eTag != null && !noneMatch.isEmpty()) {
+                if (noneMatch.contains(eTag) || noneMatch.contains(Tag.ALL)) {
+                    response = new HTTPResponse(null, Status.NOT_MODIFIED, response.getHeaders());
+                }
+            }
+            DateTime lastModified = response.getLastModified();
+            DateTime modifiedSince = request.getConditionals().getModifiedSince();
+            if (lastModified != null && modifiedSince != null) {
+                if (lastModified.equals(modifiedSince)) {
+                    response = new HTTPResponse(null, Status.NOT_MODIFIED, response.getHeaders());
+                }
+            }
+        }
+        else if (request.getMethod() == HTTPMethod.HEAD) {
+            response = new HTTPResponse(null, response.getStatus(), response.getHeaders());
+        }
+        if (stale) {
+            response = warnStale(response);
+        }
+        return calculateAge(request, response, item);
     }
 }

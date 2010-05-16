@@ -254,6 +254,6 @@ public final class Status implements Comparable<Status> {
         else if (HTTP_VERSION_NOT_SUPPORTED.getCode() == statusCode) {
             return HTTP_VERSION_NOT_SUPPORTED;
         }
-        throw new IllegalArgumentException("Unknown status");
+        return new Status(statusCode, "Unknown");
     }
 }
