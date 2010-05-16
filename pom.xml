@@ -213,6 +213,21 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.codehaus.httpcache4j.storage</groupId>
+        <artifactId>storage-h2</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.httpcache4j.storage</groupId>
+        <artifactId>storage-derby</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.httpcache4j.storage</groupId>
+        <artifactId>storage-file</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.codehaus.httpcache4j</groupId>
         <artifactId>httpcache4j-storage-api</artifactId>
         <classifier>tests</classifier>
@@ -221,6 +236,11 @@
       <dependency>
         <groupId>org.codehaus.httpcache4j.resolvers</groupId>
         <artifactId>resolvers-commons-httpclient</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.httpcache4j.resolvers</groupId>
+        <artifactId>resolvers-httpcomponents-httpclient</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
