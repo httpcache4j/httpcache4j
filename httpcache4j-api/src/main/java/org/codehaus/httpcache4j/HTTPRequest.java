@@ -21,7 +21,6 @@ import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.preference.Preferences;
 import org.joda.time.DateTime;
-import org.joda.time.ReadableInstant;
 
 import java.net.URI;
 
@@ -41,28 +40,7 @@ public class HTTPRequest {
     private final Headers headers;
     private final Challenge challenge;
     private final Payload payload;
-    private DateTime requestTime;
-
-    public HTTPRequest(URI requestURI, HTTPMethod method) {
-        this(requestURI, method, new Headers(), new Conditionals(), new Preferences(), null, null, new DateTime());
-    }
-
-    /**
-     * @deprecated Use the {@link #copy()} method instead
-     * @param request the request to copy
-     */
-    @Deprecated
-    public HTTPRequest(HTTPRequest request) {
-        this(request.getRequestURI(),
-             request.getMethod(),
-             request.getHeaders(),
-             request.getConditionals(),
-             request.getPreferences(),
-             request.getChallenge(),
-             request.getPayload(),
-             request.getRequestTime()
-        );
-    }
+    private final DateTime requestTime;
 
     protected HTTPRequest(URI requestURI,
                        HTTPMethod method,
@@ -96,6 +74,18 @@ public class HTTPRequest {
 
     public HTTPRequest(URI requestURI) {
         this(requestURI, HTTPMethod.GET);
+    }
+
+    public HTTPRequest(String requestURI) {
+        this(URI.create(requestURI), HTTPMethod.GET);
+    }
+    
+    public HTTPRequest(String requestURI, HTTPMethod method) {
+        this(URI.create(requestURI), method);
+    }
+
+    public HTTPRequest(URI requestURI, HTTPMethod method) {
+        this(requestURI, method, new Headers(), new Conditionals(), new Preferences(), null, null, new DateTime());
     }
 
     public URI getRequestURI() {
@@ -177,7 +167,7 @@ public class HTTPRequest {
         if (!method.canHavePayload()) {
             throw new IllegalStateException(String.format("Unable to add payload to a %s request", method));
         }        
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, requestTime);
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
     }
 
     public HTTPRequest headers(final Headers headers) {
