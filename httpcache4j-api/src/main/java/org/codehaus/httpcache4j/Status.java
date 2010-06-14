@@ -83,11 +83,11 @@ public final class Status implements Comparable<Status> {
     }
 
     public boolean isClientError() {
-        return code >= 400 && code <= 500;
+        return code >= 400 && code < 500;
     }
 
     public boolean isServerError() {
-        return code >= 500 && code <= 600;
+        return code >= 500 && code < 600;
     }
 
     public boolean isBodyContentAllowed() {
