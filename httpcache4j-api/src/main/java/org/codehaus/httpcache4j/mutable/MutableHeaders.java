@@ -45,6 +45,14 @@ public class MutableHeaders {
         headers = headers.add(key, value);
     }
 
+    public void set(Header header) {
+        headers = headers.set(header);
+    }
+
+    public void set(String name, String value) {
+        headers = headers.set(name, value);
+    }    
+
     public void add(String name, List<Header> headers) {
         this.headers = this.headers.add(name, headers);
     }

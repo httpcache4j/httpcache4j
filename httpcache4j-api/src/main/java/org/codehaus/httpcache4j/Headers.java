@@ -79,6 +79,16 @@ public final class Headers implements Iterable<Header>, ToJSON {
         return new Headers(headers);
     }
 
+    public Headers set(Header header) {
+        HeaderHashMap headers = copyMap();
+        headers.put(header.getName(), Lists.newArrayList(header.getValue()));
+        return new Headers(headers);
+    }
+
+    public Headers set(String name, String value) {
+        return set(new Header(name, value));
+    }
+
     public Headers add(String key, String value) {
         return add(new Header(key, value));
     }
