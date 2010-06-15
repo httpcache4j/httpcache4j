@@ -26,15 +26,32 @@ public abstract class CacheFilter implements Filter {
     }
 
 
-    public final void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public final void doFilter(ServletRequest request, ServletResponse response, final FilterChain chain) throws IOException, ServletException {
         if (!(request instanceof HttpServletRequest || response instanceof HttpServletResponse)) {
             chain.doFilter(request, response);
             return;
         }
-        handler.service((HttpServletRequest) request, (HttpServletResponse) response);
+        RequestDispatcher dispatcher = new FilterRequestDispatcher(chain);
+        handler.service(dispatcher, (HttpServletRequest) request, (HttpServletResponse) response);
     }
 
     public void destroy() {
 
+    }
+
+    private static class FilterRequestDispatcher implements RequestDispatcher {
+        private final FilterChain chain;
+
+        public FilterRequestDispatcher(FilterChain chain) {
+            this.chain = chain;
+        }
+
+        public void forward(ServletRequest request, ServletResponse response) throws ServletException, IOException {
+            chain.doFilter(request, response);
+        }
+
+        public void include(ServletRequest request, ServletResponse response) throws ServletException, IOException {
+            chain.doFilter(request, response);
+        }
     }
 }
