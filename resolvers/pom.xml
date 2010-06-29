@@ -83,5 +83,6 @@
     <module>resolvers-commons-httpclient</module>
     <module>resolvers-httpcomponents-httpclient</module>
     <module>resolvers-net-urlconnection</module>
+    <module>resolvers-ning-async</module>
   </modules>
 </project>
