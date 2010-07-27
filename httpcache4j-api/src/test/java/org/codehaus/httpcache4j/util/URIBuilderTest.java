@@ -112,6 +112,35 @@ public class URIBuilderTest {
     }
 
     @Test
+    public void testBuildWithAbsoultePathWeNeedToRetain() {
+        URI uri = URI.create("/PATH");
+        URIBuilder builder = URIBuilder.fromURI(uri);
+        builder = builder.addPath("bar");
+        Assert.assertTrue(builder.isRelative());
+        Assert.assertEquals("URIs did not match", URI.create("/PATH/bar"), builder.toURI());
+    }
+    
+    @Test
+    public void testAddRawPath() {
+        URI uri = URI.create("/PATH/boo/foo");
+        URIBuilder builder = URIBuilder.empty();
+        builder = builder.addRawPath("/PATH");
+        builder = builder.addRawPath("boo/");
+        builder = builder.addRawPath("foo");
+        Assert.assertTrue(builder.isRelative());
+        Assert.assertEquals("URIs did not match", uri, builder.toURI());
+    }
+
+    @Test
+    public void testRawPath() {
+        URI uri = URI.create("/PATH/boo/foo");
+        URIBuilder builder = URIBuilder.empty();
+        builder = builder.rawPath("/PATH/boo/foo");
+        Assert.assertTrue(builder.isRelative());
+        Assert.assertEquals("URIs did not match", uri, builder.toURI());
+    }
+
+    @Test
     public void testBuildRelativeURIWithoutStartingSlash() {
         URI uri = URI.create("a/relative/PATH");
         URIBuilder builder = URIBuilder.empty();
@@ -145,5 +174,5 @@ public class URIBuilderTest {
         URIBuilder builder = URIBuilder.empty();
         builder = builder.scheme("http").host("example.com").addParameter("q", URIEncoder.encodeUTF8("a+b"));
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
-    }
+    }    
 }
