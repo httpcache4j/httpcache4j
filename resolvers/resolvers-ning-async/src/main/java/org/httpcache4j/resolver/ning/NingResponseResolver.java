@@ -2,7 +2,6 @@ package org.httpcache4j.resolver.ning;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Request;
 import com.ning.http.client.Response;
@@ -21,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import static org.codehaus.httpcache4j.HTTPMethod.*;
 
@@ -39,15 +37,19 @@ public class NingResponseResolver extends AbstractResponseResolver {
 
     @Override
     protected HTTPResponse resolveImpl(HTTPRequest request) throws IOException {
-        Request realRequest = translate(request);
-        return translate(client.executeRequest(realRequest));
+        Future<Response> responseFuture = execute(request);
+        return translate(responseFuture);
+    }
+
+    public void shutdown() {
+        client.close();
     }
 
     private HTTPResponse translate(Future<Response> responseFuture) throws IOException {
         try {
-            System.out.println("NingResponseResolver.translate");
+            System.out.println("NingResponseResolver.execute");
             Response response = responseFuture.get();
-            System.out.println("NingResponseResolver.translate");
+            System.out.println("NingResponseResolver.execute");
             StatusLine line = new StatusLine(Status.valueOf(response.getStatusCode()), response.getStatusText());
             com.ning.http.client.Headers headers = response.getHeaders();
             MutableHeaders convertedHeaders = new MutableHeaders();
@@ -68,7 +70,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
         return null;
     }
 
-    private Request translate(HTTPRequest request) {
+    private Future<Response> execute(HTTPRequest request) throws IOException {
         AsyncHttpClient.BoundRequestBuilder builder = builder(request.getRequestURI(), request.getMethod());
         if (request.getMethod().canHavePayload()) {
             builder = builder.setBody(request.getPayload().getInputStream());
@@ -76,7 +78,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
         for (Header header : request.getAllHeaders()) {
             builder = builder.addHeader(header.getName(), header.getValue());
         }
-        return builder.build();
+        return builder.execute();
     }
 
     private AsyncHttpClient.BoundRequestBuilder builder(URI uri, HTTPMethod method) {
@@ -111,18 +113,10 @@ public class NingResponseResolver extends AbstractResponseResolver {
 
     public static void main(String[] args) throws Exception {
         BasicConfigurator.configure();
-        NingResponseResolver resolver = new NingResponseResolver(new DefaultProxyAuthenticator(new ProxyConfiguration()), new DefaultAuthenticator());
-        AsyncHttpClient.BoundRequestBuilder builder = resolver.builder(URI.create("http://www.vg.no"), GET);
-        Future<String> resp = builder.execute(new AsyncCompletionHandler<String>() {
-            @Override
-            public String onCompleted(Response response) throws Exception {
-                return response.getStatusText();
-            }
-        });
-        String fo = resp.get(100, TimeUnit.MILLISECONDS);
-        System.out.println("fo = " + fo);
-        HTTPResponse response = resolver.resolve(new HTTPRequest(URI.create("http://www.vg.no")));
+        NingResponseResolver resolver = new NingResponseResolver(new DefaultProxyAuthenticator(new ProxyConfiguration()), new DefaultAuthenticator());        
+        HTTPResponse response = resolver.resolve(new HTTPRequest(URI.create("http://www.vg.no/")));
         ResponseWriter writer = new ResponseWriter(response);
         writer.write();
+        resolver.shutdown();
     }
 }

@@ -186,6 +186,14 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         }
     }
 
+    public void shutdown() {
+        HttpConnectionManager connmanager = client.getHttpConnectionManager();
+        if (connmanager instanceof MultiThreadedHttpConnectionManager) {
+            MultiThreadedHttpConnectionManager manager = (MultiThreadedHttpConnectionManager) connmanager;
+            manager.shutdown();
+        }
+    }
+
     private static class HttpMethodStream extends DelegatingInputStream {
         private final HttpMethod method;
 

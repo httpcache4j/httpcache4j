@@ -24,7 +24,7 @@ import java.io.IOException;
 /**
  * The basic interface to resolve a response with the originating server.
  * This is used internally by the HTTPCache, but users may use this directly if they do not require the caching
- * features. Implementors will also want to use the {@link PayloadCreator payload creator}, as well.
+ * features. Implementors will also want to use the {@link org.codehaus.httpcache4j.resolver.ResponseCreator response creator}, as well.
  * Implementors would want to extend {@link AbstractResponseResolver} instead of using the interface directly.
  *
  * @since 1.0
@@ -39,4 +39,6 @@ public interface ResponseResolver {
      * @throws java.io.IOException if an IOException occurs e.g: java.net.ConnectException.
      */
     HTTPResponse resolve(HTTPRequest request) throws IOException;
+
+    void shutdown();
 }
