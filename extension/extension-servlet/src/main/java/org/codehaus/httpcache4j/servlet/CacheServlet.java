@@ -32,7 +32,8 @@ public abstract class CacheServlet implements Servlet {
         if (!(request instanceof HttpServletRequest || response instanceof HttpServletResponse)) {
             throw new ServletException("Not HTTP servlet, cannot continue");
         }
-        handler.service((HttpServletRequest)request, (HttpServletResponse)response);
+        //TODO get the dispatcher correctly. Currently sending null to get the build back on track
+        handler.service(null, (HttpServletRequest)request, (HttpServletResponse)response);
     }
 
     public String getServletInfo() {
