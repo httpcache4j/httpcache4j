@@ -196,7 +196,11 @@ public class HTTPCache {
     protected HTTPResponse updateHeadersFromResolved(final HTTPRequest request, final CacheItem item, final HTTPResponse resolvedResponse) {
         HTTPResponse cachedResponse = item.getResponse();
         Headers headers = new Headers(cachedResponse.getHeaders());
-        headers = headers.add(helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders()));
+        final Headers removeUnmodifiableHeaders = helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders());
+        if(removeUnmodifiableHeaders.hasHeader(HeaderConstants.DATE) && headers.hasHeader(HeaderConstants.DATE)) {
+            headers = headers.remove(HeaderConstants.DATE);
+        }
+        headers = headers.add(removeUnmodifiableHeaders);
         HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers);
         return storage.update(request, updatedResponse);
     }
