@@ -45,6 +45,11 @@ public final class HTTPMethod {
         return method;
     }
 
+    @Deprecated
+    public String name() {
+      return getMethod();
+    }
+
     @Override
     public String toString() {
         return method;
