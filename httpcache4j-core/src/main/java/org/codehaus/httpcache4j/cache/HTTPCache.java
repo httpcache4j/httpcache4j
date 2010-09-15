@@ -124,6 +124,9 @@ public class HTTPCache {
                 }
                 else {
                     response = helper.rewriteResponse(request, item);
+                    Headers headers = response.getHeaders();
+                    headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER, item.getCachedTime()));
+                    response = new HTTPResponse(response.getPayload(), response.getStatusLine(), headers);
                 }
             }
             else {
@@ -202,6 +205,10 @@ public class HTTPCache {
         }
         headers = headers.add(removeUnmodifiableHeaders);
         HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers);
-        return storage.update(request, updatedResponse);
+        updatedResponse = storage.update(request, updatedResponse);
+        headers = updatedResponse.getHeaders().add(HeaderUtils.toHttpDate(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER,
+            item.getCachedTime()));
+        updatedResponse = new HTTPResponse(updatedResponse.getPayload(), updatedResponse.getStatusLine(), headers);
+        return updatedResponse;
     }
 }
