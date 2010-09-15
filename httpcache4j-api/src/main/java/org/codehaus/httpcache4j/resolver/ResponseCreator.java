@@ -26,6 +26,11 @@ import java.io.InputStream;
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 public final class ResponseCreator {
+
+    public HTTPResponse createResponse(final Status status, final Headers responseHeaders, final InputStream stream) {
+        return createResponse(new StatusLine(status), responseHeaders, stream);
+    }
+
     public HTTPResponse createResponse(final StatusLine line, final Headers responseHeaders, final InputStream stream) {
         Header contentTypeHeader = responseHeaders.getFirstHeader(HeaderConstants.CONTENT_TYPE);
         MIMEType type = contentTypeHeader != null ? MIMEType.valueOf(contentTypeHeader.getValue()) : MIMEType.APPLICATION_OCTET_STREAM;
