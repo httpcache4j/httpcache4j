@@ -16,15 +16,8 @@
 package org.codehaus.httpcache4j;
 
 import org.codehaus.httpcache4j.cache.CacheStorage;
-import org.junit.*;
-import org.codehaus.httpcache4j.cache.HTTPCache;
 import org.codehaus.httpcache4j.cache.MemoryCacheStorage;
-import org.codehaus.httpcache4j.resolver.HTTPClientResponseResolver;
-import org.codehaus.httpcache4j.payload.FilePayload;
-import org.codehaus.httpcache4j.util.TestUtil;
-import org.apache.http.impl.client.DefaultHttpClient;
 
-import java.net.URI;
 
 /**
  * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
