@@ -27,19 +27,6 @@
   <packaging>jar</packaging>
   <name>Java HTTP cache :: Integration tests</name>
 
-  <repositories>
-    <repository>
-      <id>smartit-googlecode-snapshots</id>
-      <url>http://smart-it.googlecode.com/svn/maven2/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
   <dependencies>
     <dependency>
       <groupId>org.codehaus.httpcache4j</groupId>
@@ -84,7 +71,7 @@
                 <artifactItem>
                   <groupId>org.escenic.rest</groupId>
                   <artifactId>http-esi-testbed</artifactId>
-                  <version>1.0-SNAPSHOT</version>
+                  <version>1.0</version>
                   <type>war</type>
                   <outputDirectory>${project.build.directory}/testbed/</outputDirectory>
                 </artifactItem>
