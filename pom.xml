@@ -313,7 +313,6 @@
     <module>resolvers</module>
     <module>storage</module>
     <module>httpcache4j-it</module>
-    <module>extension</module>
   </modules>
 
 
