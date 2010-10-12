@@ -16,12 +16,16 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
 import org.apache.commons.lang.Validate;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 
 /**
@@ -124,6 +128,11 @@ public class HTTPCache {
                 }
                 else {
                     response = helper.rewriteResponse(request, item);
+                    Headers headers = response.getHeaders();
+                    String hitString = getHitString();
+                    Header header = new Header(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER, hitString);
+                    headers = headers.add(header);
+                    response = new HTTPResponse(response.getPayload(), response.getStatusLine(), headers);
                 }
             }
             else {
@@ -202,6 +211,35 @@ public class HTTPCache {
         }
         headers = headers.add(removeUnmodifiableHeaders);
         HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers);
-        return storage.update(request, updatedResponse);
+        updatedResponse = storage.update(request, updatedResponse);
+        String hitString = getHitString();
+        Header header = new Header(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER, hitString);
+        headers = updatedResponse.getHeaders().add(header);
+        updatedResponse = new HTTPResponse(updatedResponse.getPayload(), updatedResponse.getStatusLine(), headers);
+        return updatedResponse;
+    }
+
+    protected String getHitString() {
+        String canonicalHostName;
+        try {
+            canonicalHostName = InetAddress.getLocalHost().getCanonicalHostName();
+        }
+        catch (UnknownHostException ex) {
+            canonicalHostName = "Unknown";
+        }
+        final String hitString = new StringBuilder("HIT from ").append(canonicalHostName).toString();
+        return hitString;
+    }
+
+    protected String getMissString() {
+        String canonicalHostName;
+        try {
+            canonicalHostName = InetAddress.getLocalHost().getCanonicalHostName();
+        }
+        catch (UnknownHostException ex) {
+            canonicalHostName = "Unknown";
+        }
+        final String hitString = new StringBuilder("MISS from ").append(canonicalHostName).toString();
+        return hitString;
     }
 }
