@@ -153,6 +153,34 @@ public abstract class AbstractCacheIntegrationTest {
         response.consume();
     }
 
+    @Test
+    public void GETWithLastModified() {
+        URI uri = baseRequestURI.resolve(String.format("lm/%s", TEST_FILE));
+        HTTPResponse response = get(uri);
+        assertEquals(Status.OK, response.getStatus());
+        assertNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
+        response.consume();
+        response = get(uri);
+        assertEquals(Status.OK, response.getStatus());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER).startsWith(
+            "HIT"));
+        response.consume();
+    }
+
+    @Test
+    public void GETWithLastModifiedAndETag() {
+        URI uri = baseRequestURI.resolve(String.format("lm/etag/%s", TEST_FILE));
+        HTTPResponse response = get(uri);
+        assertEquals(Status.OK, response.getStatus());
+        assertNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
+        response.consume();
+        response = get(uri);
+        assertEquals(Status.OK, response.getStatus());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER).startsWith(
+            "HIT"));
+        response.consume();
+    }
+
     private HTTPResponse get(URI uri) {
         return doRequest(uri, HTTPMethod.GET);
     }
