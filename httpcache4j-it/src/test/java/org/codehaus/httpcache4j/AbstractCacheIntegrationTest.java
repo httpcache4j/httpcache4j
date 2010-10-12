@@ -15,20 +15,24 @@
 
 package org.codehaus.httpcache4j;
 
-import org.apache.http.impl.client.DefaultHttpClient;
+import java.io.File;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.webapp.WebAppContext;
+import org.junit.AfterClass;
 import org.codehaus.httpcache4j.cache.CacheStorage;
 import org.codehaus.httpcache4j.cache.HTTPCache;
 import org.codehaus.httpcache4j.payload.FilePayload;
-import org.codehaus.httpcache4j.payload.InputStreamPayload;
-import org.codehaus.httpcache4j.resolver.HTTPClientResponseResolver;
-import org.codehaus.httpcache4j.util.TestUtil;
+import org.codehaus.httpcache4j.payload.ByteArrayPayload;
+import org.codehaus.httpcache4j.client.HTTPClientResponseResolver;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.net.URI;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 
 import static org.junit.Assert.*;
 
@@ -37,25 +41,39 @@ import static org.junit.Assert.*;
  * @version $Revision: $
  */
 public abstract class AbstractCacheIntegrationTest {
-    private static JettyServer server;
     private static URI baseRequestURI;
     private static final String TEST_FILE = "testFile";
     private HTTPCache cache;
     private CacheStorage storage;
+    private static Server jettyServer;
 
     @BeforeClass
-    public static void setupServer() {
+    public static void setupServer() throws Exception {
         baseRequestURI = URI.create(String.format("http://localhost:%s/", JettyServer.PORT));
-        server = new JettyServer();
-        server.start();
+        System.out.println("::: Starting server :::");
+        jettyServer = new Server(JettyServer.PORT);
+        final String webapp = "./target/testbed/";
+        if (!new File(webapp).exists()) {
+          throw new IllegalStateException("WebApp dir does not exist!");
+        }
+        Handler webAppHandler = new WebAppContext(webapp, "/");
+        jettyServer.setHandler(webAppHandler);
+        jettyServer.start();
+    }
+
+    @AfterClass
+    public static void shutdownServer()
+        throws Exception {
+        System.out.println("::: Stopping server :::");
+        jettyServer.stop();
     }
 
     @Before
     public void before() {
         storage = createStorage();
-        cache = new HTTPCache(storage, new HTTPClientResponseResolver(new DefaultHttpClient()));
+        cache = new HTTPCache(storage, new HTTPClientResponseResolver(new HttpClient(new MultiThreadedHttpConnectionManager())));
         HTTPRequest req = new HTTPRequest(baseRequestURI.resolve(TEST_FILE), HTTPMethod.PUT);
-        req = req.payload(new FilePayload(TestUtil.getTestFile("pom.xml"), MIMEType.valueOf("application/xml")));
+        req = req.payload(new FilePayload(new File("pom.xml"), MIMEType.valueOf("application/xml")));
         cache.doCachedRequest(req);
     }
 
@@ -86,7 +104,7 @@ public abstract class AbstractCacheIntegrationTest {
         assertNotNull(response.getETag());
         assertNull(response.getLastModified());
         assertEquals(Status.OK, response.getStatus());
-        
+
         assertEquals(1, storage.size());
         response = cache.doCachedRequest(new HTTPRequest(uri, HTTPMethod.PUT));
         assertEquals(0, storage.size());
@@ -111,13 +129,13 @@ public abstract class AbstractCacheIntegrationTest {
     }
 
     @Test
-    public void PUTWithBasicAuthentication() throws FileNotFoundException {
+    public void PUTWithBasicAuthentication() throws Exception {
         URI uri = baseRequestURI.resolve(String.format("etag/basic,u=u,p=p/%s", TEST_FILE));
         HTTPResponse response = doRequest(uri, HTTPMethod.PUT);
         assertEquals(Status.UNAUTHORIZED, response.getStatus());
         response.consume();
-        HTTPRequest request = new HTTPRequest(uri, HTTPMethod.PUT).challenge(new UsernamePasswordChallenge("u", "p"));
-        request = request.payload(new InputStreamPayload(new FileInputStream(TestUtil.getTestFile("pom.xml")), MIMEType.valueOf("application/xml")));
+        HTTPRequest request = new HTTPRequest(uri, HTTPMethod.PUT).challenge(new UsernamePasswordChallenge("u", "p"))
+            .payload(new ByteArrayPayload(new FileInputStream(new File("pom.xml")), MIMEType.valueOf("application/xml")));
         response = cache.doCachedRequest(request);
         assertEquals(Status.NO_CONTENT, response.getStatus());
         response.consume();
@@ -134,7 +152,7 @@ public abstract class AbstractCacheIntegrationTest {
         assertEquals(Status.OK, response.getStatus());
         response.consume();
     }
-    
+
     private HTTPResponse get(URI uri) {
         return doRequest(uri, HTTPMethod.GET);
     }
