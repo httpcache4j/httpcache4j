@@ -17,8 +17,6 @@
 package org.codehaus.httpcache4j.cache;
 
 import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
@@ -128,16 +126,13 @@ public class HTTPCache {
                 }
                 else {
                     response = helper.rewriteResponse(request, item);
-                    Headers headers = response.getHeaders();
-                    String hitString = getHitString();
-                    Header header = new Header(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER, hitString);
-                    headers = headers.add(header);
-                    response = new HTTPResponse(response.getPayload(), response.getStatusLine(), headers);
+                    response = addCacheHitStatHeader(response);
                 }
             }
             else {
                 statistics.miss();
                 response = unconditionalResolve(req);
+                response = addCacheMissStatHeader(response);
             }
         }
         return response;
@@ -174,6 +169,7 @@ public class HTTPCache {
             }
             else {
                 response = helper.warn(item.getResponse(), e);
+                response = addCacheHitStatHeader(response);
             }
         }
         if (resolvedResponse != null) {
@@ -197,6 +193,12 @@ public class HTTPCache {
                 if (resolvedResponse.getStatus() == Status.NOT_MODIFIED) {
                     response = updateHeadersFromResolved(request, item, resolvedResponse);
                 }
+                else {
+                    response = addCacheMissStatHeader(response);
+                }
+            }
+            else {
+                response = addCacheMissStatHeader(response);
             }
         }
         return response;
@@ -212,10 +214,7 @@ public class HTTPCache {
         headers = headers.add(removeUnmodifiableHeaders);
         HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers);
         updatedResponse = storage.update(request, updatedResponse);
-        String hitString = getHitString();
-        Header header = new Header(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER, hitString);
-        headers = updatedResponse.getHeaders().add(header);
-        updatedResponse = new HTTPResponse(updatedResponse.getPayload(), updatedResponse.getStatusLine(), headers);
+        updatedResponse = addCacheHitStatHeader(updatedResponse);
         return updatedResponse;
     }
 
@@ -241,5 +240,22 @@ public class HTTPCache {
         }
         final String hitString = new StringBuilder("MISS from ").append(canonicalHostName).toString();
         return hitString;
+    }
+
+    protected HTTPResponse addCacheHitStatHeader(HTTPResponse response) {
+          String hitString = getHitString();
+          return addCacheStatHeader(hitString, response);
+    }
+
+    protected HTTPResponse addCacheMissStatHeader(HTTPResponse response) {
+        String missString = getMissString();
+        return addCacheStatHeader(missString, response);
+    }
+
+    protected HTTPResponse addCacheStatHeader(String hitString, HTTPResponse response) {
+        Header header = new Header(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER, hitString);
+        Headers headers = response.getHeaders().add(header);
+        response = new HTTPResponse(response.getPayload(), response.getStatusLine(), headers);
+        return response;
     }
 }

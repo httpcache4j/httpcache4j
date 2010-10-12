@@ -86,6 +86,7 @@ public abstract class AbstractCacheIntegrationTest {
         assertNull(response.getLastModified());
         assertEquals(Status.OK, response.getStatus());
         assertEquals(0, storage.size());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
     }
 
     @Test
@@ -95,6 +96,7 @@ public abstract class AbstractCacheIntegrationTest {
         assertNull(response.getLastModified());
         assertEquals(Status.OK, response.getStatus());
         assertEquals(1, storage.size());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
     }
 
     @Test
@@ -104,16 +106,19 @@ public abstract class AbstractCacheIntegrationTest {
         assertNotNull(response.getETag());
         assertNull(response.getLastModified());
         assertEquals(Status.OK, response.getStatus());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
 
         assertEquals(1, storage.size());
         response = cache.doCachedRequest(new HTTPRequest(uri, HTTPMethod.PUT));
         assertEquals(0, storage.size());
         assertEquals(Status.NO_CONTENT, response.getStatus());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
         response = get(uri);
         assertNotNull(response.getETag());
         assertNull(response.getLastModified());
         assertEquals(Status.OK, response.getStatus());
         assertEquals(1, storage.size());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
     }
 
     @Test
@@ -121,10 +126,12 @@ public abstract class AbstractCacheIntegrationTest {
         URI uri = baseRequestURI.resolve(String.format("etag/basic,u=u,p=p/%s", TEST_FILE));
         HTTPResponse response = get(uri);
         assertEquals(Status.UNAUTHORIZED, response.getStatus());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
         response.consume();
         HTTPRequest request = new HTTPRequest(uri).challenge(new UsernamePasswordChallenge("u", "p"));
         response = cache.doCachedRequest(request);
         assertEquals(Status.OK, response.getStatus());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
         response.consume();
     }
 
@@ -133,11 +140,13 @@ public abstract class AbstractCacheIntegrationTest {
         URI uri = baseRequestURI.resolve(String.format("etag/basic,u=u,p=p/%s", TEST_FILE));
         HTTPResponse response = doRequest(uri, HTTPMethod.PUT);
         assertEquals(Status.UNAUTHORIZED, response.getStatus());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
         response.consume();
         HTTPRequest request = new HTTPRequest(uri, HTTPMethod.PUT).challenge(new UsernamePasswordChallenge("u", "p"))
             .payload(new ByteArrayPayload(new FileInputStream(new File("pom.xml")), MIMEType.valueOf("application/xml")));
         response = cache.doCachedRequest(request);
         assertEquals(Status.NO_CONTENT, response.getStatus());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
         response.consume();
     }
 
@@ -146,10 +155,12 @@ public abstract class AbstractCacheIntegrationTest {
         URI uri = baseRequestURI.resolve(String.format("etag/digest,u=u,p=p/%s", TEST_FILE));
         HTTPResponse response = get(uri);
         assertEquals(Status.UNAUTHORIZED, response.getStatus());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
         response.consume();
         HTTPRequest request = new HTTPRequest(uri).challenge(new UsernamePasswordChallenge("u", "p"));
         response = cache.doCachedRequest(request);
         assertEquals(Status.OK, response.getStatus());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
         response.consume();
     }
 
@@ -158,7 +169,8 @@ public abstract class AbstractCacheIntegrationTest {
         URI uri = baseRequestURI.resolve(String.format("lm/%s", TEST_FILE));
         HTTPResponse response = get(uri);
         assertEquals(Status.OK, response.getStatus());
-        assertNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER).startsWith(
+            "MISS"));
         response.consume();
         response = get(uri);
         assertEquals(Status.OK, response.getStatus());
@@ -172,7 +184,8 @@ public abstract class AbstractCacheIntegrationTest {
         URI uri = baseRequestURI.resolve(String.format("lm/etag/%s", TEST_FILE));
         HTTPResponse response = get(uri);
         assertEquals(Status.OK, response.getStatus());
-        assertNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER));
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER).startsWith(
+            "MISS"));
         response.consume();
         response = get(uri);
         assertEquals(Status.OK, response.getStatus());
