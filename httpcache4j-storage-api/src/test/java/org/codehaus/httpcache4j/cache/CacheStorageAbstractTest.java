@@ -46,7 +46,7 @@ public abstract class CacheStorageAbstractTest {
 
     @Test
     public void testPutAndGetCacheItem() {
-        CacheItem outItem = putAndGet(Mockito.mock(HTTPRequest.class));
+        CacheItem outItem = putAndGet(REQUEST);
         assertNotNull("OutItem was null", outItem);
         assertNotNull("OutItem response was null", outItem.getResponse());
         outItem.getResponse().consume();
@@ -54,8 +54,6 @@ public abstract class CacheStorageAbstractTest {
 
     private CacheItem putAndGet(HTTPRequest request) {
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
-        URI requestURI = URI.create("foo");
-        Mockito.when(request.getRequestURI()).thenReturn(requestURI);
         response = storage.insert(REQUEST, response);
         response.consume();
         assertEquals(1, storage.size());
@@ -64,15 +62,12 @@ public abstract class CacheStorageAbstractTest {
 
     @Test
     public void testPutUpdatedCacheItem() {
-        HTTPRequest request = Mockito.mock(HTTPRequest.class);
-        CacheItem item = putAndGet(request);
+        CacheItem item = putAndGet(REQUEST);
         item.getResponse().consume();
-        URI requestURI = URI.create("foo");
-        Mockito.when(request.getRequestURI()).thenReturn(requestURI);
         HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
         HTTPResponse res = storage.update(REQUEST, response);
         res.consume();
-        final CacheItem cacheItem = storage.get(request);
+        final CacheItem cacheItem = storage.get(REQUEST);
         assertNotSame("Items were the same", cacheItem.getCachedTime(), item.getCachedTime());
         cacheItem.getResponse().consume();
     }

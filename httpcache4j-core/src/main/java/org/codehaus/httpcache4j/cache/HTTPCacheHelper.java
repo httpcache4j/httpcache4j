@@ -69,7 +69,11 @@ class HTTPCacheHelper {
         );
     }
 
+    private CacheHeaderBuilder cacheHeaderBuilder;
 
+    HTTPCacheHelper(CacheHeaderBuilder cacheHeaderBuilder) {
+        this.cacheHeaderBuilder = cacheHeaderBuilder;
+    }
 
     HTTPResponse warn(HTTPResponse response, IOException e) {
         Headers headers = new Headers(response.getHeaders());
@@ -176,26 +180,33 @@ class HTTPCacheHelper {
         return rewriteResponse(request, item, false);
     }
 
+    HTTPResponse addCacheMissStatHeader(HTTPResponse response) {
+        Headers headers = response.getHeaders().add(cacheHeaderBuilder.createMISSXCacheHeader());
+        return new HTTPResponse(response.getPayload(), response.getStatusLine(), headers);
+    }
+
     private HTTPResponse rewriteResponse(HTTPRequest request, CacheItem item, boolean stale) {
         HTTPResponse response = item.getResponse();
+        Headers headers = response.getHeaders();
+        headers = headers.add(cacheHeaderBuilder.createHITXCacheHeader());
         if (request.getMethod() == HTTPMethod.GET) {
             List<Tag> noneMatch = request.getConditionals().getNoneMatch();
             Tag eTag = response.getETag();
             if (eTag != null && !noneMatch.isEmpty()) {
                 if (noneMatch.contains(eTag) || noneMatch.contains(Tag.ALL)) {
-                    response = new HTTPResponse(null, Status.NOT_MODIFIED, response.getHeaders());
+                    response = new HTTPResponse(null, Status.NOT_MODIFIED, headers);
                 }
             }
             DateTime lastModified = response.getLastModified();
             DateTime modifiedSince = request.getConditionals().getModifiedSince();
             if (lastModified != null && modifiedSince != null) {
                 if (lastModified.equals(modifiedSince)) {
-                    response = new HTTPResponse(null, Status.NOT_MODIFIED, response.getHeaders());
+                    response = new HTTPResponse(null, Status.NOT_MODIFIED, headers);
                 }
             }
         }
         else if (request.getMethod() == HTTPMethod.HEAD) {
-            response = new HTTPResponse(null, response.getStatus(), response.getHeaders());
+            response = new HTTPResponse(null, response.getStatus(), headers);
         }
         if (stale) {
             response = warnStale(response);

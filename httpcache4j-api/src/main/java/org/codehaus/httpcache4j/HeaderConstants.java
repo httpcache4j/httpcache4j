@@ -62,5 +62,5 @@ public final class HeaderConstants {
     //TODO: Use this!
     public static final String RETRY_AFTER = "Retry-After";
 
-    public static final String CUSTOM_HTTPCACHE4J_HEADER = "X-Cache";
+    public static final String X_CACHE = "X-Cache";
 }

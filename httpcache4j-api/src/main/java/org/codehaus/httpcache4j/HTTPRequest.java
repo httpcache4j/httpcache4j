@@ -16,6 +16,7 @@
 
 package org.codehaus.httpcache4j;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang.Validate;
 
 import org.codehaus.httpcache4j.payload.Payload;
@@ -32,7 +33,7 @@ import java.net.URI;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public class HTTPRequest {
+public final class HTTPRequest {
     private final URI requestURI;
     private final HTTPMethod method;
     private final Conditionals conditionals;
@@ -42,7 +43,7 @@ public class HTTPRequest {
     private final Payload payload;
     private final DateTime requestTime;
 
-    protected HTTPRequest(URI requestURI,
+    public HTTPRequest(URI requestURI,
                        HTTPMethod method,
                        Headers headers,
                        Conditionals conditionals,
@@ -51,14 +52,14 @@ public class HTTPRequest {
                        Payload payload,
                        DateTime requestTime) {
 
-        this.method = method;
-        this.requestURI = requestURI;
-        this.headers = headers;
-        this.conditionals = conditionals;
-        this.preferences = preferences;
+        this.requestURI = Preconditions.checkNotNull(requestURI, "You MUST have a URI");
+        this.method = method == null ? HTTPMethod.GET : method;
+        this.headers = headers == null ? new Headers() : headers;
+        this.conditionals = conditionals == null? new Conditionals() : conditionals;
+        this.preferences = preferences == null ? new Preferences() : preferences;
         this.challenge = challenge;
         this.payload = payload;
-        this.requestTime = requestTime;
+        this.requestTime = requestTime == null ? new DateTime() : requestTime;
     }
 
     public HTTPRequest copy() {

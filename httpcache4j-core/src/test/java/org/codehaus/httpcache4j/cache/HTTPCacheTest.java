@@ -408,11 +408,4 @@ public class HTTPCacheTest {
         assertEquals(numberItemsInCache, cacheStorage.size());
         return response;
     }
-
-    private static class TimeSettingRequest extends HTTPRequest {
-        public TimeSettingRequest(HTTPRequest request, DateTime requestTime) {
-            super(request.getRequestURI(), request.getMethod(), request.getHeaders(), request.getConditionals(), request.getPreferences(), request.getChallenge(), request.getPayload(), requestTime);
-        }
-    }
-
 }

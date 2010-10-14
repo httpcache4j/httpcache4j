@@ -23,6 +23,7 @@ import org.joda.time.DateTime;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.codehaus.httpcache4j.HeaderConstants.*;
@@ -45,6 +46,7 @@ public final class HTTPResponse {
     private Tag ETag;
     private Set<HTTPMethod> allowedMethods;
     private CacheControl cacheControl;
+    private boolean cached;
 
     public HTTPResponse(Payload payload, Status status, Headers headers) {
         this(payload, new StatusLine(status), headers);
@@ -79,6 +81,11 @@ public final class HTTPResponse {
         }
         if (headers.hasHeader(EXPIRES)) {
             expires = HeaderUtils.fromHttpDate(headers.getFirstHeader(EXPIRES));
+        }
+        if (headers.hasHeader(X_CACHE)) {
+            Header cacheHeader = CacheHeaderBuilder.getBuilder().createHITXCacheHeader();
+            List<Header> xcacheHeaders = headers.getHeaders(X_CACHE);
+            cached = xcacheHeaders.contains(cacheHeader);
         }
     }
 
@@ -122,6 +129,10 @@ public final class HTTPResponse {
         return cacheControl;
     }
 
+    public boolean isCached() {
+        return cached;
+    }
+
     public Set<HTTPMethod> getAllowedMethods() {
         return allowedMethods != null ? allowedMethods : Collections.<HTTPMethod>emptySet();
     }
@@ -145,25 +156,7 @@ public final class HTTPResponse {
 
         HTTPResponse response = (HTTPResponse) o;
 
-        if (ETag != null ? !ETag.equals(response.ETag) : response.ETag != null) {
-            return false;
-        }
-        if (allowedMethods != null ? !allowedMethods.equals(response.allowedMethods) : response.allowedMethods != null) {
-            return false;
-        }
-        if (cacheControl != null ? !cacheControl.equals(response.cacheControl) : response.cacheControl != null) {
-            return false;
-        }
-        if (date != null ? !date.equals(response.date) : response.date != null) {
-            return false;
-        }
-        if (expires != null ? !expires.equals(response.expires) : response.expires != null) {
-            return false;
-        }
         if (headers != null ? !headers.equals(response.headers) : response.headers != null) {
-            return false;
-        }
-        if (lastModified != null ? !lastModified.equals(response.lastModified) : response.lastModified != null) {
             return false;
         }
         if (payload != null ? !payload.equals(response.payload) : response.payload != null) {
@@ -181,12 +174,6 @@ public final class HTTPResponse {
         int result = statusLine != null ? statusLine.hashCode() : 0;
         result = 31 * result + (payload != null ? payload.hashCode() : 0);
         result = 31 * result + (headers != null ? headers.hashCode() : 0);
-        result = 31 * result + (ETag != null ? ETag.hashCode() : 0);
-        result = 31 * result + (lastModified != null ? lastModified.hashCode() : 0);
-        result = 31 * result + (allowedMethods != null ? allowedMethods.hashCode() : 0);
-        result = 31 * result + (cacheControl != null ? cacheControl.hashCode() : 0);
-        result = 31 * result + (date != null ? date.hashCode() : 0);
-        result = 31 * result + (expires != null ? expires.hashCode() : 0);
         return result;
     }
 }

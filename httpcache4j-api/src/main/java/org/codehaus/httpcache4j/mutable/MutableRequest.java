@@ -102,21 +102,16 @@ public class MutableRequest {
     }
 
     public HTTPRequest toRequest() {
-        return new FromMutableRequest();
-    }
-
-    private class FromMutableRequest extends HTTPRequest {
-        private FromMutableRequest() {
-            super(uri,
-                  method,
-                  headers.toHeaders(),
-                  conditionals.toConditionals(),
-                  preferences.toPreferences(),
-                  challenge,
-                  payload,
-                  new DateTime()
-            );
-        }
+        return new HTTPRequest(
+                uri,
+                method,
+                headers.toHeaders(),
+                conditionals.toConditionals(),
+                preferences.toPreferences(),
+                challenge,
+                payload,
+                new DateTime()
+        );
     }
 
     public static MutableRequest fromHTTPRequest(HTTPRequest request) {

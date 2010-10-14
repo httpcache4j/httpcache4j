@@ -28,7 +28,7 @@ import java.net.URI;
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 public class HTTPCacheHelperTest {
-    private final HTTPCacheHelper helper = new HTTPCacheHelper();
+    private final HTTPCacheHelper helper = new HTTPCacheHelper(CacheHeaderBuilder.getBuilder());
 
     @Test
     public void testAgeCalculation() {

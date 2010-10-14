@@ -16,14 +16,12 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import java.net.UnknownHostException;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
 import org.apache.commons.lang.Validate;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URI;
 
 /**
@@ -39,7 +37,7 @@ import java.net.URI;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class HTTPCache {
-    private final HTTPCacheHelper helper = new HTTPCacheHelper();
+    private final HTTPCacheHelper helper;
     private final CacheStatistics statistics = new CacheStatistics();
     private final CacheStorage storage;
     private ResponseResolver resolver;
@@ -49,6 +47,7 @@ public class HTTPCache {
         Validate.notNull(storage, "Cache storage may not be null");
         this.storage = storage;
         this.resolver = resolver;
+        helper = new HTTPCacheHelper(CacheHeaderBuilder.getBuilder());
     }
 
     public HTTPCache(CacheStorage storage) {
@@ -122,25 +121,23 @@ public class HTTPCache {
                     HTTPResponse staleResponse = item.getResponse();
                     //If the payload has been deleted for some reason, we want to do a unconditional GET
                     req = maybePrepareConditionalResponse(request, staleResponse);
-                    response = rewriteResponse(request, item, req);
+                    response = handleStaleResponse(req, item);
                 }
                 else {
                     response = helper.rewriteResponse(request, item);
-                    response = addCacheHitStatHeader(response);
                 }
             }
             else {
                 statistics.miss();
                 response = unconditionalResolve(req);
-                response = addCacheMissStatHeader(response);
             }
         }
         return response;
     }
 
-    private HTTPResponse rewriteResponse(HTTPRequest request, CacheItem item, HTTPRequest req) {
-        if (!helper.allowStale(item, req)) {
-            return handleResolve(req, item);
+    private HTTPResponse handleStaleResponse(HTTPRequest request, CacheItem item) {
+        if (!helper.allowStale(item, request)) {
+            return handleResolve(request, item);
         }
         return helper.rewriteStaleResponse(request, item);
     }
@@ -153,9 +150,10 @@ public class HTTPCache {
     }
 
     private HTTPResponse unconditionalResolve(final HTTPRequest request) {
-        return handleResolve(request, null);
+        HTTPResponse response = handleResolve(request, null);
+        response = helper.addCacheMissStatHeader(response);
+        return response;
     }
-
 
     private HTTPResponse handleResolve(final HTTPRequest request, final CacheItem item) {
         HTTPResponse response = null;
@@ -169,7 +167,6 @@ public class HTTPCache {
             }
             else {
                 response = helper.warn(item.getResponse(), e);
-                response = addCacheHitStatHeader(response);
             }
         }
         if (resolvedResponse != null) {
@@ -193,12 +190,6 @@ public class HTTPCache {
                 if (resolvedResponse.getStatus() == Status.NOT_MODIFIED) {
                     response = updateHeadersFromResolved(request, item, resolvedResponse);
                 }
-                else {
-                    response = addCacheMissStatHeader(response);
-                }
-            }
-            else {
-                response = addCacheMissStatHeader(response);
             }
         }
         return response;
@@ -214,48 +205,6 @@ public class HTTPCache {
         headers = headers.add(removeUnmodifiableHeaders);
         HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers);
         updatedResponse = storage.update(request, updatedResponse);
-        updatedResponse = addCacheHitStatHeader(updatedResponse);
         return updatedResponse;
-    }
-
-    protected String getHitString() {
-        String canonicalHostName;
-        try {
-            canonicalHostName = InetAddress.getLocalHost().getCanonicalHostName();
-        }
-        catch (UnknownHostException ex) {
-            canonicalHostName = "Unknown";
-        }
-        final String hitString = new StringBuilder("HIT from ").append(canonicalHostName).toString();
-        return hitString;
-    }
-
-    protected String getMissString() {
-        String canonicalHostName;
-        try {
-            canonicalHostName = InetAddress.getLocalHost().getCanonicalHostName();
-        }
-        catch (UnknownHostException ex) {
-            canonicalHostName = "Unknown";
-        }
-        final String hitString = new StringBuilder("MISS from ").append(canonicalHostName).toString();
-        return hitString;
-    }
-
-    protected HTTPResponse addCacheHitStatHeader(HTTPResponse response) {
-          String hitString = getHitString();
-          return addCacheStatHeader(hitString, response);
-    }
-
-    protected HTTPResponse addCacheMissStatHeader(HTTPResponse response) {
-        String missString = getMissString();
-        return addCacheStatHeader(missString, response);
-    }
-
-    protected HTTPResponse addCacheStatHeader(String hitString, HTTPResponse response) {
-        Header header = new Header(HeaderConstants.CUSTOM_HTTPCACHE4J_HEADER, hitString);
-        Headers headers = response.getHeaders().add(header);
-        response = new HTTPResponse(response.getPayload(), response.getStatusLine(), headers);
-        return response;
     }
 }
