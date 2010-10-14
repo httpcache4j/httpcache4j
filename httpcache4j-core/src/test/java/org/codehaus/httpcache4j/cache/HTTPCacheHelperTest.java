@@ -29,15 +29,6 @@ import java.net.URI;
  */
 public class HTTPCacheHelperTest {
     private final HTTPCacheHelper helper = new HTTPCacheHelper(CacheHeaderBuilder.getBuilder());
-
-    @Test
-    public void testAgeCalculation() {
-        Headers headers = new Headers().add(HeaderUtils.toHttpDate("Date", createDateTime(0)));
-        DateTimeUtils.setCurrentMillisFixed(createDateTime(10).getMillis());
-        HTTPResponse cachedResponse = createResponse(headers);
-        HTTPResponse responseWithCalculatedAge = helper.calculateAge(new HTTPRequest(URI.create("foo")), cachedResponse, new CacheItem(cachedResponse, createDateTime(0)));
-        Assert.assertEquals("10", responseWithCalculatedAge.getHeaders().getFirstHeaderValue("Age"));
-    }
     
     @Test
     public void testCacheableResponses() {
@@ -86,9 +77,5 @@ public class HTTPCacheHelperTest {
 
     private DateTime createDateTime(int seconds) {
         return new DateTime(2009, 4, 22, 10, 10, seconds, 0);
-    }
-
-    private HTTPResponse createResponse(Headers headers) {
-        return new HTTPResponse(null, Status.OK, headers);
     }
 }

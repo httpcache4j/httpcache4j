@@ -49,6 +49,7 @@ class HTTPCacheHelper {
         // We are a transparent cache
         Set<String> headers = new HashSet<String>();
         headers.add("Connection");
+        headers.add("Date");
         headers.add("Keep-Alive");
         headers.add("Proxy-Authenticate");
         headers.add("Proxy-Authorization");
@@ -86,7 +87,7 @@ class HTTPCacheHelper {
 
 
     HTTPResponse calculateAge(final HTTPRequest request, final HTTPResponse response, final CacheItem cacheItem) {
-        return new HTTPResponse(response.getPayload(), response.getStatus(), response.getHeaders().add(HeaderConstants.AGE, Integer.toString(cacheItem.getAge(request))));
+        return new HTTPResponse(response.getPayload(), response.getStatus(), response.getHeaders().set(HeaderConstants.AGE, Integer.toString(cacheItem.getAge(request))));
     }
 
     Headers removeUnmodifiableHeaders(Headers headers) {
@@ -172,23 +173,26 @@ class HTTPCacheHelper {
         return allowStale;
     }
 
-    HTTPResponse rewriteStaleResponse(HTTPRequest request, CacheItem item) {
-        return rewriteResponse(request, item, true);
+    HTTPResponse rewriteStaleResponse(HTTPRequest request, HTTPResponse cachedResponse, int age) {
+        return rewriteResponse(request, cachedResponse, true, age);
     }
 
-    HTTPResponse rewriteResponse(HTTPRequest request, CacheItem item) {
-        return rewriteResponse(request, item, false);
+    HTTPResponse rewriteResponse(HTTPRequest request, HTTPResponse cachedResponse, int age) {
+        return rewriteResponse(request, cachedResponse, false, age);
     }
 
-    HTTPResponse addCacheMissStatHeader(HTTPResponse response) {
-        Headers headers = response.getHeaders().add(cacheHeaderBuilder.createMISSXCacheHeader());
-        return new HTTPResponse(response.getPayload(), response.getStatusLine(), headers);
-    }
-
-    private HTTPResponse rewriteResponse(HTTPRequest request, CacheItem item, boolean stale) {
-        HTTPResponse response = item.getResponse();
+    private HTTPResponse rewriteResponse(HTTPRequest request, HTTPResponse cachedResponse, boolean stale, int age) {
+        HTTPResponse response = cachedResponse;
         Headers headers = response.getHeaders();
-        headers = headers.add(cacheHeaderBuilder.createHITXCacheHeader());
+        if (isSafeRequest(request)) {
+            if (age < 0) {
+                headers = headers.add(cacheHeaderBuilder.createMISSXCacheHeader());
+            }
+            else {
+                headers = headers.add(cacheHeaderBuilder.createHITXCacheHeader());
+                headers = headers.set(HeaderConstants.AGE, String.valueOf(age));
+            }            
+        }
         if (request.getMethod() == HTTPMethod.GET) {
             List<Tag> noneMatch = request.getConditionals().getNoneMatch();
             Tag eTag = response.getETag();
@@ -211,6 +215,6 @@ class HTTPCacheHelper {
         if (stale) {
             response = warnStale(response);
         }
-        return calculateAge(request, response, item);
+        return new HTTPResponse(response.getPayload(), response.getStatus(), headers);
     }
 }

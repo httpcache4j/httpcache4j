@@ -113,33 +113,34 @@ public class HTTPCache {
         }
         else {                    
             CacheItem item = storage.get(request);
-            HTTPRequest req = request;
             if (item != null) {
                 statistics.hit();
-                if (item.isStale(req)) {
+                if (item.isStale(request)) {
                     //If the cached value is stale, execute the request and try to cache it.
                     HTTPResponse staleResponse = item.getResponse();
                     //If the payload has been deleted for some reason, we want to do a unconditional GET
-                    req = maybePrepareConditionalResponse(request, staleResponse);
-                    response = handleStaleResponse(req, item);
+                    HTTPRequest conditionalRequest = maybePrepareConditionalResponse(request, staleResponse);
+                    response = handleStaleResponse(conditionalRequest, request, item);
                 }
                 else {
-                    response = helper.rewriteResponse(request, item);
+                    response = helper.rewriteResponse(request, item.getResponse(), item.getAge(request));
                 }
             }
             else {
                 statistics.miss();
-                response = unconditionalResolve(req);
+                response = unconditionalResolve(request);
             }
         }
         return response;
     }
 
-    private HTTPResponse handleStaleResponse(HTTPRequest request, CacheItem item) {
-        if (!helper.allowStale(item, request)) {
-            return handleResolve(request, item);
+    private HTTPResponse handleStaleResponse(HTTPRequest conditionalRequest, HTTPRequest originalRequest, CacheItem item) {
+        int age = item.getAge(conditionalRequest);
+        if (!helper.allowStale(item, originalRequest)) {
+            HTTPResponse response = handleResolve(conditionalRequest, item);
+            return helper.rewriteResponse(originalRequest, response, age);
         }
-        return helper.rewriteStaleResponse(request, item);
+        return helper.rewriteStaleResponse(originalRequest, item.getResponse(), age);
     }
 
     private HTTPRequest maybePrepareConditionalResponse(HTTPRequest request, HTTPResponse staleResponse) {
@@ -150,9 +151,7 @@ public class HTTPCache {
     }
 
     private HTTPResponse unconditionalResolve(final HTTPRequest request) {
-        HTTPResponse response = handleResolve(request, null);
-        response = helper.addCacheMissStatHeader(response);
-        return response;
+        return helper.rewriteResponse(request, handleResolve(request, null), -1);
     }
 
     private HTTPResponse handleResolve(final HTTPRequest request, final CacheItem item) {
@@ -182,7 +181,7 @@ public class HTTPCache {
                 response = storage.insert(request, resolvedResponse);
             }
             else {
-                //Response was not cacheable
+                //Response could not be cached
                 response = resolvedResponse;
             }
 
@@ -199,9 +198,6 @@ public class HTTPCache {
         HTTPResponse cachedResponse = item.getResponse();
         Headers headers = new Headers(cachedResponse.getHeaders());
         final Headers removeUnmodifiableHeaders = helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders());
-        if(removeUnmodifiableHeaders.hasHeader(HeaderConstants.DATE) && headers.hasHeader(HeaderConstants.DATE)) {
-            headers = headers.remove(HeaderConstants.DATE);
-        }
         headers = headers.add(removeUnmodifiableHeaders);
         HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers);
         updatedResponse = storage.update(request, updatedResponse);

@@ -20,6 +20,7 @@ import org.codehaus.httpcache4j.*;
 import static org.codehaus.httpcache4j.HeaderConstants.*;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
+import org.joda.time.Seconds;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.Before;
@@ -109,5 +110,19 @@ public class CacheItemTest {
         headers = headers.add(HeaderUtils.toHttpDate(EXPIRES, future));
         setupItem(headers);
         Assert.assertTrue("Item was not stale", item.isStale(request));
+    }
+
+    private DateTime createDateTime(int seconds) {
+        return now.plus(Seconds.seconds(seconds).toStandardDuration());
+    }
+    
+
+    @Test
+    public void ageShouldBe10Seconds() {
+        Headers headers = new Headers().add(HeaderUtils.toHttpDate("Date", createDateTime(0)));
+        DateTimeUtils.setCurrentMillisFixed(createDateTime(10).getMillis());
+        HTTPResponse cachedResponse = new HTTPResponse(null, Status.OK, headers);
+        int age = new CacheItem(cachedResponse, createDateTime(0)).getAge(new HTTPRequest(URI.create("foo")));
+        Assert.assertEquals(10, age);
     }
 }

@@ -65,4 +65,11 @@ public class HTTPResponseTest {
         assertNull(response.getPayload());
         assertFalse(response.hasPayload());
     }
+
+    @Test
+    public void responseShouldHaveCachedValueSet() {
+        Headers headers = new Headers().add(CacheHeaderBuilder.getBuilder().createHITXCacheHeader());
+        HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
+        assertTrue(response.isCached());
+    }
 }

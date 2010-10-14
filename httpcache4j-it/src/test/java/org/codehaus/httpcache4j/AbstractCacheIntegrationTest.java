@@ -16,6 +16,8 @@
 package org.codehaus.httpcache4j;
 
 import java.io.File;
+
+import org.codehaus.httpcache4j.util.TestUtil;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -52,8 +54,8 @@ public abstract class AbstractCacheIntegrationTest {
         baseRequestURI = URI.create(String.format("http://localhost:%s/", JettyServer.PORT));
         System.out.println("::: Starting server :::");
         jettyServer = new Server(JettyServer.PORT);
-        final String webapp = "./target/testbed/";
-        if (!new File(webapp).exists()) {
+        final String webapp = "target/testbed/";
+        if (!TestUtil.getTestFile(webapp).exists()) {
           throw new IllegalStateException("WebApp dir does not exist!");
         }
         Handler webAppHandler = new WebAppContext(webapp, "/");
@@ -112,7 +114,7 @@ public abstract class AbstractCacheIntegrationTest {
         response = cache.doCachedRequest(new HTTPRequest(uri, HTTPMethod.PUT));
         assertEquals(0, storage.size());
         assertEquals(Status.NO_CONTENT, response.getStatus());
-        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
+        assertNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
         response = get(uri);
         assertNotNull(response.getETag());
         assertNull(response.getLastModified());
@@ -140,13 +142,11 @@ public abstract class AbstractCacheIntegrationTest {
         URI uri = baseRequestURI.resolve(String.format("etag/basic,u=u,p=p/%s", TEST_FILE));
         HTTPResponse response = doRequest(uri, HTTPMethod.PUT);
         assertEquals(Status.UNAUTHORIZED, response.getStatus());
-        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
         response.consume();
         HTTPRequest request = new HTTPRequest(uri, HTTPMethod.PUT).challenge(new UsernamePasswordChallenge("u", "p"))
             .payload(new ByteArrayPayload(new FileInputStream(new File("pom.xml")), MIMEType.valueOf("application/xml")));
         response = cache.doCachedRequest(request);
         assertEquals(Status.NO_CONTENT, response.getStatus());
-        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
         response.consume();
     }
 
@@ -174,6 +174,7 @@ public abstract class AbstractCacheIntegrationTest {
         response.consume();
         response = get(uri);
         assertEquals(Status.OK, response.getStatus());
+        assertTrue(response.isCached());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).startsWith(
             "HIT"));
         response.consume();
@@ -186,9 +187,10 @@ public abstract class AbstractCacheIntegrationTest {
         assertEquals(Status.OK, response.getStatus());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).startsWith(
             "MISS"));
-        response.consume();
+        response.consume();        
         response = get(uri);
         assertEquals(Status.OK, response.getStatus());
+        assertTrue(response.isCached());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).startsWith(
             "HIT"));
         response.consume();
