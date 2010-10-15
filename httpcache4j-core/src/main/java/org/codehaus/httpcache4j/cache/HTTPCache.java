@@ -165,7 +165,8 @@ public class HTTPCache {
                 throw new HTTPException(e);
             }
             else {
-                response = helper.warn(item.getResponse(), e);
+                Headers headers = helper.warn(item.getResponse().getHeaders(), e);
+                response = new HTTPResponse(item.getResponse().getPayload(), item.getResponse().getStatusLine(), headers);
             }
         }
         if (resolvedResponse != null) {

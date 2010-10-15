@@ -76,18 +76,12 @@ class HTTPCacheHelper {
         this.cacheHeaderBuilder = cacheHeaderBuilder;
     }
 
-    HTTPResponse warn(HTTPResponse response, IOException e) {
-        Headers headers = new Headers(response.getHeaders());
+    Headers warn(Headers headers, IOException e) {
         headers = headers.add(Warning.STALE_WARNING.toHeader());
         if (e instanceof SocketException) {
             headers = headers.add(Warning.DISCONNECT_OPERATION_WARNING.toHeader());
         }
-        return new HTTPResponse(response.getPayload(), response.getStatus(), headers);
-    }
-
-
-    HTTPResponse calculateAge(final HTTPRequest request, final HTTPResponse response, final CacheItem cacheItem) {
-        return new HTTPResponse(response.getPayload(), response.getStatus(), response.getHeaders().set(HeaderConstants.AGE, Integer.toString(cacheItem.getAge(request))));
+        return headers;
     }
 
     Headers removeUnmodifiableHeaders(Headers headers) {
@@ -139,8 +133,8 @@ class HTTPCacheHelper {
         return request;
     }
 
-    HTTPResponse warnStale(HTTPResponse response) {
-        return warn(response, null);
+    Headers warnStale(Headers headers) {
+        return warn(headers, null);
     }
 
     boolean isCacheableRequest(HTTPRequest request) {
@@ -213,7 +207,7 @@ class HTTPCacheHelper {
             response = new HTTPResponse(null, response.getStatus(), headers);
         }
         if (stale) {
-            response = warnStale(response);
+            headers = warnStale(headers);
         }
         return new HTTPResponse(response.getPayload(), response.getStatus(), headers);
     }
