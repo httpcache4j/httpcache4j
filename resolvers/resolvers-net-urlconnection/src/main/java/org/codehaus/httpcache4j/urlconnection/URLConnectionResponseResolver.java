@@ -62,6 +62,9 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         throw new HTTPException("This resolver only supports HTTP calls");
     }
 
+    public void shutdown() {        
+    }
+
     private void doRequest(HTTPRequest request, HttpURLConnection connection) throws IOException {
         configureConnection(connection);
         connection.setRequestMethod(request.getMethod().getMethod());
