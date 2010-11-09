@@ -19,13 +19,15 @@ import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.Headers;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class MutableHeaders {
+public class MutableHeaders implements Iterable<Header> {
     private Headers headers;
 
     public MutableHeaders() {
@@ -96,5 +98,14 @@ public class MutableHeaders {
 
     public Headers toHeaders() {
         return headers;
+    }
+
+    public Set<String> keySet() {
+        return headers.keySet();
+    }
+
+
+    public Iterator<Header> iterator() {
+        return headers.iterator();
     }
 }
