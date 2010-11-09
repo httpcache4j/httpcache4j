@@ -26,8 +26,6 @@ public final class HeaderConstants {
     public static final String PROXY_AUTHORIZATION = "Proxy-Authorization";
     public static final String AUTHENTICATION_INFO = "Authentication-Info";
     public static final String PROXY_AUTHENTICATION_INFO = "Proxy-Authentication-Info";
-
-
     public static final String ACCEPT = "Accept";
     public static final String ACCEPT_LANGUAGE = "Accept-Language";
     public static final String ACCEPT_CHARSET = "Accept-Charset";
