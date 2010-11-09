@@ -16,11 +16,17 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
-/** HTTP Status to return after handling a call. */
+/**
+ * HTTP Status to return after handling a call.
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
+ */
 public final class Status implements Comparable<Status> {
 
     public static Status CONTINUE = new Status(100, "Continue");
@@ -64,8 +70,54 @@ public final class Status implements Comparable<Status> {
     public static Status GATEWAY_TIMEOUT = new Status(504, "Gateway Timeout");
     public static Status HTTP_VERSION_NOT_SUPPORTED = new Status(505, "HTTP Version Not Supported");
 
-    private static final Set<Status> STATUSES_WITHOUT_BODY = Sets.newHashSet(RESET_CONTENT, NO_CONTENT, NOT_MODIFIED);
-    
+    private static final Set<Status> STATUSES_WITHOUT_BODY = ImmutableSet.of(RESET_CONTENT, NO_CONTENT, NOT_MODIFIED);
+    private static final Map<Integer, Status> STATUSES;
+
+    static {
+        ImmutableMap.Builder<Integer, Status> builder = ImmutableMap.builder();
+        builder.put(CONTINUE.getCode(), CONTINUE);
+        builder.put(SWITCHING_PROTOCOLS.getCode(), SWITCHING_PROTOCOLS);
+        builder.put(OK.getCode(), OK);
+        builder.put(CREATED.getCode(), CREATED);
+        builder.put(ACCEPTED.getCode(), ACCEPTED);
+        builder.put(NON_AUTHORITATIVE_INFORMATION.getCode(), NON_AUTHORITATIVE_INFORMATION);
+        builder.put(NO_CONTENT.getCode(), NO_CONTENT);
+        builder.put(RESET_CONTENT.getCode(), RESET_CONTENT);
+        builder.put(PARTIAL_CONTENT.getCode(), PARTIAL_CONTENT);
+        builder.put(MULTIPLE_CHOICES.getCode(), MULTIPLE_CHOICES);
+        builder.put(MOVED_PERMANENTLY.getCode(), MOVED_PERMANENTLY);
+        builder.put(FOUND.getCode(), FOUND);
+        builder.put(SEE_OTHER.getCode(), SEE_OTHER);
+        builder.put(NOT_MODIFIED.getCode(), NOT_MODIFIED);
+        builder.put(USE_PROXY.getCode(), USE_PROXY);
+        builder.put(TEMPORARY_REDIRECT.getCode(), TEMPORARY_REDIRECT);
+        builder.put(BAD_REQUEST.getCode(), BAD_REQUEST);
+        builder.put(UNAUTHORIZED.getCode(), UNAUTHORIZED);
+        builder.put(PAYMENT_REQUIRED.getCode(), PAYMENT_REQUIRED);
+        builder.put(FORBIDDEN.getCode(), FORBIDDEN);
+        builder.put(NOT_FOUND.getCode(), NOT_FOUND);
+        builder.put(METHOD_NOT_ALLOWED.getCode(), METHOD_NOT_ALLOWED);
+        builder.put(NOT_ACCEPTABLE.getCode(), NOT_ACCEPTABLE);
+        builder.put(PROXY_AUTHENTICATION_REQUIRED.getCode(), PROXY_AUTHENTICATION_REQUIRED);
+        builder.put(REQUEST_TIMEOUT.getCode(), REQUEST_TIMEOUT);
+        builder.put(CONFLICT.getCode(), CONFLICT);
+        builder.put(GONE.getCode(), GONE);
+        builder.put(LENGTH_REQUIRED.getCode(), LENGTH_REQUIRED);
+        builder.put(PRECONDITION_FAILED.getCode(), PRECONDITION_FAILED);
+        builder.put(REQUEST_ENTITY_TOO_LARGE.getCode(), REQUEST_ENTITY_TOO_LARGE);
+        builder.put(REQUEST_URI_TOO_LONG.getCode(), REQUEST_URI_TOO_LONG);
+        builder.put(UNSUPPORTED_MEDIA_TYPE.getCode(), UNSUPPORTED_MEDIA_TYPE);
+        builder.put(REQUESTED_RANGE_NOT_SATISFIABLE.getCode(), REQUESTED_RANGE_NOT_SATISFIABLE);
+        builder.put(EXPECTATION_FAILED.getCode(), EXPECTATION_FAILED);
+        builder.put(INTERNAL_SERVER_ERROR.getCode(), INTERNAL_SERVER_ERROR);
+        builder.put(NOT_IMPLEMENTED.getCode(), NOT_IMPLEMENTED);
+        builder.put(BAD_GATEWAY.getCode(), BAD_GATEWAY);
+        builder.put(SERVICE_UNAVAILABLE.getCode(), SERVICE_UNAVAILABLE);
+        builder.put(GATEWAY_TIMEOUT.getCode(), GATEWAY_TIMEOUT);
+        builder.put(HTTP_VERSION_NOT_SUPPORTED.getCode(), HTTP_VERSION_NOT_SUPPORTED);
+        STATUSES = builder.build();
+    }
+
     private final int code;
     private final String name;
 
@@ -134,126 +186,15 @@ public final class Status implements Comparable<Status> {
     }
 
     public static Status valueOf(int statusCode) {
-        if (CONTINUE.getCode() == statusCode) {
-            return CONTINUE;
-        }
-        else if (SWITCHING_PROTOCOLS.getCode() == statusCode) {
-            return SWITCHING_PROTOCOLS;
-        }
-        else if (OK.getCode() == statusCode) {
-            return OK;
-        }
-        else if (CREATED.getCode() == statusCode) {
-            return CREATED;
-        }
-        else if (ACCEPTED.getCode() == statusCode) {
-            return ACCEPTED;
-        }
-        else if (NON_AUTHORITATIVE_INFORMATION.getCode() == statusCode) {
-            return NON_AUTHORITATIVE_INFORMATION;
-        }
-        else if (NO_CONTENT.getCode() == statusCode) {
-            return NO_CONTENT;
-        }
-        else if (RESET_CONTENT.getCode() == statusCode) {
-            return RESET_CONTENT;
-        }
-        else if (PARTIAL_CONTENT.getCode() == statusCode) {
-            return PARTIAL_CONTENT;
-        }
-        else if (MULTIPLE_CHOICES.getCode() == statusCode) {
-            return MULTIPLE_CHOICES;
-        }
-        else if (MOVED_PERMANENTLY.getCode() == statusCode) {
-            return MOVED_PERMANENTLY;
-        }
-        else if (FOUND.getCode() == statusCode) {
-            return FOUND;
-        }
-        else if (SEE_OTHER.getCode() == statusCode) {
-            return SEE_OTHER;
-        }
-        else if (NOT_MODIFIED.getCode() == statusCode) {
-            return NOT_MODIFIED;
-        }
-        else if (USE_PROXY.getCode() == statusCode) {
-            return USE_PROXY;
-        }
-        else if (TEMPORARY_REDIRECT.getCode() == statusCode) {
-            return TEMPORARY_REDIRECT;
-        }
-        else if (BAD_REQUEST.getCode() == statusCode) {
-            return BAD_REQUEST;
-        }
-        else if (UNAUTHORIZED.getCode() == statusCode) {
-            return UNAUTHORIZED;
-        }
-        else if (PAYMENT_REQUIRED.getCode() == statusCode) {
-            return PAYMENT_REQUIRED;
-        }
-        else if (FORBIDDEN.getCode() == statusCode) {
-            return FORBIDDEN;
-        }
-        else if (NOT_FOUND.getCode() == statusCode) {
-            return NOT_FOUND;
-        }
-        else if (METHOD_NOT_ALLOWED.getCode() == statusCode) {
-            return METHOD_NOT_ALLOWED;
-        }
-        else if (NOT_ACCEPTABLE.getCode() == statusCode) {
-            return NOT_ACCEPTABLE;
-        }
-        else if (PROXY_AUTHENTICATION_REQUIRED.getCode() == statusCode) {
-            return PROXY_AUTHENTICATION_REQUIRED;
-        }
-        else if (REQUEST_TIMEOUT.getCode() == statusCode) {
-            return REQUEST_TIMEOUT;
-        }
-        else if (CONFLICT.getCode() == statusCode) {
-            return CONFLICT;
-        }
-        else if (GONE.getCode() == statusCode) {
-            return GONE;
-        }
-        else if (LENGTH_REQUIRED.getCode() == statusCode) {
-            return LENGTH_REQUIRED;
-        }
-        else if (PRECONDITION_FAILED.getCode() == statusCode) {
-            return PRECONDITION_FAILED;
-        }
-        else if (REQUEST_ENTITY_TOO_LARGE.getCode() == statusCode) {
-            return REQUEST_ENTITY_TOO_LARGE;
-        }
-        else if (REQUEST_URI_TOO_LONG.getCode() == statusCode) {
-            return REQUEST_URI_TOO_LONG;
-        }
-        else if (UNSUPPORTED_MEDIA_TYPE.getCode() == statusCode) {
-            return UNSUPPORTED_MEDIA_TYPE;
-        }
-        else if (REQUESTED_RANGE_NOT_SATISFIABLE.getCode() == statusCode) {
-            return REQUESTED_RANGE_NOT_SATISFIABLE;
-        }
-        else if (EXPECTATION_FAILED.getCode() == statusCode) {
-            return EXPECTATION_FAILED;
-        }
-        else if (INTERNAL_SERVER_ERROR.getCode() == statusCode) {
-            return INTERNAL_SERVER_ERROR;
-        }
-        else if (NOT_IMPLEMENTED.getCode() == statusCode) {
-            return NOT_IMPLEMENTED;
-        }
-        else if (BAD_GATEWAY.getCode() == statusCode) {
-            return BAD_GATEWAY;
-        }
-        else if (SERVICE_UNAVAILABLE.getCode() == statusCode) {
-            return SERVICE_UNAVAILABLE;
-        }
-        else if (GATEWAY_TIMEOUT.getCode() == statusCode) {
-            return GATEWAY_TIMEOUT;
-        }
-        else if (HTTP_VERSION_NOT_SUPPORTED.getCode() == statusCode) {
-            return HTTP_VERSION_NOT_SUPPORTED;
+        Status status = STATUSES.get(statusCode);
+        if (status != null) {
+            return status;
         }
         return new Status(statusCode, "Unknown");
+    }
+
+    public static Status[] values() {
+        Collection<Status> values = STATUSES.values();
+        return values.toArray(new Status[values.size()]);
     }
 }
