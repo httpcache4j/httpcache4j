@@ -149,6 +149,7 @@ public final class HTTPRequest {
     }
 
     public HTTPRequest preferences(Preferences preferences) {
+        Validate.notNull(preferences, "You may not set null preferences");
         return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
     }
 
