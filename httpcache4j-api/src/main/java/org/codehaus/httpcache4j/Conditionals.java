@@ -198,10 +198,17 @@ public final class Conditionals {
         return unModifiedSince;
     }
 
+    /**
+     * 
+     * @return {@code true} if the Conditionals represents a unconditional request. 
+     */
     public boolean isUnconditional() {
       return noneMatch.contains(Tag.ALL) || match.contains(Tag.ALL);
     }
 
+    /**
+     * Converts the Conditionals into real headers.
+     */
     public Headers toHeaders() {
         Headers headers = new Headers();
         if (!getMatch().isEmpty()) {
