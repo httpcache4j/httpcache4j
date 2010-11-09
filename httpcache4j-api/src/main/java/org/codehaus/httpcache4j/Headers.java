@@ -103,7 +103,7 @@ public final class Headers implements Iterable<Header>, ToJSON {
     }
 
     public Iterator<Header> iterator() {
-        return headers.getAsHeaders();
+        return headers.headerIterator();
     }
 
     public Set<String> keySet() {
@@ -259,7 +259,7 @@ public final class Headers implements Iterable<Header>, ToJSON {
             return remove(new Name(key));
         }
 
-        Iterator<Header> getAsHeaders() {
+        Iterator<Header> headerIterator() {
             List<Header> headers = new ArrayList<Header>();
             for (Map.Entry<Name, List<String>> entry : this.entrySet()) {
                 headers.addAll(Lists.transform(entry.getValue(), nameToHeader(entry.getKey())));
