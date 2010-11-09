@@ -6,7 +6,7 @@ import org.apache.commons.lang.Validate;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class StatusLine {
+public final class StatusLine {
     private final HTTPVersion version;
     private final String message;
     private final Status status;
