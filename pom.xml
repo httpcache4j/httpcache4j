@@ -219,11 +219,6 @@
       </dependency>
       <dependency>
         <groupId>org.codehaus.httpcache4j.storage</groupId>
-        <artifactId>storage-derby</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.httpcache4j.storage</groupId>
         <artifactId>storage-file</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -326,13 +321,13 @@
     <repository>
       <id>httpcache4j</id>
       <name>Codehaus maven repo</name>
-      <url>dav:https://dav.codehaus.org/repository/httpcache4j</url>
+      <url>https://nexus.codehaus.org/service/local/staging/deploy/maven2</url>
     </repository>
     <snapshotRepository>
       <id>httpcache4j-snapshot</id>
       <name>Codehaus maven repo</name>
       <uniqueVersion>false</uniqueVersion>
-      <url>dav:https://dav.codehaus.org/snapshots.repository/httpcache4j</url>
+      <url>https://nexus.codehaus.org/content/repositories/snapshots</url>
     </snapshotRepository>
     <site>
       <id>httpcache4j-site</id>
@@ -435,7 +430,7 @@ time mvn site -Preporting && time mvn site:deploy && time mvn site -Preporting-a
         <plugins>
           <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
-            <version>2.2-beta-3</version>
+            <version>2.2</version>
             <configuration>
               <appendAssemblyId>false</appendAssemblyId>
               <attach>false</attach>              
