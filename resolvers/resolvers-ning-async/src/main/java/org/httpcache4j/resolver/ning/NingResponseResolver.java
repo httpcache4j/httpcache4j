@@ -3,9 +3,8 @@ package org.httpcache4j.resolver.ning;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.Request;
+import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 import com.ning.http.client.Response;
-import org.apache.log4j.BasicConfigurator;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
@@ -51,7 +50,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
             Response response = responseFuture.get();
             System.out.println("NingResponseResolver.execute");
             StatusLine line = new StatusLine(Status.valueOf(response.getStatusCode()), response.getStatusText());
-            com.ning.http.client.Headers headers = response.getHeaders();
+            FluentCaseInsensitiveStringsMap headers = response.getHeaders();
             MutableHeaders convertedHeaders = new MutableHeaders();
             for (Map.Entry<String, List<String>> entry : headers) {
                 final String key = entry.getKey();
@@ -67,7 +66,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
             throw new HTTPException(e.getCause());
         }
 
-        return null;
+        throw new HTTPException("Not possible to get response");
     }
 
     private Future<Response> execute(HTTPRequest request) throws IOException {
@@ -109,14 +108,5 @@ public class NingResponseResolver extends AbstractResponseResolver {
                 return new Header(key, from);
             }
         };
-    }
-
-    public static void main(String[] args) throws Exception {
-        BasicConfigurator.configure();
-        NingResponseResolver resolver = new NingResponseResolver(new DefaultProxyAuthenticator(new ProxyConfiguration()), new DefaultAuthenticator());        
-        HTTPResponse response = resolver.resolve(new HTTPRequest(URI.create("http://www.vg.no/")));
-        ResponseWriter writer = new ResponseWriter(response);
-        writer.write();
-        resolver.shutdown();
     }
 }
