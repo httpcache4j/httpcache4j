@@ -19,12 +19,12 @@ package org.codehaus.httpcache4j;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.Validate;
+import org.codehaus.httpcache4j.util.CaseInsensitiveKey;
 import org.codehaus.httpcache4j.util.ToJSON;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.type.TypeFactory;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.*;
 
 
@@ -197,7 +197,7 @@ public final class Headers implements Iterable<Header>, ToJSON {
         }
     }
     
-    private static class HeaderHashMap extends LinkedHashMap<Name, List<String>> {
+    private static class HeaderHashMap extends LinkedHashMap<CaseInsensitiveKey, List<String>> {
         private static final long serialVersionUID = 2714358409043444835L;
 
         private static final Function<Header,String> headerToString = new Function<Header, String>() {
@@ -214,13 +214,13 @@ public final class Headers implements Iterable<Header>, ToJSON {
         }
 
         public List<String> get(String key) {
-            return get(new Name(key));
+            return get(new CaseInsensitiveKey(key));
         }
 
         public Set<String> keys() {
             Set<String> strings = new HashSet<String>();
-            for (Name name : super.keySet()) {
-                strings.add(name.getName());
+            for (CaseInsensitiveKey name : super.keySet()) {
+                strings.add(name.getDelegate());
             }
             return strings;
         }
@@ -233,21 +233,21 @@ public final class Headers implements Iterable<Header>, ToJSON {
 
         List<Header> getAsHeaders(final String key) {
             List<Header> headers = new ArrayList<Header>();
-            Name name = new Name(key);
+            CaseInsensitiveKey name = new CaseInsensitiveKey(key);
             headers.addAll(Lists.transform(get(name), nameToHeader(name)));
             return Collections.unmodifiableList(headers);
         }
 
-        private Function<String, Header> nameToHeader(final Name key) {
+        private Function<String, Header> nameToHeader(final CaseInsensitiveKey key) {
             return new Function<String, Header>() {
                     public Header apply(String from) {
-                        return new Header(key.getName(), from);
+                        return new Header(key.getDelegate(), from);
                     }
                 };
         }
 
         public List<String> put(String key, List<String> value) {
-            return super.put(new Name(key), value);
+            return super.put(new CaseInsensitiveKey(key), value);
         }
 
         List<String> putImpl(String key, List<Header> value) {
@@ -256,52 +256,15 @@ public final class Headers implements Iterable<Header>, ToJSON {
         }
 
         public List<String> remove(String key) {
-            return remove(new Name(key));
+            return remove(new CaseInsensitiveKey(key));
         }
 
         Iterator<Header> headerIterator() {
             List<Header> headers = new ArrayList<Header>();
-            for (Map.Entry<Name, List<String>> entry : this.entrySet()) {
+            for (Map.Entry<CaseInsensitiveKey, List<String>> entry : this.entrySet()) {
                 headers.addAll(Lists.transform(entry.getValue(), nameToHeader(entry.getKey())));
             }
             return headers.iterator();
-        }
-    }
-
-    private static class Name implements Serializable {
-        private static final long serialVersionUID = 429640405363982150L;
-        private final String name;
-
-        public Name(final String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            Name name1 = (Name) o;
-
-            return !(name != null ? !name.equalsIgnoreCase(name1.name) : name1.name != null);
-        }
-
-        @Override
-        public int hashCode() {
-            return name != null ? name.toLowerCase(Locale.ENGLISH).hashCode() : 0;
-        }
-
-        @Override
-        public String toString() {
-            return name;
         }
     }
 }
