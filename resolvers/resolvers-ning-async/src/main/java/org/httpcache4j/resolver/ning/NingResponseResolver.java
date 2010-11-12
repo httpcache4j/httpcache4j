@@ -55,7 +55,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
             for (Map.Entry<String, List<String>> entry : headers) {
                 final String key = entry.getKey();
                 List<String> values = entry.getValue();
-                convertedHeaders.add(key, Lists.transform(values, stringToHeader(key)));
+                convertedHeaders.add(Lists.transform(values, stringToHeader(key)));
             }
             InputStream stream = response.getResponseBodyAsStream();
             
