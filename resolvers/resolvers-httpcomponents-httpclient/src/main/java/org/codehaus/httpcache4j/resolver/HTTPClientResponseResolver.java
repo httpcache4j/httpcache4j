@@ -91,6 +91,10 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         return convertResponse(realRequest, response);
     }
 
+    public void shutdown() {
+        httpClient.getConnectionManager().shutdown();
+    }
+
     private HttpUriRequest convertRequest(HTTPRequest request) {
         HttpUriRequest realRequest = getMethod(request.getMethod(), request.getRequestURI());
 
