@@ -15,12 +15,13 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.collect.Sets;
-
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -28,46 +29,58 @@ import java.util.concurrent.locks.ReentrantLock;
  * @version $Revision: $
  */
 class Mutex<T> {
-    private final Set<T> locks = Sets.newHashSet();
+    private final Set<T> locks = new CopyOnWriteArraySet<T>();
     private Lock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
+    private final Logger logger = Logger.getLogger(getClass().getName());
 
     public void acquire(T object) {
-        if (lock.tryLock()) {
-            try {
-                while (locks.contains(object)) {
-                    try {
-                        condition.await();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-                locks.add(object);
-            }
-            finally {
-                lock.unlock();
-            }
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest(String.format("About to acquire lock for %s", object));
         }
-        else {
-            throw new RuntimeException("No lock available.");
+        lock.lock();
+        try {
+            while (locks.contains(object)) {
+                try {
+                    condition.await();
+                } catch (InterruptedException e) {
+                    if (logger.isLoggable(Level.WARNING)) {
+                        logger.warning("Thread was interrupted");
+                    }
+                    Thread.currentThread().interrupt();
+                }
+            }
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine(String.format("Adding %s to locks", object));
+            }
+            locks.add(object);
+        }
+        finally {
+            lock.unlock();
+        }
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest(String.format("Acquired lock for %s", object));
         }
     }
 
     public void release(T object) {
-        if (lock.tryLock()) {
-            try {
-                if (locks.contains(object)) {
-                    if (locks.remove(object)) {
-                        condition.signal();
-                    }
-                }
-
-            } finally {
-                lock.unlock();
-            }
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest(String.format("About to release lock for %s", object));
         }
-        else {
-            throw new RuntimeException("No lock available.");
+        lock.lock();
+        try {
+            if (locks.remove(object)) {
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine(String.format("Removing %s from locks", object));
+                }
+                condition.signal();
+            }
+
+        } finally {
+            lock.unlock();
+        }
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest(String.format("Released lock for %s", object));
         }
     }
 }
