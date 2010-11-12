@@ -137,6 +137,16 @@ public final class Headers implements Iterable<Header>, ToJSON {
         }
         return new Headers(map);
     }
+    
+    public Headers set(Iterable<Header> headers) {
+        HeaderHashMap map = copyMap();
+        Headers copy = new Headers().add(headers);
+        Set<String> keys = copy.keySet();
+        for (String key : keys) {
+            map.put(key, copy.headers.get(key));
+        }
+        return new Headers(map);
+    }
 
     public int size() {
         return headers.size();

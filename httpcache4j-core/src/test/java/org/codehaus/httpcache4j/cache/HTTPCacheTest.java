@@ -368,7 +368,8 @@ public class HTTPCacheTest {
         Headers headers = new Headers().add("Link", "<foo>");
         Headers updatedHeaders = new Headers().add("Link", "<bar>");
         Headers merged = dryCleanHeaders(headers, updatedHeaders);
-        assertEquals(2, merged.getHeaders("Link").size());
+        assertEquals(1, merged.getHeaders("Link").size());
+        assertEquals("<bar>", merged.getFirstHeaderValue("Link"));
     }
 
 
@@ -378,6 +379,15 @@ public class HTTPCacheTest {
         Headers updatedHeaders = new Headers().add("Allow", "GET");
         Headers merged = dryCleanHeaders(headers, updatedHeaders);
         assertEquals("<foo>", merged.getFirstHeaderValue("link"));
+    }
+
+    @Test
+    public void updateHeadersFromResolvedOverwritesHeadersThereCanOnlyBeOneOf() throws Exception {
+        Headers headers = new Headers().add(HeaderUtils.toHttpDate("Date", new DateTime())).add("Allow", "GET, PUT");
+        Headers updatedHeaders = new Headers().add("Allow", "GET").add(HeaderUtils.toHttpDate("Date", new DateTime()));
+        Headers merged = dryCleanHeaders(headers, updatedHeaders);
+        assertEquals(1, merged.getHeaders("Date").size());
+        assertEquals(1, merged.getHeaders("Allow").size());
     }
 
 

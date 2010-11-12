@@ -187,7 +187,8 @@ public class HTTPCache {
             }
 
             if (item != null) {
-                if (resolvedResponse.getStatus() == Status.NOT_MODIFIED) {
+                //from http://tools.ietf.org/html/rfc2616#section-13.5.3
+                if (resolvedResponse.getStatus() == Status.NOT_MODIFIED || resolvedResponse.getStatus() == Status.PARTIAL_CONTENT) {
                     response = updateHeadersFromResolved(request, item, resolvedResponse);
                 }
             }
@@ -195,13 +196,11 @@ public class HTTPCache {
         return response;
     }
 
-    protected HTTPResponse updateHeadersFromResolved(final HTTPRequest request, final CacheItem item, final HTTPResponse resolvedResponse) {
+    HTTPResponse updateHeadersFromResolved(final HTTPRequest request, final CacheItem item, final HTTPResponse resolvedResponse) {
         HTTPResponse cachedResponse = item.getResponse();
         Headers headers = new Headers(cachedResponse.getHeaders());
-        final Headers removeUnmodifiableHeaders = helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders());
-        headers = headers.add(removeUnmodifiableHeaders);
-        HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers);
-        updatedResponse = storage.update(request, updatedResponse);
-        return updatedResponse;
+        Headers headersToBeSet = helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders());
+        HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers.set(headersToBeSet));
+        return storage.update(request, updatedResponse);
     }
 }

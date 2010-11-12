@@ -49,7 +49,6 @@ class HTTPCacheHelper {
         // We are a transparent cache
         Set<String> headers = new HashSet<String>();
         headers.add("Connection");
-        headers.add("Date");
         headers.add("Keep-Alive");
         headers.add("Proxy-Authenticate");
         headers.add("Proxy-Authorization");

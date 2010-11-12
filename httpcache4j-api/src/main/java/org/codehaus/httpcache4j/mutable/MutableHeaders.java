@@ -19,6 +19,7 @@ import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.Headers;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -53,10 +54,10 @@ public class MutableHeaders implements Iterable<Header> {
 
     public void set(String name, String value) {
         headers = headers.set(name, value);
-    }    
+    }
 
-    public void add(String name, List<Header> headers) {
-        this.headers = this.headers.add(name, headers);
+    public void set(Iterable<Header> headers) {
+        this.headers = this.headers.set(headers);
     }
 
     public void add(Iterable<Header> headers) {
@@ -103,7 +104,6 @@ public class MutableHeaders implements Iterable<Header> {
     public Set<String> keySet() {
         return headers.keySet();
     }
-
 
     public Iterator<Header> iterator() {
         return headers.iterator();
