@@ -38,7 +38,8 @@ public class MutexTest {
 
     @Test
     public void test() throws Exception {
-        testWithRunnables(new DoTheThing());
+        List<Thread> threads = testWithRunnables(new DoTheThing(URI_1), URI_1);
+        joinAndAssert(threads);
     }
 
     @Test
@@ -49,9 +50,25 @@ public class MutexTest {
     }
 
     @Test
+    public void makeSureThatDifferentURIDoesNotBlockOtherThreads() throws Exception {
+        List<Thread> threads = testWithRunnables(new Runnable() {
+            public void run() {
+                mutex.acquire(URI.create("bar"));
+                try {
+                    success.put(Thread.currentThread().getName(), true);
+                } finally {
+                    mutex.release(URI.create("bar"));
+                }
+            }
+        }, URI_1);
+        
+        joinAndAssert(threads);
+    }
+
+    @Test
     public void testRandomExceptionThrowing() throws Exception {
         final Random random = new Random();
-        testWithRunnables(new Runnable() {
+        Runnable worker = new Runnable() {
             public void run() {
                 mutex.acquire(URI_1);
                 try {
@@ -76,24 +93,30 @@ public class MutexTest {
                     mutex.release(URI_1);
                 }
             }
-        });
+        };
+        List<Thread> threads = testWithRunnables(worker, URI_1);
+        joinAndAssert(threads);
+
     }
 
-    private void testWithRunnables(final Runnable worker) throws InterruptedException {
-        List<Thread> thread = new ArrayList<Thread>();
-        final DoTheThingSlowly runnable = new DoTheThingSlowly();
+    private List<Thread> testWithRunnables(final Runnable worker, URI uri) throws InterruptedException {
+        List<Thread> threads = new ArrayList<Thread>();
+        final DoTheThingSlowly runnable = new DoTheThingSlowly(uri);
         Thread slowThread = new Thread(runnable);
         slowThread.start();
         synchronized (runnable) {
             runnable.wait();
         }
-        thread.add(slowThread);
+        threads.add(slowThread);
         for (int i = 0; i < 4; i++) {
             Thread t = new Thread(worker);
             t.start();
-            thread.add(t);
+            threads.add(t);
         }
+        return threads;
+    }
 
+    private void joinAndAssert(List<Thread> thread) throws InterruptedException {
         for (Thread t : thread) {
             t.join();
         }
@@ -104,34 +127,46 @@ public class MutexTest {
     }
 
     class DoTheThing implements Runnable {
+        private final String uri;
+
+        public DoTheThing(URI uri) {
+            this.uri = uri.toString();
+        }
+
         public void run() {
-            mutex.acquire(URI_1);
+            mutex.acquire(URI.create(uri));
             try {
                 if (flag.get()) {
-                    success.put(Thread.currentThread().getName(), true);
+                    success.put(Thread.currentThread().getName() + " " + uri, true);
                 } else {
-                    success.put(Thread.currentThread().getName(), false);
+                    success.put(Thread.currentThread().getName()  + " " + uri, false);
                 }
             } finally {
-                mutex.release(URI_1);
+                mutex.release(URI.create(uri));
             }
         }
     }
 
     class DoTheThingSlowly implements Runnable {
+        private final String uri;
+
+        public DoTheThingSlowly(URI uri) {
+            this.uri = uri.toString();
+        }
+
         public void run() {
-            mutex.acquire(URI_1);
+            mutex.acquire(URI.create(uri));
             synchronized (this) {
                 notify();                
             }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(2000);
                 flag.set(true);
             } catch (InterruptedException e) {
                 success.put(Thread.currentThread().getName(), false);
                 Thread.currentThread().interrupt();
             } finally {
-                mutex.release(URI_1);
+                mutex.release(URI.create(uri));
             }
         }
     }

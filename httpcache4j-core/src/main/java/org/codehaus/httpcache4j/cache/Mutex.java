@@ -33,33 +33,41 @@ class Mutex<T> {
     private Condition condition = lock.newCondition();
 
     public void acquire(T object) {
-        lock.lock();
-        try {
-            while (locks.contains(object)) {
-                try {
-                    condition.await();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+        if (lock.tryLock()) {
+            try {
+                while (locks.contains(object)) {
+                    try {
+                        condition.await();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
+                locks.add(object);
             }
-            locks.add(object);
+            finally {
+                lock.unlock();
+            }
         }
-        finally {
-            lock.unlock();
+        else {
+            throw new RuntimeException("No lock available.");
         }
     }
 
     public void release(T object) {
-        lock.lock();
-        try {
-            if (locks.contains(object)) {
-                if (locks.remove(object)) {
-                    condition.signal();
+        if (lock.tryLock()) {
+            try {
+                if (locks.contains(object)) {
+                    if (locks.remove(object)) {
+                        condition.signal();
+                    }
                 }
-            }
 
-        } finally {
-            lock.unlock();
+            } finally {
+                lock.unlock();
+            }
+        }
+        else {
+            throw new RuntimeException("No lock available.");
         }
     }
 }
