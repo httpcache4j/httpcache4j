@@ -15,7 +15,8 @@
   ~
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.codehaus.httpcache4j</groupId>
   <artifactId>httpcache4j</artifactId>
@@ -78,29 +79,37 @@
     </developer>
   </developers>
 
+  <contributors>
+    <contributor>
+      <name>Imran M Yousuf</name>
+      <email>imran@smartitengineering.com</email>
+    </contributor>
+  </contributors>
+
   <reporting>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>emma-maven-plugin</artifactId>
-        <version>1.0-alpha-1</version>
+        <version>1.0-alpha-2</version>
         <inherited>true</inherited>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>surefire-report-maven-plugin</artifactId>
+        <version>2.6</version>
         <inherited>true</inherited>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
-        <version>2.0.1</version>
+        <version>2.3.1</version>
         <inherited>true</inherited>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>taglist-maven-plugin</artifactId>
-        <version>2.3</version>
+        <version>2.4</version>
         <configuration>
           <tags>
             <tag>TODO</tag>
@@ -127,12 +136,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
-          <version>2.0.4</version>
+          <version>2.1.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>2.5</version>
+          <version>2.7</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -259,9 +268,9 @@
         <version>1.4.3</version>
       </dependency>
       <dependency>
-        <groupId>com.google.collections</groupId>
-        <artifactId>google-collections</artifactId>
-        <version>1.0</version>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>r07</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
@@ -271,7 +280,7 @@
       <dependency>
         <groupId>javax.activation</groupId>
         <artifactId>activation</artifactId>
-        <version>1.1</version>
+        <version>1.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
@@ -286,18 +295,18 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.5</version>
+      <version>4.8.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-      <version>2.4</version>
+      <version>2.5</version>
     </dependency>
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>1.5.2</version>
+      <version>1.6</version>
     </dependency>
   </dependencies>
 
@@ -320,7 +329,7 @@
   <distributionManagement>
     <repository>
       <id>httpcache4j</id>
-      <name>Codehaus maven repo</name>
+      <name>Codehaus staging repo</name>
       <url>https://nexus.codehaus.org/service/local/staging/deploy/maven2</url>
     </repository>
     <snapshotRepository>
@@ -348,7 +357,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-enforcer-plugin</artifactId>
-            <version>1.0-beta-1</version>
+            <version>1.0</version>
             <executions>
               <execution>
                 <goals>
@@ -374,6 +383,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.1</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -412,7 +422,7 @@ time mvn site -Preporting && time mvn site:deploy && time mvn site -Preporting-a
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.5</version>
+            <version>2.7</version>
             <configuration>
               <links>
                 <link>http://java.sun.com/j2se/1.5.0/docs/api</link>
@@ -433,7 +443,7 @@ time mvn site -Preporting && time mvn site:deploy && time mvn site -Preporting-a
             <version>2.2</version>
             <configuration>
               <appendAssemblyId>false</appendAssemblyId>
-              <attach>false</attach>              
+              <attach>false</attach>
               <descriptors>
                 <descriptor>src/assembly/dist.xml</descriptor>
               </descriptors>
