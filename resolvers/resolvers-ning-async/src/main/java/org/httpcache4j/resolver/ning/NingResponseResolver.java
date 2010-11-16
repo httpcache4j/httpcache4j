@@ -46,9 +46,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
 
     private HTTPResponse translate(Future<Response> responseFuture) throws IOException {
         try {
-            System.out.println("NingResponseResolver.execute");
             Response response = responseFuture.get();
-            System.out.println("NingResponseResolver.execute");
             StatusLine line = new StatusLine(Status.valueOf(response.getStatusCode()), response.getStatusText());
             FluentCaseInsensitiveStringsMap headers = response.getHeaders();
             MutableHeaders convertedHeaders = new MutableHeaders();
