@@ -197,7 +197,7 @@
     </plugins>
   </build>
   <properties>
-    <currentVersion>${version}</currentVersion>
+    <currentVersion>${project.version}</currentVersion>
   </properties>
   <dependencyManagement>
     <dependencies>
