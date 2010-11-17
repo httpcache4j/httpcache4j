@@ -68,6 +68,10 @@ public class CacheControl {
         return directives.hasDirective("no-cache");
     }
 
+    public Directives getDirectives() {
+        return directives;
+    }
+
     public Header toHeader() {
         return new Header(HeaderConstants.CACHE_CONTROL, new Directives(directives));
     }
