@@ -56,8 +56,9 @@ public class NingResponseResolver extends AbstractResponseResolver {
                 convertedHeaders.add(Lists.transform(values, stringToHeader(key)));
             }
             InputStream stream = response.getResponseBodyAsStream();
-            
-            return new HTTPResponse(new InputStreamPayload(stream, MIMEType.valueOf(response.getContentType())), line, convertedHeaders.toHeaders());
+
+            String contentType = response.getContentType();
+            return new HTTPResponse(new InputStreamPayload(stream, contentType != null ? MIMEType.valueOf(contentType) : null), line, convertedHeaders.toHeaders());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
@@ -67,13 +68,13 @@ public class NingResponseResolver extends AbstractResponseResolver {
         throw new HTTPException("Not possible to get response");
     }
 
-    private Future<Response> execute(HTTPRequest request) throws IOException {
+    private Future<Response> execute(final HTTPRequest request) throws IOException {
         AsyncHttpClient.BoundRequestBuilder builder = builder(request.getRequestURI(), request.getMethod());
-        if (request.getMethod().canHavePayload()) {
-            builder = builder.setBody(request.getPayload().getInputStream());
+        if (request.getMethod().canHavePayload() && request.hasPayload()) {
+            builder.setBody(request.getPayload().getInputStream());
         }
         for (Header header : request.getAllHeaders()) {
-            builder = builder.addHeader(header.getName(), header.getValue());
+            builder.addHeader(header.getName(), header.getValue());
         }
         return builder.execute();
     }
@@ -97,7 +98,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
         else if (PUT.equals(method)) {
             return client.preparePut(uri.toString());
         }
-        return null;
+        throw new IllegalArgumentException("Unable to create request for method " + method);
     }
 
     private Function<String, Header> stringToHeader(final String key) {
