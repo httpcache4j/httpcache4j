@@ -17,6 +17,7 @@ package org.codehaus.httpcache4j;
 
 import java.io.File;
 
+import org.codehaus.httpcache4j.resolver.ResponseResolver;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -73,11 +74,13 @@ public abstract class AbstractCacheIntegrationTest {
     @Before
     public void before() {
         storage = createStorage();
-        cache = new HTTPCache(storage, new HTTPClientResponseResolver(new HttpClient(new MultiThreadedHttpConnectionManager())));
+        cache = new HTTPCache(storage, createReponseResolver());
         HTTPRequest req = new HTTPRequest(baseRequestURI.resolve(TEST_FILE), HTTPMethod.PUT);
         req = req.payload(new FilePayload(new File("pom.xml"), MIMEType.valueOf("application/xml")));
         cache.doCachedRequest(req);
     }
+
+    protected abstract ResponseResolver createReponseResolver();
 
     protected abstract CacheStorage createStorage();
 
