@@ -16,11 +16,7 @@
 
 package org.codehaus.httpcache4j.preference;
 
-import java.util.Arrays;
-
 import org.apache.commons.lang.Validate;
-import org.codehaus.httpcache4j.Header;
-import org.codehaus.httpcache4j.HeaderUtils;
 
 public class Preference<T> {
     private final T preference;
