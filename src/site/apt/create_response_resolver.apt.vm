@@ -15,15 +15,9 @@ Creating a new Response Resolver.
  </dependency>
 ---------------------------------------
 
- Then you need to implement this interface.
- 
----------------------------------------
- public interface ResponseResolver {
-    HTTPResponse resolve(HTTPRequest request) throws IOException;
- }
----------------------------------------
+ Then you need to implement {{{./xref/org/codehaus/httpcache4j/resolver/ResponseResolver.html} this}}. interface.
+
 
  The most usual approach is to extend {{{./xref/org/codehaus/httpcache4j/resolver/AbstractResponseResolver.html} AbstractResponseResolver}}.
  See the {{{./apidocs/} Javadoc}} for more information.
- 
  
