@@ -6,211 +6,247 @@
 
 Release notes
 
+
+* 3.2
+
+
+** Bug
+
+    * [HTCJ-86] - Headers that should only appear once appears multiple times when refreshing response
+
+** Improvement
+
+    * [HTCJ-89] - Make it possible for clients to determine if the response was cached by us
+
+    * [HTCJ-92] - Add support for raw paths in URIBuilder
+
+    * [HTCJ-93] - URIBuilder should retain the path it is given on creation
+
+    * [HTCJ-94] - API Change: Make Status extensible (no longer an enum)
+
+    * [HTCJ-95] - API Change: Make HTTPMethod extensible (no longer an enum)
+
+    * [HTCJ-96] - Add StatusLine
+
+    * [HTCJ-97] - Add CacheControl convenience object
+
+** New Feature
+
+    * [HTCJ-90] - Ning async Response resolver
+
+** Task
+
+    * [HTCJ-68] - Upgrade to Commons-lang 2.5
+
+    * [HTCJ-87] - Replace google-collections with google-guava
+
+    * [HTCJ-88] - Upgrade various maven plugins to be better maven 3 compatible
+
+    * [HTCJ-91] - Upgrade httpcomponents httpclient to 4.0.3
+    
+    * [HTCJ-98] - Remove registering of MXBean, as this will fail on google appengine and android
+
+
 * 3.1
 
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-71}HTCJ-71}} |  Preemptive authentication must be per Host not global       |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-70}HTCJ-70}} |  Add a StringPayload                                         |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-67}HTCJ-67}} |  Link header support                                         |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-73}HTCJ-73}} |  Move common auth code to AbstractResponseResolver           |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-69}HTCJ-69}} |  AbstractResponseResolver has the wrong logic for enabling   |
-|                                                      | / disabling preemtive authentication                         |
-*------------------------------------------------------+--------------------------------------------------------------+
+** Bug
+
+    * [HTCJ-69] - AbstractResponseResolver has the wrong logic for enabling / disabling preemtive authentication
+
+** Improvement
+
+    * [HTCJ-71] - Preemptive authentication must be per Host not global
+
+    * [HTCJ-73] - Move common auth code to AbstractResponseResolver
+
+** New Feature
+
+    * [HTCJ-67] - Link header support
+
+    * [HTCJ-70] - Add a StringPayload
 
 
 * 3.0
 
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-64}HTCJ-64}} |  Move the RequestWriter and ResponseWriter class to API      |
-|                                                      |  util class                                                  |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-61}HTCJ-61}} |  Parsing of HTTP headers is way too naiive                   |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-58}HTCJ-58}} | Do not expose a Map as directives,                           |
-|                                                      | use a Directives class instead.                              |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-58}HTCJ-58}} |  Add support for the H2 Database                             |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-57}HTCJ-57}} |  Add HTTP Digest authentication                              |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-54}HTCJ-54}} |  Upgrade google collections to latest version                |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-65}HTCJ-65}} |  Make the URIBuilder immutable.                              |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-62}HTCJ-62}} |  Get back a mutable Request object                           |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-59}HTCJ-59}} |  Add a common jdbc layer                                     |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-63}HTCJ-63}} | Change storage format of Headers and Vary to JSON            |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-66}HTCJ-66}} | Provide hooks for Authenticator and ProxyAuthenticators to do|
-|                                                      | something on successful and failed authentication            |
-*------------------------------------------------------+--------------------------------------------------------------+
+** Improvement
 
+    * [HTCJ-60] - Do not expose a Map as directives, use a Directives class instead.
+
+    * [HTCJ-61] - Parsing of HTTP headers is way too naiive
+
+    * [HTCJ-62] - Get back a mutable Request object
+
+    * [HTCJ-63] - Change storage format of Headers and Vary to JSON.
+
+    * [HTCJ-64] - Move the RequestWriter and ResponseWriter class to API util class
+
+    * [HTCJ-65] - Make the URIBuilder immutable.
+
+    * [HTCJ-66] - Provide hooks for Authenticator and ProxyAuthenticators to do something on successful and failed authentication
+
+** New Feature
+
+    * [HTCJ-57] - Add HTTP Digest authentication
+
+    * [HTCJ-58] - Add support for the H2 Database
+
+    * [HTCJ-59] - Add a common jdbc layer
+
+** Task
+
+    * [HTCJ-54] - Upgrade google collections to latest version
 
 * 2.2
 
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-53}HTCJ-53}} |  Put an integration test framework in place                  |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-50}HTCJ-50}} |  IllegalArgumentException for http://www.google.com          |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-15}HTCJ-15}} |  Make the Challenge pluggable                                |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-52}HTCJ-52}} |  Implement an authentication framework                       |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-51}HTCJ-51}} |  Provide a proper api for http post request parameters       |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-55}HTCJ-55}} |  Make sure that only one thread can query/update the cache   |
-|                                                      |  for a given URI at any time                                 |
-*------------------------------------------------------+--------------------------------------------------------------+
+** Bug
 
+    * [HTCJ-50] - IllegalArgumentException for http://www.google.com
+
+** Improvement
+
+    * [HTCJ-15] - Make the Challenge pluggable.
+
+    * [HTCJ-53] - Put an integration test framework in place
+
+** New Feature
+
+    * [HTCJ-52] - Implement an authentication framework
+
+
+
+** Wish
+
+    * [HTCJ-51] - Provide a proper api for http post request parameters
 
 * 2.1.1
 
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-48}HTCJ-48}} | 304 responses wiping out cached headers                      |
-*------------------------------------------------------+--------------------------------------------------------------+
+** Bug
 
+    * [HTCJ-48] - 304 responses wiping out cached headers
 
 * 2.1
 
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-41}HTCJ-41}} |  If the response does not contain a Date Header the response |
-|                                                      |   is not cacheable                                           |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-42}HTCJ-42}} | New Age algorithm doesn't work                               |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-47}HTCJ-47}} | EhCacheStorage doesnt work                                   |
-*------------------------------------------------------+--------------------------------------------------------------+
+** Bug
+
+    * [HTCJ-41] - If the response does not contain a Date Header the response is not cacheable.
+
+    * [HTCJ-42] - New Age algorithm doesn't work
+
+    * [HTCJ-47] - EhCacheStorage doesnt work
 
 
 * 2.0
 
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-38}HTCJ-38}} |  HttpCache does not cache when Cache-Control does not contain|
-|                                                      |  max-age directive                                           |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-16}HTCJ-16}} | All comparison of headers should use case insensitive values |                                              |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-39}HTCJ-39}} | API objects should be immutable                              |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-40}HTCJ-40}} | Fix the storage API CacheStorage                             |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-46}HTCJ-46}} | Separate the PersistentCacheStorge into its own module       |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-43}HTCJ-43}}  | Add experimental EHCache Support                             |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-44}HTCJ-44}} |  Add experimental Apache Derby Support                       |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-45}HTCJ-45}} | Upgrade HttpComponents HttpResolver to 4.0 final             |
-*------------------------------------------------------+--------------------------------------------------------------+
+** Bug
+
+    * [HTCJ-38] - HttpCache does not cache when Cache-Control does not contain max-age directive
+
+** Improvement
+
+    * [HTCJ-16] - All comparison of headers should use case insensitive values.
+
+    * [HTCJ-39] - API objects should be immutable
+
+    * [HTCJ-40] - Fix the storage API CacheStorage
+
+    * [HTCJ-46] - Separate the PersistentCacheStorge into its own module
+
+** New Feature
+
+    * [HTCJ-43] - Add experimental EHCache Support
+
+    * [HTCJ-44] - Add experimental Apache Derby Support
+
+** Task
+
+    * [HTCJ-45] - Upgrade HttpComponents HttpResolver to 4.0 final
 
 ** API breakage
 
-  - All API classes are now immutable, meaning modifiactions will return a NEW object of the object itself.
+  * All API classes are now immutable, meaning modifiactions will return a NEW object of the object itself.
 
 * 1.7
 
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-34}HTCJ-34}} |  Support all cacheable statuses                              |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-32}HTCJ-32}} | Unconditional requests must be passed through to the         |
-|                                                      | origin server                                                |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-31}HTCJ-31}} | The cache should make sure that the response objects that it |
-|                                                      | sends has a valid payload                                    |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-30}HTCJ-30}} | Possible bug in InvalidateOnRemoveLRUHashMap                 |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-29}HTCJ-29}} | Serialize every 100 cache updates is too often               |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-28}HTCJ-28}} | Sometimes the AbstractResponseCreator could cause            |
-|                                                      | the connection not to be closed.                             |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-27}HTCJ-27}} | New Resolver: HttpComponents HttpClient 4.0                  |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-26}HTCJ-26}} | Status to Enum                                               |
-*------------------------------------------------------+--------------------------------------------------------------+
+** Bug
+
+    * [HTCJ-28] - Sometimes the AbstractResponseCreator could cause the connection not to be closed.
+
+    * [HTCJ-30] - Possible bug in InvalidateOnRemoveLRUHashMap
+
+    * [HTCJ-31] - The cache should make sure that the response objects that it sends has a valid payload
+
+    * [HTCJ-32] - Unconditional requests must be passed through to the origin server
+
+** Improvement
+
+    * [HTCJ-26] - Status to Enum
+
+    * [HTCJ-29] - Serialize every 100 cache updates is too often
+
+    * [HTCJ-33] - Status object should be an enum
+
+    * [HTCJ-34] - Support all cacheable statuses
+
+** New Feature
+
+    * [HTCJ-27] - New Resolver: HttpComponents HttpClient 4.0
 
 
 * 1.6
 
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-25}HTCJ-25}} | Replace the PayloadCreator Facility with a ResponseCreator   |
-|                                                      | facility.                                                    |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-24}HTCJ-24}} | Replace the FileGenerationManager with something more sane   |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-23}HTCJ-23}} | I want to be able Iterate over the cache storage             |
-*------------------------------------------------------+--------------------------------------------------------------+
+** Bug
 
+    * [HTCJ-8] - Files being delete permaturely
+
+** Improvement
+
+    * [HTCJ-23] - I want to be able Iterate over the cache storage
+
+    * [HTCJ-24] - Replace the FileGenerationManager with something more sane.
+
+    * [HTCJ-25] - Replace the PayloadCreator Facility with a ResponseCreator facility.
 
 ** API breakage:
 
+  * The PayloadCreator has been removed. It has been replaced with the ResponseCreator interface.
 
-  - The PayloadCreator has been removed. It has been replaced with the ResponseCreator interface.
-  
-  - Custom CacheStorages need to implement Iterable.
+  * Custom CacheStorages need to implement Iterable.
 
 * 1.5.1
 
-  Made the caching work again
+  * Made the caching work again
 
 * 1.5
 
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-22}HTCJ-22}} | Make the memory based storage implementations be LRU based   |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-20}HTCJ-20}} | If a connect exception occurs and I have content in the      |
-|                                                      | cache, it should be served with a staleness warning.         |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-21}HTCJ-21}} | The Cache must send an Age header notifying about the time   |
-|                                                      | since the last validation.                                   |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-19}HTCJ-19}} | Add AbstractPayloadCreator                                   |
-*------------------------------------------------------+--------------------------------------------------------------+
-  {{{http://jira.codehaus.org/browse/HTCJ-18}HTCJ-18}} | Create a CacheControl header class                           |
-*------------------------------------------------------+--------------------------------------------------------------+
+** Bug
 
+    * [HTCJ-20] - If a connect exception occurs and I have content in the cache, it should be served with a staleness warning.
+
+    * [HTCJ-21] - The Cache must send an Age header notifying about the time since the last validation.
+
+    * [HTCJ-22] - Make the memory based storage implementations be LRU based
+
+** Improvement
+
+    * [HTCJ-18] - Create a CacheControl header class
+
+    * [HTCJ-19] - Add AbstractPayloadCreator
 
 * 1.1
 
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-11}HTCJ-11}} | Status.SERVER_UNRESPONSIVE should be replaced with an        |
-|                                                      |  exception                                                   |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-12}HTCJ-12}} | throw exception when we get an IOEXception in HTTPClient     |
-|                                                      | resolver                                                     |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-13}HTCJ-13}} | CacheValue is not thread safe                                |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-14}HTCJ-14}} | PersistentCacheStorage should extend MemoryCacheStorage      |
-*------------------------------------------------------+--------------------------------------------------------------+
+** Bug
 
+    * [HTCJ-11] - Status.SERVER_UNRESPONSIVE should be replaced with an exception
+
+    * [HTCJ-12] - throw exception when we get an IOEXception in HTTPCLient resolver
+
+    * [HTCJ-13] - CacheValue is not thread safe
+
+** Improvement
+
+    * [HTCJ-14] - PersistentCacheStorage should extend MemoryCacheStorage
 
 
 * 1.0
 
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-3}HTCJ-3}}   | NPE in FileGenerationManager.Generation.delete()             |
-|                                                      | if there are no files                                        |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-4}HTCJ-4}}   | Conditionals addIfMatch and addIfNonMatch does not handle    |
-|                                                      |  null in a good way                                          |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-5}HTCJ-5}}   | Updated cache value is never put back to the                 |
-|                                                      | MemoryCacheStorage.                                          |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-6}HTCJ-6}}   | When unable to delete files, error message is printed        |
-|                                                      | to the console                                               |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-7}HTCJ-7}}   | NPE if you get no response                                   |
-*------------------------------------------------------+--------------------------------------------------------------+
-| {{{http://jira.codehaus.org/browse/HTCJ-9}HTCJ-9}}   | Status class should have a meaningful toString               |
-*------------------------------------------------------+--------------------------------------------------------------+
-
+** First Release
