@@ -15,16 +15,13 @@
 
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
 import org.codehaus.httpcache4j.auth.DefaultProxyAuthenticator;
 import org.codehaus.httpcache4j.auth.ProxyConfiguration;
 import org.codehaus.httpcache4j.cache.CacheStorage;
 import org.codehaus.httpcache4j.cache.MemoryCacheStorage;
-import org.codehaus.httpcache4j.client.HTTPClientResponseResolver;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
-import org.httpcache4j.resolver.ning.NingResponseResolver;
+import org.codehaus.httpcache4j.resolver.ning.NingResponseResolver;
 
 
 /**

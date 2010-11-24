@@ -1,4 +1,4 @@
-package org.httpcache4j.resolver.ning;
+package org.codehaus.httpcache4j.resolver.ning;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
