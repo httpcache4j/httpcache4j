@@ -86,6 +86,7 @@ public class HTTPCache {
         }
         HTTPResponse response;
         if (!helper.isCacheableRequest(request)) {
+            //TODO: This invalidation should only happen when we have a successful response.
             if (!helper.isSafeRequest(request)) {
                 storage.invalidate(request.getRequestURI());
             }
