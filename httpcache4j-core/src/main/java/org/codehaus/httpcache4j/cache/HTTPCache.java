@@ -179,7 +179,7 @@ public class HTTPCache {
                     response = resolvedResponse;
                 }
             }
-            else if (helper.isCacheableResponse(resolvedResponse)) {
+            else if (helper.isCacheableResponse(resolvedResponse) && helper.shouldBeStored(resolvedResponse)) {
                 response = storage.insert(request, resolvedResponse);
             }
             else {

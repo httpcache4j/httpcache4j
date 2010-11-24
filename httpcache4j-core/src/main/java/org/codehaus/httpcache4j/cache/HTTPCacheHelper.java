@@ -210,4 +210,11 @@ class HTTPCacheHelper {
         }
         return new HTTPResponse(response.getPayload(), response.getStatus(), headers);
     }
+
+
+    boolean shouldBeStored(HTTPResponse response) {
+        boolean hasValidator = response.getLastModified() != null || response.getETag() != null;
+        boolean hasExpiry = response.getExpires() != null || (response.getCacheControl() != null && response.getCacheControl().getMaxAge() > 0);
+        return hasExpiry || hasValidator;
+    }
 }

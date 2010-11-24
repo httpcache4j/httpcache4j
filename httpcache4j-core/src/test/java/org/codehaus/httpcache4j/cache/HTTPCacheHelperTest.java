@@ -65,14 +65,59 @@ public class HTTPCacheHelperTest {
         Headers headers = new Headers();
         headers = headers.add(HeaderUtils.toHttpDate("date", createDateTime(10)));
         headers = headers.add(HeaderConstants.CACHE_CONTROL, "private, max-age=39");
-        Assert.assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.OK, headers)));
-        Assert.assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.NON_AUTHORITATIVE_INFORMATION, headers)));
-        Assert.assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.MULTIPLE_CHOICES, headers)));
-        Assert.assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.MOVED_PERMANENTLY, headers)));
-        Assert.assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.GONE, headers)));
         Assert.assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.NOT_MODIFIED, headers)));
         Assert.assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.ACCEPTED, headers)));
         Assert.assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(null, Status.CREATED, headers)));
+    }
+
+    @Test
+    public void responseWithExpiryShouldBeStored() {
+        Headers headers = new Headers();
+        headers = headers.add(HeaderUtils.toHttpDate("date", createDateTime(10)));
+        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, createDateTime(11)));
+        Assert.assertTrue(helper.shouldBeStored(new HTTPResponse(null, Status.OK, headers)));
+    }
+
+    @Test
+    public void responseWithETagShouldBeStored() {
+        Headers headers = new Headers().add("etag", new Tag("foo").format());
+        Assert.assertTrue(helper.shouldBeStored(new HTTPResponse(null, Status.OK, headers)));
+    }
+
+    @Test
+    public void responseWithLastModifiedShouldBeStored() {
+        Headers headers = new Headers().add(HeaderUtils.toHttpDate(HeaderConstants.LAST_MODIFIED, createDateTime(11)));
+        Assert.assertTrue(helper.shouldBeStored(new HTTPResponse(null, Status.OK, headers)));
+    }
+
+    @Test
+    public void responseWithMaxAgeShouldBeStored() {
+        Headers headers = new Headers().add(HeaderConstants.CACHE_CONTROL, "max-age=10");
+        Assert.assertTrue(helper.shouldBeStored(new HTTPResponse(null, Status.OK, headers)));
+    }
+
+    @Test
+    public void responseWithEverythingShouldBeStored() {
+        Headers headers = new Headers();
+        headers = headers.add(HeaderUtils.toHttpDate("date", createDateTime(10)));
+        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, createDateTime(20)));
+        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.LAST_MODIFIED, createDateTime(9)));
+        headers = headers.add(HeaderConstants.CACHE_CONTROL, "max-age=10");
+        headers = headers.add("etag", new Tag("foo").format());
+        Assert.assertTrue(helper.shouldBeStored(new HTTPResponse(null, Status.OK, headers)));
+    }
+
+    @Test
+    public void responseWithNotHeadersShouldNotBeStored() {
+        Headers headers = new Headers();
+        Assert.assertFalse(helper.shouldBeStored(new HTTPResponse(null, Status.OK, headers)));
+    }
+
+    @Test
+    public void responseWithOnlyDateShouldNotBeStored() {
+        Headers headers = new Headers();
+        headers = headers.add(HeaderUtils.toHttpDate("date", createDateTime(10)));
+        Assert.assertFalse(helper.shouldBeStored(new HTTPResponse(null, Status.OK, headers)));
     }
 
     private DateTime createDateTime(int seconds) {
