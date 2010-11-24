@@ -67,10 +67,8 @@ public class CacheItem {
         final CacheControl cc = response.getCacheControl();
         if (cc != null) {
             int maxAge = cc.getMaxAge();
-            if (maxAge > -1) {
-                if (maxAge > 0) {
-                    return maxAge;
-                }
+            if (maxAge > 0) {
+                return maxAge;
             }
         }
         /**
