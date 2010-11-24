@@ -49,5 +49,6 @@
         <!-- <menu ref="modules" inherit="top"/>-->
         <menu ref="reports" inherit="bottom"/>
     </body>
+    <version position="none"/>
 </project>
 
