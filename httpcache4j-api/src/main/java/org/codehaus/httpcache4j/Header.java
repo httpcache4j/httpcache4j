@@ -30,12 +30,10 @@ public final class Header extends NameValue {
 
     public Header(String name, String value) {
         super(name, value);
-        Validate.notEmpty(value, "The value of a Header may not be empty");
     }
 
     public Header(String name, Directives directives) {
         super(name, directives.toString());
-        Validate.notEmpty(value, "The value of a Header may not be empty");
         this.directives = directives;
     }
 
