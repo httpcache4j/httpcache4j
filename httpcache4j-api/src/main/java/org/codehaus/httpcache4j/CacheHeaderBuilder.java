@@ -46,7 +46,7 @@ public abstract class CacheHeaderBuilder {
         }
 
         public Header createHITXCacheHeader() {
-            String value = String.format(X_CACHE_FORMAT, "MISS", getCanonicalHostName());
+            String value = String.format(X_CACHE_FORMAT, "HIT", getCanonicalHostName());
             return new Header(HeaderConstants.X_CACHE, value);
 
         }
