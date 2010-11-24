@@ -333,18 +333,17 @@
 
   <distributionManagement>
     <repository>
-      <id>httpcache4j</id>
+      <id>codehaus-staging</id>
       <name>Codehaus staging repo</name>
       <url>https://nexus.codehaus.org/service/local/staging/deploy/maven2</url>
     </repository>
     <snapshotRepository>
-      <id>httpcache4j-snapshot</id>
+      <id>codehaus-snapshots</id>
       <name>Codehaus maven repo</name>
-      <uniqueVersion>false</uniqueVersion>
       <url>https://nexus.codehaus.org/content/repositories/snapshots</url>
     </snapshotRepository>
     <site>
-      <id>httpcache4j-site</id>
+      <id>codehaus-site</id>
       <url>dav:https://dav.codehaus.org/httpcache4j</url>
     </site>
   </distributionManagement>
