@@ -33,6 +33,7 @@
     <dependency>
       <groupId>com.ning</groupId>
       <artifactId>async-http-client</artifactId>
+      <classifier>shaded</classifier>
       <version>1.4.0</version>
     </dependency>
     <dependency>
