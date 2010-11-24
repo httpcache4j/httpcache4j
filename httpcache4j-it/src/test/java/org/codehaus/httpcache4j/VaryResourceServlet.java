@@ -20,55 +20,49 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.http.HttpHeaders;
 
 /**
- *
  * @author imyousuf
  */
 public class VaryResourceServlet extends HttpServlet {
 
-  public static final String XML_HELLO_WORLD = "<xml>Hello World!</xml>";
-  public static final String PLAIN_HELLO_WORLD = "Hello World!";
-  private int count = 0;
+    public static final String XML_HELLO_WORLD = "<xml>Hello World!</xml>";
+    public static final String PLAIN_HELLO_WORLD = "Hello World!";
+    private int count = 0;
 
-  @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    String acceptHeader = request.getHeader(HttpHeaders.ACCEPT);
-    System.out.println("Server: Request! " + ++count + " - " + request.getRequestURI() + " @ Accept: " + acceptHeader);
-    if (StringUtils.isBlank(acceptHeader)) {
-      writeTextPlain(request, response);
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String acceptHeader = request.getHeader(HttpHeaders.ACCEPT);
+        System.out.println("Server: Request! " + ++count + " - " + request.getRequestURI() + " @ Accept: " + acceptHeader);
+        if (acceptHeader.startsWith("text/xml")) {
+            writeTextXml(request, response);
+        } else {
+            writeTextPlain(request, response);
+        }
     }
-    else if (acceptHeader.startsWith("text/xml")) {
-      writeTextXml(request, response);
+
+    private void writeTextPlain(HttpServletRequest request,
+                                HttpServletResponse response) throws IOException {
+        response.setContentType("text/plain");
+        commonWrites(response, PLAIN_HELLO_WORLD);
     }
-    else {
-      writeTextPlain(request, response);
+
+    protected void commonWrites(HttpServletResponse response, String output) throws IOException {
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "max-age=30000");
+        Date date = new Date();
+        response.setHeader(HttpHeaders.VARY, HttpHeaders.ACCEPT);
+        response.setDateHeader(HttpHeaders.DATE, date.getTime());
+        response.getWriter().write(output);
+        response.getWriter().close();
     }
-  }
 
-  private void writeTextPlain(HttpServletRequest request,
-                              HttpServletResponse response) throws IOException {
-    String output = PLAIN_HELLO_WORLD;
-    response.setContentType("text/plain");
-    commonWrites(response, output);
-  }
-
-  protected void commonWrites(HttpServletResponse response, String output) throws IOException {
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.setHeader(HttpHeaders.CACHE_CONTROL, "max-age=30000");
-    response.setDateHeader(HttpHeaders.EXPIRES, new Date().getTime() + 30000);
-    response.setHeader(HttpHeaders.VARY, HttpHeaders.ACCEPT);
-    response.setDateHeader(HttpHeaders.DATE, new Date().getTime());
-    response.getWriter().write(output);
-    response.getWriter().close();
-  }
-
-  private void writeTextXml(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    String output = XML_HELLO_WORLD;
-    response.setContentType("text/xml");
-    commonWrites(response, output);
-  }
+    private void writeTextXml(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        response.setContentType("text/xml");
+        commonWrites(response, XML_HELLO_WORLD);
+    }
 }
