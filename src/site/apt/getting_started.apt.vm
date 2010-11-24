@@ -18,7 +18,7 @@ Getting started
 
    <dependency>
      <groupId>org.codehaus.httpcache4j.resolvers</groupId>
-     <artifactId>resolvers-commons-httpclient</artifactId>
+     <artifactId>resolvers-httpcomponents-httpclient</artifactId>
      <version>${currentVersion}</version>
    </dependency>
 ----------------------------------------
@@ -28,7 +28,7 @@ Getting started
 ----------------------------------------
 HTTPCache cache = new HTTPCache(
   new MemoryCacheStorage(),
-  new HTTPClientResolver(new HttpClient())
+  HTTPClientResponseResolver.createMultithreadedInstance()
 );
 ----------------------------------------
 
@@ -37,16 +37,26 @@ HTTPCache cache = new HTTPCache(
   Normal usage would be
 
 ----------------------------------------
-HTTPRequest request = new HTTPRequest(URI.create("http://www.vg.no/"));
-cache.doCachedRequest(request);
+HTTPRequest request = new HTTPRequest(URI.create("http://tools.ietf.org/html/rfc2616"));
+HTTPResponse response = null;
+try {
+  response = cache.doCachedRequest(request);
+  //Do something with the response.
+} finally {
+  if (response != null) {
+    response.consume();
+  }
+}
 ----------------------------------------
 
- The cache will then perform a HTTP GET to http://www.vg.no and cache this if possible.
- The next request will then be served from the cache, if the TTL has not expired.
- If you want to bypass the cache, but still want the response to be cached, you can use
+  The cache will then perform a HTTP GET to "http://tools.ietf.org/html/rfc2616" and cache this if possible.
+  A following request will lookup the cached item from storage and serve this if the cached entry is fresh.
+  Make sure that you consume the response when you are done with it, regardless if you read the payload or not.
+
+  If you want to bypass the cache, but still want the response to be cached, you can use
 
 ---------------------------------------- 
-cache.doCachedRequest(request, true);
+cache.refreshCachedRequest(request);
 ----------------------------------------
 
  This works like the browser ctrl + F5 (Firefox); force a refresh.

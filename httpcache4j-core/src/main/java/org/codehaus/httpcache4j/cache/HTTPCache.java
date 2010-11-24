@@ -80,6 +80,10 @@ public class HTTPCache {
         return doCachedRequest(request, false);
     }
 
+    public HTTPResponse refreshCachedRequest(final HTTPRequest request) {
+        return doCachedRequest(request, true);
+    }
+
     public HTTPResponse doCachedRequest(final HTTPRequest request, boolean force) {
         if (resolver == null) {
             throw new IllegalStateException("The resolver was not set, no point of continuing with the request");
