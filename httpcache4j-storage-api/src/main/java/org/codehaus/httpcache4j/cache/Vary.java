@@ -85,8 +85,10 @@ public final class Vary implements ToJSON {
      */
     public boolean matches(final HTTPRequest request) {
         for (Map.Entry<String, String> varyEntry : varyHeaders.entrySet()) {
-            List<Header> requestHeaderValue = request.getHeaders().getHeaders(varyEntry.getKey());
-            boolean valid = requestHeaderValue.isEmpty() ? varyEntry.getValue() == null : request.getHeaders().getFirstHeader(varyEntry.getKey()).getValue().equals(varyEntry.getValue());
+
+            Headers headers = request.getAllHeaders();
+            List<Header> requestHeaderValue = headers.getHeaders(varyEntry.getKey());
+            boolean valid = requestHeaderValue.isEmpty() ? varyEntry.getValue() == null : headers.getFirstHeader(varyEntry.getKey()).getValue().equals(varyEntry.getValue());
             if (!valid) {
                 return false;
             }

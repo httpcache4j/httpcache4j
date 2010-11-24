@@ -16,6 +16,10 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.apache.commons.lang.SerializationUtils;
+import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.Headers;
+import org.codehaus.httpcache4j.Status;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -42,5 +46,11 @@ public class KeyTest {
         byte[] bytes = SerializationUtils.serialize(key1);
         Key key2 = (Key) SerializationUtils.deserialize(bytes);
         Assert.assertEquals(key1, key2);
+    }
+
+    @Test
+    public void keyHasVariation() {
+        Key key1 = Key.create(new HTTPRequest(URI.create("foo")).addHeader("Accept-Language", "en"), new HTTPResponse(null, Status.OK, new Headers().add("Vary", "Accept-Language")));
+        Assert.assertEquals("en", key1.getVary().getVaryHeaders().get("Accept-Language"));
     }
 }

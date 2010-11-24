@@ -52,7 +52,7 @@ public class Key implements Serializable, ToJSON {
 
     public static Key create(HTTPRequest request, HTTPResponse response) {
         URI uri = request.getRequestURI();
-        return new Key(uri, determineVariation(request.getAllHeaders(), response.getHeaders()));
+        return new Key(uri, determineVariation(response.getHeaders(), request.getAllHeaders()));
     }
 
     private static Vary determineVariation(Headers responseHeaders, Headers requestHeaders) {
@@ -62,7 +62,9 @@ public class Key implements Serializable, ToJSON {
             String[] varies = varyHeader.split(",");
             for (String vary : varies) {
                 String value = requestHeaders.getFirstHeaderValue(vary);
-                resolvedVaryHeaders.put(vary, value == null ? null : value);
+                if (value != null) {
+                    resolvedVaryHeaders.put(vary, value);
+                }
             }
         }
         return new Vary(resolvedVaryHeaders);

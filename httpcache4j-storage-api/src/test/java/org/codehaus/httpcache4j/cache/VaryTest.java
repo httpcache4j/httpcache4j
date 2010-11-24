@@ -1,5 +1,8 @@
 package org.codehaus.httpcache4j.cache;
 
+import org.codehaus.httpcache4j.Headers;
+import org.codehaus.httpcache4j.MIMEType;
+import org.codehaus.httpcache4j.preference.Preferences;
 import org.junit.Test;
 import org.junit.Assert;
 import org.codehaus.httpcache4j.HTTPRequest;
@@ -91,6 +94,34 @@ public class VaryTest {
         request = request.addHeader("Accept-Charset", "UTF-8");
 
         Assert.assertFalse(vary.matches(request));
+    }
+
+    @Test
+    public void acceptShouldMatch() {
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("Accept", "application/xml");
+        vary = new Vary(map);
+        Assert.assertFalse("Header names added", vary.isEmpty());
+        Assert.assertEquals("Header names added", 1, vary.size());
+        HTTPRequest request = new HTTPRequest(URI.create("no.uri"));
+        request = request.addHeader("Accept", "application/xml");
+        request = request.headers(new Headers());
+        request = request.preferences(new Preferences().addMIMEType(MIMEType.valueOf("application/xml")));
+        Assert.assertTrue("request did not specify application/xml", vary.matches(request));
+    }
+
+    @Test
+    public void acceptWithManyPreferencesShouldMatch() {
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("Accept", "application/xml, application/json");
+        vary = new Vary(map);
+        Assert.assertFalse("Header names added", vary.isEmpty());
+        Assert.assertEquals("Header names added", 1, vary.size());
+        HTTPRequest request = new HTTPRequest(URI.create("no.uri"));
+        request = request.addHeader("Accept", "application/xml");
+        request = request.headers(new Headers());
+        request = request.preferences(new Preferences().addMIMEType(MIMEType.valueOf("application/xml")).addMIMEType(MIMEType.valueOf("application/json")));
+        Assert.assertTrue("request did not specify application/xml", vary.matches(request));
     }
 
     @Test
