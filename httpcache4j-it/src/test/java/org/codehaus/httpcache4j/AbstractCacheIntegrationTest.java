@@ -36,6 +36,8 @@ import java.io.FileInputStream;
 import java.net.URI;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 
 import static org.junit.Assert.*;
 
@@ -45,6 +47,7 @@ import static org.junit.Assert.*;
  */
 public abstract class AbstractCacheIntegrationTest {
     private static URI baseRequestURI;
+    private static URI baseCustomRequestURI;
     private static final String TEST_FILE = "testFile";
     private HTTPCache cache;
     private CacheStorage storage;
@@ -52,15 +55,22 @@ public abstract class AbstractCacheIntegrationTest {
 
     @BeforeClass
     public static void setupServer() throws Exception {
-        baseRequestURI = URI.create(String.format("http://localhost:%s/", JettyServer.PORT));
+        baseRequestURI = URI.create(String.format("http://localhost:%s/testbed/", JettyServer.PORT));
+        baseCustomRequestURI = URI.create(String.format("http://localhost:%s/custom/", JettyServer.PORT));
         System.out.println("::: Starting server :::");
         jettyServer = new Server(JettyServer.PORT);
         final String webapp = "target/testbed/";
         if (!TestUtil.getTestFile(webapp).exists()) {
           throw new IllegalStateException("WebApp dir does not exist!");
         }
-        Handler webAppHandler = new WebAppContext(webapp, "/");
-        jettyServer.setHandler(webAppHandler);
+        HandlerList handlerList = new HandlerList();
+        Handler webAppHandler = new WebAppContext(webapp, "/testbed");
+        handlerList.addHandler(webAppHandler);
+        ServletContextHandler contextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        contextHandler.setContextPath("/custom");
+        contextHandler.addServlet(VaryResourceServlet.class, "/*");
+        handlerList.addHandler(contextHandler);
+        jettyServer.setHandler(handlerList);
         jettyServer.start();
     }
 
@@ -172,14 +182,13 @@ public abstract class AbstractCacheIntegrationTest {
         URI uri = baseRequestURI.resolve(String.format("lm/%s", TEST_FILE));
         HTTPResponse response = get(uri);
         assertEquals(Status.OK, response.getStatus());
-        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).startsWith(
-            "MISS"));
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
+        assertFalse(response.isCached());
         response.consume();
         response = get(uri);
         assertEquals(Status.OK, response.getStatus());
         assertTrue(response.isCached());
-        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).startsWith(
-            "HIT"));
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
         response.consume();
     }
 
@@ -188,15 +197,37 @@ public abstract class AbstractCacheIntegrationTest {
         URI uri = baseRequestURI.resolve(String.format("lm/etag/%s", TEST_FILE));
         HTTPResponse response = get(uri);
         assertEquals(Status.OK, response.getStatus());
-        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).startsWith(
-            "MISS"));
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
+        assertFalse(response.isCached());
         response.consume();        
         response = get(uri);
         assertEquals(Status.OK, response.getStatus());
         assertTrue(response.isCached());
-        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).startsWith(
-            "HIT"));
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
         response.consume();
+    }
+
+    @Test
+    public void GETWithVaryForAccept() {
+      URI uri = baseCustomRequestURI;
+      HTTPRequest request = new HTTPRequest(uri, HTTPMethod.GET).addHeader(HeaderConstants.ACCEPT, "text/plain");
+      HTTPResponse response = cache.doCachedRequest(request);
+      System.out.println(response.getHeaders());
+      assertEquals(Status.OK, response.getStatus());
+      assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
+      assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.CONTENT_TYPE).startsWith("text/plain"));
+      assertFalse(response.isCached());
+      response.consume();
+      request = new HTTPRequest(uri, HTTPMethod.GET).addHeader(HeaderConstants.ACCEPT, "text/plain");
+      response = cache.doCachedRequest(request);
+      System.out.println(response.getHeaders());
+      response.consume();
+      request = new HTTPRequest(uri, HTTPMethod.GET).addHeader(HeaderConstants.ACCEPT, "text/xml");
+      response = cache.doCachedRequest(request);
+      System.out.println(response.getHeaders());
+      assertEquals(Status.OK, response.getStatus());
+      assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
+      assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.CONTENT_TYPE).startsWith("text/xml"));
     }
 
     private HTTPResponse get(URI uri) {
