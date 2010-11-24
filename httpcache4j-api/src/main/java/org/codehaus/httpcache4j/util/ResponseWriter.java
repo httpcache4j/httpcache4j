@@ -19,6 +19,7 @@ import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.*;
 import org.apache.commons.io.IOUtils;
 
+import javax.xml.ws.Response;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
@@ -30,17 +31,11 @@ import java.util.Map;
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 public class ResponseWriter {
-    private final HTTPResponse response;
-
-    public ResponseWriter(HTTPResponse response) {
-        this.response = response;
+    public void write(HTTPResponse response) {
+        write(response, new PrintWriter(System.out));
     }
 
-    public void write() {
-        write(new PrintWriter(System.out));
-    }
-
-    public void write(Writer output) {
+    public void write(HTTPResponse response, Writer output) {
         PrintWriter writer = new PrintWriter(output);
         writeStatus(writer, response.getStatus());
         writeHeaders(writer, response.getHeaders());
