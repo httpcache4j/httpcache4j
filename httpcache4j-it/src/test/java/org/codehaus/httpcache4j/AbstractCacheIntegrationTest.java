@@ -183,6 +183,7 @@ public abstract class AbstractCacheIntegrationTest {
         HTTPResponse response = get(uri);
         assertEquals(Status.OK, response.getStatus());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
+        assertFalse(response.isCached());
         response.consume();
         response = get(uri);
         assertEquals(Status.OK, response.getStatus());
@@ -197,6 +198,7 @@ public abstract class AbstractCacheIntegrationTest {
         HTTPResponse response = get(uri);
         assertEquals(Status.OK, response.getStatus());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
+        assertFalse(response.isCached());
         response.consume();        
         response = get(uri);
         assertEquals(Status.OK, response.getStatus());
@@ -214,6 +216,7 @@ public abstract class AbstractCacheIntegrationTest {
       assertEquals(Status.OK, response.getStatus());
       assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
       assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.CONTENT_TYPE).startsWith("text/plain"));
+      assertFalse(response.isCached());
       response.consume();
       request = new HTTPRequest(uri, HTTPMethod.GET).addHeader(HeaderConstants.ACCEPT, "text/plain");
       response = cache.doCachedRequest(request);
