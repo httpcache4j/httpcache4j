@@ -16,7 +16,12 @@
 
 package org.codehaus.httpcache4j;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang.Validate;
+import org.codehaus.httpcache4j.util.CaseInsensitiveKey;
+
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * An enum that defines the different HTTP methods.
@@ -34,6 +39,20 @@ public final class HTTPMethod {
     public static final HTTPMethod PURGE = new HTTPMethod("PURGE");
     public static final HTTPMethod PUT = new HTTPMethod("PUT");
     public static final HTTPMethod TRACE = new HTTPMethod("TRACE");
+
+    private static Map<CaseInsensitiveKey, HTTPMethod> defaultMethods = ImmutableMap.<CaseInsensitiveKey, HTTPMethod>builder()
+            .put(new CaseInsensitiveKey(CONNECT.getMethod()), CONNECT)
+            .put(new CaseInsensitiveKey(DELETE.getMethod()), DELETE)
+            .put(new CaseInsensitiveKey(GET.getMethod()), GET)
+            .put(new CaseInsensitiveKey(HEAD.getMethod()), HEAD)
+            .put(new CaseInsensitiveKey(OPTIONS.getMethod()), OPTIONS)
+            .put(new CaseInsensitiveKey(PATCH.getMethod()), PATCH)
+            .put(new CaseInsensitiveKey(POST.getMethod()), POST)
+            .put(new CaseInsensitiveKey(PURGE.getMethod()), PURGE)
+            .put(new CaseInsensitiveKey(PUT.getMethod()), PUT)
+            .put(new CaseInsensitiveKey(TRACE.getMethod()), TRACE)
+            .build();
+
 
     private final String method;
 
@@ -55,41 +74,17 @@ public final class HTTPMethod {
         return method;
     }
 
+    public static HTTPMethod[] values() {
+        return defaultMethods.values().toArray(new HTTPMethod[defaultMethods.size()]);
+    }
+
     public static HTTPMethod valueOf(String method) {
         Validate.notEmpty(method, "Method name may not be null or empty");
-        if (CONNECT.getMethod().equalsIgnoreCase(method)) {
-            return CONNECT;
+        CaseInsensitiveKey key = new CaseInsensitiveKey(method);
+        if (defaultMethods.containsKey(key)) {
+            return defaultMethods.get(key);
         }
-        else if (DELETE.getMethod().equalsIgnoreCase(method)) {
-            return DELETE;
-        }
-        else if (GET.getMethod().equalsIgnoreCase(method)) {
-            return GET;
-        }
-        else if (HEAD.getMethod().equalsIgnoreCase(method)) {
-            return HEAD;
-        }
-        else if (OPTIONS.getMethod().equalsIgnoreCase(method)) {
-            return OPTIONS;
-        }
-        else if (PATCH.getMethod().equalsIgnoreCase(method)) {
-            return PATCH;
-        }
-        else if (POST.getMethod().equalsIgnoreCase(method)) {
-            return POST;
-        }
-        else if (PUT.getMethod().equalsIgnoreCase(method)) {
-            return PUT;
-        }
-        else if (PURGE.getMethod().equalsIgnoreCase(method)) {
-            return PURGE;
-        }
-        else if (TRACE.getMethod().equalsIgnoreCase(method)) {
-            return TRACE;
-        }
-        else {
-            return new HTTPMethod(method.toUpperCase());
-        }
+        return new HTTPMethod(method.toUpperCase(Locale.ENGLISH));
     }
 
     @Override
