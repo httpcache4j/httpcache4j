@@ -412,13 +412,11 @@
       <id>reporting-aggregate</id>
       <!-- To generate aggregate reports -->
       <!-- To deploy both aggregate reports for top-level project and standalone reports for modules, call
-           mvn site
-           mvn site:deploy
            mvn site -Preporting-aggregate
            mvn -Pdist assembly:single
            mvn -N site:deploy
 
-time mvn site && time mvn site:deploy && time mvn site -Preporting-aggregate && && time mvn -N -Pdist assembly:single && time mvn -N site:deploy
+mvn site -Preporting-aggregate && && mvn -N -Pdist assembly:single && mvn -N site:deploy
       -->
       <build>
         <plugins>
