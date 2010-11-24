@@ -33,8 +33,8 @@ import java.util.Locale;
  */
 public final class HeaderUtils {
     public static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss 'GMT'";
-    private static final String NO_STORE_HEADER_VALUE = "no-store";
     private static final String NO_CACHE_HEADER_VALUE = "no-cache";
+    private static final Header VARY_ALL = new Header(VARY, "*");
 
     private HeaderUtils() {
     }
@@ -43,13 +43,16 @@ public final class HeaderUtils {
         if (header == null) {
             return null;
         }
+        if ("0".equals(header.getValue().trim())) {
+            return new DateTime(1970, 1, 1, 0, 0, 0, 0).withZone(DateTimeZone.forID("UTC"));
+        }
         DateTimeFormatter formatter = DateTimeFormat.forPattern(PATTERN_RFC1123).
                 withZone(DateTimeZone.forID("UTC")).
                 withLocale(Locale.US);
         DateTime formattedDate = null;
         try {
             formattedDate = formatter.parseDateTime(header.getValue());
-        } catch (IllegalArgumentException ignore) {            
+        } catch (IllegalArgumentException ignore) {
         }
 
         return formattedDate;
@@ -79,7 +82,7 @@ public final class HeaderUtils {
 
     /**
      * From http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.4.
-     * 
+     * <p/>
      * Unless specifically constrained by a cache-control (section 14.9) directive,
      * a caching system MAY always store a successful response (see section 13.8)
      * as a cache entry, MAY return it without validation if it is fresh, and MAY return it
@@ -90,35 +93,51 @@ public final class HeaderUtils {
      * A client can usually detect that such a response was taken from a cache by comparing
      * the Date header to the current time.
      *
-     *  
      * @param headers the headers to analyze
-     * @return {@code true} if the headers were cacheable, {@code false} if not. 
+     * @return {@code true} if the headers were cacheable, {@code false} if not.
      */
     public static boolean hasCacheableHeaders(Headers headers) {
-        if (headers.contains(new Header(VARY, "*")) || !headers.hasHeader(DATE)) {
+        if (headers.contains(VARY_ALL)) {
             return false;
         }
         if (headers.hasHeader(CACHE_CONTROL)) {
             final Header header = headers.getFirstHeader(CACHE_CONTROL);
-            if (header.getValue().contains(NO_STORE_HEADER_VALUE) || header.getValue().contains(NO_CACHE_HEADER_VALUE)) {
+            CacheControl cc = new CacheControl(header);
+            if (cc.isNoCache() || cc.isNoStore()) {
+               return false; 
+            }
+        }
+        if (headers.hasHeader(PRAGMA)) {
+            final Header header = headers.getFirstHeader(PRAGMA);
+            if (header.getValue().contains(NO_CACHE_HEADER_VALUE)) {
                 return false;
             }
         }
         if (headers.hasHeader(EXPIRES)) {
-          Header expires = headers.getFirstHeader(EXPIRES);
-          DateTime expiresValue = HeaderUtils.fromHttpDate(expires);
-          Header date = headers.getFirstHeader(DATE);
-          if (expiresValue == null || date == null) {
-            return false;
-          }
-          DateTime dateValue = HeaderUtils.fromHttpDate(date);
-          if (expiresValue.isBefore(dateValue)) {
-            return false;
-          }
+            Header expires = headers.getFirstHeader(EXPIRES);
+            DateTime expiresValue = HeaderUtils.fromHttpDate(expires);
+            Header date = headers.getFirstHeader(DATE);
+            if (expiresValue == null || date == null) {
+                return false;
+            }
+            DateTime dateValue = HeaderUtils.fromHttpDate(date);
+            if (expiresValue.isBefore(dateValue) || expiresValue.equals(dateValue)) {
+                return false;
+            }
         }
-        //To cache we need a cache-validator.
-        return headers.getFirstHeader(ETAG) != null
-                || headers.getFirstHeader(LAST_MODIFIED) != null;
+        if (headers.hasHeader(LAST_MODIFIED)) {
+            Header lastModified = headers.getFirstHeader(LAST_MODIFIED);
+            DateTime expiresValue = HeaderUtils.fromHttpDate(lastModified);
+            Header date = headers.getFirstHeader(DATE);
+            if (expiresValue == null || date == null) {
+                return false;
+            }
+            DateTime dateValue = HeaderUtils.fromHttpDate(date);
+            if (expiresValue.isBefore(dateValue)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     static String fixQuotedString(String value) {
@@ -145,8 +164,7 @@ public final class HeaderUtils {
         for (Directive directive : header.getDirectives()) {
             if (directive instanceof LinkDirective) {
                 links.add((LinkDirective) directive);
-            }
-            else {
+            } else {
                 links.add(new LinkDirective(directive));
             }
         }

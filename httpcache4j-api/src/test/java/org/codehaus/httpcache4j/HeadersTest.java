@@ -99,20 +99,5 @@ public class HeadersTest {
         assertFalse(h.equals(h2));
     }
 
-    @Test
-    public void testHasCacheHeaders() {
-        Headers headers = new Headers();
-        assertFalse("There was cacheable headers in an empty header map", HeaderUtils.hasCacheableHeaders(headers));
-        headers = headers.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
-        assertFalse("There was no cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
-        headers = new Headers().add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
-        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, new DateTime()));
-        assertFalse("There was no cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
-        headers = new Headers().add(new Header(HeaderConstants.PRAGMA, "private"));
-        assertFalse("There was cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
-        headers = new Headers().add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
-        headers = headers.add(new Header(HeaderConstants.CACHE_CONTROL, "private"));
-        headers = headers.add(new Header(HeaderConstants.ETAG, "\"foo\""));
-        assertTrue("There was no cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
-    }
+    
 }
