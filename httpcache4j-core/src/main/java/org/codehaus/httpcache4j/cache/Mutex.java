@@ -34,7 +34,7 @@ class Mutex<T> {
     private Condition condition = lock.newCondition();
     private final Logger logger = Logger.getLogger(getClass().getName());
 
-    public void acquire(T object) {
+    public boolean acquire(T object) {
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest(String.format("About to acquire lock for %s", object));
         }
@@ -45,9 +45,11 @@ class Mutex<T> {
                     condition.await();
                 } catch (InterruptedException e) {
                     if (logger.isLoggable(Level.WARNING)) {
-                        logger.warning("Thread was interrupted");
+                        logger.warning(String.format("Thread trying to get lock for %s was interrupted", object));
                     }
                     Thread.currentThread().interrupt();
+                    locks.remove(object);
+                    return false;
                 }
             }
             if (logger.isLoggable(Level.FINE)) {
@@ -61,6 +63,7 @@ class Mutex<T> {
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest(String.format("Acquired lock for %s", object));
         }
+        return true;
     }
 
     public void release(T object) {

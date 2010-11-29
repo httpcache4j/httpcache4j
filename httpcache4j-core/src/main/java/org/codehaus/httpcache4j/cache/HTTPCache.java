@@ -98,11 +98,19 @@ public class HTTPCache {
         }
         else {
             //request is cacheable
-            mutex.acquire(request.getRequestURI());
+            boolean shouldUnlock = true;
             try {
-                response = getFromCache(request, force || request.getConditionals().isUnconditional());
+                if (mutex.acquire(request.getRequestURI())) {
+                    response = getFromCache(request, force || request.getConditionals().isUnconditional());
+                }
+                else {
+                    response = new HTTPResponse(null, Status.BAD_GATEWAY, new Headers());
+                    shouldUnlock = false;
+                }
             } finally {
-                mutex.release(request.getRequestURI());
+                if (shouldUnlock) {
+                    mutex.release(request.getRequestURI());
+                }
             }
         }
         if (response == null) {
