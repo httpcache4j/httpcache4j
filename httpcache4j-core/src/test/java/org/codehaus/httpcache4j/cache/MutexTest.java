@@ -61,7 +61,7 @@ public class MutexTest {
                 }
             }
         }, URI_1);
-        
+
         joinAndAssert(threads);
     }
 
@@ -97,6 +97,47 @@ public class MutexTest {
         List<Thread> threads = testWithRunnables(worker, URI_1);
         joinAndAssert(threads);
 
+    }
+
+    @Test
+    public void verifyHTCJ101() throws Exception {
+        final Mutex<String> mutex = new Mutex<String>();
+        final String resourceToLock = "some-resourceID";
+
+        final Runnable t1 = new Runnable() {
+            public void run() {
+                boolean acq = mutex.acquire(resourceToLock);
+
+                // Give the T2 time to try to acquire the lock
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ignore) {
+                }
+                Assert.assertTrue("Failed to lock resource",acq);
+                mutex.release(resourceToLock);
+            }
+        };
+        Runnable t2 = new Runnable() {
+            public void run() {
+                System.out.println("Started");
+                // Delay to make sure that T1 actually starts before T2
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignore) {
+                }
+                // Simulate that another thread tries to interrupt T2 right now
+                Thread.currentThread().interrupt();
+                Assert.assertFalse(mutex.acquire(resourceToLock));
+            }
+        };
+
+        Thread thread1 = new Thread(t1, "T1");
+        thread1.start();
+        
+        Thread thread2 = new Thread(t2, "T2");
+        thread2.start();
+        thread1.join();
+        thread2.join();
     }
 
     private List<Thread> testWithRunnables(final Runnable worker, URI uri) throws InterruptedException {
@@ -139,7 +180,7 @@ public class MutexTest {
                 if (flag.get()) {
                     success.put(Thread.currentThread().getName() + " " + uri, true);
                 } else {
-                    success.put(Thread.currentThread().getName()  + " " + uri, false);
+                    success.put(Thread.currentThread().getName() + " " + uri, false);
                 }
             } finally {
                 mutex.release(URI.create(uri));
@@ -157,7 +198,7 @@ public class MutexTest {
         public void run() {
             mutex.acquire(URI.create(uri));
             synchronized (this) {
-                notify();                
+                notify();
             }
             try {
                 Thread.sleep(2000);
