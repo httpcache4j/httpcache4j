@@ -97,7 +97,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
         return null;
     }
 
-    private void getCacheFromDisk() {
+    private synchronized void getCacheFromDisk() {
         if (cache == null) {
             cache = new InvalidateOnRemoveLRUHashMap(capacity);
         }
@@ -118,11 +118,13 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
         }
     }
 
-    private void saveCacheToDisk() {
+    private synchronized void saveCacheToDisk() {
+        InvalidateOnRemoveLRUHashMap snapshot = this.cache.copy();
+
         FileOutputStream outputStream = null;
         try {
             outputStream = FileUtils.openOutputStream(serializationFile);
-            SerializationUtils.serialize(cache, outputStream);
+            SerializationUtils.serialize(snapshot, outputStream);
         }
         catch (IOException e) {
             //Ignored, we create a new one.
