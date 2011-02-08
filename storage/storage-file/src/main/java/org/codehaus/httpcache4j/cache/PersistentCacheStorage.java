@@ -126,7 +126,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
             outputStream = FileUtils.openOutputStream(serializationFile);
             SerializationUtils.serialize(snapshot, outputStream);
         }
-        catch (IOException e) {
+        catch (Exception e) {
             //Ignored, we create a new one.
         }
         finally {
