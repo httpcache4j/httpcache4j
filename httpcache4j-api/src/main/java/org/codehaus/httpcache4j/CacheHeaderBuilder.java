@@ -29,24 +29,24 @@ public abstract class CacheHeaderBuilder {
     private static class LocalHostCacheHeaderBuilder extends CacheHeaderBuilder {
         private static final String X_CACHE_FORMAT = "%s from HTTPCache4j(%s)";
 
-        private String getCanonicalHostName() {
-            String canonicalHostName;
+        private String getHostAddress() {
+            String hostname;
             try {
-                canonicalHostName = InetAddress.getLocalHost().getCanonicalHostName();
+                hostname = InetAddress.getLocalHost().getHostAddress();
             }
             catch (UnknownHostException ex) {
-                canonicalHostName = "localhost";
+                hostname = "localhost";
             }
-            return canonicalHostName;
+            return hostname;
         }
 
         public Header createMISSXCacheHeader() {
-            String value = String.format(X_CACHE_FORMAT, "MISS", getCanonicalHostName());
+            String value = String.format(X_CACHE_FORMAT, "MISS", getHostAddress());
             return new Header(HeaderConstants.X_CACHE, value);
         }
 
         public Header createHITXCacheHeader() {
-            String value = String.format(X_CACHE_FORMAT, "HIT", getCanonicalHostName());
+            String value = String.format(X_CACHE_FORMAT, "HIT", getHostAddress());
             return new Header(HeaderConstants.X_CACHE, value);
 
         }
