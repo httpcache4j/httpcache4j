@@ -20,7 +20,7 @@
   <groupId>org.codehaus.httpcache4j</groupId>
   <artifactId>httpcache4j</artifactId>
   <packaging>pom</packaging>
-  <version>3.3-SNAPSHOT</version>
+  <version>3.2-escenic-SNAPSHOT</version>
   <name>Java HTTP cache</name>
   <url>http://httpcache4j.codehaus.org</url>
   <description>HttpCache4j is a library for caching HTTP requests from a client.</description>
@@ -204,6 +204,7 @@
   </build>
   <properties>
     <currentVersion>${project.version}</currentVersion>
+    <snapshotUrl>http://repo.dev.escenic.com/content/repositories/escenic-snapshots</snapshotUrl>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -339,19 +340,14 @@
 
   <distributionManagement>
     <repository>
-      <id>codehaus-staging</id>
-      <name>Codehaus staging repo</name>
-      <url>https://nexus.codehaus.org/service/local/staging/deploy/maven2</url>
+      <id>central</id>
+      <url>http://repo.dev.escenic.com/content/repositories/escenic</url>
     </repository>
     <snapshotRepository>
-      <id>codehaus-snapshots</id>
-      <name>Codehaus maven repo</name>
-      <url>https://nexus.codehaus.org/content/repositories/snapshots</url>
+      <id>central</id>
+      <url>${snapshotUrl}</url>
+      <uniqueVersion>false</uniqueVersion>
     </snapshotRepository>
-    <site>
-      <id>codehaus-site</id>
-      <url>dav:https://dav.codehaus.org/httpcache4j</url>
-    </site>
   </distributionManagement>
 
   <profiles>
