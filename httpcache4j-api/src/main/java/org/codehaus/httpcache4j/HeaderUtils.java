@@ -125,18 +125,6 @@ public final class HeaderUtils {
                 return false;
             }
         }
-        if (headers.hasHeader(LAST_MODIFIED)) {
-            Header lastModified = headers.getFirstHeader(LAST_MODIFIED);
-            DateTime expiresValue = HeaderUtils.fromHttpDate(lastModified);
-            Header date = headers.getFirstHeader(DATE);
-            if (expiresValue == null || date == null) {
-                return false;
-            }
-            DateTime dateValue = HeaderUtils.fromHttpDate(date);
-            if (expiresValue.isBefore(dateValue)) {
-                return false;
-            }
-        }
         return true;
     }
 
