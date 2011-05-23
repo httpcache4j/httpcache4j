@@ -17,6 +17,7 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
+import org.codehaus.httpcache4j.mutable.MutableRequest;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
 import org.apache.commons.lang.Validate;
@@ -42,6 +43,7 @@ public class HTTPCache {
     private final CacheStorage storage;
     private ResponseResolver resolver;
     private final Mutex<URI> mutex = new Mutex<URI>();
+    private boolean translateHEADToGET = false;
 
     public HTTPCache(CacheStorage storage, ResponseResolver resolver) {
         Validate.notNull(storage, "Cache storage may not be null");
@@ -76,15 +78,30 @@ public class HTTPCache {
         return statistics;
     }
 
+    @Deprecated
     public HTTPResponse doCachedRequest(final HTTPRequest request) {
-        return doCachedRequest(request, false);
+        return execute(request, false);
     }
 
+    @Deprecated
     public HTTPResponse refreshCachedRequest(final HTTPRequest request) {
-        return doCachedRequest(request, true);
+        return execute(request, true);
     }
 
+    public HTTPResponse execute(final HTTPRequest request) {
+        return execute(request, false);
+    }
+
+    public HTTPResponse refreshExecute(final HTTPRequest request) {
+        return execute(request, true);
+    }
+
+    @Deprecated
     public HTTPResponse doCachedRequest(final HTTPRequest request, boolean force) {
+        return execute(request,  force);
+    }
+
+    public HTTPResponse execute(final HTTPRequest request, boolean force) {
         if (resolver == null) {
             throw new IllegalStateException("The resolver was not set, no point of continuing with the request");
         }
@@ -101,7 +118,7 @@ public class HTTPCache {
             boolean shouldUnlock = true;
             try {
                 if (mutex.acquire(request.getRequestURI())) {
-                    response = getFromCache(request, force || request.getConditionals().isUnconditional());
+                    response = doRequest(request, force || request.getConditionals().isUnconditional());
                 }
                 else {
                     response = new HTTPResponse(null, Status.BAD_GATEWAY, new Headers());
@@ -119,30 +136,36 @@ public class HTTPCache {
         return response;
     }
 
-    private HTTPResponse getFromCache(final HTTPRequest request, final boolean force) {
+    private HTTPResponse doRequest(final HTTPRequest request, final boolean force) {
         HTTPResponse response;
         if (force) {
             response = unconditionalResolve(request);
         }
-        else {                    
-            CacheItem item = storage.get(request);
-            if (item != null) {
-                statistics.hit();
-                if (item.isStale(request)) {
-                    //If the cached value is stale, execute the request and try to cache it.
-                    HTTPResponse staleResponse = item.getResponse();
-                    //If the payload has been deleted for some reason, we want to do a unconditional GET
-                    HTTPRequest conditionalRequest = maybePrepareConditionalResponse(request, staleResponse);
-                    response = handleStaleResponse(conditionalRequest, request, item);
-                }
-                else {
-                    response = helper.rewriteResponse(request, item.getResponse(), item.getAge(request));
-                }
+        else {
+            response = getFromStorage(request);
+        }
+        return response;
+    }
+
+    private HTTPResponse getFromStorage(HTTPRequest request) {
+        HTTPResponse response;
+        CacheItem item = storage.get(request);
+        if (item != null) {
+            statistics.hit();
+            if (item.isStale(request)) {
+                //If the cached value is stale, execute the request and try to cache it.
+                HTTPResponse staleResponse = item.getResponse();
+                //If the payload has been deleted for some reason, we want to do a unconditional GET
+                HTTPRequest conditionalRequest = maybePrepareConditionalResponse(request, staleResponse);
+                response = handleStaleResponse(conditionalRequest, request, item);
             }
             else {
-                statistics.miss();
-                response = unconditionalResolve(request);
+                response = helper.rewriteResponse(request, item.getResponse(), item.getAge(request));
             }
+        }
+        else {
+            statistics.miss();
+            response = unconditionalResolve(request);
         }
         return response;
     }
@@ -171,7 +194,7 @@ public class HTTPCache {
         HTTPResponse response = null;
         HTTPResponse resolvedResponse = null;
         try {
-            resolvedResponse = resolver.resolve(request);
+            resolvedResponse = resolveWithHeadRewrite(request, resolvedResponse);
         } catch (IOException e) {
             //No cached item found, we throw an exception.
             if (item == null) {
@@ -183,7 +206,7 @@ public class HTTPCache {
             }
         }
         if (resolvedResponse != null) {
-            if (request.getMethod() == HTTPMethod.HEAD) {
+            if (request.getMethod() == HTTPMethod.HEAD && !isTranslateHEADToGET()) {
                 if (item != null) {
                     response = updateHeadersFromResolved(request, item, resolvedResponse);
                 }
@@ -198,7 +221,6 @@ public class HTTPCache {
                 //Response could not be cached
                 response = resolvedResponse;
             }
-
             if (item != null) {
                 //from http://tools.ietf.org/html/rfc2616#section-13.5.3
                 if (resolvedResponse.getStatus() == Status.NOT_MODIFIED || resolvedResponse.getStatus() == Status.PARTIAL_CONTENT) {
@@ -209,11 +231,32 @@ public class HTTPCache {
         return response;
     }
 
+    private HTTPResponse resolveWithHeadRewrite(HTTPRequest request, HTTPResponse resolvedResponse) throws IOException {
+        if (request.getMethod() == HTTPMethod.HEAD && isTranslateHEADToGET()) { // We change this to GET and cache the result.
+            MutableRequest mutableRequest = new MutableRequest(request.getRequestURI(), HTTPMethod.GET);
+            mutableRequest.getHeaders().set(request.getAllHeaders());
+            mutableRequest.setChallenge(request.getChallenge());
+            resolvedResponse = resolver.resolve(mutableRequest.toRequest());
+        }
+        else {
+            resolvedResponse = resolver.resolve(request);
+        }
+        return resolvedResponse;
+    }
+
     HTTPResponse updateHeadersFromResolved(final HTTPRequest request, final CacheItem item, final HTTPResponse resolvedResponse) {
         HTTPResponse cachedResponse = item.getResponse();
         Headers headers = new Headers(cachedResponse.getHeaders());
         Headers headersToBeSet = helper.removeUnmodifiableHeaders(resolvedResponse.getHeaders());
         HTTPResponse updatedResponse = new HTTPResponse(cachedResponse.getPayload(), cachedResponse.getStatus(), headers.set(headersToBeSet));
         return storage.update(request, updatedResponse);
+    }
+
+    public boolean isTranslateHEADToGET() {
+        return translateHEADToGET;
+    }
+
+    public void setTranslateHEADToGET(boolean translateHEADToGET) {
+        this.translateHEADToGET = translateHEADToGET;
     }
 }

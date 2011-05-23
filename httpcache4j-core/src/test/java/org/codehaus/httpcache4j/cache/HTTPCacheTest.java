@@ -91,7 +91,7 @@ public class HTTPCacheTest {
         HTTPResponse resolvedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(resolvedResponse);
         when(cacheStorage.insert(isA(HTTPRequest.class), eq(resolvedResponse))).thenReturn(resolvedResponse);
-        HTTPResponse response = cache.doCachedRequest(request);
+        HTTPResponse response = cache.execute(request);
         assertTrue("None match was not empty",request.getConditionals().getNoneMatch().isEmpty());
         verify(responseResolver, atLeast(1)).resolve(isA(HTTPRequest.class));
         assertTrue("response did not have payload", response.hasPayload());
@@ -116,7 +116,7 @@ public class HTTPCacheTest {
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(resolvedResponse);
         when(cacheStorage.insert(isA(HTTPRequest.class), eq(resolvedResponse))).thenReturn(resolvedResponse);
 
-        HTTPResponse response = cache.doCachedRequest(request);
+        HTTPResponse response = cache.execute(request);
         assertTrue("None match was not empty",request.getConditionals().getNoneMatch().isEmpty());
         verify(responseResolver, atLeast(1)).resolve(isA(HTTPRequest.class));
         verify(cacheStorage, times(1)).insert(isA(HTTPRequest.class), eq(resolvedResponse));
@@ -139,7 +139,7 @@ public class HTTPCacheTest {
         HTTPResponse resolvedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(resolvedResponse);
         when(cacheStorage.insert(isA(HTTPRequest.class), eq(resolvedResponse))).thenReturn(resolvedResponse);
-        HTTPResponse response = cache.doCachedRequest(request);
+        HTTPResponse response = cache.execute(request);
 //        assertTrue("None match was not empty",request.getConditionals().getNoneMatch().isEmpty());
         verify(responseResolver, atLeast(1)).resolve(isA(HTTPRequest.class));
         assertTrue(response.hasPayload());
@@ -163,7 +163,7 @@ public class HTTPCacheTest {
         Headers updatedHeaders = new Headers(responseHeaders);
         updatedHeaders = updatedHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, changedHeader.toDateTime()));
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(null, Status.NOT_MODIFIED, updatedHeaders));
-        HTTPResponse response = cache.doCachedRequest(request);
+        HTTPResponse response = cache.execute(request);
         Assert.assertNotNull("Response was null", response);
         Assert.assertNotNull("The payload was null", response.getPayload());
         Assert.assertNotNull("The payload had a null inputstream", response.getPayload().getInputStream());
@@ -178,7 +178,7 @@ public class HTTPCacheTest {
         responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
-        HTTPResponse response = cache.doCachedRequest(request);
+        HTTPResponse response = cache.execute(request);
         Assert.assertNotNull("Response was null", response);
         Assert.assertNull("The payload was not null", response.getPayload());
         Assert.assertEquals("Wrong status", Status.NOT_MODIFIED, response.getStatus());
@@ -197,7 +197,7 @@ public class HTTPCacheTest {
         updatedHeaders = updatedHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, dateHeader.plusMinutes(2).toDateTime()));
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(null, Status.NOT_MODIFIED, updatedHeaders));
 
-        HTTPResponse response = cache.doCachedRequest(request);
+        HTTPResponse response = cache.execute(request);
         Assert.assertNotNull("Response was null", response);
         Assert.assertNotNull("The payload was null", response.getPayload());
         Assert.assertEquals("Wrong status", Status.OK, response.getStatus());
@@ -215,7 +215,7 @@ public class HTTPCacheTest {
         responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.LAST_MODIFIED, lastModified));
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
         
-        HTTPResponse response = cache.doCachedRequest(request);
+        HTTPResponse response = cache.execute(request);
         Assert.assertNotNull("Response was null", response);
         Assert.assertNull("The payload was not null", response.getPayload());
         Assert.assertEquals("Wrong status", Status.NOT_MODIFIED, response.getStatus());
@@ -230,7 +230,7 @@ public class HTTPCacheTest {
         responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.ETAG, "\"1234\""));
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new CacheItem(new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders)));
-        HTTPResponse response = cache.doCachedRequest(request);
+        HTTPResponse response = cache.execute(request);
         Assert.assertNotNull("Response was null", response);
         Assert.assertNotNull("The payload was null", response.getPayload());
         Assert.assertEquals("Wrong status", Status.OK, response.getStatus());
@@ -247,7 +247,7 @@ public class HTTPCacheTest {
         HTTPResponse resolvedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, responseHeaders);
         when(responseResolver.resolve(request)).thenReturn(resolvedResponse);
         when(cacheStorage.insert(eq(request), eq(resolvedResponse))).thenReturn(resolvedResponse);
-        HTTPResponse response = cache.doCachedRequest(request);
+        HTTPResponse response = cache.execute(request);
         verify(cacheStorage, times(1)).insert(eq(request), eq(resolvedResponse));
         Assert.assertNotNull("Response was null", response);
         Assert.assertEquals("Wrong status", Status.OK, response.getStatus());
@@ -260,7 +260,7 @@ public class HTTPCacheTest {
         responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
         doGet(responseHeaders, Status.OK, 1);
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.PUT);
-        cache.doCachedRequest(request);
+        cache.execute(request);
         when(cacheStorage.size()).thenReturn(0);
         assertEquals(0, cacheStorage.size());
     }
@@ -269,7 +269,7 @@ public class HTTPCacheTest {
     public void testPOST() throws IOException {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.POST);
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(null, Status.CREATED, new Headers()));
-        cache.doCachedRequest(request);
+        cache.execute(request);
         when(cacheStorage.size()).thenReturn(0);
         assertEquals(0, cacheStorage.size());
     }
@@ -278,7 +278,7 @@ public class HTTPCacheTest {
     public void testTRACE() throws IOException {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.TRACE);
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(null, Status.CREATED, new Headers()));
-        cache.doCachedRequest(request);
+        cache.execute(request);
         when(cacheStorage.size()).thenReturn(0);
         assertEquals(0, cacheStorage.size());
     }
@@ -286,7 +286,7 @@ public class HTTPCacheTest {
     public void testGetANDTRACE() {
         doGet(new Headers(), Status.OK, 1);
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.TRACE);
-        cache.doCachedRequest(request);
+        cache.execute(request);
         when(cacheStorage.size()).thenReturn(1);
         assertEquals(1, cacheStorage.size());
     }
@@ -294,10 +294,12 @@ public class HTTPCacheTest {
     @Test
     public void testHEADAndGET() throws IOException {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.HEAD);
-        when(responseResolver.resolve(request)).thenReturn(new HTTPResponse(null, Status.OK, new Headers()));
-        HTTPResponse response = cache.doCachedRequest(request);
+        when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(null, Status.OK, new Headers()));
+        HTTPResponse response = cache.execute(request);
         assertFalse(response.hasPayload());
         assertEquals(0, request.getConditionals().toHeaders().size());
+        when(cacheStorage.size()).thenReturn(1);
+        assertEquals(1, cacheStorage.size());
         response = doGet(new Headers(), Status.OK, 1);
         assertTrue("No payload on get", response.hasPayload());
         when(cacheStorage.size()).thenReturn(1);
@@ -318,7 +320,7 @@ public class HTTPCacheTest {
                 return false;
             }
         });
-        HTTPResponse response = cache.doCachedRequest(request);
+        HTTPResponse response = cache.execute(request);
         assertEquals("Conditionals was set, incorrect", 0, request.getConditionals().toHeaders().size());        
         assertFalse(response.hasPayload());
         response = doGet(new Headers(), Status.OK, 1);
@@ -338,7 +340,7 @@ public class HTTPCacheTest {
         CacheItem item = new CacheItem(cachedResponse);
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(item);
         assertFalse(item.isStale(request));
-        cache.doCachedRequest(request);
+        cache.execute(request);
         verify(responseResolver, never()).resolve(request);        
     }
 
@@ -355,7 +357,7 @@ public class HTTPCacheTest {
         HTTPRequest request = new HTTPRequest(REQUEST_URI).headers(new Headers().add(HeaderConstants.CACHE_CONTROL, "max-stale=10"));
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(item);
         assertTrue("Item was not stale",item.isStale(request));
-        HTTPResponse response = cache.doCachedRequest(request);
+        HTTPResponse response = cache.execute(request);
         verify(responseResolver, never()).resolve(request);
         assertTrue("No warn header", response.getHeaders().hasHeader("warning"));
         DateTimeUtils.setCurrentMillisSystem();
@@ -413,7 +415,7 @@ public class HTTPCacheTest {
         } catch (IOException e) {
             fail(e.getMessage());
         }
-        HTTPResponse response = cache.doCachedRequest(request);
+        HTTPResponse response = cache.execute(request);
         when(cacheStorage.size()).thenReturn(numberItemsInCache);
         assertEquals(numberItemsInCache, cacheStorage.size());
         return response;
