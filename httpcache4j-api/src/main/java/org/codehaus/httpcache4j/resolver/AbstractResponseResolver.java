@@ -31,18 +31,20 @@ import java.io.IOException;
  */
 public abstract class AbstractResponseResolver implements ResponseResolver {
     private final ResponseCreator responseCreator = new ResponseCreator();
-    private final Authenticator authenticator;
-    private final ProxyAuthenticator proxyAuthenticator;
+    private final ResolverConfiguration configuration;
 
+    @Deprecated
     protected AbstractResponseResolver(ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
-        Validate.notNull(proxyAuthenticator, "Proxy Authenticator may not be null");
-        Validate.notNull(authenticator, "Authenticator may not be null");
-        this.authenticator = authenticator;
-        this.proxyAuthenticator = proxyAuthenticator;
+        this.configuration = new ResolverConfiguration(proxyAuthenticator, authenticator);
     }
-          
+
+    protected AbstractResponseResolver(ResolverConfiguration configuration) {
+        Validate.notNull(configuration, "Configuration may not be null");
+        this.configuration = configuration;
+    }
+
     protected final ProxyAuthenticator getProxyAuthenticator() {
-        return proxyAuthenticator;
+        return configuration.getProxyAuthenticator();
     }
 
     protected ResponseCreator getResponseCreator() {
@@ -50,7 +52,11 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
     }
 
     protected final Authenticator getAuthenticator() {
-        return authenticator;
+        return configuration.getAuthenticator();
+    }
+
+    protected final ResolverConfiguration getConfiguration() {
+        return configuration;
     }
 
     public final HTTPResponse resolve(HTTPRequest request) throws IOException {

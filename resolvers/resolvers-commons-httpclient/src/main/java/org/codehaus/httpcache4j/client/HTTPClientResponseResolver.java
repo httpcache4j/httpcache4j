@@ -19,6 +19,7 @@ package org.codehaus.httpcache4j.client;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.methods.*;
+import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.lang.Validate;
 
 import org.codehaus.httpcache4j.*;
@@ -26,6 +27,7 @@ import org.codehaus.httpcache4j.StatusLine;
 import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
+import org.codehaus.httpcache4j.resolver.ResolverConfiguration;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,18 +43,22 @@ import static org.codehaus.httpcache4j.HTTPMethod.*;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-//TODO: add default user agent. This should maybe only be the cache? Maybe the client type as well. Add support for the client of the cache???
 public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private final HttpClient client;
 
-    protected HTTPClientResponseResolver(HttpClient client, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
-        super(proxyAuthenticator, authenticator);
+    protected HTTPClientResponseResolver(HttpClient client, ResolverConfiguration configuration) {
+        super(configuration);
         Validate.notNull(client, "You may not create with a null HttpClient");
         this.client = client;
-        HTTPHost proxyHost = proxyAuthenticator.getConfiguration().getHost();
+        HTTPHost proxyHost = getProxyAuthenticator().getConfiguration().getHost();
         if (proxyHost != null) {
             this.client.getHostConfiguration().setProxy(proxyHost.getHost(), proxyHost.getPort());
         }
+        client.getParams().setParameter(HttpClientParams.USER_AGENT, getConfiguration().getUserAgent());
+    }
+
+    protected HTTPClientResponseResolver(HttpClient client, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
+        this(client, new ResolverConfiguration(proxyAuthenticator, authenticator));
     }
 
     public HTTPClientResponseResolver(HttpClient client, ProxyConfiguration configuration) {
@@ -89,16 +95,16 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         return convertResponse(method);
     }
 
-    private HttpMethod convertRequest(HTTPRequest request) {
+    private HttpMethod convertRequest(HTTPRequest request) throws IOException {
         URI requestURI = request.getRequestURI();
         HttpMethod method = getMethod(request.getMethod(), requestURI);
         Headers requestHeaders = request.getAllHeaders();
         addHeaders(requestHeaders, method);
-        method.setDoAuthentication(true);
         if (method instanceof EntityEnclosingMethod && request.hasPayload()) {
             InputStream payload = request.getPayload().getInputStream();
             EntityEnclosingMethod carrier = (EntityEnclosingMethod) method;
             if (payload != null) {
+                carrier.setContentChunked(getConfiguration().isUseChunked());
                 carrier.setRequestEntity(new InputStreamRequestEntity(payload));
             }
         }
@@ -140,13 +146,12 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private InputStream getInputStream(HttpMethod method) {
         try {
             return method.getResponseBodyAsStream() != null ? new HttpMethodStream(method) : null;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             method.releaseConnection();
             throw new HTTPException("Unable to get InputStream from HttpClient", e);
         }
     }
-    
+
     /**
      * Determines the HttpClient's request method from the HTTPMethod enum.
      *
@@ -159,29 +164,21 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             HostConfiguration config = new HostConfiguration();
             config.setHost(requestURI.getHost(), requestURI.getPort(), requestURI.getScheme());
             return new ConnectMethod(config);
-        }
-        else if (DELETE.equals(method)) {
+        } else if (DELETE.equals(method)) {
             return new DeleteMethod(requestURI.toString());
-        }
-        else if (GET.equals(method)) {
+        } else if (GET.equals(method)) {
             return new GetMethod(requestURI.toString());
-        }
-        else if (HEAD.equals(method)) {
+        } else if (HEAD.equals(method)) {
             return new HeadMethod(requestURI.toString());
-        }
-        else if (OPTIONS.equals(method)) {
+        } else if (OPTIONS.equals(method)) {
             return new OptionsMethod(requestURI.toString());
-        }
-        else if (POST.equals(method)) {
+        } else if (POST.equals(method)) {
             return new PostMethod(requestURI.toString());
-        }
-        else if (PUT.equals(method)) {
+        } else if (PUT.equals(method)) {
             return new PutMethod(requestURI.toString());
-        }
-        else if (TRACE.equals(method)) {
+        } else if (TRACE.equals(method)) {
             return new TraceMethod(requestURI.toString());
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Cannot handle method: " + method);
         }
     }

@@ -47,6 +47,7 @@ public final class HeaderConstants {
     public static final String VARY = "Vary";
     public static final String WARNING = "Warning";
     public static final String WWW_AUTHENTICATE = "WWW-Authenticate";
+    public static final String USER_AGENT = "User-Agent";
 
 
     /**

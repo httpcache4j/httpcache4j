@@ -33,6 +33,10 @@ public class DefaultProxyAuthenticator extends AuthenticatorBase implements Prox
 
     private Challenge proxyChallenge;
 
+    public DefaultProxyAuthenticator() {
+        this(new ProxyConfiguration());
+    }
+
     public DefaultProxyAuthenticator(ProxyConfiguration configuration) {
         super();
         this.configuration = configuration; 
@@ -56,10 +60,7 @@ public class DefaultProxyAuthenticator extends AuthenticatorBase implements Prox
                     proxyChallenge = configuration.getProvider().getChallenge();
                 }
                 if (proxyChallenge != null) {
-                    //TODO: Find an algorithm for selecting the most secure supported authentication method.
-                    //I imagine the Set of ("Digest", "Basic"); and anything else is more secure than those.
-
-                    AuthScheme scheme = new AuthScheme(response.getHeaders().getFirstHeader("Proxy-Authenticate"));
+                    AuthScheme scheme = new AuthScheme(response.getHeaders().getFirstHeader(HeaderConstants.PROXY_AUTHENTICATE));
                     registry.register(configuration.getHost(), scheme);
                     return doAuth(request, scheme);
                 }

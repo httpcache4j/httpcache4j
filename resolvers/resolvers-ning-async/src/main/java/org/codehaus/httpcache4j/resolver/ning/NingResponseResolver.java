@@ -2,14 +2,15 @@ package org.codehaus.httpcache4j.resolver.ning;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.FluentCaseInsensitiveStringsMap;
-import com.ning.http.client.Response;
+import com.ning.http.client.*;
+import com.ning.http.client.generators.InputStreamBodyGenerator;
+import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
+import org.codehaus.httpcache4j.resolver.ResolverConfiguration;
 import org.codehaus.httpcache4j.util.ResponseWriter;
 
 import java.io.IOException;
@@ -29,9 +30,18 @@ import static org.codehaus.httpcache4j.HTTPMethod.*;
 public class NingResponseResolver extends AbstractResponseResolver {
     private final AsyncHttpClient client;
 
+    protected NingResponseResolver(ResolverConfiguration configuration, AsyncHttpClientConfig asyncConfig) {
+        super(configuration);
+        Validate.notNull(asyncConfig, "Async config may not be null");
+        client = new AsyncHttpClient(new AsyncHttpClientConfig.Builder(asyncConfig).setUserAgent(configuration.getUserAgent()).build());
+    }
+
+    public NingResponseResolver(ResolverConfiguration configuration) {
+        this(configuration, new AsyncHttpClientConfig.Builder().build());
+    }
+
     public NingResponseResolver(ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
-        super(proxyAuthenticator, authenticator);
-        client = new AsyncHttpClient();
+        this(new ResolverConfiguration(proxyAuthenticator, authenticator));
     }
 
     @Override
@@ -71,7 +81,12 @@ public class NingResponseResolver extends AbstractResponseResolver {
     private Future<Response> execute(final HTTPRequest request) throws IOException {
         AsyncHttpClient.BoundRequestBuilder builder = builder(request.getRequestURI(), request.getMethod());
         if (request.getMethod().canHavePayload() && request.hasPayload()) {
-            builder.setBody(request.getPayload().getInputStream());
+            if (getConfiguration().isUseChunked()) {
+                builder.setBody(new InputStreamBodyGenerator(request.getPayload().getInputStream()));
+            }
+            else {
+                builder.setBody(request.getPayload().getInputStream());
+            }
         }
         for (Header header : request.getAllHeaders()) {
             builder.addHeader(header.getName(), header.getValue());

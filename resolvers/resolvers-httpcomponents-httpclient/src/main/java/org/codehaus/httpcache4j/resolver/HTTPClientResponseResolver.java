@@ -20,6 +20,7 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.CoreProtocolPNames;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.StatusLine;
@@ -50,14 +51,19 @@ import static org.codehaus.httpcache4j.HTTPMethod.TRACE;
 public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private HttpClient httpClient;
 
-    public HTTPClientResponseResolver(HttpClient httpClient, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
-        super(proxyAuthenticator, authenticator);
+    public HTTPClientResponseResolver(HttpClient httpClient, ResolverConfiguration configuration) {
+        super(configuration);
         this.httpClient = httpClient;
-        HTTPHost proxyHost = proxyAuthenticator.getConfiguration().getHost();
+        HTTPHost proxyHost = getProxyAuthenticator().getConfiguration().getHost();
         if (proxyHost != null) {
             HttpHost host = new HttpHost(proxyHost.getHost(), proxyHost.getPort(), proxyHost.getScheme());
             httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, host);
         }
+        httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, getConfiguration().getUserAgent());
+    }
+
+    public HTTPClientResponseResolver(HttpClient httpClient, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
+        this(httpClient, new ResolverConfiguration(proxyAuthenticator, authenticator));
     }
     
     public HTTPClientResponseResolver(HttpClient httpClient, ProxyConfiguration proxyConfiguration) {
@@ -105,7 +111,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
         if (request.hasPayload() && realRequest instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest req = (HttpEntityEnclosingRequest) realRequest;
-            req.setEntity(new UnknownLengthInputStreamEntity(request.getPayload()));
+            req.setEntity(new UnknownLengthInputStreamEntity(request.getPayload(), getConfiguration().isUseChunked()));
         }
         return realRequest;
     }
@@ -192,14 +198,10 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     }
 
     private static class UnknownLengthInputStreamEntity extends InputStreamEntity {
-        public UnknownLengthInputStreamEntity(final Payload payload) {
+        public UnknownLengthInputStreamEntity(final Payload payload, boolean chunked) {
             super(payload.getInputStream(), -1);
             setContentType(payload.getMimeType().toString());
-        }
-
-        @Override
-        public void writeTo(OutputStream outstream) throws IOException {
-            IOUtils.copy(getContent(), outstream);
+            setChunked(chunked);
         }
     }
 }

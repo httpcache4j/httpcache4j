@@ -22,6 +22,7 @@ import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
 import org.codehaus.httpcache4j.auth.DefaultProxyAuthenticator;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
+import org.codehaus.httpcache4j.resolver.ResolverConfiguration;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
     private final URLConnectionConfigurator configuration;
 
     public URLConnectionResponseResolver(URLConnectionConfigurator configuration) {
-        super(new DefaultProxyAuthenticator(configuration.getProxyConfiguration()), new DefaultAuthenticator());
+        super(new ResolverConfiguration(new DefaultProxyAuthenticator(configuration.getProxyConfiguration()), new DefaultAuthenticator()));
         Validate.notNull(configuration, "Configuration may not be null");
         this.configuration = configuration;
     }
@@ -69,10 +70,12 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         configureConnection(connection);
         connection.setRequestMethod(request.getMethod().getMethod());
         Headers requestHeaders = request.getAllHeaders();
+        connection.addRequestProperty(HeaderConstants.USER_AGENT, getConfiguration().getUserAgent());
 
         for (Header header : requestHeaders) {
             connection.addRequestProperty(header.getName(), header.getValue());
         }
+
         connection.connect();
         writeRequest(request, connection);
     }
@@ -98,6 +101,9 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
             InputStream requestStream = request.getPayload().getInputStream();
             OutputStream connectionStream = null;
             try {
+                if (getConfiguration().isUseChunked()) {
+                    connection.setChunkedStreamingMode(2048);
+                }
                 connectionStream = connection.getOutputStream();
                 IOUtils.copy(requestStream, connectionStream);
             } finally {

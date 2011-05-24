@@ -18,7 +18,6 @@ package org.codehaus.httpcache4j.auth;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.codehaus.httpcache4j.HTTPHost;
-import org.codehaus.httpcache4j.HTTPRequest;
 
 import java.util.List;
 
@@ -30,7 +29,7 @@ import java.util.List;
 //I imagine the Set of ("Digest", "Basic"); and anything else is more secure than those.
 class AuthenticatorBase {
     private final List<AuthenticatorStrategy> strategies = Lists.newArrayList();
-    protected final SchemeRegistry registry = new SchemeRegistry();
+    protected final SchemeRegistry registry = new DefaultSchemeRegistry();
 
     public AuthenticatorBase() {
         this(defaultStrategies());
