@@ -40,7 +40,7 @@ HTTPCache cache = new HTTPCache(
 HTTPRequest request = new HTTPRequest(URI.create("http://tools.ietf.org/html/rfc2616"));
 HTTPResponse response = null;
 try {
-  response = cache.doCachedRequest(request);
+  response = cache.execute(request);
   //Do something with the response.
 } finally {
   if (response != null) {
@@ -56,7 +56,7 @@ try {
   If you want to bypass the cache, but still want the response to be cached, you can use
 
 ---------------------------------------- 
-cache.refreshCachedRequest(request);
+cache.executeRefresh(request);
 ----------------------------------------
 
  This works like the browser ctrl + F5 (Firefox); force a refresh.
