@@ -92,7 +92,7 @@ public class HTTPCache {
         return execute(request, false);
     }
 
-    public HTTPResponse refreshExecute(final HTTPRequest request) {
+    public HTTPResponse executeRefresh(final HTTPRequest request) {
         return execute(request, true);
     }
 
