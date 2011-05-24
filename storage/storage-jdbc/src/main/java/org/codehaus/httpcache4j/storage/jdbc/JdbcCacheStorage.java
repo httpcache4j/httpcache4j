@@ -28,18 +28,20 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
+import static org.codehaus.httpcache4j.storage.jdbc.JdbcUtil.*;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class JdbcCacheStorage implements CacheStorage {
+    private final static String[] TABLES = {"response"};
     private final DataSource datasource;
     private final ResponseMapper mapper = new ResponseMapper();
     
@@ -269,6 +271,89 @@ public class JdbcCacheStorage implements CacheStorage {
 
     protected HTTPResponse rewriteResponse(HTTPResponse response) {
         return response;
+    }
+
+    protected void maybeCreateTables(boolean dropTables) {
+        boolean createTables = false;
+        try {
+            size();
+        } catch (DataAccessException e) {
+            createTables = true;
+        }
+        Connection connection = getConnection();
+        try {
+            startTransaction(connection);
+            if (dropTables && !createTables) {
+                //TODO: Logging....
+                System.err.println("--- dropping tables:");
+                List<String> tables = new ArrayList<String>(Arrays.asList(TABLES));
+                Collections.reverse(tables);
+                for (String table : tables) {
+                    System.err.print("Dropping table " + table);
+                    dropTable(table, connection);
+                    System.err.println("ok!");
+                }
+                createTables = true;
+            }
+            if (createTables) {
+                System.err.println("--- creating " + TABLES.length + " tables:");
+
+                for (String table : TABLES) {
+                    System.err.print("--- creating table " + table + "...");
+                    InputStream inputStream = getClass().getClassLoader().getResourceAsStream("ddl/" + table + ".ddl");
+                    if (inputStream == null) {
+                        System.err.println("Could not find DDL file for table " + table + "!");
+                        return;
+                    }
+                    try {
+                        String sql = IOUtils.toString(inputStream);
+                        createTable(sql, connection);
+                    } catch (IOException e) {
+                        System.err.println("Failed!");
+                        e.printStackTrace();
+                        return;
+                    } finally {
+                        IOUtils.closeQuietly(inputStream);
+                    }
+
+                    System.err.println("ok");
+                }
+            }
+        }
+        catch (DataAccessException e) {
+            rollback(connection);
+        }
+
+        finally {
+            endTransaction(connection);
+            close(connection);
+        }
+    }
+
+    private void dropTable(String table, Connection connection) {
+        PreparedStatement statement = null;
+        try {
+            statement = connection.prepareStatement("drop table " + table);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
+        }
+        finally {
+            close(statement);
+        }
+    }
+
+    private void createTable(String sql, Connection connection) {
+        PreparedStatement statement = null;
+        try {
+            statement = connection.prepareStatement(sql);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
+        }
+        finally {
+            close(statement);
+        }
     }
 
     private class ResponseMapper {
