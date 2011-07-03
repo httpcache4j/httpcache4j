@@ -7,3 +7,6 @@
 *.releaseBackup
 release.properties
 target
+.settings
+.project
+.classpath

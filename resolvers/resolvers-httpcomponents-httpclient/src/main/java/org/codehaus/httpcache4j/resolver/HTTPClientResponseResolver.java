@@ -21,6 +21,7 @@ import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.params.HttpParams;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.StatusLine;
@@ -42,7 +43,6 @@ import java.io.OutputStream;
 import java.net.URI;
 
 import static org.codehaus.httpcache4j.HTTPMethod.*;
-import static org.codehaus.httpcache4j.HTTPMethod.TRACE;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -55,11 +55,18 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         super(configuration);
         this.httpClient = httpClient;
         HTTPHost proxyHost = getProxyAuthenticator().getConfiguration().getHost();
+        HttpParams params = httpClient.getParams();
+        if(params==null) {
+        	params = new BasicHttpParams();
+        	if(httpClient instanceof DefaultHttpClient) {
+        		((DefaultHttpClient)httpClient).setParams(params);
+        	}
+        }
         if (proxyHost != null) {
             HttpHost host = new HttpHost(proxyHost.getHost(), proxyHost.getPort(), proxyHost.getScheme());
-            httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, host);
+            params.setParameter(ConnRoutePNames.DEFAULT_PROXY, host);
         }
-        httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, getConfiguration().getUserAgent());
+        params.setParameter(CoreProtocolPNames.USER_AGENT, getConfiguration().getUserAgent());
     }
 
     public HTTPClientResponseResolver(HttpClient httpClient, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {

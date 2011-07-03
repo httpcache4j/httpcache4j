@@ -54,7 +54,12 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         if (proxyHost != null) {
             this.client.getHostConfiguration().setProxy(proxyHost.getHost(), proxyHost.getPort());
         }
-        client.getParams().setParameter(HttpClientParams.USER_AGENT, getConfiguration().getUserAgent());
+        HttpClientParams params = client.getParams();
+        if(params==null) { 
+        	params = new HttpClientParams();
+        	client.setParams(params);
+        }        
+        params.setParameter(HttpClientParams.USER_AGENT, getConfiguration().getUserAgent());        
     }
 
     protected HTTPClientResponseResolver(HttpClient client, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
