@@ -182,8 +182,19 @@ class HTTPCacheHelper {
                 headers = headers.add(cacheHeaderBuilder.createMISSXCacheHeader());
             }
             else {
-                headers = headers.add(cacheHeaderBuilder.createHITXCacheHeader());
-                headers = headers.set(HeaderConstants.AGE, String.valueOf(age));
+            	if(!stale) {            		
+            		Headers all = response.getHeaders();
+                    if (all.hasHeader(HeaderConstants.X_CACHE)) {
+                        headers = headers.add(cacheHeaderBuilder.createMISSXCacheHeader());
+                    } else {
+                    	headers = headers.add(cacheHeaderBuilder.createHITXCacheHeader());
+                        headers = headers.set(HeaderConstants.AGE, String.valueOf(age));
+                    } 
+                    
+            	} else {
+            		headers = headers.add(cacheHeaderBuilder.createHITXCacheHeader());
+                    headers = headers.set(HeaderConstants.AGE, String.valueOf(age));
+            	}
             }            
         }
         if (request.getMethod() == HTTPMethod.GET) {

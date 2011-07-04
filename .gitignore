@@ -10,3 +10,15 @@ target
 .settings
 .project
 .classpath
+.svn
+*.o
+*.lo
+*.la
+#*#
+.*.rej
+*.rej
+.*~
+*~
+.#*
+.DS_Store
+.springBeans
