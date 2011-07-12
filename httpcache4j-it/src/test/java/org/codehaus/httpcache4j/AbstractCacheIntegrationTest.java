@@ -22,6 +22,7 @@ import org.codehaus.httpcache4j.util.TestUtil;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.joda.time.DateTime;
 import org.junit.AfterClass;
 import org.codehaus.httpcache4j.cache.CacheStorage;
 import org.codehaus.httpcache4j.cache.HTTPCache;
@@ -231,6 +232,67 @@ public abstract class AbstractCacheIntegrationTest {
         assertTrue(response.isCached());
         assertTrue(MIMEType.valueOf("text/xml").includes(response.getPayload().getMimeType()));
         assertEquals(2, storage.size());
+    }
+    
+    /**
+     * Tests that requests come from the cache, but that the 
+     * response isn't specified that the cache is used when the response
+     * is generated from the server
+     */
+    @Test
+    public void GETWithMaxAge() {
+        URI uri = baseRequestURI.resolve(String.format("cc,10/%s", TEST_FILE));
+        HTTPResponse response = get(uri);
+//        System.out.println(response.getHeaders());
+
+        assertEquals(Status.OK, response.getStatus());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
+        DateTime originalDate = response.getDate();
+        assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).contains("MISS"));
+        assertFalse(response.isCached());
+        response.consume();
+        try {
+        	Thread.sleep(5000);
+        } catch (Exception e) {}
+        response = get(uri);
+//        System.out.println(response.getHeaders());
+        DateTime cacheDate = response.getDate();
+        assertEquals(Status.OK, response.getStatus());
+        assertTrue(originalDate.equals(cacheDate));
+
+        assertTrue(response.isCached());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
+        assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).contains("HIT"));
+        response.consume();
+        
+        // sleep here.  The response should come from the server
+        try {
+        	Thread.sleep(12000);
+        } catch (Exception e) {}
+        response = get(uri);
+//        System.out.println(response.getHeaders());
+        DateTime nonCacheDate = response.getDate();
+        
+        assertEquals(Status.OK, response.getStatus());
+        assertFalse(originalDate.equals(nonCacheDate));
+        assertFalse(response.isCached());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
+        assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).contains("MISS"));
+        response.consume();
+        
+        try {
+        	Thread.sleep(2000);
+        } catch (Exception e) {}
+        response = get(uri);
+//        System.out.println(response.getHeaders());
+        DateTime shouldBeAboveNonCacheDate = response.getDate();
+        
+        assertEquals(Status.OK, response.getStatus());
+        assertTrue(nonCacheDate.equals(shouldBeAboveNonCacheDate));
+        assertTrue(response.isCached());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
+        assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).contains("HIT"));
+        response.consume();
     }
 
     private HTTPResponse get(URI uri) {
