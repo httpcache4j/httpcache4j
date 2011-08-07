@@ -98,7 +98,7 @@ public class HTTPCache {
 
     @Deprecated
     public HTTPResponse doCachedRequest(final HTTPRequest request, boolean force) {
-        return execute(request,  force);
+        return execute(request, force);
     }
 
     public HTTPResponse execute(final HTTPRequest request, boolean force) {
@@ -112,15 +112,13 @@ public class HTTPCache {
                 storage.invalidate(request.getRequestURI());
             }
             response = unconditionalResolve(request);
-        }
-        else {
+        } else {
             //request is cacheable
             boolean shouldUnlock = true;
             try {
                 if (mutex.acquire(request.getRequestURI())) {
                     response = doRequest(request, force || request.getConditionals().isUnconditional());
-                }
-                else {
+                } else {
                     response = new HTTPResponse(null, Status.BAD_GATEWAY, new Headers());
                     shouldUnlock = false;
                 }
@@ -140,8 +138,7 @@ public class HTTPCache {
         HTTPResponse response;
         if (force) {
             response = unconditionalResolve(request);
-        }
-        else {
+        } else {
             response = getFromStorage(request);
         }
         return response;
@@ -158,12 +155,10 @@ public class HTTPCache {
                 //If the payload has been deleted for some reason, we want to do a unconditional GET
                 HTTPRequest conditionalRequest = maybePrepareConditionalResponse(request, staleResponse);
                 response = handleStaleResponse(conditionalRequest, request, item);
-            }
-            else {
+            } else {
                 response = helper.rewriteResponse(request, item.getResponse(), item.getAge(request));
             }
-        }
-        else {
+        } else {
             statistics.miss();
             response = unconditionalResolve(request);
         }
@@ -199,29 +194,25 @@ public class HTTPCache {
             //No cached item found, we throw an exception.
             if (item == null) {
                 throw new HTTPException(e);
-            }
-            else {
+            } else {
                 Headers headers = helper.warn(item.getResponse().getHeaders(), e);
                 response = new HTTPResponse(item.getResponse().getPayload(), item.getResponse().getStatusLine(), headers);
             }
         }
         if (resolvedResponse != null) {
-        	boolean updated = false;
+            boolean updated = false;
 
             if (request.getMethod() == HTTPMethod.HEAD && !isTranslateHEADToGET()) {
                 if (item != null) {
                     response = updateHeadersFromResolved(request, item, resolvedResponse);
-                }
-                else {
+                } else {
                     response = resolvedResponse;
                 }
-            }
-            else if (helper.isCacheableResponse(resolvedResponse) && helper.shouldBeStored(resolvedResponse)) {
+            } else if (helper.isCacheableResponse(resolvedResponse) && helper.shouldBeStored(resolvedResponse)) {
                 response = storage.insert(request, resolvedResponse);
                 updated = true;
 
-            }
-            else {
+            } else {
                 //Response could not be cached
                 response = resolvedResponse;
             }
@@ -229,10 +220,10 @@ public class HTTPCache {
                 //from http://tools.ietf.org/html/rfc2616#section-13.5.3
                 if (resolvedResponse.getStatus() == Status.NOT_MODIFIED || resolvedResponse.getStatus() == Status.PARTIAL_CONTENT) {
                     response = updateHeadersFromResolved(request, item, resolvedResponse);
-                } else if(updated==true) {
-                	
-                	Headers newHeaders = response.getHeaders().add(CacheHeaderBuilder.getBuilder().createMISSXCacheHeader());
-                	response = new HTTPResponse(response.getPayload(), response.getStatus(), newHeaders);
+                } else if (updated) {
+
+                    Headers newHeaders = response.getHeaders().add(CacheHeaderBuilder.getBuilder().createMISSXCacheHeader());
+                    response = new HTTPResponse(response.getPayload(), response.getStatus(), newHeaders);
                 }
             }
         }
@@ -245,8 +236,7 @@ public class HTTPCache {
             mutableRequest.getHeaders().set(request.getAllHeaders());
             mutableRequest.setChallenge(request.getChallenge());
             resolvedResponse = resolver.resolve(mutableRequest.toRequest());
-        }
-        else {
+        } else {
             resolvedResponse = resolver.resolve(request);
         }
         return resolvedResponse;
