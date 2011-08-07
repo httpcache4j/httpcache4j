@@ -206,6 +206,8 @@ public class HTTPCache {
             }
         }
         if (resolvedResponse != null) {
+        	boolean updated = false;
+
             if (request.getMethod() == HTTPMethod.HEAD && !isTranslateHEADToGET()) {
                 if (item != null) {
                     response = updateHeadersFromResolved(request, item, resolvedResponse);
@@ -216,6 +218,8 @@ public class HTTPCache {
             }
             else if (helper.isCacheableResponse(resolvedResponse) && helper.shouldBeStored(resolvedResponse)) {
                 response = storage.insert(request, resolvedResponse);
+                updated = true;
+
             }
             else {
                 //Response could not be cached
@@ -225,6 +229,10 @@ public class HTTPCache {
                 //from http://tools.ietf.org/html/rfc2616#section-13.5.3
                 if (resolvedResponse.getStatus() == Status.NOT_MODIFIED || resolvedResponse.getStatus() == Status.PARTIAL_CONTENT) {
                     response = updateHeadersFromResolved(request, item, resolvedResponse);
+                } else if(updated==true) {
+                	
+                	Headers newHeaders = response.getHeaders().add(CacheHeaderBuilder.getBuilder().createMISSXCacheHeader());
+                	response = new HTTPResponse(response.getPayload(), response.getStatus(), newHeaders);
                 }
             }
         }
