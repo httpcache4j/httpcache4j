@@ -6,6 +6,26 @@
 
 Release notes
 
+* 3.3
+
+
+** Bug
+
+    * [HTCJ-49] - ConcurrentModificationException
+
+    * [HTCJ-104] - Wron check of Last-Modifed header value against Date header value in HeaderUtils.hasCacheableHeaders
+
+    * [HTCJ-105] - 1 to 1.5 second delay in getCanonicalHostName for CacheHeaderBuilder
+
+    * [HTCJ-109] - JBDC Storage does not call COMMIT in endTransaction
+
+    * [HTCJ-110] - Incorrect reporting of HIT when it was actually a MISS
+
+
+** Improvement
+
+    * [HTCJ-108] - Chunked PUT/POST
+
 
 * 3.2
 
