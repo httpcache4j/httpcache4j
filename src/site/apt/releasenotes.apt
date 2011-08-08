@@ -24,6 +24,8 @@ Release notes
 
 ** Improvement
 
+    * [HTCJ-76] - Make it possible to set the User Agent
+
     * [HTCJ-108] - Chunked PUT/POST
 
 
