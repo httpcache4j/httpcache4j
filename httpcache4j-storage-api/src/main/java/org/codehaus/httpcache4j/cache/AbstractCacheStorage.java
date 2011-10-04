@@ -37,5 +37,4 @@ public abstract class AbstractCacheStorage implements CacheStorage {
 
     protected abstract void invalidate(Key key);
   
-    protected abstract HTTPResponse get(Key key);
 }

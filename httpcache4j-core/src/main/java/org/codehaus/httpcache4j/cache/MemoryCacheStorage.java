@@ -141,13 +141,13 @@ public class MemoryCacheStorage implements CacheStorage {
         }
     }
 
-    protected HTTPResponse get(Key key) {
+    public CacheItem get(Key key) {
         read.lock();
 
         try {
             CacheItem cacheItem = cache.get(key);
             if (cacheItem != null) {
-                return cacheItem.getResponse();
+                return cacheItem;
             }
             return null;
         } finally {

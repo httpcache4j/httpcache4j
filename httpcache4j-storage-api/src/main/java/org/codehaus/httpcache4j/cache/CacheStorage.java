@@ -29,7 +29,9 @@ public interface CacheStorage extends Iterable<Key> {
     
     HTTPResponse update(HTTPRequest request, HTTPResponse response);
 
-    CacheItem get(final HTTPRequest request);
+    CacheItem get(Key key);
+
+    CacheItem get(HTTPRequest request);
 
     void invalidate(URI uri);
     

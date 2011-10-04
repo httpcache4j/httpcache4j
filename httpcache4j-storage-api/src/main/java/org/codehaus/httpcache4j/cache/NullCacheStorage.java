@@ -37,6 +37,10 @@ public class NullCacheStorage implements CacheStorage {
         return null;
     }
 
+    public CacheItem get(Key key) {
+        return null;
+    }
+
     public void invalidate(Key key) {
     }
 

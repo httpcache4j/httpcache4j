@@ -164,16 +164,45 @@ public class JdbcCacheStorage implements CacheStorage {
         return null;
     }
 
+    @Override
+    public CacheItem get(Key key) {
+       Connection connection = getConnection();
+        PreparedStatement statement = null;
+        try {
+            JdbcUtil.startTransaction(connection);
+            statement = connection.prepareStatement("select * from response where uri = ? and vary = ?");
+            statement.setString(1, key.getURI().toString());
+            statement.setString(2, key.getVary().toJSON());
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                CacheItemHolder holder = mapper.mapRow(rs, connection);
+                return holder.getCacheItem();
+            }
+        } catch (SQLException e) {
+            JdbcUtil.rollback(connection);
+            throw new DataAccessException(e);
+        }
+        finally {
+            JdbcUtil.endTransaction(connection);
+            JdbcUtil.close(statement);
+        }
+        return null;
+    }
+
+
     private void invalidate(final Key key, final Connection connection) {
         PreparedStatement statement = null;
         try {
+            JdbcUtil.startTransaction(connection);
             statement = connection.prepareStatement("delete from response where uri = ? and vary = ?");
             statement.setString(1, key.getURI().toString());
             statement.setString(2, key.getVary().toJSON());
             statement.executeUpdate();
         } catch (SQLException e) {
+            JdbcUtil.rollback(connection);
             throw new DataAccessException(e);
         } finally {
+            JdbcUtil.endTransaction(connection);
             JdbcUtil.close(statement);
         }
     }
