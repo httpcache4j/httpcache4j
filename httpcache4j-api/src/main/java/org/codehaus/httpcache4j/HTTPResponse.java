@@ -139,9 +139,7 @@ public final class HTTPResponse {
 
     public void consume() {
         if (hasPayload()) {
-            if (payload.isAvailable()) {
-                IOUtils.closeQuietly(payload.getInputStream());
-            }
+            IOUtils.closeQuietly(payload.getInputStream());
         }
     }
 
