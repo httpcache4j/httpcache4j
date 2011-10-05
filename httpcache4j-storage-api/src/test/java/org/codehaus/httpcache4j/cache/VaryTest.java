@@ -126,7 +126,7 @@ public class VaryTest {
 
     @Test
     public void testVaryFileResolve() {
-        FileResolver resolver = new FileResolver(TestUtil.getTestFile("target"));
+        FileManager resolver = new FileManager(TestUtil.getTestFile("target"));
         File file = resolver.resolve(Key.create(URI.create("foo"), new Vary()));
         File file2 = resolver.resolve(Key.create(URI.create("foo"), new Vary()));
         File file3 = resolver.resolve(Key.create(URI.create("foo"), new Vary(new HashMap<String, String>())));

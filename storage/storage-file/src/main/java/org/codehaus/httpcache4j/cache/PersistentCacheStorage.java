@@ -23,7 +23,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.Payload;
+import org.codehaus.httpcache4j.util.InvalidateOnRemoveLRUHashMap;
 
 /**
  * Persistent version of the in memory cache. This stores a serialized version of the
@@ -31,7 +33,7 @@ import org.codehaus.httpcache4j.payload.Payload;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public class PersistentCacheStorage extends MemoryCacheStorage implements Serializable {
+public class PersistentCacheStorage extends MemoryCacheStorage implements Serializable, InvalidateOnRemoveLRUHashMap.RemoveListener {
 
     private static final long PERSISTENT_TIMEOUT = 60000L;
     private static final int PERSISTENT_TRESHOLD = 100;
@@ -65,6 +67,14 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
         }));
     }
 
+    public void onRemoveFromMap(Key key) {
+        fileManager.remove(key);
+    }
+
+    FileManager getFileManager() {
+        return fileManager;
+    }
+
     @Override
     protected void afterClear() {
         serializationFile.delete();
@@ -92,29 +102,33 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     protected Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException {
         File file = fileManager.createFile(key, stream);
         if (file != null && file.exists()) {
-            return new CleanableFilePayload(file, payload.getMimeType());
+            return new FilePayload(file, payload.getMimeType());
         }
         return null;
     }
 
     private synchronized void getCacheFromDisk() {
-        if (cache == null) {
-            cache = new InvalidateOnRemoveLRUHashMap(capacity);
-        }
-        if (serializationFile.exists()) {
-            FileInputStream inputStream = null;
-            try {
-                inputStream = FileUtils.openInputStream(serializationFile);
-                cache = (InvalidateOnRemoveLRUHashMap) SerializationUtils.deserialize(inputStream);
+        try {
+            if (serializationFile.exists()) {
+                FileInputStream inputStream = null;
+                try {
+                    inputStream = FileUtils.openInputStream(serializationFile);
+                    cache = (InvalidateOnRemoveLRUHashMap) SerializationUtils.deserialize(inputStream);
+                }
+                catch (Exception e) {
+                    serializationFile.delete();
+                    //Ignored, we create a new one.
+                    cache = new InvalidateOnRemoveLRUHashMap(capacity);
+                }
+                finally {
+                    IOUtils.closeQuietly(inputStream);
+                }
             }
-            catch (Exception e) {
-                serializationFile.delete();
-                //Ignored, we create a new one.
+            else {
                 cache = new InvalidateOnRemoveLRUHashMap(capacity);
             }
-            finally {
-                IOUtils.closeQuietly(inputStream);
-            }
+        } finally {
+            cache.setListener(this);
         }
     }
 

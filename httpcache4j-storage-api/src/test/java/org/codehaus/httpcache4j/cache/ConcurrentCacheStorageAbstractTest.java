@@ -37,7 +37,7 @@ import java.io.InputStream;
  * @version $Revision: $
  */
 public abstract class ConcurrentCacheStorageAbstractTest {
-    private ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private ExecutorService service = Executors.newFixedThreadPool(4);
     protected CacheStorage cacheStorage;
 
     @Before
@@ -54,7 +54,7 @@ public abstract class ConcurrentCacheStorageAbstractTest {
 
     protected void testIterations(int numberOfIterations, int expected) throws InterruptedException {
         List<Callable<HTTPResponse>> calls = new ArrayList<Callable<HTTPResponse>>();
-        for (int i = 0; i < numberOfIterations; i++) {
+        for (int i = 1; i <= numberOfIterations; i++) {
             final URI uri = URI.create(String.valueOf(i));
             final HTTPRequest request = new HTTPRequest(uri);
             Callable<HTTPResponse> call = new Callable<HTTPResponse>() {

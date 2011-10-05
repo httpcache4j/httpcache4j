@@ -15,51 +15,60 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.HTTPResponse;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
 public class ConcurrentPersistentCacheStorageTest extends ConcurrentCacheStorageAbstractTest {
-    private File storage;
 
     @Test
     public void test100Concurrent2() throws InterruptedException {
+        PersistentCacheStorage storage = (PersistentCacheStorage) cacheStorage;
         testIterations(100, 100);
-        File files = new File(storage, "files");
-        assertEquals(files.list().length, cacheStorage.size());
+        List<File> list = Arrays.asList(storage.getFileManager().getBaseDirectory().listFiles());
+        for (Key key : storage) {
+            File file = storage.getFileManager().resolve(key);
+            assertTrue(String.format("File %s did not exist ", file.getParentFile().getName()), list.contains(file.getParentFile()));
+        }
     }
 
     @Test
     public void test1001Concurrent() throws InterruptedException {
+        PersistentCacheStorage storage = (PersistentCacheStorage) cacheStorage;
         testIterations(1001, 1000);
+        List<File> list = Arrays.asList(storage.getFileManager().getBaseDirectory().listFiles());
+        for (Key key : storage) {
+            File file = storage.getFileManager().resolve(key);
+            assertTrue(String.format("File %s did not exist ", file.getParentFile().getName()), list.contains(file.getParentFile()));
+        }
     }
 
     @Override
     protected void assertResponse(final HTTPResponse response) {
         super.assertResponse(response);
-        if (response.getPayload() instanceof CleanableFilePayload) {
-            CleanableFilePayload payload = (CleanableFilePayload) response.getPayload();
+        if (response.getPayload() instanceof FilePayload) {
+            FilePayload payload = (FilePayload) response.getPayload();
             final File parent = payload.getFile().getParentFile();
-            assertEquals(1, parent.list().length);            
+            assertEquals(1, parent.list().length);
         }
     }
 
-    @Override
-    public void tearDown() {
-        storage.listFiles(new DeletingFileFilter());
-        super.tearDown();
-    }
-
     protected CacheStorage createCacheStorage() {
-        storage = TestUtil.getTestFile("target/persistent");
+        File storage = TestUtil.getTestFile("target/persistent/concurrent");
         return new PersistentCacheStorage(storage);
     }
 

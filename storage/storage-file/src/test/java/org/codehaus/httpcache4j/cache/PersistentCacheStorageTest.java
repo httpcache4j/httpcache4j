@@ -16,33 +16,31 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import static junit.framework.Assert.assertEquals;
 import junit.framework.Assert;
-
-import java.io.File;
-import java.net.URI;
-
+import org.apache.commons.io.input.NullInputStream;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.Status;
+import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
-import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import org.apache.commons.io.input.NullInputStream;
+
+import java.io.File;
+import java.net.URI;
+
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
-    private File baseDirectory;
-    
+    private FileManager manager;
+
     @Override
 	protected CacheStorage createCacheStorage() {
-        baseDirectory = TestUtil.getTestFile("target/test/");
-        baseDirectory.mkdirs();
-        return new PersistentCacheStorage(baseDirectory);
+        manager = new FileManager(TestUtil.getTestFile("target/test/"));
+        return new PersistentCacheStorage(manager.getBaseDirectory());
     }
 
     @Test
@@ -62,9 +60,9 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
         }
         assertNotNull("Result may not be null", res);
         if (res.hasPayload()) {
-            CleanableFilePayload payload = (CleanableFilePayload) res.getPayload();
+            FilePayload payload = (FilePayload) res.getPayload();
             final File parent = payload.getFile().getParentFile();
-            final File file = new FileResolver(parent.getParentFile()).resolve(key);
+            final File file = manager.resolve(key);
             assertEquals(file.toString(), payload.getFile().toString());
             assertTrue(parent.isDirectory());
             assertEquals(1, parent.list().length);
@@ -78,6 +76,6 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
 
     @Override
 	public void afterTest() {
-        baseDirectory.listFiles(new DeletingFileFilter());
+        manager.clear();
     }
 }

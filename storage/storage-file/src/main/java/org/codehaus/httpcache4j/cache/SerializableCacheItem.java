@@ -16,6 +16,7 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
+import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.util.ToJSON;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -66,7 +67,7 @@ public class SerializableCacheItem implements Serializable, ToJSON, CacheItem {
         HTTPResponse response = item.getResponse();
         object.put("status", response.getStatus().getCode());
         if (response.hasPayload()) {
-            CleanableFilePayload payload = (CleanableFilePayload) response.getPayload();
+            FilePayload payload = (FilePayload) response.getPayload();
             Map<String, String> payloadItem = new LinkedHashMap<String, String>();
             payloadItem.put("file", payload.getFile().getAbsolutePath());
             payloadItem.put("mime-type", payload.getMimeType().toString());
@@ -89,11 +90,11 @@ public class SerializableCacheItem implements Serializable, ToJSON, CacheItem {
             DateTime time = HeaderUtils.fromHttpDate(new Header("cache-time", node.path("cache-time").getValueAsText()));
             Status status = Status.valueOf(node.path("status").getIntValue());
             Headers headers = Headers.fromJSON(node.path("headers").getValueAsText());
-            CleanableFilePayload p = null;
+            FilePayload p = null;
             if (node.path("payload") != null) {
                 JsonNode payload = node.path("payload");
                 if (!payload.isNull()) {
-                    p = new CleanableFilePayload(new File(payload.path("file").getValueAsText()), MIMEType.valueOf(payload.path("mime-type").getValueAsText()));
+                    p = new FilePayload(new File(payload.path("file").getValueAsText()), MIMEType.valueOf(payload.path("mime-type").getValueAsText()));
                 }
             }
             return new DefaultCacheItem(new HTTPResponse(p, status, headers), time);

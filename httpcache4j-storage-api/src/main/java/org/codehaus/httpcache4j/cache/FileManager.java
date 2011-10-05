@@ -15,30 +15,26 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import org.codehaus.httpcache4j.util.StorageUtil;
-import org.codehaus.httpcache4j.util.DeletingFileFilter;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.Validate;
+import org.codehaus.httpcache4j.util.DeletingFileFilter;
+import org.codehaus.httpcache4j.util.StorageUtil;
 
-import java.util.*;
 import java.io.*;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-final class FileManager implements Serializable {
-    private final FileResolver fileResolver;
+public final class FileManager implements Serializable {
     private static final long serialVersionUID = -5273056780013227862L;
     private final File baseDirectory;
 
     public FileManager(final File baseDirectory) {
         Validate.notNull(baseDirectory, "Base directory may not be null");
-        this.baseDirectory = baseDirectory;
-        StorageUtil.ensureDirectoryExists(this.baseDirectory);
-        File files = createFilesDirectory();
-        this.fileResolver = new FileResolver(files);
+        this.baseDirectory = createFilesDirectory();
     }
 
     private File createFilesDirectory() {
@@ -47,9 +43,15 @@ final class FileManager implements Serializable {
         return files;
     }
 
-    File createFile(Key key, InputStream stream) throws IOException {
-        File file = fileResolver.resolve(key);
+    public File getBaseDirectory() {
+        return baseDirectory;
+    }
 
+    public synchronized File createFile(Key key, InputStream stream) throws IOException {
+        File file = resolve(key);
+        if (!file.getParentFile().exists()) {
+            StorageUtil.ensureDirectoryExists(file.getParentFile());
+        }
         FileOutputStream outputStream = FileUtils.openOutputStream(file);
         try {
             IOUtils.copy(stream, outputStream);
@@ -64,9 +66,38 @@ final class FileManager implements Serializable {
         return file;
     }
 
-    void clear() {
+    public synchronized void clear() {
         baseDirectory.listFiles(new DeletingFileFilter());
         createFilesDirectory();
     }
 
+    public synchronized void remove(Key key) {
+        File resolved = resolve(key);
+        if (resolved.delete() && directoryIsEmpty(resolved.getParentFile())) {
+            resolved.getParentFile().delete();
+        }
+    }
+
+    private boolean directoryIsEmpty(File directory) {
+        if (directory.isDirectory()) {
+            String[] list = directory.list();
+            if (list == null || list.length == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public synchronized File resolve(Key key) {
+        String uriHex = DigestUtils.md5Hex(key.getURI().toString());
+        String vary;
+        if (key.getVary().isEmpty()) {
+            vary = "default";
+        }
+        else {
+            vary = DigestUtils.md5Hex(key.getVary().toString());
+        }
+        File uriFolder = new File(baseDirectory, uriHex);
+        return new File(uriFolder, vary);
+    }
 }

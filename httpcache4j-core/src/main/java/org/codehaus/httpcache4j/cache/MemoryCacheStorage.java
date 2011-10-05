@@ -22,6 +22,7 @@ import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.ByteArrayPayload;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.httpcache4j.util.InvalidateOnRemoveLRUHashMap;
 
 import java.net.URI;
 import java.util.*;
@@ -155,7 +156,7 @@ public class MemoryCacheStorage implements CacheStorage {
         }
     }
 
-    protected void invalidate(Key key) {
+    private void invalidate(Key key) {
         write.lock();
         try {
             cache.remove(key);
@@ -200,41 +201,4 @@ public class MemoryCacheStorage implements CacheStorage {
         }
     }
 
-    protected class InvalidateOnRemoveLRUHashMap extends LinkedHashMap<Key, CacheItem> {
-        private static final long serialVersionUID = -8600084275381371031L;
-        private final int capacity;
-
-        public InvalidateOnRemoveLRUHashMap(final int capacity) {
-            super(capacity);
-            this.capacity = capacity;
-        }
-
-        private InvalidateOnRemoveLRUHashMap(InvalidateOnRemoveLRUHashMap map) {
-            super(map);
-            this.capacity = map.capacity;
-        }
-
-        public InvalidateOnRemoveLRUHashMap copy() {
-            return new InvalidateOnRemoveLRUHashMap(this);
-        }
-
-
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<Key, CacheItem> eldest) {
-            return size() > capacity;
-        }
-
-
-        @Override
-        public CacheItem remove(final Object key) {
-            final CacheItem value = super.remove(key);
-            if (value != null) {
-                Payload payload = value.getResponse().getPayload();
-                if (payload instanceof CleanablePayload) {
-                    ((CleanablePayload) payload).clean();
-                }
-            }
-            return value;
-        }
-    }
 }
