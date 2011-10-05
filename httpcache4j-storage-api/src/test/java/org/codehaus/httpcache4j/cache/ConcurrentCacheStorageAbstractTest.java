@@ -102,6 +102,7 @@ public abstract class ConcurrentCacheStorageAbstractTest {
                 HTTPResponse real = response.get();
                 assertResponse(real);
             } catch (ExecutionException e) {
+                e.printStackTrace();
                 fail(e.getCause().getMessage());
             }
         }
@@ -122,7 +123,7 @@ public abstract class ConcurrentCacheStorageAbstractTest {
             IOUtils.toString(is);
         } catch (IOException e) {
             e.printStackTrace();
-            fail("unable to write string from stream");
+            fail("unable to create string from stream");
         }
         finally {
             IOUtils.closeQuietly(is);
