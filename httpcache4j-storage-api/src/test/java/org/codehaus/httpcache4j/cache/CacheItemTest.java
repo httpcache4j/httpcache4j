@@ -41,7 +41,7 @@ public class CacheItemTest {
     }
 
     public void setupItem(Headers headers) {
-        item = new CacheItem(new HTTPResponse(null, Status.OK, headers), storageTime);
+        item = new DefaultCacheItem(new HTTPResponse(null, Status.OK, headers), storageTime);
     }
 
     @Test
@@ -49,7 +49,7 @@ public class CacheItemTest {
         Headers headers = createDefaultHeaders().add(new Header(CACHE_CONTROL, "private, max-age=3600"));
         setupItem(headers);
         Assert.assertFalse("Item was stale", item.isStale(request));
-        item = new CacheItem(item.getResponse());
+        item = new DefaultCacheItem(item.getResponse());
         DateTimeUtils.setCurrentMillisFixed(now.plusSeconds(3600).getMillis());
         Assert.assertTrue("Item was not stale", item.isStale(new HTTPRequest(request.getRequestURI())));
     }
@@ -122,7 +122,7 @@ public class CacheItemTest {
         Headers headers = new Headers().add(HeaderUtils.toHttpDate("Date", createDateTime(0)));
         DateTimeUtils.setCurrentMillisFixed(createDateTime(10).getMillis());
         HTTPResponse cachedResponse = new HTTPResponse(null, Status.OK, headers);
-        int age = new CacheItem(cachedResponse, createDateTime(0)).getAge(new HTTPRequest(URI.create("foo")));
+        int age = new DefaultCacheItem(cachedResponse, createDateTime(0)).getAge(new HTTPRequest(URI.create("foo")));
         Assert.assertEquals(10, age);
     }
 }

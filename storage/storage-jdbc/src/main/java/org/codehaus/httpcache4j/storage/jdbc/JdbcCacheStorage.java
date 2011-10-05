@@ -18,10 +18,7 @@ package org.codehaus.httpcache4j.storage.jdbc;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.cache.CacheItem;
-import org.codehaus.httpcache4j.cache.CacheStorage;
-import org.codehaus.httpcache4j.cache.Key;
-import org.codehaus.httpcache4j.cache.Vary;
+import org.codehaus.httpcache4j.cache.*;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.joda.time.DateTime;
@@ -407,7 +404,7 @@ public class JdbcCacheStorage implements CacheStorage {
             Headers headers = convertToHeaders(rs.getString("headers"));
             DateTime cacheTime = new DateTime(rs.getTimestamp("cachetime").getTime());
             HTTPResponse response = new HTTPResponse(payload, status, headers);
-            return new CacheItemHolder(uri, vary, new CacheItem(rewriteResponse(response), cacheTime));
+            return new CacheItemHolder(uri, vary, new DefaultCacheItem(rewriteResponse(response), cacheTime));
         }
     }
 }

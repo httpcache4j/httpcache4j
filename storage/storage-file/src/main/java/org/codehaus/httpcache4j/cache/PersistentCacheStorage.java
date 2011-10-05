@@ -85,7 +85,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 
     @Override
     protected CacheItem createCacheItem(HTTPResponse pCacheableResponse) {
-        return new SerializableCacheItem(pCacheableResponse);
+        return new SerializableCacheItem(new DefaultCacheItem(pCacheableResponse));
     }
 
     @Override

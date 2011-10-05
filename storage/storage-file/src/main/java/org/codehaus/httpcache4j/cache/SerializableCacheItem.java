@@ -15,15 +15,11 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.Headers;
-import org.codehaus.httpcache4j.MIMEType;
-import org.codehaus.httpcache4j.Status;
+import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.util.ToJSON;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 
 import java.io.*;
 import java.util.LinkedHashMap;
@@ -33,21 +29,41 @@ import java.util.Map;
  * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class SerializableCacheItem extends CacheItem implements Serializable, ToJSON {
+public class SerializableCacheItem implements Serializable, ToJSON, CacheItem {
     private static final long serialVersionUID = 7170431954380145524L;
 
-    public SerializableCacheItem(HTTPResponse response) {
-        super(response);
+    private transient CacheItem item;
+
+    public SerializableCacheItem(CacheItem item) {
+        this.item = item;
     }
 
-    public SerializableCacheItem(HTTPResponse response, DateTime cachedTime) {
-        super(response, cachedTime);
+    public int getTTL() {
+        return item.getTTL();
+    }
+
+    public boolean isStale(HTTPRequest request) {
+        return item.isStale(request);
+    }
+
+    public int getAge(HTTPRequest request) {
+        return item.getAge(request);
+    }
+
+    public DateTime getCachedTime() {
+        return item.getCachedTime();
+    }
+
+    public HTTPResponse getResponse() {
+        return item.getResponse();
     }
 
     public String toJSON() {
+
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> object = new LinkedHashMap<String, Object>();
-        object.put("cache-time", DateTimeFormat.fullDateTime().print(cachedTime));
+        object.put("cache-time", HeaderUtils.toHttpDate("cache-time", item.getCachedTime()).getValue());
+        HTTPResponse response = item.getResponse();
         object.put("status", response.getStatus().getCode());
         if (response.hasPayload()) {
             CleanableFilePayload payload = (CleanableFilePayload) response.getPayload();
@@ -55,8 +71,7 @@ public class SerializableCacheItem extends CacheItem implements Serializable, To
             payloadItem.put("file", payload.getFile().getAbsolutePath());
             payloadItem.put("mime-type", payload.getMimeType().toString());
             object.put("payload", payloadItem);
-        }
-        else {
+        } else {
             object.put("payload", null);
         }
         object.put("headers", response.getHeaders().toJSON());
@@ -67,11 +82,11 @@ public class SerializableCacheItem extends CacheItem implements Serializable, To
         }
     }
 
-    private SerializableCacheItem fromJSON(String json) {
+    private CacheItem fromJSON(String json) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            JsonNode node = mapper.readTree(json);            
-            DateTime time = DateTimeFormat.fullDateTime().parseDateTime(node.path("cache-time").getValueAsText());
+            JsonNode node = mapper.readTree(json);
+            DateTime time = HeaderUtils.fromHttpDate(new Header("cache-time", node.path("cache-time").getValueAsText()));
             Status status = Status.valueOf(node.path("status").getIntValue());
             Headers headers = Headers.fromJSON(node.path("headers").getValueAsText());
             CleanableFilePayload p = null;
@@ -81,7 +96,7 @@ public class SerializableCacheItem extends CacheItem implements Serializable, To
                     p = new CleanableFilePayload(new File(payload.path("file").getValueAsText()), MIMEType.valueOf(payload.path("mime-type").getValueAsText()));
                 }
             }
-            return new SerializableCacheItem(new HTTPResponse(p, status, headers), time);
+            return new DefaultCacheItem(new HTTPResponse(p, status, headers), time);
 
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -94,9 +109,6 @@ public class SerializableCacheItem extends CacheItem implements Serializable, To
 
     private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
         String jsonValue = (String) in.readObject();
-        SerializableCacheItem item = fromJSON(jsonValue);
-        response = item.getResponse();
-        cachedTime = item.getCachedTime();
-        ttl = getTTL(response, 0);
+        item = fromJSON(jsonValue);
     }
 }

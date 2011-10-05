@@ -91,7 +91,7 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     protected CacheItem createCacheItem(HTTPResponse pCacheableResponse) {
-        return new CacheItem(pCacheableResponse);
+        return new DefaultCacheItem(pCacheableResponse);
     }
 
     public HTTPResponse update(final HTTPRequest request, final HTTPResponse response) {
