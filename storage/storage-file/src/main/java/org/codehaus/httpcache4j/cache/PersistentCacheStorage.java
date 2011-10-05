@@ -18,6 +18,7 @@ package org.codehaus.httpcache4j.cache;
 
 import java.io.*;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SerializationUtils;
@@ -35,8 +36,6 @@ import org.codehaus.httpcache4j.util.InvalidateOnRemoveLRUHashMap;
  */
 public class PersistentCacheStorage extends MemoryCacheStorage implements Serializable, InvalidateOnRemoveLRUHashMap.RemoveListener {
 
-    private static final long PERSISTENT_TIMEOUT = 60000L;
-    private static final int PERSISTENT_TRESHOLD = 100;
 
     private static final long serialVersionUID = 2551525125071085301L;
 
@@ -45,6 +44,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 
     private transient int modCount;
     private long lastSerialization = 0L;
+    private SerializationPolicy serializationPolicy = new DefaultSerializationPolicy();
 
     public PersistentCacheStorage(File storageDirectory) {
         this(1000, storageDirectory, "persistent.ser");
@@ -75,6 +75,10 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
         return fileManager;
     }
 
+    public void setSerializationPolicy(SerializationPolicy serializationPolicy) {
+        this.serializationPolicy = serializationPolicy == null ? new DefaultSerializationPolicy() : serializationPolicy;
+    }
+
     @Override
     protected void afterClear() {
         serializationFile.delete();
@@ -83,14 +87,12 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 
     @Override
     public HTTPResponse putImpl(Key key, HTTPResponse response) {
-      HTTPResponse res = super.putImpl(key, response);
-      if (modCount++ % PERSISTENT_TRESHOLD == 0) {
-        if (System.currentTimeMillis() > lastSerialization + PERSISTENT_TIMEOUT) {
-          lastSerialization = System.currentTimeMillis();
-          saveCacheToDisk();
+        HTTPResponse res = super.putImpl(key, response);
+        if (serializationPolicy.shouldWePersist(modCount++, lastSerialization)) {
+            lastSerialization = System.currentTimeMillis();
+            saveCacheToDisk();
         }
-      }
-      return res;
+        return res;
     }
 
     @Override
