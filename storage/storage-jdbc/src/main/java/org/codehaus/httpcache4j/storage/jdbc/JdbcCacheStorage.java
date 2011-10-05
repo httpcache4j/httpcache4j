@@ -108,7 +108,6 @@ public class JdbcCacheStorage implements CacheStorage {
             return getImpl(connection, key);
         } catch (SQLException e) {
             JdbcUtil.rollback(connection);
-            JdbcUtil.close(connection);
             throw new DataAccessException(e);
         } finally {
             JdbcUtil.endTransaction(connection);
@@ -166,7 +165,6 @@ public class JdbcCacheStorage implements CacheStorage {
        Connection connection = getConnection();
         PreparedStatement statement = null;
         try {
-            JdbcUtil.startTransaction(connection);
             statement = connection.prepareStatement("select * from response where uri = ? and vary = ?");
             statement.setString(1, key.getURI().toString());
             statement.setString(2, key.getVary().toJSON());
@@ -176,30 +174,26 @@ public class JdbcCacheStorage implements CacheStorage {
                 return holder.getCacheItem();
             }
         } catch (SQLException e) {
-            JdbcUtil.rollback(connection);
             throw new DataAccessException(e);
         }
         finally {
-            JdbcUtil.endTransaction(connection);
             JdbcUtil.close(statement);
         }
         return null;
     }
 
 
+    //This is part of a transaction.
     private void invalidate(final Key key, final Connection connection) {
         PreparedStatement statement = null;
         try {
-            JdbcUtil.startTransaction(connection);
             statement = connection.prepareStatement("delete from response where uri = ? and vary = ?");
             statement.setString(1, key.getURI().toString());
             statement.setString(2, key.getVary().toJSON());
             statement.executeUpdate();
         } catch (SQLException e) {
-            JdbcUtil.rollback(connection);
             throw new DataAccessException(e);
         } finally {
-            JdbcUtil.endTransaction(connection);
             JdbcUtil.close(statement);
         }
     }
@@ -343,6 +337,11 @@ public class JdbcCacheStorage implements CacheStorage {
                     }
 
                     System.err.println("ok");
+                }
+                try {
+                    connection.commit();
+                } catch (SQLException e) {
+                    throw new DataAccessException(e);
                 }
             }
         }

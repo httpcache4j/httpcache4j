@@ -65,10 +65,8 @@ public class JdbcUtil {
     public static void endTransaction(Connection connection) {
         if (connection != null) {
             try {
-                connection.commit();
                 connection.setAutoCommit(true);
-            } catch (SQLException e) {
-                throw new DataAccessException(e);
+            } catch (SQLException ignored) {
             }
         }
     }
