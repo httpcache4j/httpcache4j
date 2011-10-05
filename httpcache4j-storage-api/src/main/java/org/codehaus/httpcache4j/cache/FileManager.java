@@ -62,6 +62,9 @@ public final class FileManager implements Serializable {
             file.delete();
             file = null;
         }
+        if (file != null && !file.exists()) {
+            throw new IOException(String.format("Failed to create File '%s' for Key: %s", file.getName(), key));
+        }
 
         return file;
     }
