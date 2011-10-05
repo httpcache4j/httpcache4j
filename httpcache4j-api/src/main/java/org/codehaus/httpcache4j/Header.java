@@ -51,8 +51,8 @@ public final class Header extends NameValue {
     }
 
     @JsonCreator
-    private static Header valueOf(String json) {
-        String[] parts = json.split(":");
+    static Header valueOf(String json) {
+        String[] parts = json.split(":", 2);
         if (parts != null) {
             if (parts.length == 1) {
                 return new Header(parts[0].trim(), "");
