@@ -53,6 +53,22 @@ public class MIMETypeTest {
     }
 
     @Test
+    public void testValidMimeTypeWithParametersAndLotsofWhitespaceBetweenParamaters() {
+        MIMEType type = MIMEType.valueOf("foo/bar;charset=UTF-8            \n;    random=true");
+        assertEquals("Wrong number of parameters", 2, type.getParameters().size());
+        Parameter param = type.getParameters().get(1);
+        assertEquals("Wrong parameter name", "charset", param.getName());
+        assertEquals("Wrong parameter value", "UTF-8", param.getValue());
+        param = type.getParameters().get(0);
+        assertEquals("Wrong parameter name", "random", param.getName());
+        assertEquals("Wrong parameter value", "true", param.getValue());
+        MIMEType newType = MIMEType.valueOf("foo", "bar");
+        newType.addParameter("random", "true");
+        newType.addParameter("charset", "UTF-8");
+        assertEquals("New type did not match old type", newType, type);
+    }
+
+    @Test
     public void testValidMimeTypeWithInvalidParameter() {
         try {
             MIMEType.valueOf("foo/bar;charset?UTF-8");

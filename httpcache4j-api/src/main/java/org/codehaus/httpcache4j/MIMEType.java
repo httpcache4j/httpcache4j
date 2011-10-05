@@ -22,61 +22,43 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParameterList;
 import javax.activation.MimeTypeParseException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 /**
  * Media type used in representations and preferences.
  *
  * @see <a href="http://en.wikipedia.org/wiki/MIME">MIME types on Wikipedia</a>
  */
+//TODO: Make this immutable!!!!
 public final class MIMEType {
     public static final MIMEType ALL = new MIMEType("*", "*");
     public static final MIMEType APPLICATION_OCTET_STREAM = new MIMEType("application", "octet-stream");
 
     private final MimeType mimeType;
-    private final List<Parameter> parameters = new ArrayList<Parameter>();
 
     public MIMEType(String MIMEType) {
         MimeType mimeType;
         try {
             mimeType = new MimeType(MIMEType);
-        }
-        catch (MimeTypeParseException e) {
+        } catch (MimeTypeParseException e) {
             throw new IllegalArgumentException(e);
         }
         this.mimeType = mimeType;
-        convertParamerters(mimeType);
     }
 
     public MIMEType(String primaryType, String subType) {
         MimeType mimeType;
         try {
             mimeType = new MimeType(primaryType, subType);
-        }
-        catch (MimeTypeParseException e) {
+        } catch (MimeTypeParseException e) {
             throw new IllegalArgumentException(e);
         }
         this.mimeType = mimeType;
     }
 
+    //TODO: Make this immutable!!!!
     public void addParameter(String name, String value) {
-        Parameter parameter = new Parameter(name, value);
-        if (!parameters.contains(parameter)) {
-            mimeType.setParameter(name, value);
-            parameters.add(parameter);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-	  private void convertParamerters(MimeType mimeType) {
-        MimeTypeParameterList list = mimeType.getParameters();
-        Enumeration names = list.getNames();
-        while (names.hasMoreElements()) {
-            String name = (String) names.nextElement();
-            parameters.add(new Parameter(name, list.get(name)));
-        }
+        mimeType.setParameter(name, value);
     }
 
     public String getSubType() {
@@ -89,7 +71,7 @@ public final class MIMEType {
 
     @Override
     public boolean equals(Object object) {
-      return equals(object, true);
+        return equals(object, true);
     }
 
     public boolean equals(final Object o, final boolean includeParameters) {
@@ -105,12 +87,18 @@ public final class MIMEType {
             return false;
         }
         if (includeParameters) {
-            if (parameters != null ? !parameters.equals(other.parameters) : other.parameters != null) {
+            if (!parametersEquals(other)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private boolean parametersEquals(MIMEType other) {
+        Map<String, String> otherParameterList = convertParams(other.mimeType.getParameters());
+        Map<String, String> parameterList = convertParams(mimeType.getParameters());
+        return parameterList.equals(otherParameterList);
     }
 
     @Override
@@ -129,18 +117,34 @@ public final class MIMEType {
     }
 
     public List<Parameter> getParameters() {
-        return parameters;
+        List<Parameter> list = new ArrayList<Parameter>();
+        Map<String, String> map = convertParams(mimeType.getParameters());
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            list.add(new Parameter(entry.getKey(), entry.getValue()));
+        }
+        return Collections.unmodifiableList(list);
     }
 
     @Override
     public String toString() {
         return mimeType.toString();
     }
-    
+
+    private Map<String, String> convertParams(MimeTypeParameterList list) {
+        Map<String, String> map = new HashMap<String, String>();
+        Enumeration names = list.getNames();
+        while (names.hasMoreElements()) {
+            String name = (String) names.nextElement();
+            map.put(name, list.get(name));
+        }
+        return map;
+    }
+
+
     public static MIMEType valueOf(final String MIMEType) {
         return new MIMEType(MIMEType);
     }
-    
+
     public static MIMEType valueOf(final String primaryType, final String subType) {
         return new MIMEType(primaryType, subType);
     }
