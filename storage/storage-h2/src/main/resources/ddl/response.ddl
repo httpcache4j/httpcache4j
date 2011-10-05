@@ -5,6 +5,5 @@ create table response (
   headers        varchar(104048) not null,
   cachetime      timestamp not null,
   mimetype       varchar(256),
-  payload        blob,
   primary key(uri, vary)
 );

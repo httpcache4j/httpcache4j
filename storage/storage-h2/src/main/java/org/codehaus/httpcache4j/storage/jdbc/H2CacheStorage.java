@@ -37,7 +37,6 @@ import static org.codehaus.httpcache4j.storage.jdbc.JdbcUtil.*;
  * The tables are created on startup if they do not exist.
  * <p/>
  * NOTE:
- * This is experimental and should not be used in production.
  * There is generally no way of throwing stuff out of cache at the moment.
  * Stuff will be thrown out on "insert" and "clear".
  * This storage also requires Java 6 or higher.
@@ -52,7 +51,7 @@ public class H2CacheStorage extends JdbcCacheStorage {
     }
 
     public H2CacheStorage(File storageDirectory, boolean dropTables) {
-        super(createDataSource(new File(storageDirectory, "database")));
+        super(storageDirectory, createDataSource(new File(storageDirectory, "database")));
 
         maybeCreateTables(dropTables);
     }

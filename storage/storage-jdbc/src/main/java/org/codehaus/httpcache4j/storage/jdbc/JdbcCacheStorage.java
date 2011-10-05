@@ -19,12 +19,13 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.cache.*;
-import org.codehaus.httpcache4j.payload.InputStreamPayload;
+import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 
 import javax.sql.DataSource;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -41,9 +42,12 @@ public class JdbcCacheStorage implements CacheStorage {
     private final static String[] TABLES = {"response"};
     private final DataSource datasource;
     private final ResponseMapper mapper = new ResponseMapper();
+    private FileManager manager;
+
     
-    public JdbcCacheStorage(DataSource datasource) {
+    public JdbcCacheStorage(File dataDirectory, DataSource datasource) {
         this.datasource = datasource;
+        manager = new FileManager(dataDirectory);
     }
 
     @Override
@@ -51,7 +55,7 @@ public class JdbcCacheStorage implements CacheStorage {
         Key key = Key.create(request, response);
         Connection connection = getConnection();
 
-        String sql = "insert into response(uri, vary, status, headers, payload, mimeType, cachetime) values (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "insert into response(uri, vary, status, headers, mimeType, cachetime) values (?, ?, ?, ?, ?, ?)";
         PreparedStatement statement = null;
         try {
             JdbcUtil.startTransaction(connection);
@@ -61,32 +65,33 @@ public class JdbcCacheStorage implements CacheStorage {
             statement.setString(2, key.getVary().toJSON());
             statement.setInt(3, response.getStatus().getCode());
             statement.setString(4, response.getHeaders().toJSON());
-            InputStream inputStream = null;
+            FilePayload payload = null;
             if (response.hasPayload() && response.getPayload().isAvailable()) {
-                statement.setString(6, response.getPayload().getMimeType().toString());
-                inputStream = response.getPayload().getInputStream();
-                statement.setBinaryStream(5, inputStream);
+                statement.setString(5, response.getPayload().getMimeType().toString());
+                try {
+                    File file = manager.createFile(key, response.getPayload().getInputStream());
+                    if (file != null && file.exists()) {
+                        payload = new FilePayload(file, response.getPayload().getMimeType());
+                    }
+                } catch (IOException e) {
+                    throw new SQLException(e);
+                }
             }
             else {
-                statement.setNull(5, Types.BLOB);
-                statement.setNull(6, Types.VARCHAR);
+                statement.setNull(5, Types.VARCHAR);
             }
-            statement.setTimestamp(7, new Timestamp(DateTimeUtils.currentTimeMillis()));
-            try {
-                statement.executeUpdate();
-            } finally {
-                IOUtils.closeQuietly(inputStream);
-            }
+            statement.setTimestamp(6, new Timestamp(DateTimeUtils.currentTimeMillis()));
+            statement.executeUpdate();
             connection.commit();
-            return getImpl(connection, key);
+            return new HTTPResponse(payload, response.getStatus(), response.getHeaders());
         } catch (SQLException e) {
             JdbcUtil.rollback(connection);
-            JdbcUtil.close(connection);
             throw new DataAccessException(e);
         }
         finally {
             JdbcUtil.endTransaction(connection);
             JdbcUtil.close(statement);
+            JdbcUtil.close(connection);
         }
     }
 
@@ -112,6 +117,7 @@ public class JdbcCacheStorage implements CacheStorage {
         } finally {
             JdbcUtil.endTransaction(connection);
             JdbcUtil.close(statement);
+            JdbcUtil.close(connection);
         }
 
     }
@@ -124,7 +130,7 @@ public class JdbcCacheStorage implements CacheStorage {
             statement.setString(2, key.getVary().toJSON());
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
-                CacheItemHolder holder = mapper.mapRow(rs, connection);
+                CacheItemHolder holder = mapper.mapRow(rs);
                 return holder.getCacheItem().getResponse();
             }
         } catch (SQLException e) {
@@ -146,7 +152,7 @@ public class JdbcCacheStorage implements CacheStorage {
             statement.setString(1, request.getRequestURI().toString());            
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
-                CacheItemHolder holder = mapper.mapRow(rs, connection);
+                CacheItemHolder holder = mapper.mapRow(rs);
                 if (holder.getVary().matches(request)) {
                     return holder.getCacheItem();
                 }
@@ -170,7 +176,7 @@ public class JdbcCacheStorage implements CacheStorage {
             statement.setString(2, key.getVary().toJSON());
             ResultSet rs = statement.executeQuery();
             if (rs.next()) {
-                CacheItemHolder holder = mapper.mapRow(rs, connection);
+                CacheItemHolder holder = mapper.mapRow(rs);
                 return holder.getCacheItem();
             }
         } catch (SQLException e) {
@@ -190,6 +196,7 @@ public class JdbcCacheStorage implements CacheStorage {
             statement = connection.prepareStatement("delete from response where uri = ? and vary = ?");
             statement.setString(1, key.getURI().toString());
             statement.setString(2, key.getVary().toJSON());
+            manager.remove(key);
             statement.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException(e);
@@ -227,6 +234,7 @@ public class JdbcCacheStorage implements CacheStorage {
             JdbcUtil.startTransaction(connection);
             statement = connection.prepareStatement("delete from response");
             statement.executeUpdate();
+            manager.clear();
             connection.commit();
         } catch (SQLException e) {
             throw new IllegalStateException("Unable to clear", e);
@@ -390,14 +398,14 @@ public class JdbcCacheStorage implements CacheStorage {
             return Headers.fromJSON(input);
         }
 
-        public CacheItemHolder mapRow(ResultSet rs, Connection connection) throws SQLException {
+        public CacheItemHolder mapRow(ResultSet rs) throws SQLException {
             URI uri = URI.create(rs.getString("uri"));
             Vary vary = convertToVary(rs.getString("vary"));
-            Blob blob = rs.getBlob("payload");
-
+            Key key = Key.create(uri, vary);
+            File file = manager.resolve(key);
             Payload payload = null;
-            if (blob != null && !rs.wasNull()) {
-                payload = new InputStreamPayload(new ResultSetInputStream(rs, connection, blob.getBinaryStream()), MIMEType.valueOf(rs.getString("mimetype")));
+            if (file.exists()) {
+                payload = new FilePayload(file, MIMEType.valueOf(rs.getString("mimetype")));
             }
             Status status = Status.valueOf(rs.getInt("status"));
             Headers headers = convertToHeaders(rs.getString("headers"));
