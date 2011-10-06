@@ -62,9 +62,12 @@ public class JdbcUtil {
         }
     }
 
-    public static void endTransaction(Connection connection) {
+    public static void endTransaction(Connection connection, int isolationLevel) {
         if (connection != null) {
             try {
+                if (isolationLevel != -1) {
+                    connection.setTransactionIsolation(isolationLevel);
+                }
                 connection.setAutoCommit(true);
             } catch (SQLException ignored) {
             }

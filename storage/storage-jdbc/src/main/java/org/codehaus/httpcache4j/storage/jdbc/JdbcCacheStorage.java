@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.codehaus.httpcache4j.storage.jdbc.JdbcUtil.*;
 
@@ -43,114 +44,111 @@ public class JdbcCacheStorage implements CacheStorage {
     private final DataSource datasource;
     private final ResponseMapper mapper = new ResponseMapper();
     private FileManager manager;
+    private TransactionExecutor executor = new TransactionExecutor(Connection.TRANSACTION_SERIALIZABLE);
 
-    
     public JdbcCacheStorage(File dataDirectory, DataSource datasource) {
         this.datasource = datasource;
         manager = new FileManager(dataDirectory);
     }
 
     @Override
-    public HTTPResponse insert(HTTPRequest request, HTTPResponse response) {
-        Key key = Key.create(request, response);
-        Connection connection = getConnection();
-
-        String sql = "insert into response(uri, vary, status, headers, mimeType, cachetime) values (?, ?, ?, ?, ?, ?)";
-        PreparedStatement statement = null;
-        try {
-            JdbcUtil.startTransaction(connection);
-            invalidate(key, connection);
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, key.getURI().toString());
-            statement.setString(2, key.getVary().toJSON());
-            statement.setInt(3, response.getStatus().getCode());
-            statement.setString(4, response.getHeaders().toJSON());
-            FilePayload payload = null;
-            if (response.hasPayload() && response.getPayload().isAvailable()) {
-                statement.setString(5, response.getPayload().getMimeType().toString());
+    public synchronized HTTPResponse insert(final HTTPRequest request, final HTTPResponse response) {
+        final AtomicReference<Payload> payload = new AtomicReference<Payload>();
+        executor.execute(new DoInTransaction() {
+            @Override
+            public void doWith(Connection connection) throws SQLException {
+                Key key = Key.create(request, response);
+                String sql = "insert into response(uri, vary, status, headers, mimeType, cachetime) values (?, ?, ?, ?, ?, ?)";
+                PreparedStatement statement = null;
                 try {
-                    File file = manager.createFile(key, response.getPayload().getInputStream());
-                    if (file != null && file.exists()) {
-                        payload = new FilePayload(file, response.getPayload().getMimeType());
+                    invalidate(key, connection);
+                    statement = connection.prepareStatement(sql);
+                    statement.setString(1, key.getURI().toString());
+                    statement.setString(2, key.getVary().toJSON());
+                    statement.setInt(3, response.getStatus().getCode());
+                    statement.setString(4, response.getHeaders().toJSON());
+                    if (response.hasPayload() && response.getPayload().isAvailable()) {
+                        statement.setString(5, response.getPayload().getMimeType().toString());
+                        try {
+                            File file = manager.createFile(key, response.getPayload().getInputStream());
+                            if (file != null && file.exists()) {
+                                payload.set(new FilePayload(file, response.getPayload().getMimeType()));
+                            }
+                        } catch (IOException e) {
+                            throw new SQLException(e);
+                        }
+                    } else {
+                        statement.setNull(5, Types.VARCHAR);
                     }
-                } catch (IOException e) {
-                    throw new SQLException(e);
+                    statement.setTimestamp(6, new Timestamp(DateTimeUtils.currentTimeMillis()));
+                    statement.executeUpdate();
+                    connection.commit();
+                } finally {
+                    JdbcUtil.close(statement);
                 }
             }
-            else {
-                statement.setNull(5, Types.VARCHAR);
-            }
-            statement.setTimestamp(6, new Timestamp(DateTimeUtils.currentTimeMillis()));
-            statement.executeUpdate();
-            connection.commit();
-            return new HTTPResponse(payload, response.getStatus(), response.getHeaders());
-        } catch (SQLException e) {
-            JdbcUtil.rollback(connection);
-            throw new DataAccessException(e);
-        }
-        finally {
-            JdbcUtil.endTransaction(connection);
-            JdbcUtil.close(statement);
-            JdbcUtil.close(connection);
-        }
+        });
+        return new HTTPResponse(payload.get(), response.getStatus(), response.getHeaders());
     }
 
     @Override
-    public HTTPResponse update(HTTPRequest request, HTTPResponse response) {
-        Key key = Key.create(request, response);        
-        Connection connection = getConnection();
+    public synchronized HTTPResponse update(final HTTPRequest request, final HTTPResponse response) {
+        final Key key = Key.create(request, response);
 
-        PreparedStatement statement = null;
-        try {
-            JdbcUtil.startTransaction(connection);
-            statement = connection.prepareStatement("update response set headers = ?, cachetime = ? where uri = ? and vary = ?");
-            statement.setString(1, response.getHeaders().toJSON());
-            statement.setTimestamp(2, new Timestamp(DateTimeUtils.currentTimeMillis()));
-            statement.setString(3, key.getURI().toString());
-            statement.setString(4, key.getVary().toJSON());
-            statement.executeUpdate();
-            connection.commit();
-            return getImpl(connection, key);
-        } catch (SQLException e) {
-            JdbcUtil.rollback(connection);
-            throw new DataAccessException(e);
-        } finally {
-            JdbcUtil.endTransaction(connection);
-            JdbcUtil.close(statement);
-            JdbcUtil.close(connection);
-        }
+        executor.execute(new DoInTransaction() {
+            @Override
+            public void doWith(Connection connection) throws SQLException {
+                PreparedStatement statement = null;
+                try {
+                    statement = connection.prepareStatement("update response set headers = ?, cachetime = ? where uri = ? and vary = ?");
+                    statement.setString(1, response.getHeaders().toJSON());
+                    statement.setTimestamp(2, new Timestamp(DateTimeUtils.currentTimeMillis()));
+                    statement.setString(3, key.getURI().toString());
+                    statement.setString(4, key.getVary().toJSON());
+                    statement.executeUpdate();
 
+                } finally {
+                    JdbcUtil.close(statement);
+                }
+            }
+        });
+
+        return getImpl(key);
     }
 
-    private HTTPResponse getImpl(Connection connection, final Key key) {
+    private synchronized HTTPResponse getImpl(final Key key) {
+        Connection connection = getConnection();
         PreparedStatement statement = null;
+        ResultSet rs = null;
         try {
             statement = connection.prepareStatement("select * from response where uri = ? and vary = ?");
             statement.setString(1, key.getURI().toString());
             statement.setString(2, key.getVary().toJSON());
-            ResultSet rs = statement.executeQuery();
+            rs = statement.executeQuery();
             if (rs.next()) {
                 CacheItemHolder holder = mapper.mapRow(rs);
                 return holder.getCacheItem().getResponse();
             }
         } catch (SQLException e) {
             throw new DataAccessException(e);
-        }
-        finally {
+        } finally {
+            JdbcUtil.close(rs);
             JdbcUtil.close(statement);
+            JdbcUtil.close(connection);
         }
         return null;
     }
 
 
     @Override
-    public CacheItem get(HTTPRequest request) {
+    public synchronized CacheItem get(HTTPRequest request) {
         Connection connection = getConnection();
         PreparedStatement statement = null;
+        ResultSet rs = null;
         try {
             statement = connection.prepareStatement("select * from response where uri = ?");
-            statement.setString(1, request.getRequestURI().toString());            
-            ResultSet rs = statement.executeQuery();
+            statement.setString(1, request.getRequestURI().toString());
+            rs = statement.executeQuery();
             while (rs.next()) {
                 CacheItemHolder holder = mapper.mapRow(rs);
                 if (holder.getVary().matches(request)) {
@@ -159,16 +157,17 @@ public class JdbcCacheStorage implements CacheStorage {
             }
         } catch (SQLException e) {
             throw new DataAccessException(e);
-        }
-        finally {
+        } finally {
+            JdbcUtil.close(rs);
             JdbcUtil.close(statement);
+            JdbcUtil.close(connection);
         }
         return null;
     }
 
     @Override
-    public CacheItem get(Key key) {
-       Connection connection = getConnection();
+    public synchronized CacheItem get(Key key) {
+        Connection connection = getConnection();
         PreparedStatement statement = null;
         try {
             statement = connection.prepareStatement("select * from response where uri = ? and vary = ?");
@@ -181,8 +180,7 @@ public class JdbcCacheStorage implements CacheStorage {
             }
         } catch (SQLException e) {
             throw new DataAccessException(e);
-        }
-        finally {
+        } finally {
             JdbcUtil.close(statement);
         }
         return null;
@@ -190,7 +188,7 @@ public class JdbcCacheStorage implements CacheStorage {
 
 
     //This is part of a transaction.
-    private void invalidate(final Key key, final Connection connection) {
+    private synchronized void invalidate(final Key key, final Connection connection) throws SQLException {
         PreparedStatement statement = null;
         try {
             statement = connection.prepareStatement("delete from response where uri = ? and vary = ?");
@@ -198,8 +196,6 @@ public class JdbcCacheStorage implements CacheStorage {
             statement.setString(2, key.getVary().toJSON());
             manager.remove(key);
             statement.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException(e);
         } finally {
             JdbcUtil.close(statement);
         }
@@ -207,42 +203,43 @@ public class JdbcCacheStorage implements CacheStorage {
 
 
     @Override
-    public void invalidate(final URI uri) {
+    public synchronized void invalidate(final URI uri) {
         Connection connection = getConnection();
-        PreparedStatement statement = null;
-        try {
-            JdbcUtil.startTransaction(connection);
-            statement = connection.prepareStatement("delete from response where uri = ?");
-            statement.setString(1, uri.toString());
-            statement.executeUpdate();
-            connection.commit();
-        } catch (SQLException e) {
-            JdbcUtil.rollback(connection);
-            throw new DataAccessException("Unable to invalidate", e);
-        } finally {
-            JdbcUtil.endTransaction(connection);
-            JdbcUtil.close(statement);
-            JdbcUtil.close(connection);
-        }        
+        executor.execute(connection, new DoInTransaction() {
+            @Override
+            public void doWith(Connection connection) throws SQLException {
+                PreparedStatement statement = null;
+                try {
+                    statement = connection.prepareStatement("delete from response where uri = ?");
+                    statement.setString(1, uri.toString());
+                    statement.executeUpdate();
+                    connection.commit();
+                } finally {
+                    JdbcUtil.close(statement);
+                }
+            }
+        });
+
     }
 
     @Override
-    public void clear() {
-        Connection connection = getConnection();
-        PreparedStatement statement = null;
-        try {
-            JdbcUtil.startTransaction(connection);
-            statement = connection.prepareStatement("delete from response");
-            statement.executeUpdate();
-            manager.clear();
-            connection.commit();
-        } catch (SQLException e) {
-            throw new IllegalStateException("Unable to clear", e);
-        } finally {
-            JdbcUtil.endTransaction(connection);
-            JdbcUtil.close(statement);
-            JdbcUtil.close(connection);
-        }
+    public synchronized void clear() {
+        executor.execute(new DoInTransaction() {
+            @Override
+            public void doWith(Connection connection) throws SQLException {
+                PreparedStatement statement = null;
+                try {
+                    JdbcUtil.startTransaction(connection);
+                    statement = connection.prepareStatement("delete from response");
+                    statement.executeUpdate();
+                    manager.clear();
+                    connection.commit();
+                } finally {
+                    JdbcUtil.close(statement);
+                }
+            }
+        });
+
     }
 
     @Override
@@ -275,7 +272,7 @@ public class JdbcCacheStorage implements CacheStorage {
         try {
             statement = connection.prepareStatement("select uri,vary from response");
             rs = statement.executeQuery();
-            while(rs.next()) {
+            while (rs.next()) {
                 String uri = rs.getString(1);
                 String vary = rs.getString(2);
                 keys.add(Key.create(URI.create(uri), mapper.convertToVary(vary)));
@@ -294,97 +291,83 @@ public class JdbcCacheStorage implements CacheStorage {
             return datasource.getConnection();
         } catch (SQLException e) {
             throw new DataAccessException("Unable to get new connection", e);
-       }
+        }
     }
 
-    protected HTTPResponse rewriteResponse(HTTPResponse response) {
-        return response;
+    protected void maybeCreateTables(final boolean dropTables) {
+        final boolean createTables = shouldWeCreateTables();
+        Connection connection = getConnection();
+
+        executor.execute(connection, new DoInTransaction() {
+            @Override
+            public void doWith(Connection connection) throws SQLException {
+                boolean tablesCreate = createTables;
+                if (dropTables && !tablesCreate) {
+                    //TODO: Logging....
+                    System.err.println("--- dropping tables:");
+                    List<String> tables = new ArrayList<String>(Arrays.asList(TABLES));
+                    Collections.reverse(tables);
+                    for (String table : tables) {
+                        System.err.print("Dropping table " + table);
+                        dropTable(table, connection);
+                        System.err.println("ok!");
+                    }
+                    tablesCreate = true;
+                }
+                if (tablesCreate) {
+                    System.err.println("--- creating " + TABLES.length + " tables:");
+
+                    for (String table : TABLES) {
+                        System.err.print("--- creating table " + table + "...");
+                        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("ddl/" + table + ".ddl");
+                        if (inputStream == null) {
+                            System.err.println("Could not find DDL file for table " + table + "!");
+                            return;
+                        }
+                        try {
+                            String sql = IOUtils.toString(inputStream);
+                            createTable(sql, connection);
+                        } catch (IOException e) {
+                            System.err.println("Failed!");
+                            e.printStackTrace();
+                            return;
+                        } finally {
+                            IOUtils.closeQuietly(inputStream);
+                        }
+
+                        System.err.println("ok");
+                    }
+                }
+            }
+        });
     }
 
-    protected void maybeCreateTables(boolean dropTables) {
+    private boolean shouldWeCreateTables() {
         boolean createTables = false;
         try {
             size();
         } catch (DataAccessException e) {
             createTables = true;
         }
-        Connection connection = getConnection();
-        try {
-            startTransaction(connection);
-            if (dropTables && !createTables) {
-                //TODO: Logging....
-                System.err.println("--- dropping tables:");
-                List<String> tables = new ArrayList<String>(Arrays.asList(TABLES));
-                Collections.reverse(tables);
-                for (String table : tables) {
-                    System.err.print("Dropping table " + table);
-                    dropTable(table, connection);
-                    System.err.println("ok!");
-                }
-                createTables = true;
-            }
-            if (createTables) {
-                System.err.println("--- creating " + TABLES.length + " tables:");
-
-                for (String table : TABLES) {
-                    System.err.print("--- creating table " + table + "...");
-                    InputStream inputStream = getClass().getClassLoader().getResourceAsStream("ddl/" + table + ".ddl");
-                    if (inputStream == null) {
-                        System.err.println("Could not find DDL file for table " + table + "!");
-                        return;
-                    }
-                    try {
-                        String sql = IOUtils.toString(inputStream);
-                        createTable(sql, connection);
-                    } catch (IOException e) {
-                        System.err.println("Failed!");
-                        e.printStackTrace();
-                        return;
-                    } finally {
-                        IOUtils.closeQuietly(inputStream);
-                    }
-
-                    System.err.println("ok");
-                }
-                try {
-                    connection.commit();
-                } catch (SQLException e) {
-                    throw new DataAccessException(e);
-                }
-            }
-        }
-        catch (DataAccessException e) {
-            rollback(connection);
-        }
-
-        finally {
-            endTransaction(connection);
-            close(connection);
-        }
+        return createTables;
     }
 
-    private void dropTable(String table, Connection connection) {
+    private void dropTable(String table, Connection connection) throws SQLException {
         PreparedStatement statement = null;
         try {
             statement = connection.prepareStatement("drop table " + table);
             statement.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException(e);
-        }
-        finally {
+        } finally {
             close(statement);
         }
     }
 
-    private void createTable(String sql, Connection connection) {
+    private void createTable(String sql, Connection connection) throws SQLException {
         PreparedStatement statement = null;
         try {
             statement = connection.prepareStatement(sql);
             statement.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException(e);
-        }
-        finally {
+        } finally {
             close(statement);
         }
     }
@@ -411,7 +394,43 @@ public class JdbcCacheStorage implements CacheStorage {
             Headers headers = convertToHeaders(rs.getString("headers"));
             DateTime cacheTime = new DateTime(rs.getTimestamp("cachetime").getTime());
             HTTPResponse response = new HTTPResponse(payload, status, headers);
-            return new CacheItemHolder(uri, vary, new DefaultCacheItem(rewriteResponse(response), cacheTime));
+            return new CacheItemHolder(uri, vary, new DefaultCacheItem(response, cacheTime));
         }
+    }
+
+    private class TransactionExecutor {
+
+        private int isolationLevel;
+
+        public TransactionExecutor(int defaultIsolationLevel) {
+            this.isolationLevel = defaultIsolationLevel;
+        }
+
+        void execute(DoInTransaction callback) {
+            execute(getConnection(), callback);
+        }
+
+        void execute(Connection connection, DoInTransaction callback) {
+            int isolationLevel = -1;
+            try {
+                isolationLevel = connection.getTransactionIsolation();
+                JdbcUtil.startTransaction(connection);
+                connection.setTransactionIsolation(this.isolationLevel);
+
+                callback.doWith(connection);
+
+                connection.commit();
+            } catch (SQLException e) {
+                JdbcUtil.rollback(connection);
+                throw new DataAccessException(e);
+            } finally {
+                JdbcUtil.endTransaction(connection, isolationLevel);
+                JdbcUtil.close(connection);
+            }
+        }
+    }
+
+    private static interface DoInTransaction {
+        void doWith(Connection connection) throws SQLException;
     }
 }
