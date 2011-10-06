@@ -15,22 +15,10 @@
 
 package org.codehaus.httpcache4j.storage.jdbc;
 
-import org.apache.commons.io.IOUtils;
 import org.h2.jdbcx.JdbcDataSource;
 
 import javax.sql.DataSource;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static org.codehaus.httpcache4j.storage.jdbc.JdbcUtil.*;
 
 /**
  * We have one table, Response.

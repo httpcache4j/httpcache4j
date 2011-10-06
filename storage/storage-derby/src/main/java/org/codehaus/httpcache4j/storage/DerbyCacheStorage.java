@@ -15,33 +15,11 @@
 
 package org.codehaus.httpcache4j.storage;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.derby.impl.jdbc.EmbedCallableStatement40;
 import org.apache.derby.jdbc.EmbeddedDataSource40;
-import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.cache.CacheItem;
-import org.codehaus.httpcache4j.cache.CacheStorage;
-import org.codehaus.httpcache4j.cache.Key;
-import org.codehaus.httpcache4j.cache.Vary;
-import org.codehaus.httpcache4j.payload.DelegatingInputStream;
-import org.codehaus.httpcache4j.payload.FilePayload;
-import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.storage.jdbc.DataAccessException;
 import org.codehaus.httpcache4j.storage.jdbc.JdbcCacheStorage;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeUtils;
 
 import javax.sql.DataSource;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.sql.*;
-import java.util.*;
-
-import static org.codehaus.httpcache4j.storage.jdbc.JdbcUtil.*;
 
 /**
  * We have one table, Response.
