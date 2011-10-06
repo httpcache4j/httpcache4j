@@ -35,12 +35,10 @@ import static org.junit.Assert.*;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
-    private FileManager manager;
 
     @Override
 	protected CacheStorage createCacheStorage() {
-        manager = new FileManager(TestUtil.getTestFile("target/test/"));
-        return new PersistentCacheStorage(manager.getBaseDirectory());
+        return new PersistentCacheStorage(TestUtil.getTestFile("target/persistent"));
     }
 
     @Test
@@ -60,9 +58,10 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
         }
         assertNotNull("Result may not be null", res);
         if (res.hasPayload()) {
+            PersistentCacheStorage cacheStorage = (PersistentCacheStorage) storage;
             FilePayload payload = (FilePayload) res.getPayload();
             final File parent = payload.getFile().getParentFile();
-            final File file = manager.resolve(key);
+            final File file = cacheStorage.getFileManager().resolve(key);
             assertEquals(file.toString(), payload.getFile().toString());
             assertTrue(parent.isDirectory());
             assertEquals(1, parent.list().length);
@@ -76,6 +75,5 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
 
     @Override
 	public void afterTest() {
-        manager.clear();
     }
 }

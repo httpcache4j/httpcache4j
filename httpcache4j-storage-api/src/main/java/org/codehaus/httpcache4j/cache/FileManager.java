@@ -34,10 +34,10 @@ public final class FileManager implements Serializable {
 
     public FileManager(final File baseDirectory) {
         Validate.notNull(baseDirectory, "Base directory may not be null");
-        this.baseDirectory = createFilesDirectory();
+        this.baseDirectory = createFilesDirectory(baseDirectory);
     }
 
-    private File createFilesDirectory() {
+    private File createFilesDirectory(File baseDirectory) {
         File files = new File(baseDirectory, "files");
         StorageUtil.ensureDirectoryExists(files);
         return files;
@@ -71,7 +71,6 @@ public final class FileManager implements Serializable {
 
     public synchronized void clear() {
         baseDirectory.listFiles(new DeletingFileFilter());
-        createFilesDirectory();
     }
 
     public synchronized void remove(Key key) {
