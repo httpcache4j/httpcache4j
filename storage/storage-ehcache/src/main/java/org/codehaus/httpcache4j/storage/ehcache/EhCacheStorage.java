@@ -147,8 +147,8 @@ public class EhCacheStorage implements CacheStorage {
     }
 
     private List<Result> findMatching(URI uri, boolean withValues) {
-        Attribute<URI> uriAttribute = httpcache.getSearchAttribute("uri");
-        Query query = httpcache.createQuery().addCriteria(uriAttribute.eq(uri)).includeKeys();
+        Attribute<String> uriAttribute = httpcache.getSearchAttribute("uri");
+        Query query = httpcache.createQuery().addCriteria(uriAttribute.eq(uri.normalize().toString())).includeKeys();
         if (withValues) {
             query.includeValues();
         }
@@ -183,7 +183,10 @@ public class EhCacheStorage implements CacheStorage {
     private static Ehcache createDefaultCache(File storageDir, boolean memoryPersistent, int size) {
         CacheConfiguration config = new CacheConfiguration();
         config.setEternal(true);
-        if (!memoryPersistent) {
+        if (memoryPersistent) {
+            config.addSearchable(new Searchable().searchAttribute(new SearchAttribute().name("uri").className(URIAttributeExtractor.class.getName())));
+        }
+        else {
             config.setDiskStorePath(storageDir.getAbsolutePath());
             config.setDiskPersistent(true);
             config.setMaxElementsOnDisk(100000);
