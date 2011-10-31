@@ -198,6 +198,7 @@
           <autoVersionSubmodules>true</autoVersionSubmodules>
           <preparationGoals>clean install</preparationGoals>
           <pushChanges>false</pushChanges>
+          <arguments>-Dgpg.passphrase=${release.gpg.passphrase} -Dgpg.keyname=${release.gpg.keyname}</arguments> 
           <goals>deploy</goals>
         </configuration>
       </plugin>
