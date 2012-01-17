@@ -161,7 +161,7 @@ public class RequestDigest {
     }
 
     public static RequestDigest newInstance(UsernamePasswordChallenge challenge, HTTPRequest request, Digest digest) {
-        return new RequestDigest(challenge, request.getMethod(), URI.create(request.getRequestURI().getPath()), digest);
+        return new RequestDigest(challenge, request.getMethod(), URI.create(request.getRequestURI().getRawPath()), digest);
     }
 
     private void addDirective(String name, String value, boolean quoted) {
