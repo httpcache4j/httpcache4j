@@ -36,6 +36,7 @@ public class DirectiveTest {
     public void testQuotedDirective() {
         QuotedDirective dir = new QuotedDirective("foo", "\"bar\"");
         assertEquals("foo=\"bar\"", dir.toString());
+        assertEquals("bar", dir.getValue());
     }
 
     @Test
