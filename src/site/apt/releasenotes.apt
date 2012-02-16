@@ -6,6 +6,17 @@
 
 Release notes
 
+* 3.4
+
+** Bug
+
+    * [HTCJ-114] - Header.valueOf breaks on date headers
+
+    * [HTCJ-115] - JDBC storage engines are broken
+
+    * [HTCJ-116] - PersistentCacheStored is broken
+
+
 * 3.3
 
 
@@ -13,7 +24,7 @@ Release notes
 
     * [HTCJ-49] - ConcurrentModificationException
 
-    * [HTCJ-104] - Wron check of Last-Modifed header value against Date header value in HeaderUtils.hasCacheableHeaders
+    * [HTCJ-104] - Wrong check of Last-Modified header value against Date header value in HeaderUtils.hasCacheableHeaders
 
     * [HTCJ-105] - 1 to 1.5 second delay in getCanonicalHostName for CacheHeaderBuilder
 

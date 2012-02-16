@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2010. The Codehaus. All Rights Reserved.
+  ~ Copyright (c) 2008, The Codehaus. All Rights Reserved.
   ~
   ~   Licensed under the Apache License, Version 2.0 (the "License");
   ~   you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
   ~   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   ~   See the License for the specific language governing permissions and
   ~   limitations under the License.
+  ~
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -22,12 +23,17 @@
     <artifactId>storage</artifactId>
     <version>3.5-SNAPSHOT</version>
   </parent>
-  <artifactId>storage-jdbc</artifactId>
+  <artifactId>storage-ehcache</artifactId>
   <packaging>jar</packaging>
-  <name>Java HTTP cache :: Storage Engines :: JDBC</name>
-  <description>Storage using JDBC, note that this module requires Java 6</description>
+  <name>Java HTTP cache :: Storage Engines :: EHCache</name>
+  <description>Storage using files</description>
 
   <dependencies>
+    <dependency>
+      <groupId>net.sf.ehcache</groupId>
+      <artifactId>ehcache-core</artifactId>
+      <version>2.4.6</version>
+    </dependency>
     <dependency>
       <groupId>org.codehaus.httpcache4j</groupId>
       <artifactId>httpcache4j-storage-api</artifactId>
@@ -41,18 +47,9 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-    </dependency>    
+    </dependency>
+
   </dependencies>
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.0.2</version>
-        <configuration>
-          <target>1.6</target>
-          <source>1.6</source>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+
+
 </project>

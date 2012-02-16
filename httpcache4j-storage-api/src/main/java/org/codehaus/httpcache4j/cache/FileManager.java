@@ -56,6 +56,7 @@ public final class FileManager implements Serializable {
         try {
             IOUtils.copy(stream, outputStream);
         } finally {
+            IOUtils.closeQuietly(stream);
             IOUtils.closeQuietly(outputStream);
         }
         if (file.length() == 0) {
