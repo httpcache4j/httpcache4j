@@ -52,7 +52,7 @@ public class DefaultAuthenticator extends AuthenticatorBase implements Authentic
                 AuthScheme scheme = new AuthScheme(authenticateHeader);
                 req = select(scheme).prepare(request, scheme);
                 if (req != request) { //If authentication header was added
-                    registry.register(host, scheme);                    
+                    registry.register(host, scheme);
                 }
             }
         }
