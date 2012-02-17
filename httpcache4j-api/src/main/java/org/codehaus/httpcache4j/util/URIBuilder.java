@@ -195,6 +195,19 @@ public final class URIBuilder {
     public URIBuilder addParameter(String name, String value) {
         return addParameter(new Parameter(name, value));
     }
+    
+    public URIBuilder removeParameters(String name) {
+        Map<String, List<String>> map = new HashMap<String, List<String>>(this.parameters);
+        map.remove(name);
+        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(map), wasPathAbsolute);
+    }
+    
+    public URIBuilder replaceParameter(String name, String value) {
+        Map<String, List<String>> map = new HashMap<String, List<String>>(this.parameters);
+        map.remove(name);
+        addToQueryMap(map, name, value);
+        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(map), wasPathAbsolute);
+    }
 
     /**
      * Adds a new Parameter to the collection of parameters
@@ -278,6 +291,26 @@ public final class URIBuilder {
             }
         }
         return list;
+    }
+    
+    public List<Parameter> getParametersByName(final String name) {
+        List<String> params = parameters.get(name);
+        if (params == null) {
+            return Collections.emptyList();
+        }
+        return Lists.transform(params, new Function<String, Parameter>() {
+            public Parameter apply(String s) {
+                return new Parameter(name, s);
+            }
+        });
+    }
+
+    public String getFirstParameterValueByName(final String name) {
+        List<Parameter> list = getParametersByName(name);
+        if (!list.isEmpty()) {
+            return list.get(0).getValue();
+        }
+        return null;
     }
 
     /**
