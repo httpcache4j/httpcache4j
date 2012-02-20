@@ -25,7 +25,6 @@ import java.nio.charset.Charset;
  * @version $Revision: $
  */
 public class BasicAuthenticatorStrategy implements AuthenticatorStrategy {
-    private final Charset UTF_8 = Charset.forName("UTF-8");
 
     public boolean supports(final AuthScheme scheme) {
         return "basic".equalsIgnoreCase(scheme.getType());
@@ -43,8 +42,7 @@ public class BasicAuthenticatorStrategy implements AuthenticatorStrategy {
         HTTPRequest req = request;        
         if (challenge instanceof UsernamePasswordChallenge) {
             UsernamePasswordChallenge upc = (UsernamePasswordChallenge) challenge;
-            String basicString = upc.getIdentifier() + ":" + new String(upc.getPassword());
-            String authValue = "Basic " + new String(Base64.encodeBase64(basicString.getBytes()));
+            String authValue = BasicAuthentication.getHeaderValue(upc);
             if (proxy) {
                 req = request.addHeader(HeaderConstants.PROXY_AUTHORIZATION, authValue);
             }
