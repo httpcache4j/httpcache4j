@@ -9,7 +9,7 @@ import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 * @author Erlend Hamnaberg<erlend@hamnaberg.net>
 */
 public final class AvailableInputStream extends DelegatingInputStream {
-    private boolean available;
+    private boolean available = true;
 
     public AvailableInputStream(InputStream delegate) {
         super(delegate);
