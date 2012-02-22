@@ -15,6 +15,7 @@
 
 package org.codehaus.httpcache4j.resolver;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
@@ -33,11 +34,13 @@ public final class ResponseCreator {
 
     public HTTPResponse createResponse(final StatusLine line, final Headers responseHeaders, final InputStream stream) {
         Header contentTypeHeader = responseHeaders.getFirstHeader(HeaderConstants.CONTENT_TYPE);
+        Header contentLengthHeader = responseHeaders.getFirstHeader(HeaderConstants.CONTENT_LENGTH);
         MIMEType type = contentTypeHeader != null ? MIMEType.valueOf(contentTypeHeader.getValue()) : MIMEType.APPLICATION_OCTET_STREAM;
+        long length = contentLengthHeader != null ? NumberUtils.toLong(contentLengthHeader.getValue(), -1L) : -1L;
         Payload payload = null;
         if (line.getStatus().isBodyContentAllowed()) {
             if (stream != null) {
-                payload = new InputStreamPayload(stream, type);
+                payload = new InputStreamPayload(stream, type, length);
             }
         }
         return new HTTPResponse(payload, line, responseHeaders);

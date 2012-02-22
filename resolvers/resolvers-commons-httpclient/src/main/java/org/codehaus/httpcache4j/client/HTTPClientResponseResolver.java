@@ -110,7 +110,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             EntityEnclosingMethod carrier = (EntityEnclosingMethod) method;
             if (payload != null) {
                 carrier.setContentChunked(getConfiguration().isUseChunked());
-                carrier.setRequestEntity(new InputStreamRequestEntity(payload));
+                carrier.setRequestEntity(new InputStreamRequestEntity(payload, request.getPayload().length()));
             }
         }
 

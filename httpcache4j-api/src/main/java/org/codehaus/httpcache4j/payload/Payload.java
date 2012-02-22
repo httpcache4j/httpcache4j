@@ -23,6 +23,8 @@ import java.io.InputStream;
 /**
  * Represents a HTTP payload. may be either a {@link org.codehaus.httpcache4j.HTTPRequest request} payload
  * or a {@link org.codehaus.httpcache4j.HTTPResponse response} payload.
+ *
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public interface Payload {
 
@@ -39,7 +41,17 @@ public interface Payload {
      * @return the inputstream of the payload, may return {@code null} if the payload is not available.
      *
      */
-    public InputStream getInputStream() ;
+    public InputStream getInputStream();
+
+
+    /**
+     * Returns the length of the stream. If the payload is used in a {@link org.codehaus.httpcache4j.HTTPResponse},
+     * this is the value of the Content-Length header. If the payload is used in a request, it can be set,
+     * or calculated based on the type.
+     *
+     * @return -1 if the length cannot be calculated or set. Otherwise the expected length of the stream.
+     */
+    public long length();
 
     /**
      * Returns {@code true} if the payload is available, IE. If the stream can be read from.

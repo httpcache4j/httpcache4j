@@ -44,7 +44,11 @@ public class ClosedInputStreamPayload implements Payload, Serializable{
         return ClosedInputStream.CLOSED_INPUT_STREAM;
     }
 
+    public long length() {
+        return -1;
+    }
+
     public boolean isAvailable() {
-        return true;
+        return false;
     }
 }

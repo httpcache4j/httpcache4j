@@ -33,11 +33,6 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
     private final ResponseCreator responseCreator = new ResponseCreator();
     private final ResolverConfiguration configuration;
 
-    @Deprecated
-    protected AbstractResponseResolver(ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
-        this.configuration = new ResolverConfiguration(proxyAuthenticator, authenticator);
-    }
-
     protected AbstractResponseResolver(ResolverConfiguration configuration) {
         Validate.notNull(configuration, "Configuration may not be null");
         this.configuration = configuration;
@@ -60,15 +55,18 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
     }
 
     public final HTTPResponse resolve(HTTPRequest request) throws IOException {
-        HTTPRequest req = request;
+        return resolveAuthenticated(request, request);
+    }
+
+    private HTTPResponse resolveAuthenticated(HTTPRequest request, HTTPRequest req) throws IOException {
+        HTTPResponse convertedResponse;
         if (getAuthenticator().canAuthenticatePreemptively(request)) {
             req = getAuthenticator().preparePreemptiveAuthentication(request);
         }
         if (getProxyAuthenticator().canAuthenticatePreemptively()) {
             req = getProxyAuthenticator().preparePreemptiveAuthentication(req);
         }
-
-        HTTPResponse convertedResponse = resolveImpl(req);
+        convertedResponse = resolveImpl(req);
 
         if (convertedResponse.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) {
             req = getProxyAuthenticator().prepareAuthentication(req, convertedResponse);
@@ -98,7 +96,6 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
                 }
             }
         }
-
         return convertedResponse;
     }
 

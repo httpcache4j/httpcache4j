@@ -35,8 +35,7 @@ import java.util.Map;
  */
 public class FormDataPayload implements Payload {
     private final MIMEType mimeType = new MIMEType("application/x-www-form-urlencoded");
-    private final String values;
-    
+    private final String value;
 
     public FormDataPayload(Map<String, List<String>> parameters) {
         this(toIterable(parameters));
@@ -60,7 +59,7 @@ public class FormDataPayload implements Payload {
     }
 
     public FormDataPayload(Iterable<FormParameter> parameters) {
-        values = Joiner.on("&").skipNulls().join(parameters);
+        value = Joiner.on("&").skipNulls().join(parameters);
     }
 
     public MIMEType getMimeType() {
@@ -68,17 +67,25 @@ public class FormDataPayload implements Payload {
     }
 
     public InputStream getInputStream() {
-        return IOUtils.toInputStream(values);
+        return IOUtils.toInputStream(value);
     }
 
+    @Deprecated
     public String getValues() {
-        return values;
+        return value;
+    }
+
+    public String getValue() {
+        return value;
     }
 
     public boolean isAvailable() {
         return true;
     }
 
+    public long length() {
+        return value.length();
+    }
 
     /**
      * Represents a Form Url-encoded data parameter.

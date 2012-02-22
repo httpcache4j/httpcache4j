@@ -34,12 +34,10 @@ import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.entity.InputStreamEntity;
-import org.apache.commons.io.IOUtils;
 import org.codehaus.httpcache4j.payload.Payload;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 
 import static org.codehaus.httpcache4j.HTTPMethod.*;
@@ -118,7 +116,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
         if (request.hasPayload() && realRequest instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest req = (HttpEntityEnclosingRequest) realRequest;
-            req.setEntity(new UnknownLengthInputStreamEntity(request.getPayload(), getConfiguration().isUseChunked()));
+            req.setEntity(new PayloadEntity(request.getPayload(), getConfiguration().isUseChunked()));
         }
         return realRequest;
     }
@@ -204,9 +202,9 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         }
     }
 
-    private static class UnknownLengthInputStreamEntity extends InputStreamEntity {
-        public UnknownLengthInputStreamEntity(final Payload payload, boolean chunked) {
-            super(payload.getInputStream(), -1);
+    private static class PayloadEntity extends InputStreamEntity {
+        public PayloadEntity(final Payload payload, boolean chunked) {
+            super(payload.getInputStream(), chunked ? -1 : payload.length());
             setContentType(payload.getMimeType().toString());
             setChunked(chunked);
         }

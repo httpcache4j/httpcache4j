@@ -33,4 +33,8 @@ public class StringPayload implements Payload {
     public boolean isAvailable() {
         return true;
     }
+
+    public long length() {
+        return value.length();
+    }
 }

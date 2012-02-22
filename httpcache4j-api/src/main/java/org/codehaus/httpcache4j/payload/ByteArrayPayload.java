@@ -29,11 +29,17 @@ import java.io.ByteArrayInputStream;
 */
 public class ByteArrayPayload implements Payload, Serializable {
     private static final long serialVersionUID = -4845254892809632007L;
-    private byte[] bytes;
-    private MIMEType type;
+    private final byte[] bytes;
+    private final MIMEType type;
+    private final long length;
 
     public ByteArrayPayload(InputStream stream, MIMEType type) throws IOException {
-        this.bytes = IOUtils.toByteArray(stream);
+        try {
+            this.bytes = IOUtils.toByteArray(stream);
+        } finally {
+            IOUtils.closeQuietly(stream);
+        }
+        length = bytes.length;
         this.type = type;
     }
 
@@ -43,6 +49,10 @@ public class ByteArrayPayload implements Payload, Serializable {
 
     public InputStream getInputStream() {
         return new ByteArrayInputStream(bytes);
+    }
+
+    public long length() {
+        return length;
     }
 
     public boolean isAvailable() {

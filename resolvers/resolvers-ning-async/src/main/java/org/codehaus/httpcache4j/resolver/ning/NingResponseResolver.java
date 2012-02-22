@@ -66,9 +66,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
                 convertedHeaders.add(Lists.transform(values, stringToHeader(key)));
             }
             InputStream stream = response.getResponseBodyAsStream();
-
-            String contentType = response.getContentType();
-            return new HTTPResponse(new InputStreamPayload(stream, contentType != null ? MIMEType.valueOf(contentType) : null), line, convertedHeaders.toHeaders());
+            return getResponseCreator().createResponse(line, convertedHeaders.toHeaders(), stream);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {

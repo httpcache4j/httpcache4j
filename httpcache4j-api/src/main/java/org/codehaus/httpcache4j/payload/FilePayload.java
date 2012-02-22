@@ -18,6 +18,7 @@ package org.codehaus.httpcache4j.payload;
 
 import org.apache.commons.lang.Validate;
 
+import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
 
 import java.io.File;
@@ -27,11 +28,12 @@ import java.io.InputStream;
 
 /**
  * Payload that accepts a file with mimetype.
- * This can be used by the {@link org.codehaus.httpcache4j.HTTPRequest request}
+ *
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class FilePayload implements Payload {
-    protected final File file;
-    private MIMEType mimeType;
+    private final File file;
+    private final MIMEType mimeType;
 
     /**
      * Constructs a File payload
@@ -51,16 +53,23 @@ public class FilePayload implements Payload {
     }
 
     public InputStream getInputStream() {
-        try {
-            return new FileInputStream(file);
+        if (isAvailable()) {
+            try {
+                return new FileInputStream(file);
+            }
+            catch (FileNotFoundException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
         }
-        catch (FileNotFoundException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
+        throw new HTTPException(String.format("File %s cannot be read.", file.getAbsolutePath()));
     }
 
     public boolean isAvailable() {
         return file.exists() && file.canRead();
+    }
+
+    public long length() {
+        return file.length();
     }
 
     public File getFile() {

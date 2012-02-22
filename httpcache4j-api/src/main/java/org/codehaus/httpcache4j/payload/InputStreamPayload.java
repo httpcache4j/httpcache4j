@@ -20,6 +20,7 @@ import org.codehaus.httpcache4j.MIMEType;
 
 import org.apache.commons.lang.Validate;
 import org.apache.commons.io.input.ClosedInputStream;
+import org.codehaus.httpcache4j.util.AvailableInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,9 +32,14 @@ import java.io.InputStream;
  * next invocation of  
  */
 public class InputStreamPayload implements Payload {
-    private final InputStream stream;
+    private final AvailableInputStream stream;
     private final MIMEType mimeType;
-    private boolean available = true;
+    private final long length;
+
+
+    public InputStreamPayload(InputStream stream, MIMEType mimeType) {
+        this(stream, mimeType, -1);
+    }
 
     /**
      * Constructs an Inputstream payload.
@@ -42,7 +48,7 @@ public class InputStreamPayload implements Payload {
      * @param mimeType the mime type of the stream. Defaults to
      * application/octet-stream if not set.
      */
-    public InputStreamPayload(final InputStream stream, final MIMEType mimeType) {
+    public InputStreamPayload(final InputStream stream, final MIMEType mimeType, long length) {
         Validate.notNull(stream, "Inputstream may not be null");
         if (mimeType != null) {
             this.mimeType = mimeType;
@@ -50,7 +56,8 @@ public class InputStreamPayload implements Payload {
         else {
             this.mimeType = MIMEType.APPLICATION_OCTET_STREAM;
         }
-        this.stream = new WrappedInputStream(stream);
+        this.stream = new AvailableInputStream(stream);
+        this.length = length;
     }
 
     public MIMEType getMimeType() {
@@ -58,49 +65,14 @@ public class InputStreamPayload implements Payload {
     }
 
     public boolean isAvailable() {
-        return available;
+        return stream.isAvailable();
     }
 
     public InputStream getInputStream() {
-        if (available) {
-            return stream;
-        }
-        return ClosedInputStream.CLOSED_INPUT_STREAM;
+        return stream.isAvailable() ? stream : ClosedInputStream.CLOSED_INPUT_STREAM;
     }
 
-    private class WrappedInputStream extends DelegatingInputStream {
-
-        public WrappedInputStream(InputStream delegate) {
-            super(delegate);
-        }
-
-        public int read() throws IOException {
-            if (isAvailable()) {
-                available = false;
-            }
-            return super.read();
-        }
-
-        public int read(byte[] b) throws IOException {
-            if (isAvailable()) {
-                available = false;
-            }
-
-            return super.read(b);
-        }
-
-        public int read(byte[] b, int off, int len) throws IOException {
-            if (isAvailable()) {
-                available = false;
-            }
-            return super.read(b, off, len);
-        }
-
-        public long skip(long n) throws IOException {
-            if (isAvailable()) {
-                available = false;
-            }
-            return super.skip(n);
-        }
+    public long length() {
+        return length;
     }
 }
