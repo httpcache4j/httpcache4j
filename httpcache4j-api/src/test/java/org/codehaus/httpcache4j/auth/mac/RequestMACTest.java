@@ -2,6 +2,8 @@ package org.codehaus.httpcache4j.auth.mac;
 
 import java.net.URI;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.codehaus.httpcache4j.HTTPMethod;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.joda.time.DateTimeUtils;
@@ -41,6 +43,19 @@ public class RequestMACTest {
         RequestMAC mac = new RequestMAC("489dks293j39", n, null);
         String calculated = mac.getMac(new HTTPRequest(uri), Algorithm.HMAC_SHA_1);
         assertEquals("6T3zZzy2Emppni6bzL7kdRxUWL4=", calculated);
+        DateTimeUtils.setCurrentMillisSystem();
+    }
+
+    @Test
+    public void verifyMACTokenInExampleWithBodyExtensionMD5() throws Exception {
+        URI uri = URI.create("http://example.com/request?b5=%3D%253D&a3=a&c%40=&a2=r%20b&c2&a3=2+q");
+        DateTimeUtils.setCurrentMillisFixed(264095 * 1000L);
+        Nonce n = new Nonce("7d8f3e4a");
+        String ext = String.format("bodyhash=\"%s\"", Base64.encodeBase64String(DigestUtils.md5("Hello World!")).trim());
+        
+        RequestMAC mac = new RequestMAC("2134gfdg", n, ext);
+        String calculated = mac.getMac(new HTTPRequest(uri, HTTPMethod.POST), Algorithm.HMAC_SHA_1);
+        assertEquals("emuqa52lvjl2WWKD0nSDv/rgniA=", calculated);
         DateTimeUtils.setCurrentMillisSystem();
     }
 }

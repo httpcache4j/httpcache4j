@@ -2,15 +2,12 @@ package org.codehaus.httpcache4j.auth.mac;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.google.common.base.Charsets;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
 
 /**
  * @author Erlend Hamnaberg<erlend@hamnaberg.net>
