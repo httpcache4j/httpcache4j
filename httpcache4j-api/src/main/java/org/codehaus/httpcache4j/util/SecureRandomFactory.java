@@ -8,14 +8,15 @@ import java.security.SecureRandom;
  */
 public class SecureRandomFactory {
     public static SecureRandom getRandom() {
-        byte[] seed = SecureRandom.getSeed(512);
-        return getRandom(seed);
+        return getRandom(null);
     }
 
     public static SecureRandom getRandom(byte[] seed) {
         try {
             SecureRandom rnd = SecureRandom.getInstance("SHA1PRNG");
-            rnd.setSeed(seed);
+            if (seed != null) {
+                rnd.setSeed(seed);
+            }
             return rnd;
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
