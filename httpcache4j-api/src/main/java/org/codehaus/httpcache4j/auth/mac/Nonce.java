@@ -1,15 +1,15 @@
 package org.codehaus.httpcache4j.auth.mac;
 
 import java.security.SecureRandom;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Hex;
+import org.codehaus.httpcache4j.util.SecureRandomFactory;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public final class Nonce {
-    private static SecureRandom rnd = new SecureRandom();
+    private static SecureRandom rnd = SecureRandomFactory.getRandom();
     private static final int OFFSET = 8;
 
     private final String nonce;

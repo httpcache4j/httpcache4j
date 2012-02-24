@@ -16,7 +16,6 @@ public final class RequestMAC {
     private final Nonce nonce;
     private final String ext;
     static final String NEWLINE = "\n";
-    //static final String NEWLINE = "%x0A";
 
     public RequestMAC(String key, Nonce nonce, String ext) {
         this.key = key;

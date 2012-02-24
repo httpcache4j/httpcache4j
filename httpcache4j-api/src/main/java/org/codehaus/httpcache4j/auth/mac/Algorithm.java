@@ -10,7 +10,7 @@ import com.google.common.base.Charsets;
 import org.apache.commons.codec.binary.Base64;
 
 /**
- * @author Erlend Hamnaberg<erlend@hamnaberg.net>
+ *  @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public enum Algorithm {
     HMAC_SHA_1,
