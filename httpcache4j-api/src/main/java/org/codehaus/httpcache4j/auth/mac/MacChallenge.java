@@ -10,13 +10,13 @@ public class MacChallenge implements Challenge {
     private final String id;
     private final String key;
     private final Algorithm algorithm;
-    private final String ext;
+    private final ExtensionCalculator extensionCalculator;
 
-    public MacChallenge(String id, String key, Algorithm algorithm, String ext) {
+    public MacChallenge(String id, String key, Algorithm algorithm, ExtensionCalculator extensionCalculator) {
         this.id = id;
         this.key = key;
         this.algorithm = algorithm;
-        this.ext = ext;
+        this.extensionCalculator = extensionCalculator == null ? ExtensionCalculator.NULL : extensionCalculator;
     }
 
     public String getIdentifier() {
@@ -31,7 +31,7 @@ public class MacChallenge implements Challenge {
         return algorithm;
     }
 
-    public String getExt() {
-        return ext;
+    public ExtensionCalculator getExtensionCalculator() {
+        return extensionCalculator;
     }
 }

@@ -6,6 +6,7 @@ import org.codehaus.httpcache4j.HeaderConstants;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.auth.AuthScheme;
 import org.codehaus.httpcache4j.auth.AuthenticatorStrategy;
+import org.codehaus.httpcache4j.util.Pair;
 
 /**
  * http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac
@@ -26,7 +27,11 @@ public final class MacAuthenticatorStrategy implements AuthenticatorStrategy {
         Challenge challenge = request.getChallenge();
         if (challenge instanceof MacChallenge) {
             MacChallenge c = (MacChallenge) challenge;
-            RequestMAC requestMAC = new RequestMAC(c.getKey(), Nonce.generate(), c.getExt());
+            Pair<HTTPRequest,String> calculate = c.getExtensionCalculator().calculate(request);
+            if (request != calculate.getKey()) {
+                request = calculate.getKey();
+            }
+            RequestMAC requestMAC = new RequestMAC(c.getKey(), Nonce.generate(), calculate.getValue());
             return request.addHeader(HeaderConstants.WWW_AUTHENTICATE, requestMAC.toHeaderValue(request, c.getIdentifier(), c.getAlgorithm()));
         }
         return request;
