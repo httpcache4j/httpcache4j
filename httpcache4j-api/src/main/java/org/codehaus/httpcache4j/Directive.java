@@ -32,11 +32,11 @@ public class Directive extends NameValue {
     private final List<Parameter> parameters;
     
     public Directive(final String name, String value) {
-        this(name, HeaderUtils.fixQuotedString(value), Collections.<Parameter>emptyList());
+        this(name, HeaderUtils.removeQuotes(value), Collections.<Parameter>emptyList());
     }
 
     public Directive(final String name, String value, List<Parameter> parameters) {
-        super(name, HeaderUtils.fixQuotedString(value));
+        super(name, HeaderUtils.removeQuotes(value));
         Validate.notNull(parameters, "Parameters may not be null");
         Validate.noNullElements(parameters, "Parameters may not contain any null elements");
         this.parameters = ImmutableList.copyOf(parameters);

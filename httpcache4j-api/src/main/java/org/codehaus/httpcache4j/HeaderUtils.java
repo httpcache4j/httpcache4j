@@ -128,7 +128,7 @@ public final class HeaderUtils {
         return true;
     }
 
-    static String fixQuotedString(String value) {
+    static String removeQuotes(String value) {
         if (value != null && value.startsWith("\"") && value.endsWith("\"")) {
             return value.substring(1, value.length() - 1);
         }
