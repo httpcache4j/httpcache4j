@@ -18,7 +18,6 @@ package org.codehaus.httpcache4j.cache;
 
 import java.io.*;
 
-import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SerializationUtils;

@@ -68,14 +68,6 @@
         <role>Despot</role>
       </roles>
     </developer>
-    <developer>
-      <id>erik.mogensen</id>
-      <name>Erik Mogensen</name>
-      <email>mogsie@codehaus.org</email>
-      <roles>
-        <role>Developer</role>
-      </roles>
-    </developer>
   </developers>
 
   <contributors>
@@ -128,9 +120,8 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>2.1</version>
           <configuration>
-            <source>1.5</source>
-            <target>1.5</target>
-            <encoding>ISO-8859-1</encoding>
+            <source>1.6</source>
+            <target>1.6</target>
           </configuration>
           <inherited>true</inherited>
         </plugin>
@@ -138,9 +129,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
           <version>2.4</version>
-          <configuration>
-            <encoding>ISO-8859-1</encoding>
-          </configuration>
           <inherited>true</inherited>
         </plugin>
       </plugins>
@@ -203,6 +191,7 @@
     </plugins>
   </build>
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <currentVersion>${project.version}</currentVersion>
   </properties>
   <dependencyManagement>
@@ -269,19 +258,14 @@
         <version>1.4</version>
       </dependency>
       <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-core-asl</artifactId>
-        <version>1.4.3</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.jackson</groupId>
-        <artifactId>jackson-mapper-asl</artifactId>
-        <version>1.4.3</version>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>20090211</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>r07</version>
+        <version>10.0</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>

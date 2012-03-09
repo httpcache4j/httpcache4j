@@ -17,4 +17,12 @@ public class SerializableCacheItemTest {
         Assert.assertNotNull(clone);
     }
 
+    @Test
+    public void makeSureWeCanDeserializeOurSelfABitMoreComplex() {
+        SerializableCacheItem clone = (SerializableCacheItem) SerializationUtils.clone(
+                new SerializableCacheItem(new DefaultCacheItem(new HTTPResponse(null, Status.NOT_MODIFIED, new Headers().add("Foo", "bar").add("Bar", "foo").add("FOO", "kgld"))))
+        );
+        Assert.assertNotNull(clone);
+    }
+
 }

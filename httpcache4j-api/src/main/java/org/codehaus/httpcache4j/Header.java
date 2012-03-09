@@ -16,12 +16,6 @@
 
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.lang.Validate;
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonValue;
-
-import java.util.*;
-
 /**
  * Represents a HTTP Header.
  */
@@ -38,7 +32,6 @@ public final class Header extends NameValue {
     }
 
     @Override
-    @JsonValue
     public final String toString() {
         return getName() + ": " + getValue();
     }
@@ -50,9 +43,8 @@ public final class Header extends NameValue {
         return directives;
     }
 
-    @JsonCreator
-    static Header valueOf(String json) {
-        String[] parts = json.split(":", 2);
+    static Header valueOf(String value) {
+        String[] parts = value.split(":", 2);
         if (parts != null) {
             if (parts.length == 1) {
                 return new Header(parts[0].trim(), "");

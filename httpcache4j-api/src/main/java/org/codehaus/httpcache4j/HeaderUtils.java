@@ -35,6 +35,11 @@ public final class HeaderUtils {
     public static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss 'GMT'";
     private static final String NO_CACHE_HEADER_VALUE = "no-cache";
     private static final Header VARY_ALL = new Header(VARY, "*");
+    private static List<String> UNCACHEABLE_HEADERS = ImmutableList.of(
+            HeaderConstants.SET_COOKIE,
+            HeaderConstants.PROXY_AUTHENTICATE,
+            HeaderConstants.WWW_AUTHENTICATE
+    );
 
     private HeaderUtils() {
     }
@@ -78,6 +83,14 @@ public final class HeaderUtils {
         }
 
         return -1;
+    }
+
+
+    static Headers cleanForCaching(Headers headers) {
+        for (String headerName : UNCACHEABLE_HEADERS) {
+            headers = headers.remove(headerName);
+        }
+        return headers;
     }
 
     /**

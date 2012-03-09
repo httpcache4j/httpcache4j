@@ -20,8 +20,8 @@ import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.util.ToJSON;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -29,7 +29,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.codehaus.httpcache4j.HeaderConstants.VARY;
@@ -91,20 +90,6 @@ public class Key implements Serializable, ToJSON {
        return toJSON();
     }
 
-
-    @Override
-    public String toJSON() {
-        Map<String, String> object = new LinkedHashMap<String, String>();
-        object.put("uri", uri.toString());
-        object.put("vary", vary.toJSON());
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.writeValueAsString(object);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -133,10 +118,10 @@ public class Key implements Serializable, ToJSON {
         return result;
     }
 
-
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeObject(toJSON());
     }
+
 
     private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
         String jsonValue = (String) in.readObject();
@@ -146,14 +131,31 @@ public class Key implements Serializable, ToJSON {
     }
 
     private Key fromJSON(String json) {
-        ObjectMapper mapper = new ObjectMapper();
         try {
-            JsonNode node = mapper.readTree(json);
-            URI uri = URI.create(node.path("uri").getValueAsText());
-            Vary vary = Vary.fromJSON(node.path("vary").getValueAsText());
+            JSONObject object = new JSONObject(json);
+            URI uri = null;
+            Vary vary = null;
+            if (object.has("uri")) {
+                uri = URI.create(object.getString("uri"));
+            }
+            if (object.has("vary")) {
+                vary = Vary.parse(object.getString("vary"));
+            }
             return new Key(uri, vary);
-        } catch (IOException e) {
+        } catch (JSONException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    @Override
+    public String toJSON() {
+        JSONObject object = new JSONObject();
+        try {
+            object.put("uri", uri.toString());
+            object.put("vary", vary.toString());
+        } catch (JSONException e) {
+            throw new IllegalStateException(e);
+        }
+        return object.toString();
     }
 }

@@ -18,13 +18,12 @@ package org.codehaus.httpcache4j;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang.Validate;
-import org.codehaus.httpcache4j.util.CaseInsensitiveKey;
-import org.codehaus.httpcache4j.util.ToJSON;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.type.TypeFactory;
 
-import java.io.IOException;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
+import org.codehaus.httpcache4j.mutable.MutableHeaders;
+import org.codehaus.httpcache4j.util.CaseInsensitiveKey;
+
 import java.util.*;
 
 
@@ -34,7 +33,7 @@ import java.util.*;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public final class Headers implements Iterable<Header>, ToJSON {
+public final class Headers implements Iterable<Header> {
     private final HeaderHashMap headers = new HeaderHashMap();
 
     public Headers() {
@@ -156,6 +155,14 @@ public final class Headers implements Iterable<Header>, ToJSON {
         return headers.isEmpty();
     }
 
+    public Headers asCacheable() {
+        return HeaderUtils.cleanForCaching(this);
+    }
+
+    public boolean isCachable() {
+        return HeaderUtils.hasCacheableHeaders(this);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -186,27 +193,19 @@ public final class Headers implements Iterable<Header>, ToJSON {
         }
         return builder.toString();
     }
-
-    public static Headers fromJSON(String value) {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            List<Header> headers = mapper.readValue(value, TypeFactory.collectionType(List.class, Header.class));
-            return new Headers().add(headers);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    public String toJSON() {
-        ObjectMapper mapper = new ObjectMapper();
-        List<Header> headers = Lists.newArrayList(this);
-        try {
-            return mapper.writeValueAsString(headers);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
     
+    public static Headers parse(String input) {
+        if (StringUtils.isBlank(input)) {
+            return new Headers();
+        }
+        MutableHeaders headers = new MutableHeaders();
+        String[] fields = input.split("\r\n");
+        for (String field : fields) {
+            headers.add(Header.valueOf(field.trim()));
+        }
+        return headers.toHeaders();
+    }
+
     private static class HeaderHashMap extends LinkedHashMap<CaseInsensitiveKey, List<String>> {
         private static final long serialVersionUID = 2714358409043444835L;
 

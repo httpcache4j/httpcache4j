@@ -34,7 +34,6 @@ import java.io.File;
  * @version $Revision: $
  */
 public class DerbyCacheStorage extends JdbcCacheStorage {
-    private final static String[] TABLES = {"response"};
 
     public DerbyCacheStorage(File storageDirectory) {
         this(storageDirectory, false);

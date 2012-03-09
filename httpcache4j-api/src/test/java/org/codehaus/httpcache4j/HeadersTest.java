@@ -99,5 +99,13 @@ public class HeadersTest {
         assertFalse(h.equals(h2));
     }
 
+    @Test
+    public void makeSureWeCanParseToString() {
+        Headers h = new Headers().add("Foo", "Bar").add(HeaderConstants.AGE, "23").add(HeaderConstants.ACCEPT, "application/xhtml");
+        String string = h.toString();
+        Headers h2 = Headers.parse(string);
+        assertEquals(h, h2);
+        System.out.println("string = " + string);
+    }
     
 }

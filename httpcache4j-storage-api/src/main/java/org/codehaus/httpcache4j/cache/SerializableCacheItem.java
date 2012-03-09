@@ -18,9 +18,9 @@ package org.codehaus.httpcache4j.cache;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.util.ToJSON;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.*;
 import java.util.LinkedHashMap;
@@ -60,8 +60,6 @@ public class SerializableCacheItem implements Serializable, ToJSON, CacheItem {
     }
 
     public String toJSON() {
-
-        ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> object = new LinkedHashMap<String, Object>();
         object.put("cache-time", HeaderUtils.toHttpDate("cache-time", item.getCachedTime()).getValue());
         HTTPResponse response = item.getResponse();
@@ -71,35 +69,26 @@ public class SerializableCacheItem implements Serializable, ToJSON, CacheItem {
             Map<String, String> payloadItem = new LinkedHashMap<String, String>();
             payloadItem.put("file", payload.getFile().getAbsolutePath());
             payloadItem.put("mime-type", payload.getMimeType().toString());
-            object.put("payload", payloadItem);
-        } else {
-            object.put("payload", null);
+            object.put("payload", new JSONObject(payloadItem));
         }
-        object.put("headers", response.getHeaders().toJSON());
-        try {
-            return mapper.writeValueAsString(object);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+        object.put("headers", response.getHeaders().toString());
+        return new JSONObject(object).toString();
     }
 
     private CacheItem fromJSON(String json) {
-        ObjectMapper mapper = new ObjectMapper();
         try {
-            JsonNode node = mapper.readTree(json);
-            DateTime time = HeaderUtils.fromHttpDate(new Header("cache-time", node.path("cache-time").getValueAsText()));
-            Status status = Status.valueOf(node.path("status").getIntValue());
-            Headers headers = Headers.fromJSON(node.path("headers").getValueAsText());
+            JSONObject object = new JSONObject(json);
+            DateTime time = HeaderUtils.fromHttpDate(new Header("cache-time", object.getString("cache-time")));
+            Status status = Status.valueOf(object.getInt("status"));
+            Headers headers = Headers.parse(object.getString("headers"));
             FilePayload p = null;
-            if (node.path("payload") != null) {
-                JsonNode payload = node.path("payload");
-                if (!payload.isNull()) {
-                    p = new FilePayload(new File(payload.path("file").getValueAsText()), MIMEType.valueOf(payload.path("mime-type").getValueAsText()));
-                }
+            if (object.has("payload")) {
+                JSONObject payload = object.getJSONObject("payload");
+                p = new FilePayload(new File(payload.getString("file")), MIMEType.valueOf(payload.getString("mime-type")));
             }
             return new DefaultCacheItem(new HTTPResponse(p, status, headers), time);
 
-        } catch (IOException e) {
+        } catch (JSONException e) {
             throw new IllegalStateException(e);
         }
     }

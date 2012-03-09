@@ -16,19 +16,21 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.collect.Maps;
+import java.io.Serializable;
+import java.text.Collator;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
+
+
 import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.Headers;
-import org.codehaus.httpcache4j.util.ToJSON;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.type.TypeFactory;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.text.Collator;
-import java.util.*;
+import org.codehaus.httpcache4j.mutable.MutableHeaders;
 
 /**
  * Represents a HTTP Variation.
@@ -39,7 +41,7 @@ import java.util.*;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public final class Vary implements ToJSON {
+public final class Vary {
     private final Map<String, String> varyHeaders;
 
     /**
@@ -56,13 +58,13 @@ public final class Vary implements ToJSON {
      */
     public Vary(final Map<String, String> headers) {
         Validate.notNull(headers, "Headers may not be null");
-        Map<String, String> h = Maps.newTreeMap(new VaryComparator());
+        Map<String, String> h = new TreeMap<String, String>(new VaryComparator());
         h.putAll(headers);
         varyHeaders = Collections.unmodifiableMap(h);
     }
 
     public Vary(Headers headers) {
-        Map<String, String> h = Maps.newTreeMap(new VaryComparator());
+        Map<String, String> h = new TreeMap<String, String>(new VaryComparator());
         for (Header header : headers) {
             h.put(header.getName(), header.getValue());
         }
@@ -99,38 +101,20 @@ public final class Vary implements ToJSON {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
+        MutableHeaders headers = new MutableHeaders();
         for (Map.Entry<String, String> entry : varyHeaders.entrySet()) {
-            if (builder.length() > 0) {
-                builder.append("\r\n");
-            }
-            builder.append(entry.getKey()).append(": ").append(entry);
+            headers.add(entry.getKey(), entry.getValue());
         }
-        return builder.toString();
+        return headers.toHeaders().toString();
     }
 
     public Map<String, String> getVaryHeaders() {
         return varyHeaders;
     }
 
-    public static Vary fromJSON(String value) {
-        final ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> map;
-        try {
-            map = mapper.readValue(value, TypeFactory.mapType(LinkedHashMap.class, String.class, String.class));
-            return new Vary(map);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    public String toJSON() {
-        final ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.writeValueAsString(varyHeaders);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+    public static Vary parse(String value) {
+        Headers headers = Headers.parse(value);
+        return new Vary(headers);
     }
 
     public boolean equals(final Object o) {
@@ -159,17 +143,14 @@ public final class Vary implements ToJSON {
         private transient Collator collator = getCollator();
 
         private Collator getCollator() {
-            collator = Collator.getInstance(Locale.UK);
+            if (collator == null) {
+                collator = Collator.getInstance(Locale.UK);
+            }
             return collator;
         }
 
         public int compare(String one, String two) {
             return getCollator().compare(one, two);
-        }
-
-        private Object readResolve() {
-            collator = getCollator();
-            return this;
         }
     }
 }
