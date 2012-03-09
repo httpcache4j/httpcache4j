@@ -54,15 +54,6 @@ public class MutableRequest {
         this.preferences = preferences;
     }
 
-    /**
-     * @deprecated use {@link #getRequestURI} instead
-     * @return the request URI
-     */
-    @Deprecated
-    public URI getUri() {
-        return uri;
-    }
-
     public URI getRequestURI() {
         return uri;
     }
