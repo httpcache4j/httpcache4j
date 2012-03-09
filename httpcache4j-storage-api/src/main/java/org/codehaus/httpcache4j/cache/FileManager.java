@@ -23,6 +23,7 @@ import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.util.StorageUtil;
 
 import java.io.*;
+import java.net.URI;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -81,6 +82,14 @@ public final class FileManager implements Serializable {
         }
     }
 
+    public synchronized void clear(URI uri) {
+        File resolved = resolve(uri);
+        resolved.listFiles(new DeletingFileFilter());
+        if (resolved.delete() && directoryIsEmpty(resolved.getParentFile())) {
+            resolved.getParentFile().delete();
+        }
+    }
+
     private boolean directoryIsEmpty(File directory) {
         if (directory.isDirectory()) {
             String[] list = directory.list();
@@ -92,15 +101,21 @@ public final class FileManager implements Serializable {
     }
 
     public synchronized File resolve(Key key) {
-        String uriHex = DigestUtils.md5Hex(key.getURI().toString());
+        File uriFolder = resolve(key.getURI());
         String vary;
         if (key.getVary().isEmpty()) {
             vary = "default";
         }
         else {
-            vary = DigestUtils.md5Hex(key.getVary().toString());
+            vary = DigestUtils.md5Hex(key.getVary().toString()).trim();
         }
-        File uriFolder = new File(baseDirectory, uriHex);
         return new File(uriFolder, vary);
+    }
+
+    public synchronized File resolve(URI uri) {
+        String uriHex = DigestUtils.md5Hex(uri.toString()).trim();
+        String distribution = uriHex.substring(0, 2);
+        File uriFolder = new File(distribution, uriHex);
+        return new File(baseDirectory, uriFolder.getPath());
     }
 }

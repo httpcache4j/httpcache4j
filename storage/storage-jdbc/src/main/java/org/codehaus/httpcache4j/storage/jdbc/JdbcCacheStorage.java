@@ -214,12 +214,12 @@ public class JdbcCacheStorage implements CacheStorage {
                     statement.setString(1, uri.toString());
                     statement.executeUpdate();
                     connection.commit();
+                    manager.clear(uri);
                 } finally {
                     JdbcUtil.close(statement);
                 }
             }
         });
-
     }
 
     @Override

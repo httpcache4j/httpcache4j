@@ -39,10 +39,9 @@ public class ConcurrentPersistentCacheStorageTest extends ConcurrentCacheStorage
     public void test100Concurrent2() throws InterruptedException {
         PersistentCacheStorage storage = (PersistentCacheStorage) cacheStorage;
         testIterations(100, 100);
-        List<File> list = Arrays.asList(storage.getFileManager().getBaseDirectory().listFiles());
         for (Key key : storage) {
             File file = storage.getFileManager().resolve(key);
-            assertTrue(String.format("File %s did not exist ", file.getParentFile().getName()), list.contains(file.getParentFile()));
+            assertTrue(String.format("File %s did not exist ", file.getName()), file.exists());
         }
     }
 
@@ -50,10 +49,9 @@ public class ConcurrentPersistentCacheStorageTest extends ConcurrentCacheStorage
     public void test1001Concurrent() throws InterruptedException {
         PersistentCacheStorage storage = (PersistentCacheStorage) cacheStorage;
         testIterations(1001, 1000);
-        List<File> list = Arrays.asList(storage.getFileManager().getBaseDirectory().listFiles());
         for (Key key : storage) {
             File file = storage.getFileManager().resolve(key);
-            assertTrue(String.format("File %s did not exist ", file.getParentFile().getName()), list.contains(file.getParentFile()));
+            assertTrue(String.format("File %s did not exist ", file.getParentFile().getName()), file.exists());
         }
     }
 

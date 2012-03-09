@@ -21,12 +21,13 @@ import org.junit.Assert;
 import org.junit.After;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
-import org.codehaus.httpcache4j.HTTPRequest;
 import org.apache.commons.io.input.NullInputStream;
 
 import java.net.URI;
 import java.io.IOException;
 import java.io.File;
+
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
@@ -45,13 +46,21 @@ public class FileManagerTest {
     @Test
     public void testResolveToFile() throws IOException {
         File file = fileManager.createFile(Key.create(URI.create("foo"), new Vary()), new NullInputStream(1));
-        Assert.assertNotNull("File was null", file);
-        Assert.assertEquals(1, file.length());
+        assertNotNull("File was null", file);
+        assertEquals(1, file.length());
     }
 
+    @Test
     public void testResolveToEmptyFile() throws IOException {
       File file = fileManager.createFile(Key.create(URI.create("foo"), new Vary()), new NullInputStream(0));
-      Assert.assertNull("File was not null",file);
+      assertNull("File was not null", file);
+    }
+    
+    @Test
+    public void verifyResolve() {
+        File file = fileManager.resolve(URI.create("http://hello.you.bastard.com"));
+        assertFalse(file.exists());
+        assertTrue(file.getAbsolutePath().endsWith("files/57/57b16f3b10b61ed6ce07a15268874bc6"));
     }
 
 

@@ -75,22 +75,26 @@ public class SerializableCacheItem implements Serializable, ToJSON, CacheItem {
         return new JSONObject(object).toString();
     }
 
-    private CacheItem fromJSON(String json) {
+    public static CacheItem parse(String json) {
         try {
             JSONObject object = new JSONObject(json);
-            DateTime time = HeaderUtils.fromHttpDate(new Header("cache-time", object.getString("cache-time")));
-            Status status = Status.valueOf(object.getInt("status"));
-            Headers headers = Headers.parse(object.getString("headers"));
-            FilePayload p = null;
-            if (object.has("payload")) {
-                JSONObject payload = object.getJSONObject("payload");
-                p = new FilePayload(new File(payload.getString("file")), MIMEType.valueOf(payload.getString("mime-type")));
-            }
-            return new DefaultCacheItem(new HTTPResponse(p, status, headers), time);
+            return parseObject(object);
 
         } catch (JSONException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    static CacheItem parseObject(JSONObject object) throws JSONException {
+        DateTime time = HeaderUtils.fromHttpDate(new Header("cache-time", object.getString("cache-time")));
+        Status status = Status.valueOf(object.getInt("status"));
+        Headers headers = Headers.parse(object.getString("headers"));
+        FilePayload p = null;
+        if (object.has("payload")) {
+            JSONObject payload = object.getJSONObject("payload");
+            p = new FilePayload(new File(payload.getString("file")), MIMEType.valueOf(payload.getString("mime-type")));
+        }
+        return new DefaultCacheItem(new HTTPResponse(p, status, headers), time);
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -99,6 +103,6 @@ public class SerializableCacheItem implements Serializable, ToJSON, CacheItem {
 
     private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
         String jsonValue = (String) in.readObject();
-        item = fromJSON(jsonValue);
+        item = parse(jsonValue);
     }
 }

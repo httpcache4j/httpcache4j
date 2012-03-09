@@ -125,26 +125,30 @@ public class Key implements Serializable, ToJSON {
 
     private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
         String jsonValue = (String) in.readObject();
-        Key key = fromJSON(jsonValue);
+        Key key = parse(jsonValue);
         uri = key.getURI();
         vary = key.getVary();
     }
 
-    private Key fromJSON(String json) {
+    public static Key parse(String json) {
         try {
             JSONObject object = new JSONObject(json);
-            URI uri = null;
-            Vary vary = null;
-            if (object.has("uri")) {
-                uri = URI.create(object.getString("uri"));
-            }
-            if (object.has("vary")) {
-                vary = Vary.parse(object.getString("vary"));
-            }
-            return new Key(uri, vary);
+            return parseObject(object);
         } catch (JSONException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    static Key parseObject(JSONObject object) throws JSONException {
+        URI uri = null;
+        Vary vary = null;
+        if (object.has("uri")) {
+            uri = URI.create(object.getString("uri"));
+        }
+        if (object.has("vary")) {
+            vary = Vary.parse(object.getString("vary"));
+        }
+        return new Key(uri, vary);
     }
 
     @Override
