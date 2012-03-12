@@ -115,7 +115,6 @@ public final class FileManager implements Serializable {
     public synchronized File resolve(URI uri) {
         String uriHex = DigestUtils.md5Hex(uri.toString()).trim();
         String distribution = uriHex.substring(0, 2);
-        File uriFolder = new File(distribution, uriHex);
-        return new File(baseDirectory, uriFolder.getPath());
+        return new File(new File(baseDirectory, distribution), uriHex);
     }
 }
