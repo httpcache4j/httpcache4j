@@ -16,11 +16,16 @@
 
 package org.codehaus.httpcache4j;
 
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.Validate;
+import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -135,6 +140,21 @@ public final class HTTPResponse {
 
     public Set<HTTPMethod> getAllowedMethods() {
         return allowedMethods != null ? allowedMethods : Collections.<HTTPMethod>emptySet();
+    }
+
+    public <A> Optional<A> transform(final Function<Payload, A> f) {
+        return Optional.fromNullable(payload).transform(new Function<Payload, A>() {
+            @Override
+            public A apply(Payload payload) {
+                InputStream stream = payload.getInputStream();
+                try {
+                    InputStreamPayload transformed = new InputStreamPayload(stream, payload.getMimeType(), payload.length());
+                    return f.apply(transformed);
+                } finally {
+                    IOUtils.closeQuietly(stream);
+                }
+            }
+        });
     }
 
     public void consume() {

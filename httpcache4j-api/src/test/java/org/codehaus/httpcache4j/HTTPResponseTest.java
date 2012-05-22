@@ -16,7 +16,17 @@
 
 package org.codehaus.httpcache4j;
 
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import org.apache.commons.io.IOUtils;
+import org.codehaus.httpcache4j.payload.Payload;
+import org.codehaus.httpcache4j.payload.StringPayload;
 import org.junit.Test;
+
+import javax.annotation.Nullable;
+
+import java.io.IOException;
+
 import static org.junit.Assert.*;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
@@ -71,5 +81,25 @@ public class HTTPResponseTest {
         Headers headers = new Headers().add(CacheHeaderBuilder.getBuilder().createHITXCacheHeader());
         HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
         assertTrue(response.isCached());
+    }
+
+    @Test
+    public void transformShouldGiveUseSomethingUseful() {
+        HTTPResponse response = new HTTPResponse(new StringPayload("Hello", MIMEType.valueOf("text/plain")), Status.OK, new Headers());
+        Optional<String> result = response.transform(new Function<Payload, String>() {
+            @Override
+            public String apply(Payload input) {
+                assertEquals(MIMEType.valueOf("text/plain"), input.getMimeType());
+                try {
+                    return IOUtils.toString(input.getInputStream());
+                } catch (IOException e) {
+                    fail("Exception raised when parsing string");
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        assertTrue(result.isPresent());
+        assertEquals("Hello", result.get());
     }
 }
