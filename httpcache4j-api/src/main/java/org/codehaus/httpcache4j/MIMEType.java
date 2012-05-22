@@ -29,7 +29,6 @@ import java.util.*;
  *
  * @see <a href="http://en.wikipedia.org/wiki/MIME">MIME types on Wikipedia</a>
  */
-//TODO: Make this immutable!!!!
 public final class MIMEType {
     public static final MIMEType ALL = new MIMEType("*", "*");
     public static final MIMEType APPLICATION_OCTET_STREAM = new MIMEType("application", "octet-stream");
@@ -56,9 +55,17 @@ public final class MIMEType {
         this.mimeType = mimeType;
     }
 
-    //TODO: Make this immutable!!!!
-    public void addParameter(String name, String value) {
-        mimeType.setParameter(name, value);
+    /**
+     * Adds a parameter to the MIMEType.
+     *
+     * @param name name of parameter
+     * @param value value of parameter
+     * @return returns a new instance with the parameter set
+     */
+    public MIMEType addParameter(String name, String value) {
+        MIMEType mt = new MIMEType(toString());
+        mt.mimeType.setParameter(name, value);
+        return mt;
     }
 
     public String getSubType() {
