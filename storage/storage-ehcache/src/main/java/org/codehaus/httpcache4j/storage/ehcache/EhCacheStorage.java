@@ -168,12 +168,9 @@ public class EhCacheStorage implements CacheStorage {
     }
 
     public Iterator<Key> iterator() {
-        List<Object> keys = httpcache.getKeys();
-        return Lists.<Object, Key>transform(keys, new Function<Object, Key>() {
-            public Key apply(Object input) {
-                return (Key) input;
-            }
-        }).iterator();
+        @SuppressWarnings("unchecked")
+        List<Key> keys = httpcache.getKeys();
+        return keys.iterator();
     }
 
     public void shutdown() {

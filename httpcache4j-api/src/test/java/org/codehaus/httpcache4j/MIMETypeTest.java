@@ -47,8 +47,7 @@ public class MIMETypeTest {
         Parameter param = type.getParameters().get(0);
         assertEquals("Wrong parameter name", "charset", param.getName());
         assertEquals("Wrong parameter value", "UTF-8", param.getValue());
-        MIMEType newType = MIMEType.valueOf("foo", "bar");
-        newType.addParameter("charset", "UTF-8");
+        MIMEType newType = MIMEType.valueOf("foo", "bar").addParameter("charset", "UTF-8");
         assertEquals("New type did not match old type", newType, type);
     }
 
@@ -62,9 +61,7 @@ public class MIMETypeTest {
         param = type.getParameters().get(0);
         assertEquals("Wrong parameter name", "random", param.getName());
         assertEquals("Wrong parameter value", "true", param.getValue());
-        MIMEType newType = MIMEType.valueOf("foo", "bar");
-        newType.addParameter("random", "true");
-        newType.addParameter("charset", "UTF-8");
+        MIMEType newType = MIMEType.valueOf("foo", "bar").addParameter("random", "true").addParameter("charset", "UTF-8");
         assertEquals("New type did not match old type", newType, type);
     }
 
