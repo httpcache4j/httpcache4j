@@ -77,10 +77,24 @@ public final class MIMEType {
     }
 
     @Override
-    public boolean equals(Object object) {
+    public int hashCode() {
+        return new HashCodeBuilder(11, 31).append(getPrimaryType()).append(getSubType()).toHashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
         return equals(object, true);
     }
 
+    public boolean equalsWithoutParameters(final Object o) {
+        return equals(o, false);
+    }
+
+    /**
+     * This will be removed in the next release.
+     * @deprecated Use {@link #equals(Object)} or {@link #equalsWithoutParameters(Object)} instead.
+     */
+    @Deprecated
     public boolean equals(final Object o, final boolean includeParameters) {
         if (this == o) {
             return true;
@@ -93,10 +107,8 @@ public final class MIMEType {
         if (!new EqualsBuilder().append(getPrimaryType(), other.getPrimaryType()).append(getSubType(), other.getSubType()).isEquals()) {
             return false;
         }
-        if (includeParameters) {
-            if (!parametersEquals(other)) {
-                return false;
-            }
+        if (includeParameters && !parametersEquals(other)) {
+            return false;
         }
 
         return true;
@@ -108,17 +120,11 @@ public final class MIMEType {
         return parameterList.equals(otherParameterList);
     }
 
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(11, 31).append(getPrimaryType()).append(getSubType()).toHashCode();
-    }
-
     public boolean includes(MIMEType mimeType) {
-        boolean includes = mimeType == null || equals(ALL, false) || equals(mimeType, false);
+        boolean includes = mimeType == null || equalsWithoutParameters(ALL) || equalsWithoutParameters(mimeType);
         if (!includes) {
             includes = getPrimaryType().equals(mimeType.getPrimaryType())
-                    && (getSubType().equals(mimeType.getSubType()) || getSubType()
-                    .equals("*"));
+                    && (getSubType().equals(mimeType.getSubType()) || "*".equals(getSubType()));
         }
         return includes;
     }
