@@ -105,7 +105,6 @@ public class HeadersTest {
         String string = h.toString();
         Headers h2 = Headers.parse(string);
         assertEquals(h, h2);
-        System.out.println("string = " + string);
     }
     
 }
