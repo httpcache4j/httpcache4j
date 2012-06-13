@@ -30,20 +30,10 @@ import static org.codehaus.httpcache4j.HeaderConstants.CACHE_CONTROL;
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 class HTTPCacheHelper {
-    private static final Set<HTTPMethod> safeMethods;
     private static final Set<String> unmodifiableHeaders;
     private static final Set<Status> cacheableStatuses;
 
     static {
-        // ref http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.1
-        safeMethods = ImmutableSet.of(
-                HTTPMethod.CONNECT,
-                HTTPMethod.GET,
-                HTTPMethod.HEAD,
-                HTTPMethod.OPTIONS,
-                HTTPMethod.TRACE
-        );
-
         // ref http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.1 and
         // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.3
         // We are a transparent cache
@@ -110,15 +100,10 @@ class HTTPCacheHelper {
             return false;
         }
         Headers headers = response.getHeaders();
-        return HeaderUtils.hasCacheableHeaders(headers);
-
+        return headers.isCachable();
     }
 
-    boolean isSafeRequest(HTTPRequest request) {
-        return safeMethods.contains(request.getMethod());
-    }
-
-    HTTPRequest prepareConditionalRequest(HTTPRequest request, HTTPResponse staleResponse) {
+    HTTPRequest prepareConditionalGETRequest(HTTPRequest request, HTTPResponse staleResponse) {
         Conditionals conditionals = request.getConditionals();
         if (request.getMethod() == HTTPMethod.GET && conditionals.toHeaders().isEmpty()) {
             if (staleResponse.getETag() != null) {
@@ -137,9 +122,9 @@ class HTTPCacheHelper {
     }
 
     boolean isCacheableRequest(HTTPRequest request) {
-        if (request.getMethod() == HTTPMethod.GET || request.getMethod() == HTTPMethod.HEAD) {
+        if (request.getMethod().isCacheable()) {
             if (request.getHeaders().hasHeader(CACHE_CONTROL)) {
-                CacheControl cc = new CacheControl(request.getHeaders().getFirstHeader(CACHE_CONTROL));
+                CacheControl cc = request.getCacheControl();
                 //If the request tells us that we shouldn't cache the response, then we don't.
                 return !cc.isNoCache() || !cc.isNoStore();
             }
@@ -149,21 +134,18 @@ class HTTPCacheHelper {
     }
 
     boolean allowStale(CacheItem item, HTTPRequest req) {
-        boolean allowStale = false;
-        Headers all = req.getAllHeaders();
-        if (all.hasHeader(CACHE_CONTROL)) {
-            Header cc = all.getFirstHeader(CACHE_CONTROL);
-            CacheControl control = new CacheControl(cc);
+        if (req.getHeaders().hasHeader(CACHE_CONTROL)) {
+            CacheControl control = req.getCacheControl();
             int maxStale = control.getMaxStale();
             if (maxStale > -1) {
                 int ttl = item.getTTL();
                 int age = item.getAge(req);
                 if ((ttl - maxStale - age) < 0) {
-                    allowStale = true;
+                    return true;
                 }
             }
         }
-        return allowStale;
+        return false;
     }
 
     HTTPResponse rewriteStaleResponse(HTTPRequest request, HTTPResponse cachedResponse, int age) {
@@ -177,24 +159,22 @@ class HTTPCacheHelper {
     private HTTPResponse rewriteResponse(HTTPRequest request, HTTPResponse cachedResponse, boolean stale, int age) {
         HTTPResponse response = cachedResponse;
         Headers headers = response.getHeaders();
-        if (isSafeRequest(request)) {
+        if (request.getMethod().isSafe()) {
             if (age < 0) {
                 headers = headers.add(cacheHeaderBuilder.createMISSXCacheHeader());
             }
             else {
-            	if(!stale) {            		
-            		Headers all = response.getHeaders();
-                    if (all.hasHeader(HeaderConstants.X_CACHE)) {
+            	if(stale) {
+                    headers = headers.add(cacheHeaderBuilder.createHITXCacheHeader());
+                    headers = headers.set(HeaderConstants.AGE, String.valueOf(age));
+            	} else {
+                    if (headers.hasHeader(HeaderConstants.X_CACHE)) {
                         headers = headers.add(cacheHeaderBuilder.createMISSXCacheHeader());
                     } else {
-                    	headers = headers.add(cacheHeaderBuilder.createHITXCacheHeader());
+                        headers = headers.add(cacheHeaderBuilder.createHITXCacheHeader());
                         headers = headers.set(HeaderConstants.AGE, String.valueOf(age));
-                    } 
-                    
-            	} else {
-            		headers = headers.add(cacheHeaderBuilder.createHITXCacheHeader());
-                    headers = headers.set(HeaderConstants.AGE, String.valueOf(age));
-            	}
+                    }
+                }
             }            
         }
         if (request.getMethod() == HTTPMethod.GET) {

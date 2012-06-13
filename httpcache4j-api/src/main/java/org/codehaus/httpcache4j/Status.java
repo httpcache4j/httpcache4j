@@ -70,6 +70,35 @@ public final class Status implements Comparable<Status> {
     public static Status GATEWAY_TIMEOUT = new Status(504, "Gateway Timeout");
     public static Status HTTP_VERSION_NOT_SUPPORTED = new Status(505, "HTTP Version Not Supported");
 
+    public static enum Category {
+        INFORMATIONAL(100, 199),
+        SUCCESS(200, 299),
+        REDIRECTION(300, 399),
+        CLIENT_ERROR(400, 499),
+        SERVER_ERROR(500, 599);
+
+        private int min;
+        private int max;
+
+        private Category(int min, int max) {
+            this.min = min;
+            this.max = max;
+        }
+
+        public boolean contains(Status status) {
+            return min >= status.getCode() && status.getCode() <= max;
+        }
+
+        public static Category valueOf(Status status) {
+            for (Category category : values()) {
+                if (category.contains(status)) {
+                    return category;
+                }
+            }
+            throw new IllegalArgumentException("Unknown category");
+        }
+    }
+
     private static final Set<Status> STATUSES_WITHOUT_BODY = ImmutableSet.of(RESET_CONTENT, NO_CONTENT, NOT_MODIFIED);
     private static final Map<Integer, Status> STATUSES;
 
@@ -134,12 +163,16 @@ public final class Status implements Comparable<Status> {
         return name;
     }
 
+    public Category getCategory() {
+        return Category.valueOf(this);
+    }
+
     public boolean isClientError() {
-        return code >= 400 && code < 500;
+        return Category.CLIENT_ERROR.contains(this);
     }
 
     public boolean isServerError() {
-        return code >= 500 && code < 600;
+        return Category.SERVER_ERROR.contains(this);
     }
 
     public boolean isBodyContentAllowed() {

@@ -70,9 +70,8 @@ class Warning {
 
     private final int code;
     private final String description;
-    private final String userAgent = "HTTPCache4j";
 
-    Warning(int code, String description) {
+    public Warning(int code, String description) {
         Validate.isTrue(code >= 110 && code < 300, "The code must be between 110 and 300");
         Validate.notEmpty(description, "Description may not be empty");
         this.code = code;
@@ -80,7 +79,7 @@ class Warning {
     }
 
     public Header toHeader() {
-        return new Header(HeaderConstants.WARNING, String.format("%s %s %s", code, userAgent, description));
+        return new Header(HeaderConstants.WARNING, String.format("%s %s %s", code, "HTTPCache4j", description));
     }
 
 

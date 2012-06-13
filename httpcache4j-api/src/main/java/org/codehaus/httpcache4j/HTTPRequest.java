@@ -181,6 +181,17 @@ public final class HTTPRequest {
         return payload != null;
     }
 
+    public CacheControl getCacheControl() {
+        if (headers.hasHeader(HeaderConstants.CACHE_CONTROL)) {
+            return new CacheControl(headers.getFirstHeader(HeaderConstants.CACHE_CONTROL));
+        }
+        return null;
+    }
+
+    public HTTPRequest cacheControl(CacheControl cc) {
+        return addHeader(cc.toHeader());
+    }
+
     public DateTime getRequestTime() {
         return requestTime;
     }

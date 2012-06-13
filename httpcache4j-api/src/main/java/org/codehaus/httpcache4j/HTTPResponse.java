@@ -24,8 +24,8 @@ import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.joda.time.DateTime;
 
-import javax.annotation.Nullable;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +52,8 @@ public final class HTTPResponse {
     private Set<HTTPMethod> allowedMethods;
     private CacheControl cacheControl;
     private boolean cached;
+    private URI location;
+    private URI contentLocation;
 
     public HTTPResponse(Payload payload, Status status, Headers headers) {
         this(payload, new StatusLine(status), headers);
@@ -91,6 +93,12 @@ public final class HTTPResponse {
             Header cacheHeader = CacheHeaderBuilder.getBuilder().createHITXCacheHeader();
             List<Header> xcacheHeaders = headers.getHeaders(X_CACHE);
             cached = xcacheHeaders.contains(cacheHeader);
+        }
+        if (headers.hasHeader(LOCATION)) {
+            location = URI.create(headers.getFirstHeaderValue(LOCATION));
+        }
+        if (headers.hasHeader(CONTENT_LOCATION)) {
+            contentLocation = URI.create(headers.getFirstHeaderValue(CONTENT_LOCATION));
         }
     }
 
@@ -132,6 +140,14 @@ public final class HTTPResponse {
 
     public CacheControl getCacheControl() {
         return cacheControl;
+    }
+
+    public URI getLocation() {
+        return location;
+    }
+
+    public URI getContentLocation() {
+        return contentLocation;
     }
 
     public boolean isCached() {

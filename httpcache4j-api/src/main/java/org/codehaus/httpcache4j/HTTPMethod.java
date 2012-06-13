@@ -18,7 +18,6 @@ package org.codehaus.httpcache4j;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang.Validate;
-import org.codehaus.httpcache4j.util.CaseInsensitiveKey;
 
 import java.util.Locale;
 import java.util.Map;
@@ -30,34 +29,46 @@ import java.util.Map;
  */
 public final class HTTPMethod {
     public static final HTTPMethod CONNECT = new HTTPMethod("CONNECT");
-    public static final HTTPMethod DELETE = new HTTPMethod("DELETE");
-    public static final HTTPMethod GET = new HTTPMethod("GET");
-    public static final HTTPMethod HEAD = new HTTPMethod("HEAD");
-    public static final HTTPMethod OPTIONS = new HTTPMethod("OPTIONS");
+    public static final HTTPMethod DELETE = new HTTPMethod("DELETE", false, Idempotency.IDEMPOTENT);
+    public static final HTTPMethod GET = new HTTPMethod("GET", true, Idempotency.IDEMPOTENT);
+    public static final HTTPMethod HEAD = new HTTPMethod("HEAD", true, Idempotency.IDEMPOTENT);
+    public static final HTTPMethod OPTIONS = new HTTPMethod("OPTIONS", false, Idempotency.IDEMPOTENT);
     public static final HTTPMethod PATCH = new HTTPMethod("PATCH");
     public static final HTTPMethod POST = new HTTPMethod("POST");
     public static final HTTPMethod PURGE = new HTTPMethod("PURGE");
-    public static final HTTPMethod PUT = new HTTPMethod("PUT");
-    public static final HTTPMethod TRACE = new HTTPMethod("TRACE");
+    public static final HTTPMethod PUT = new HTTPMethod("PUT", false, Idempotency.IDEMPOTENT);
+    public static final HTTPMethod TRACE = new HTTPMethod("TRACE", false, Idempotency.IDEMPOTENT);
 
-    private static Map<CaseInsensitiveKey, HTTPMethod> defaultMethods = ImmutableMap.<CaseInsensitiveKey, HTTPMethod>builder()
-            .put(new CaseInsensitiveKey(CONNECT.getMethod()), CONNECT)
-            .put(new CaseInsensitiveKey(DELETE.getMethod()), DELETE)
-            .put(new CaseInsensitiveKey(GET.getMethod()), GET)
-            .put(new CaseInsensitiveKey(HEAD.getMethod()), HEAD)
-            .put(new CaseInsensitiveKey(OPTIONS.getMethod()), OPTIONS)
-            .put(new CaseInsensitiveKey(PATCH.getMethod()), PATCH)
-            .put(new CaseInsensitiveKey(POST.getMethod()), POST)
-            .put(new CaseInsensitiveKey(PURGE.getMethod()), PURGE)
-            .put(new CaseInsensitiveKey(PUT.getMethod()), PUT)
-            .put(new CaseInsensitiveKey(TRACE.getMethod()), TRACE)
+    private static Map<String, HTTPMethod> defaultMethods = ImmutableMap.<String, HTTPMethod>builder()
+            .put(CONNECT.getMethod().toUpperCase(Locale.ENGLISH), CONNECT)
+            .put(DELETE.getMethod().toUpperCase(Locale.ENGLISH), DELETE)
+            .put(GET.getMethod().toUpperCase(Locale.ENGLISH), GET)
+            .put(HEAD.getMethod().toUpperCase(Locale.ENGLISH), HEAD)
+            .put(OPTIONS.getMethod().toUpperCase(Locale.ENGLISH), OPTIONS)
+            .put(PATCH.getMethod().toUpperCase(Locale.ENGLISH), PATCH)
+            .put(POST.getMethod().toUpperCase(Locale.ENGLISH), POST)
+            .put(PURGE.getMethod().toUpperCase(Locale.ENGLISH), PURGE)
+            .put(PUT.getMethod().toUpperCase(Locale.ENGLISH), PUT)
+            .put(TRACE.getMethod().toUpperCase(Locale.ENGLISH), TRACE)
             .build();
 
-
     private final String method;
+    private final boolean cacheable;
+    private final Idempotency idempotency;
+
+    public static enum Idempotency {
+        IDEMPOTENT,
+        NON_IDEMPOTENT
+    }
 
     private HTTPMethod(String method) {
+        this(method, false, Idempotency.NON_IDEMPOTENT);
+    }
+
+    private HTTPMethod(String method, boolean cacheable, Idempotency idempotency) {
         this.method = method;
+        this.cacheable = cacheable;
+        this.idempotency = idempotency;
     }
 
     public String getMethod() {
@@ -80,11 +91,11 @@ public final class HTTPMethod {
 
     public static HTTPMethod valueOf(String method) {
         Validate.notEmpty(method, "Method name may not be null or empty");
-        CaseInsensitiveKey key = new CaseInsensitiveKey(method);
-        if (defaultMethods.containsKey(key)) {
-            return defaultMethods.get(key);
+        String uppercaseMethod = method.toUpperCase(Locale.ENGLISH);
+        if (defaultMethods.containsKey(uppercaseMethod)) {
+            return defaultMethods.get(uppercaseMethod);
         }
-        return new HTTPMethod(method.toUpperCase(Locale.ENGLISH));
+        return new HTTPMethod(uppercaseMethod);
     }
 
     @Override
@@ -112,5 +123,17 @@ public final class HTTPMethod {
 
     public boolean canHavePayload() {
         return this == POST || this == PUT || this == PATCH;
+    }
+
+    public boolean isSafe() {
+        return this == GET || this == HEAD;
+    }
+
+    public boolean isCacheable() {
+        return cacheable;
+    }
+
+    public boolean isIdempotent() {
+        return idempotency == Idempotency.IDEMPOTENT;
     }
 }

@@ -108,7 +108,7 @@ public class HTTPCache {
         HTTPResponse response;
         if (!helper.isCacheableRequest(request)) {
             //TODO: This invalidation should only happen when we have a successful response.
-            if (!helper.isSafeRequest(request)) {
+            if (!request.getMethod().isSafe()) {
                 storage.invalidate(request.getRequestURI());
             }
             response = unconditionalResolve(request);
@@ -176,7 +176,7 @@ public class HTTPCache {
 
     private HTTPRequest maybePrepareConditionalResponse(HTTPRequest request, HTTPResponse staleResponse) {
         if (!staleResponse.hasPayload() || staleResponse.getPayload().isAvailable()) {
-            return helper.prepareConditionalRequest(request, staleResponse);
+            return helper.prepareConditionalGETRequest(request, staleResponse);
         }
         return request.conditionals(new Conditionals());
     }
