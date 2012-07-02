@@ -17,19 +17,11 @@ package org.codehaus.httpcache4j.util;
 
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HeaderUtils;
-import org.codehaus.httpcache4j.Header;
-import org.codehaus.httpcache4j.HTTPException;
-import org.codehaus.httpcache4j.payload.Payload;
+import org.codehaus.httpcache4j.Headers;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.apache.commons.io.IOUtils;
 
-import java.io.Writer;
 import java.io.PrintWriter;
-import java.io.InputStream;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Experimental for debugging: do not use.
@@ -37,22 +29,19 @@ import java.util.Map;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-public class RequestWriter {
-    private final HTTPRequest request;
+public class RequestWriter extends AbstractHTTPWriter {
 
-    public RequestWriter(HTTPRequest request) {
-        this.request = request;
+    public void write(HTTPRequest request) {
+        write(new PrintWriter(System.out), request);
     }
 
-    public void write() {
-        write(new PrintWriter(System.out));
-    }
+    public void write(PrintWriter writer, HTTPRequest request) {
+        writeRequestLine(writer, request);
 
-    public void write(Writer target) {
-        PrintWriter writer = new PrintWriter(target);
-        writeRequestLine(writer);
-        writeGeneralHeaders(writer);
-        writerRequestHeaders(writer);
+        Headers all = request.getAllHeaders();
+        all = all.add(HeaderUtils.toHttpDate("Date", new DateTime(DateTimeZone.forID("UTC"))));
+        all = all.add("Connection", "close");
+        writeHeaders(writer, all);
         if (request.hasPayload()) {
             writeBody(writer, request.getPayload());
         }
@@ -60,33 +49,7 @@ public class RequestWriter {
         writer.flush();
     }
 
-    private void writeRequestLine(PrintWriter writer) {
-        writer.println(String.format("%s %s HTTP/1.1", request.getMethod().toString(), request.getRequestURI().getPath()));
+    private void writeRequestLine(PrintWriter writer, HTTPRequest request) {
+        writer.print(String.format("%s %s HTTP/1.1\r\n", request.getMethod().toString(), request.getRequestURI().getPath()));
     }
-
-    private void writeGeneralHeaders(PrintWriter writer) {
-        Header dateHeader = HeaderUtils.toHttpDate("Date", new DateTime(DateTimeZone.forID("UTC")));
-        writer.println(dateHeader);
-        writer.println("Connection: close");
-    }
-
-    private void writerRequestHeaders(PrintWriter writer) {
-        for (Header head : request.getAllHeaders()) {
-            writer.println(head.toString());
-        }
-    }
-
-    private void writeBody(PrintWriter writer, Payload payload) {
-        InputStream stream = payload.getInputStream();
-        try {
-            IOUtils.copy(stream, writer);
-        }
-        catch (IOException e) {
-            throw new HTTPException("Unable to write the body of the response", e);
-        }
-        finally {
-            IOUtils.closeQuietly(stream);
-        }
-    }
-
 }

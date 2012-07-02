@@ -15,14 +15,11 @@
 
 package org.codehaus.httpcache4j.util;
 
-import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.*;
-import org.apache.commons.io.IOUtils;
+import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.StatusLine;
 
-import javax.xml.ws.Response;
-import java.io.*;
-import java.util.List;
-import java.util.Map;
+import java.io.PrintWriter;
+import java.io.Writer;
 
 /**
  * Experimental for debugging: do not use.
@@ -30,43 +27,23 @@ import java.util.Map;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-public class ResponseWriter {
+public class ResponseWriter extends AbstractHTTPWriter {
     public void write(HTTPResponse response) {
         write(response, new PrintWriter(System.out));
     }
 
     public void write(HTTPResponse response, Writer output) {
         PrintWriter writer = new PrintWriter(output);
-        writeStatus(writer, response.getStatus());
+        writeStatus(writer, response.getStatusLine());
         writeHeaders(writer, response.getHeaders());
-        writer.println();
-        if (response.hasPayload() && response.getPayload().isAvailable()) {
+        if (response.hasPayload()) {
             writeBody(writer, response.getPayload());
         }
-        writer.print("\r\n");
         writer.flush();
     }
 
-    private void writeStatus(PrintWriter writer, Status status) {
-        writer.println(String.format("HTTP/1.1 %s %s", status.getCode(), status.getName()));
-    }
-
-    private void writeHeaders(PrintWriter writer, Headers headers) {
-        for (Header head : headers) {
-            writer.println(head.toString());
-        }
-    }
-
-    private void writeBody(PrintWriter writer, Payload payload) {
-        InputStream stream = payload.getInputStream();
-        try {
-            IOUtils.copy(stream, writer);
-        }
-        catch (IOException e) {
-            throw new HTTPException("Unable to write the body of the response", e);
-        }
-        finally {
-            IOUtils.closeQuietly(stream);
-        }
+    private void writeStatus(PrintWriter writer, StatusLine status) {
+        println(writer, String.format("%s %s %s", status.getStatus().getCode(), status.getMessage(), status.getVersion()));
+        writer.print("\r\n");
     }
 }
