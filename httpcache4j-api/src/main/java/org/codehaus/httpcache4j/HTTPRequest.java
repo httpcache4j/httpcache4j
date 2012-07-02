@@ -110,7 +110,7 @@ public final class HTTPRequest {
 
         requestHeaders = merge(merge(requestHeaders, conditionalHeaders), preferencesHeaders);
         if (hasPayload()) {
-            requestHeaders.remove(HeaderConstants.CONTENT_TYPE);
+            requestHeaders = requestHeaders.remove(HeaderConstants.CONTENT_TYPE);
             requestHeaders = requestHeaders.add(HeaderConstants.CONTENT_TYPE, getPayload().getMimeType().toString());
         }
 

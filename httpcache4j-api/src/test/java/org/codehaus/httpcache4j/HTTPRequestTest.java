@@ -16,13 +16,16 @@
 
 package org.codehaus.httpcache4j;
 
+import org.apache.commons.io.input.NullInputStream;
 import org.codehaus.httpcache4j.payload.ClosedInputStreamPayload;
+import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.junit.Test;
 import org.junit.Assert;
 import static org.junit.Assert.*;
 import org.codehaus.httpcache4j.preference.Preferences;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Locale;
 
@@ -51,6 +54,18 @@ public class HTTPRequestTest {
         request = request.preferences(preferences);
         Headers headers = new Headers().add("X-Foo-Bar", "Foo").add("If-Match", new Tag("2345").format()).add(HeaderConstants.ACCEPT_LANGUAGE, "en").add(HeaderConstants.ACCEPT, "application/xml");
         Assert.assertEquals(headers, request.getAllHeaders());
+    }
+
+    @Test
+    public void issueHTJC123() {
+        String mimeType = "application/atom+xml;type=entry";
+        Headers headers = new Headers();
+        headers = headers.add("Content-Type", mimeType);
+        HTTPRequest request = new HTTPRequest(URI.create("http://example.com/"), HTTPMethod.POST);
+        request = request.headers(headers);
+        request = request.payload(new InputStreamPayload(new NullInputStream(10), new MIMEType(mimeType)));
+        Headers all = request.getAllHeaders();
+        assertEquals(1, all.getHeaders("Content-Type").size());
     }
 
     @Test(expected = IllegalStateException.class)
