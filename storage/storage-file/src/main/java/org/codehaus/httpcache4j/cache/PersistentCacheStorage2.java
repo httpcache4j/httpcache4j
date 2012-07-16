@@ -16,7 +16,6 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import org.codehaus.httpcache4j.HTTPException;
@@ -26,15 +25,10 @@ import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.util.Pair;
 import org.codehaus.httpcache4j.util.StorageUtil;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.*;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Completely file-persistent storage, also for metadata.
@@ -87,13 +81,11 @@ public class PersistentCacheStorage2 implements CacheStorage {
         }
         FileWriter writer = null;
         try {
-            JSONObject object = new JSONObject();
-            object.put("key", new JSONObject(key.toJSON()));
-            object.put("item", new JSONObject(item.toJSON()));
+            Properties properties = new Properties();
+            properties.putAll(key.toProperties());
+            properties.putAll(item.toProperties());
             writer = new FileWriter(metadata);
-            writer.write(object.toString());
-        } catch (JSONException e) {
-            throw new HTTPException(e);
+            properties.store(writer, null);
         } finally {
             Closeables.closeQuietly(writer);
         }
@@ -101,12 +93,16 @@ public class PersistentCacheStorage2 implements CacheStorage {
 
     private Pair<Key, CacheItem> readItem(File metadata) throws IOException {
         if (metadata.exists()) {
+            FileReader reader = null;
             try {
-                String string = Files.toString(metadata, Charsets.UTF_8);
-                JSONObject object = new JSONObject(string);
-                return Pair.of(Key.parseObject(object.getJSONObject("key")), SerializableCacheItem.parseObject(object.getJSONObject("item")));
-            } catch (JSONException e) {
+                reader = new FileReader(metadata);
+                Properties properties = new Properties();
+                properties.load(reader);
+                return Pair.of(Key.parse(properties), SerializableCacheItem.parse(properties));
+            } catch (IOException e) {
                 throw new HTTPException(e);
+            } finally {
+                Closeables.closeQuietly(reader);
             }
         }
         return null;

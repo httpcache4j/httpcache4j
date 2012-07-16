@@ -19,9 +19,6 @@ import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
-import org.codehaus.httpcache4j.util.ToJSON;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -30,6 +27,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.codehaus.httpcache4j.HeaderConstants.VARY;
 
@@ -37,7 +35,7 @@ import static org.codehaus.httpcache4j.HeaderConstants.VARY;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-public class Key implements Serializable, ToJSON {
+public class Key implements Serializable {
     private static final long serialVersionUID = 5827064595759738979L;
 
     private URI uri;
@@ -87,7 +85,7 @@ public class Key implements Serializable, ToJSON {
 
     @Override
     public String toString() {
-       return toJSON();
+       return toProperties().toString();
     }
 
     @Override
@@ -119,47 +117,33 @@ public class Key implements Serializable, ToJSON {
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeObject(toJSON());
+        out.writeObject(toProperties());
     }
 
 
     private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
-        String jsonValue = (String) in.readObject();
-        Key key = parse(jsonValue);
+        Properties properties = (Properties) in.readObject();
+        Key key = parse(properties);
         uri = key.getURI();
         vary = key.getVary();
     }
 
-    public static Key parse(String json) {
-        try {
-            JSONObject object = new JSONObject(json);
-            return parseObject(object);
-        } catch (JSONException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    static Key parseObject(JSONObject object) throws JSONException {
+    public static Key parse(Properties properties) {
         URI uri = null;
         Vary vary = null;
-        if (object.has("uri")) {
-            uri = URI.create(object.getString("uri"));
+        if (properties.containsKey("uri")) {
+            uri = URI.create(properties.getProperty("uri"));
         }
-        if (object.has("vary")) {
-            vary = Vary.parse(object.getString("vary"));
+        if (properties.containsKey("vary")) {
+            vary = Vary.parse(properties.getProperty("vary"));
         }
         return new Key(uri, vary);
     }
 
-    @Override
-    public String toJSON() {
-        JSONObject object = new JSONObject();
-        try {
-            object.put("uri", uri.toString());
-            object.put("vary", vary.toString());
-        } catch (JSONException e) {
-            throw new IllegalStateException(e);
-        }
-        return object.toString();
+    public Properties toProperties() {
+        Properties object = new Properties();
+        object.put("uri", uri.toString());
+        object.put("vary", vary.toString());
+        return object;
     }
 }

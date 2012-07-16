@@ -17,20 +17,17 @@ package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.FilePayload;
-import org.codehaus.httpcache4j.util.ToJSON;
+import org.codehaus.httpcache4j.util.NumberUtils;
 import org.joda.time.DateTime;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.*;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class SerializableCacheItem implements Serializable, ToJSON, CacheItem {
+public class SerializableCacheItem implements Serializable, CacheItem {
     private static final long serialVersionUID = 7170431954380145524L;
 
     private transient CacheItem item;
@@ -59,50 +56,36 @@ public class SerializableCacheItem implements Serializable, ToJSON, CacheItem {
         return item.getResponse();
     }
 
-    public String toJSON() {
-        Map<String, Object> object = new LinkedHashMap<String, Object>();
-        object.put("cache-time", HeaderUtils.toHttpDate("cache-time", item.getCachedTime()).getValue());
+    public Properties toProperties() {
+        Properties object = new Properties();
+        object.setProperty("cache-time", HeaderUtils.toHttpDate("cache-time", item.getCachedTime()).getValue());
         HTTPResponse response = item.getResponse();
-        object.put("status", response.getStatus().getCode());
+        object.setProperty("status", String.valueOf(response.getStatus().getCode()));
         if (response.hasPayload()) {
             FilePayload payload = (FilePayload) response.getPayload();
-            Map<String, String> payloadItem = new LinkedHashMap<String, String>();
-            payloadItem.put("file", payload.getFile().getAbsolutePath());
-            payloadItem.put("mime-type", payload.getMimeType().toString());
-            object.put("payload", new JSONObject(payloadItem));
+            object.setProperty("file", payload.getFile().getAbsolutePath());
         }
-        object.put("headers", response.getHeaders().toString());
-        return new JSONObject(object).toString();
+        object.setProperty("headers", response.getHeaders().toString());
+        return object;
     }
 
-    public static CacheItem parse(String json) {
-        try {
-            JSONObject object = new JSONObject(json);
-            return parseObject(object);
-
-        } catch (JSONException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    static CacheItem parseObject(JSONObject object) throws JSONException {
-        DateTime time = HeaderUtils.fromHttpDate(new Header("cache-time", object.getString("cache-time")));
-        Status status = Status.valueOf(object.getInt("status"));
-        Headers headers = Headers.parse(object.getString("headers"));
+    public static CacheItem parse(Properties object) {
+        DateTime time = HeaderUtils.fromHttpDate(new Header("cache-time", object.getProperty("cache-time")));
+        Status status = Status.valueOf(NumberUtils.toInt(object.getProperty("status"), 200));
+        Headers headers = Headers.parse(object.getProperty("headers"));
         FilePayload p = null;
-        if (object.has("payload")) {
-            JSONObject payload = object.getJSONObject("payload");
-            p = new FilePayload(new File(payload.getString("file")), MIMEType.valueOf(payload.getString("mime-type")));
+        if (object.containsKey("file")) {
+            p = new FilePayload(new File(object.getProperty("file")), MIMEType.valueOf(headers.getFirstHeaderValue("Content-Type")));
         }
         return new DefaultCacheItem(new HTTPResponse(p, status, headers), time);
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeObject(toJSON());
+        out.writeObject(toProperties());
     }
 
     private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
-        String jsonValue = (String) in.readObject();
+        Properties jsonValue = (Properties) in.readObject();
         item = parse(jsonValue);
     }
 }
