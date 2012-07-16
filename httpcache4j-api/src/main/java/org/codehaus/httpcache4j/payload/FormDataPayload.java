@@ -18,8 +18,8 @@ package org.codehaus.httpcache4j.payload;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.Parameter;
 import org.codehaus.httpcache4j.util.URIEncoder;
@@ -43,7 +43,7 @@ public class FormDataPayload implements Payload {
     }
 
     private static Iterable<FormParameter> toIterable(Map<String, List<String>> parameters) {
-        Validate.notNull(parameters, "Parameters map may not be null");
+        Preconditions.checkNotNull(parameters, "Parameters map may not be null");
         List<FormParameter> params = new ArrayList<FormParameter>();
         for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
             params.addAll(convert(entry.getKey(), entry.getValue()));

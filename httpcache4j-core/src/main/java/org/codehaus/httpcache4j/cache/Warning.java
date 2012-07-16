@@ -15,7 +15,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import org.apache.commons.lang.Validate;
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.HeaderConstants;
 
@@ -72,10 +72,9 @@ class Warning {
     private final String description;
 
     public Warning(int code, String description) {
-        Validate.isTrue(code >= 110 && code < 300, "The code must be between 110 and 300");
-        Validate.notEmpty(description, "Description may not be empty");
+        Preconditions.checkArgument(code >= 110 && code < 300, "The code must be between 110 and 300");
         this.code = code;
-        this.description = description;
+        this.description = Preconditions.checkNotNull(description, "Description may not be empty");
     }
 
     public Header toHeader() {

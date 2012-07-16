@@ -15,8 +15,8 @@
 
 package org.codehaus.httpcache4j.auth.digest;
 
+import com.google.common.base.Strings;
 import com.google.common.hash.Hashing;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.httpcache4j.*;
 
 import java.io.UnsupportedEncodingException;
@@ -56,13 +56,13 @@ public class RequestDigest {
         else {
             algorithm = Algorithm.MD5;
         }
-        if (StringUtils.isNotBlank(serverDigest.getQop())) {
+        if (!Strings.isNullOrEmpty(serverDigest.getQop())) {
             addDirective("qop", serverDigest.getQop(), false);
             addDirective("nc", CNONCE_COUNT, false);
             addDirective("cnonce", calculateCNonce(), true);
         }
         addDirective("response", calculateResponse(), true);
-        if (StringUtils.isNotBlank(serverDigest.getOpaque())) {
+        if (!Strings.isNullOrEmpty(serverDigest.getOpaque())) {
             addDirective("opaque", serverDigest.getOpaque(), true);
         }
     }

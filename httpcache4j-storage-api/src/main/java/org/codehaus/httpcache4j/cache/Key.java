@@ -15,7 +15,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import org.apache.commons.lang.Validate;
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
@@ -44,8 +44,8 @@ public class Key implements Serializable, ToJSON {
     private Vary vary;
 
     public static Key create(URI uri, Vary vary) {
-        Validate.notNull(uri, "URI may not be null");
-        Validate.notNull(vary, "vary may not be null");
+        Preconditions.checkNotNull(uri, "URI may not be null");
+        Preconditions.checkNotNull(vary, "vary may not be null");
         return new Key(uri, vary);
     }
 
@@ -71,8 +71,8 @@ public class Key implements Serializable, ToJSON {
 
 
     Key(URI uri, Vary vary) {
-        Validate.notNull(uri, "URI may not be null");
-        Validate.notNull(vary, "Vary may not be null");
+        Preconditions.checkNotNull(uri, "URI may not be null");
+        Preconditions.checkNotNull(vary, "Vary may not be null");
         this.uri = uri;
         this.vary = vary;
     }

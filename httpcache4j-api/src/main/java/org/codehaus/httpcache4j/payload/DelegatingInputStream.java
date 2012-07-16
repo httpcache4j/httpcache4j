@@ -15,7 +15,8 @@
 
 package org.codehaus.httpcache4j.payload;
 
-import org.apache.commons.lang.Validate;
+
+import com.google.common.base.Preconditions;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -29,8 +30,7 @@ public class DelegatingInputStream extends InputStream {
 
 
     public DelegatingInputStream(InputStream delegate) {
-        Validate.notNull(delegate, "Delegate may not be null");
-        this.delegate = delegate;
+        this.delegate = Preconditions.checkNotNull(delegate, "Delegate may not be null");
     }
 
     public int read() throws IOException {

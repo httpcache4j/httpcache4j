@@ -1,6 +1,6 @@
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.lang.Validate;
+import com.google.common.base.Preconditions;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -20,10 +20,8 @@ public final class StatusLine {
     }
 
     public StatusLine(HTTPVersion version, Status status, String message) {
-        Validate.notNull(version, "Version may not be null");
-        Validate.notNull(status, "Status may not be null");
-        this.version = version;
-        this.status = status;
+        this.version = Preconditions.checkNotNull(version, "Version may not be null");
+        this.status = Preconditions.checkNotNull(status, "Status may not be null");
         this.message = message == null ? "" : message;
     }
 

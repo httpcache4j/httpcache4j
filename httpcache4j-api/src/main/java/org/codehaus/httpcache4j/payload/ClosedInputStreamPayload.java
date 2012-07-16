@@ -15,8 +15,8 @@
 
 package org.codehaus.httpcache4j.payload;
 
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.MIMEType;
-import org.apache.commons.lang.Validate;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,8 +34,7 @@ public class ClosedInputStreamPayload implements Payload, Serializable{
     private MIMEType mimeType;
 
     public ClosedInputStreamPayload(final MIMEType mimeType) {
-        Validate.notNull(mimeType, "MIMEType may not be null");
-        this.mimeType = mimeType;
+        this.mimeType = Preconditions.checkNotNull(mimeType, "MIMEType may not be null");
     }
 
     public MIMEType getMimeType() {

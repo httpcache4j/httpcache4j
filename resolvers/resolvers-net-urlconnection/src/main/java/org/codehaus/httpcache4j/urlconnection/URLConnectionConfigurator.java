@@ -15,7 +15,7 @@
 
 package org.codehaus.httpcache4j.urlconnection;
 
-import org.apache.commons.lang.Validate;
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.auth.ProxyConfiguration;
 
 /**
@@ -35,8 +35,8 @@ public class URLConnectionConfigurator {
 
     public URLConnectionConfigurator(int readTimeout, int connectTimeout, ProxyConfiguration proxyConfiguration) {
         this.proxyConfiguration = proxyConfiguration;
-        Validate.isTrue(readTimeout > 0, "Read timeout must be postive");
-        Validate.isTrue(connectTimeout > 0, "Connect timeout must be postive");
+        Preconditions.checkArgument(readTimeout > 0, "Read timeout must be positive");
+        Preconditions.checkArgument(connectTimeout > 0, "Connect timeout must be positive");
         this.readTimeout = readTimeout;
         this.connectTimeout = connectTimeout;
     }

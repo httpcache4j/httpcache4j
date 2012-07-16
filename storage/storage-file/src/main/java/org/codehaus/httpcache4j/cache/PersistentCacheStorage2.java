@@ -16,19 +16,9 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import java.io.*;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
 import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
 import com.google.common.io.Closeables;
-
 import com.google.common.io.Files;
-import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
@@ -39,6 +29,13 @@ import org.codehaus.httpcache4j.util.StorageUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.*;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * Completely file-persistent storage, also for metadata.
  *
@@ -48,7 +45,6 @@ public class PersistentCacheStorage2 implements CacheStorage {
     private final FileManager fileManager;
 
     public PersistentCacheStorage2(final File storageDirectory) {
-        Validate.notNull(storageDirectory, "You may not have a null storageDirectory");
         fileManager = new FileManager(storageDirectory);
     }
 

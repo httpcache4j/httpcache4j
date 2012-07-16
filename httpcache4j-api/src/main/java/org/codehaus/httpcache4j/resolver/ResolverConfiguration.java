@@ -1,7 +1,7 @@
 package org.codehaus.httpcache4j.resolver;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.util.PropertiesLoader;
 
@@ -16,7 +16,7 @@ public class ResolverConfiguration {
     private static String getVersionFromProperties() {
         final Properties properties = PropertiesLoader.get(ResolverConfiguration.class.getResourceAsStream("/version.properties"));
         String version = properties.getProperty("version");
-        if (StringUtils.isBlank(version) || version.contains("${")) {
+        if (Strings.isNullOrEmpty(version) || version.contains("${")) {
             return "Development";
         }
         return version;
@@ -29,13 +29,10 @@ public class ResolverConfiguration {
     private final Authenticator authenticator;
 
     public ResolverConfiguration(String userAgent, boolean useChunked, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
-        Validate.notNull(proxyAuthenticator, "Proxy Authenticator may not be null");
-        Validate.notNull(authenticator, "Authenticator may not be null");
-        Validate.notNull(userAgent, "User Agent may not be null");
-        this.userAgent = userAgent;
+        this.userAgent = Preconditions.checkNotNull(userAgent, "User Agent may not be null");
         this.useChunked = useChunked;
-        this.proxyAuthenticator = proxyAuthenticator;
-        this.authenticator = authenticator;
+        this.proxyAuthenticator = Preconditions.checkNotNull(proxyAuthenticator, "Proxy Authenticator may not be null");
+        this.authenticator = Preconditions.checkNotNull(authenticator, "Authenticator may not be null");
     }
 
     public ResolverConfiguration(ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {

@@ -16,8 +16,9 @@
 
 package org.codehaus.httpcache4j;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import org.apache.commons.lang.Validate;
 
 import java.util.Locale;
 import java.util.Map;
@@ -90,7 +91,7 @@ public final class HTTPMethod {
     }
 
     public static HTTPMethod valueOf(String method) {
-        Validate.notEmpty(method, "Method name may not be null or empty");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(method), "Method name may not be null or empty");
         String uppercaseMethod = method.toUpperCase(Locale.ENGLISH);
         if (defaultMethods.containsKey(uppercaseMethod)) {
             return defaultMethods.get(uppercaseMethod);

@@ -16,11 +16,10 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.mutable.MutableRequest;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
-
-import org.apache.commons.lang.Validate;
 
 import java.io.IOException;
 import java.net.URI;
@@ -46,8 +45,7 @@ public class HTTPCache {
     private boolean translateHEADToGET = false;
 
     public HTTPCache(CacheStorage storage, ResponseResolver resolver) {
-        Validate.notNull(storage, "Cache storage may not be null");
-        this.storage = storage;
+        this.storage = Preconditions.checkNotNull(storage, "Cache storage may not be null");
         this.resolver = resolver;
         helper = new HTTPCacheHelper(CacheHeaderBuilder.getBuilder());
     }
@@ -61,9 +59,8 @@ public class HTTPCache {
     }
 
     public void setResolver(final ResponseResolver resolver) {
-        Validate.isTrue(this.resolver == null, "You may not set the response resolver more than once.");
-        Validate.notNull(resolver, "Resolver may not be null");
-        this.resolver = resolver;
+        Preconditions.checkArgument(this.resolver == null, "You may not set the response resolver more than once.");
+        this.resolver = Preconditions.checkNotNull(resolver, "Resolver may not be null");
     }
 
     public CacheStorage getStorage() {

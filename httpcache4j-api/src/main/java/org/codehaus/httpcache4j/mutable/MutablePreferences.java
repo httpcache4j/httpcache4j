@@ -15,7 +15,7 @@
 
 package org.codehaus.httpcache4j.mutable;
 
-import org.apache.commons.lang.Validate;
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.preference.Preference;
 import org.codehaus.httpcache4j.preference.Preferences;
@@ -35,8 +35,7 @@ public class MutablePreferences {
     }
 
     MutablePreferences(Preferences preferences) {
-        Validate.notNull(preferences, "Preferences may not be null");
-        this.preferences = preferences;
+        this.preferences = Preconditions.checkNotNull(preferences, "Preferences may not be null");
     }
 
     public void addLocale(Locale locale) {

@@ -16,7 +16,7 @@
 
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.lang.Validate;
+import com.google.common.base.Preconditions;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -88,8 +88,8 @@ public final class Conditionals {
      * @return a new Conditionals object with the If-Match tag added.
      */
     public Conditionals addIfMatch(Tag tag) {
-        Validate.isTrue(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_MODIFIED_SINCE));
-        Validate.isTrue(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_NON_MATCH));
+        Preconditions.checkArgument(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_MODIFIED_SINCE));
+        Preconditions.checkArgument(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_NON_MATCH));
         List<Tag> match = new ArrayList<Tag>(this.match);
 
         if (tag == null) {
@@ -122,8 +122,8 @@ public final class Conditionals {
      * @return a new Conditionals object with the If-None-Match tag added.
      */
     public Conditionals addIfNoneMatch(Tag tag) {
-        Validate.isTrue(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_UNMODIFIED_SINCE));
-        Validate.isTrue(match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_MATCH));
+        Preconditions.checkArgument(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_UNMODIFIED_SINCE));
+        Preconditions.checkArgument(match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_MATCH));
         List<Tag> noneMatch = new ArrayList<Tag>(this.noneMatch);
         if (tag == null) {
             tag = Tag.ALL;
@@ -155,8 +155,8 @@ public final class Conditionals {
      * @return the conditionals with the If-Modified-Since date set.
      */
     public Conditionals ifModifiedSince(DateTime time) {
-        Validate.isTrue(match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_MATCH));
-        Validate.isTrue(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_UNMODIFIED_SINCE));
+        Preconditions.checkArgument(match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_MATCH));
+        Preconditions.checkArgument(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_UNMODIFIED_SINCE));
         time = time.toDateTime(DateTimeZone.forID("UTC"));
         time = time.withMillisOfSecond(0);
         return new Conditionals(empty(), noneMatch, time, null);        
@@ -175,8 +175,8 @@ public final class Conditionals {
      * @return the conditionals with the If-Unmodified-Since date set.
      */
     public Conditionals ifUnModifiedSince(DateTime time) {
-        Validate.isTrue(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_NON_MATCH));
-        Validate.isTrue(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_MODIFIED_SINCE));
+        Preconditions.checkArgument(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_NON_MATCH));
+        Preconditions.checkArgument(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_MODIFIED_SINCE));
         time = time.toDateTime(DateTimeZone.forID("UTC"));
         time = time.withMillisOfSecond(0);
         return new Conditionals(match, empty(), null, time);

@@ -15,11 +15,10 @@
 
 package org.codehaus.httpcache4j.mutable;
 
-import org.apache.commons.lang.Validate;
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.Headers;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -36,8 +35,7 @@ public class MutableHeaders implements Iterable<Header> {
     }
 
     MutableHeaders(Headers headers) {
-        Validate.notNull(headers, "Headers may not be null");
-        this.headers = headers;
+        this.headers = Preconditions.checkNotNull(headers, "Headers may not be null");
     }
 
     public void add(Header header) {

@@ -15,11 +15,11 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import org.apache.commons.lang.SerializationUtils;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.Status;
+import org.codehaus.httpcache4j.util.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 

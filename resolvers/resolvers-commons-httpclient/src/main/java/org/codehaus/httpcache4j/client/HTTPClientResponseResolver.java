@@ -16,11 +16,11 @@
 
 package org.codehaus.httpcache4j.client;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.params.HttpClientParams;
-import org.apache.commons.lang.Validate;
 
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.StatusLine;
@@ -48,8 +48,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
     protected HTTPClientResponseResolver(HttpClient client, ResolverConfiguration configuration) {
         super(configuration);
-        Validate.notNull(client, "You may not create with a null HttpClient");
-        this.client = client;
+        this.client = Preconditions.checkNotNull(client, "You may not create with a null HttpClient");
         HTTPHost proxyHost = getProxyAuthenticator().getConfiguration().getHost();
         if (proxyHost != null) {
             this.client.getHostConfiguration().setProxy(proxyHost.getHost(), proxyHost.getPort());

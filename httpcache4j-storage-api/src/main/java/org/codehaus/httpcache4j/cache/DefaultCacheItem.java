@@ -16,8 +16,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import org.apache.commons.lang.Validate;
-
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.*;
 
 import org.joda.time.DateTime;
@@ -39,10 +38,8 @@ public class DefaultCacheItem implements CacheItem {
     }
 
     public DefaultCacheItem(HTTPResponse response, DateTime cachedTime) {
-        Validate.notNull(response, "Response may not be null");
-        Validate.notNull(cachedTime, "CacheTime may not be null");
-        this.response = response;
-        this.cachedTime = cachedTime;
+        this.response = Preconditions.checkNotNull(response, "Response may not be null");
+        this.cachedTime = Preconditions.checkNotNull(cachedTime, "CacheTime may not be null");
         this.ttl = getTTL(response, 0);
     }
 

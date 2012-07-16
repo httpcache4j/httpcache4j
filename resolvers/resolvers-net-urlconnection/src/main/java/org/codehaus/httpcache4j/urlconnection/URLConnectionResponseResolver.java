@@ -15,9 +15,9 @@
 
 package org.codehaus.httpcache4j.urlconnection;
 
+import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
-import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
 import org.codehaus.httpcache4j.auth.DefaultProxyAuthenticator;
@@ -42,8 +42,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
 
     public URLConnectionResponseResolver(URLConnectionConfigurator configuration) {
         super(new ResolverConfiguration(new DefaultProxyAuthenticator(configuration.getProxyConfiguration()), new DefaultAuthenticator()));
-        Validate.notNull(configuration, "Configuration may not be null");
-        this.configuration = configuration;
+        this.configuration = Preconditions.checkNotNull(configuration, "Configuration may not be null");
     }
 
     @Override

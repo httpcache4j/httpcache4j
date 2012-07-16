@@ -16,8 +16,7 @@
 
 package org.codehaus.httpcache4j.payload;
 
-import org.apache.commons.lang.Validate;
-
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
 
@@ -42,10 +41,8 @@ public class FilePayload implements Payload {
      * @param mimeType the mime type of the file, may not be {@code null}. 
      */
     public FilePayload(final File file, final MIMEType mimeType) {
-        Validate.notNull(file, "File may not be null");
-        Validate.notNull(mimeType, "Mime type may not be null");
-        this.file = file;
-        this.mimeType = mimeType;
+        this.file = Preconditions.checkNotNull(file, "File may not be null");
+        this.mimeType = Preconditions.checkNotNull(mimeType, "Mime type may not be null");
     }
 
     public MIMEType getMimeType() {

@@ -15,10 +15,10 @@
 
 package org.codehaus.httpcache4j.resolver;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
+import org.codehaus.httpcache4j.util.NumberUtils;
 
 import java.io.InputStream;
 

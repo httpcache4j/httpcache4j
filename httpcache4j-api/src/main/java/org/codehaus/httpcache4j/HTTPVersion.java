@@ -1,6 +1,7 @@
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.lang.math.NumberUtils;
+
+import org.codehaus.httpcache4j.util.NumberUtils;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -29,8 +30,8 @@ public enum HTTPVersion {
 
     public static HTTPVersion get(String version) {
         if (version != null && version.length() == 3) {
-            int major = NumberUtils.toInt(version.substring(0, 1));
-            int minor = NumberUtils.toInt(version.substring(2));
+            int major = NumberUtils.toInt(version.substring(0, 1), 1);
+            int minor = NumberUtils.toInt(version.substring(2), 1);
             if (HTTP_1_1.getMajor() == major && HTTP_1_1.getMinor() == minor) {
                 return HTTP_1_1;
             }

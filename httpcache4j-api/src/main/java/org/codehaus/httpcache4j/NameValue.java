@@ -1,9 +1,8 @@
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.lang.Validate;
-import org.apache.commons.lang.StringUtils;
 
-import java.io.Serializable;
+import com.google.common.base.Preconditions;
+
 import java.util.Locale;
 
 /**
@@ -16,8 +15,8 @@ public abstract class NameValue {
     protected final String value;
 
     protected NameValue(final String name, String value) {
-        Validate.notEmpty(name, "You may not have an empty name in a name value combination");
-        if (StringUtils.isBlank(value)) {
+        Preconditions.checkArgument(name != null && !name.trim().isEmpty(), "You may not have an empty name in a name value combination");
+        if (value == null || value.trim().isEmpty()) {
             value = "";
         }
         this.value = value;

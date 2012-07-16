@@ -15,8 +15,8 @@
 
 package org.codehaus.httpcache4j.auth;
 
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.*;
-import org.apache.commons.lang.Validate;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,8 +44,7 @@ public class DefaultProxyAuthenticator extends AuthenticatorBase implements Prox
 
     public DefaultProxyAuthenticator(ProxyConfiguration configuration, final List<AuthenticatorStrategy> strategies) {
         super(strategies);
-        Validate.notNull(configuration, "Configuration may not be null");
-        this.configuration = configuration;
+        this.configuration = Preconditions.checkNotNull(configuration, "Configuration may not be null");
     }
 
     public final HTTPRequest prepareAuthentication(final HTTPRequest request, final HTTPResponse response) {        

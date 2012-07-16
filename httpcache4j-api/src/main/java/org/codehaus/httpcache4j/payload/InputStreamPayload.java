@@ -16,9 +16,9 @@
 
 package org.codehaus.httpcache4j.payload;
 
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.MIMEType;
 
-import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.util.AvailableInputStream;
 
 import java.io.InputStream;
@@ -47,14 +47,13 @@ public class InputStreamPayload implements Payload {
      * application/octet-stream if not set.
      */
     public InputStreamPayload(final InputStream stream, final MIMEType mimeType, long length) {
-        Validate.notNull(stream, "Inputstream may not be null");
         if (mimeType != null) {
             this.mimeType = mimeType;
         }
         else {
             this.mimeType = MIMEType.APPLICATION_OCTET_STREAM;
         }
-        this.stream = new AvailableInputStream(stream);
+        this.stream = new AvailableInputStream(Preconditions.checkNotNull(stream, "Inputstream may not be null"));
         this.length = length;
     }
 

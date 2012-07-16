@@ -16,7 +16,8 @@
 
 package org.codehaus.httpcache4j.preference;
 
-import org.apache.commons.lang.Validate;
+
+import com.google.common.base.Preconditions;
 
 public class Preference<T> {
     private final T preference;
@@ -27,8 +28,8 @@ public class Preference<T> {
     }
 
     public Preference(T preference, double quality) {
-        Validate.notNull(preference, "Preference may not be null, use a ALL preference instead.");
-        Validate.isTrue(quality <= 1.0 && quality > 0.0, "Quality is a percentage ranging from 0.0, to 1.0");
+        Preconditions.checkNotNull(preference, "Preference may not be null, use a ALL preference instead.");
+        Preconditions.checkArgument(quality <= 1.0 && quality > 0.0, "Quality is a percentage ranging from 0.0, to 1.0");
         this.preference = preference;
         this.quality = quality;
     }

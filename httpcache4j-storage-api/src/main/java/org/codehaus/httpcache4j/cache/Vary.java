@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 
-import org.apache.commons.lang.Validate;
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.Headers;
@@ -57,7 +57,7 @@ public final class Vary {
      * @param headers the vary headers as keys from the response, with request headers as values.
      */
     public Vary(final Map<String, String> headers) {
-        Validate.notNull(headers, "Headers may not be null");
+        Preconditions.checkNotNull(headers, "Headers may not be null");
         Map<String, String> h = new TreeMap<String, String>(new VaryComparator());
         h.putAll(headers);
         varyHeaders = Collections.unmodifiableMap(h);

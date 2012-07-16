@@ -1,6 +1,7 @@
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.lang.math.NumberUtils;
+
+import org.codehaus.httpcache4j.util.NumberUtils;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>

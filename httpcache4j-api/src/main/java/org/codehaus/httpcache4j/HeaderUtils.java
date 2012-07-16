@@ -18,8 +18,8 @@ package org.codehaus.httpcache4j;
 
 import static org.codehaus.httpcache4j.HeaderConstants.*;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.lang.Validate;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -160,7 +160,7 @@ public final class HeaderUtils {
     }
 
     public static List<LinkDirective> toLinkDirectives(Header header) {
-        Validate.isTrue(LINK_HEADER.equals(header.getName()), "This must be a \"Link\" header");
+        Preconditions.checkArgument(!LINK_HEADER.equals(header.getName()), "This must be a \"Link\" header");
         ImmutableList.Builder<LinkDirective> links = ImmutableList.builder();
         for (Directive directive : header.getDirectives()) {
             if (directive instanceof LinkDirective) {

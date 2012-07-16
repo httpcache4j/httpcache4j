@@ -15,9 +15,8 @@
 
 package org.codehaus.httpcache4j.mutable;
 
-import org.apache.commons.lang.Validate;
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.Conditionals;
-import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.Tag;
 import org.joda.time.DateTime;
 
@@ -35,8 +34,7 @@ public class MutableConditionals {
     }
 
     MutableConditionals(Conditionals conditionals) {
-        Validate.notNull(conditionals, "Conditionals may not be null");
-        this.conditionals = conditionals;
+        this.conditionals = Preconditions.checkNotNull(conditionals, "Conditionals may not be null");
     }
 
     public void addIfMatch(Tag tag) {

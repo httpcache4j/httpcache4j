@@ -17,10 +17,9 @@
 package org.codehaus.httpcache4j;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.util.CaseInsensitiveKey;
 
@@ -44,7 +43,7 @@ public final class Headers implements Iterable<Header> {
     }
 
     private Headers(final HeaderHashMap headers) {
-        Validate.notNull(headers, "The header map may not be null");
+        Preconditions.checkNotNull(headers, "The header map may not be null");
         this.headers.putAll(headers);
     }
 
@@ -195,7 +194,7 @@ public final class Headers implements Iterable<Header> {
     }
     
     public static Headers parse(String input) {
-        if (StringUtils.isBlank(input)) {
+        if (input == null || input.trim().isEmpty()) {
             return new Headers();
         }
         MutableHeaders headers = new MutableHeaders();

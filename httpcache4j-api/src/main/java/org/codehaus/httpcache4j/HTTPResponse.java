@@ -18,8 +18,8 @@ package org.codehaus.httpcache4j;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.io.Closeables;
-import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.joda.time.DateTime;
@@ -60,11 +60,9 @@ public final class HTTPResponse {
     }
 
     public HTTPResponse(Payload payload, StatusLine statusLine, Headers headers) {
-        Validate.notNull(statusLine, "You must supply a Status");
-        Validate.notNull(headers, "You must supply some Headers");
-        this.statusLine = statusLine;
+        this.statusLine = Preconditions.checkNotNull(statusLine, "You must supply a Status");
         this.payload = payload;
-        this.headers = headers;
+        this.headers = Preconditions.checkNotNull(headers, "You must supply some Headers");
 
         if (headers.hasHeader(ETAG)) {
             ETag = Tag.parse(headers.getFirstHeader(ETAG).getValue());

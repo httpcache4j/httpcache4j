@@ -16,9 +16,6 @@
 
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParameterList;
 import javax.activation.MimeTypeParseException;
@@ -78,7 +75,7 @@ public final class MIMEType {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(11, 31).append(getPrimaryType()).append(getSubType()).toHashCode();
+        return 31 * (getPrimaryType().hashCode() + getSubType().hashCode());
     }
 
     @Override
@@ -104,7 +101,7 @@ public final class MIMEType {
         }
 
         MIMEType other = (MIMEType) o;
-        if (!new EqualsBuilder().append(getPrimaryType(), other.getPrimaryType()).append(getSubType(), other.getSubType()).isEquals()) {
+        if (!(getPrimaryType().equals(other.getPrimaryType()) && getSubType().equals(other.getSubType()))) {
             return false;
         }
         if (includeParameters && !parametersEquals(other)) {

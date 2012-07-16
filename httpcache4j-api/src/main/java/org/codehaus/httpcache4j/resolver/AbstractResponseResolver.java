@@ -16,11 +16,11 @@
 
 package org.codehaus.httpcache4j.resolver;
 
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Status;
 import org.codehaus.httpcache4j.auth.*;
-import org.apache.commons.lang.Validate;
 
 import java.io.IOException;
 
@@ -34,8 +34,7 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
     private final ResolverConfiguration configuration;
 
     protected AbstractResponseResolver(ResolverConfiguration configuration) {
-        Validate.notNull(configuration, "Configuration may not be null");
-        this.configuration = configuration;
+        this.configuration = Preconditions.checkNotNull(configuration, "Configuration may not be null");
     }
 
     protected final ProxyAuthenticator getProxyAuthenticator() {

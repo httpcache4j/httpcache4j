@@ -16,7 +16,8 @@
 
 package org.codehaus.httpcache4j.util;
 
-import org.apache.commons.lang.Validate;
+
+import com.google.common.base.Preconditions;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -37,8 +38,7 @@ public class DeletingFileFilter implements FileFilter {
     }
 
     public DeletingFileFilter(List<File> knownFiles) {
-        Validate.notNull(knownFiles, "Known files may not be null");
-        this.knownFiles.addAll(knownFiles);
+        this.knownFiles.addAll(Preconditions.checkNotNull(knownFiles, "Known files may not be null"));
     }
 
     public synchronized boolean accept(File pathname) {
