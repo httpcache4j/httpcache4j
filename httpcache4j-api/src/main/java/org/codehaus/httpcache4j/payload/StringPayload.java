@@ -1,10 +1,12 @@
 package org.codehaus.httpcache4j.payload;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.Validate;
+import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.MIMEType;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -13,13 +15,16 @@ import java.io.InputStream;
 public class StringPayload implements Payload {
     private final String value;
     private final MIMEType mimeType;
+    private Charset charset;
 
     public StringPayload(String value, MIMEType mimeType) {
-        Validate.notNull(value, "String value may not be null");
-        Validate.notNull(mimeType, "MIMEType may not be null");
+        this(value, mimeType, Charsets.UTF_8);
+    }
 
-        this.value = value;
-        this.mimeType = mimeType;
+    public StringPayload(String value, MIMEType mimeType, Charset charset) {
+        this.value = Preconditions.checkNotNull(value, "String value may not be null");
+        this.mimeType = Preconditions.checkNotNull(mimeType, "MIMEType may not be null");
+        this.charset = charset != null ? charset : Charsets.UTF_8;
     }
 
     public MIMEType getMimeType() {
@@ -27,7 +32,7 @@ public class StringPayload implements Payload {
     }
 
     public InputStream getInputStream() {
-        return IOUtils.toInputStream(value);
+        return new ByteArrayInputStream(value.getBytes(charset));
     }
 
     public boolean isAvailable() {

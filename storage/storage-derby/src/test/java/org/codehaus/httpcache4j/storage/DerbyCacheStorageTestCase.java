@@ -15,27 +15,23 @@
 
 package org.codehaus.httpcache4j.storage;
 
-import org.junit.*;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import org.codehaus.httpcache4j.util.TestUtil;
-import org.codehaus.httpcache4j.util.DeletingFileFilter;
-import org.codehaus.httpcache4j.cache.Key;
-import org.codehaus.httpcache4j.cache.Vary;
-import org.codehaus.httpcache4j.cache.CacheStorageAbstractTest;
-import org.codehaus.httpcache4j.cache.CacheStorage;
 import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.Status;
-import org.codehaus.httpcache4j.Headers;
+import org.codehaus.httpcache4j.cache.CacheStorage;
+import org.codehaus.httpcache4j.cache.CacheStorageAbstractTest;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
-import org.apache.commons.io.input.NullInputStream;
-import org.apache.commons.io.FileUtils;
+import org.codehaus.httpcache4j.util.DeletingFileFilter;
+import org.codehaus.httpcache4j.util.NullInputStream;
+import org.codehaus.httpcache4j.util.TestUtil;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.File;
-import java.net.URI;
 
-import junit.framework.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
@@ -51,7 +47,9 @@ public class DerbyCacheStorageTestCase extends CacheStorageAbstractTest{
 
     @AfterClass
     public static void afterClass() {
-        FileUtils.deleteQuietly(storageDirectory);
+        if (storageDirectory != null) {
+            storageDirectory.listFiles(new DeletingFileFilter());
+        }
     }
 
     protected CacheStorage createCacheStorage() {

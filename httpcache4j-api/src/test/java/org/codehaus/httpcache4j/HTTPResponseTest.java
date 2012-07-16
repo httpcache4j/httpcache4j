@@ -18,7 +18,7 @@ package org.codehaus.httpcache4j;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import org.apache.commons.io.IOUtils;
+import com.google.common.io.CharStreams;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.StringPayload;
 import org.junit.Test;
@@ -26,6 +26,7 @@ import org.junit.Test;
 import javax.annotation.Nullable;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import static org.junit.Assert.*;
 
@@ -91,7 +92,7 @@ public class HTTPResponseTest {
             public String apply(Payload input) {
                 assertEquals(MIMEType.valueOf("text/plain"), input.getMimeType());
                 try {
-                    return IOUtils.toString(input.getInputStream());
+                    return CharStreams.toString(new InputStreamReader(input.getInputStream()));
                 } catch (IOException e) {
                     fail("Exception raised when parsing string");
                     throw new RuntimeException(e);

@@ -16,7 +16,9 @@
 package org.codehaus.httpcache4j.storage.jdbc;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.io.IOUtils;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.CharStreams;
+import com.google.common.io.Closeables;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.cache.*;
 import org.codehaus.httpcache4j.payload.FilePayload;
@@ -28,6 +30,7 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.sql.*;
 import java.util.*;
@@ -325,14 +328,14 @@ public class JdbcCacheStorage implements CacheStorage {
                             return;
                         }
                         try {
-                            String sql = IOUtils.toString(inputStream);
+                            String sql = CharStreams.toString(new InputStreamReader(inputStream));
                             createTable(sql, connection);
                         } catch (IOException e) {
                             System.err.println("Failed!");
                             e.printStackTrace();
                             return;
                         } finally {
-                            IOUtils.closeQuietly(inputStream);
+                            Closeables.closeQuietly(inputStream);
                         }
 
                         System.err.println("ok");

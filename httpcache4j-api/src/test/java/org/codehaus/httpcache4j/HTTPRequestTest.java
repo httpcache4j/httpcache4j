@@ -16,10 +16,10 @@
 
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.io.input.NullInputStream;
 import org.codehaus.httpcache4j.payload.ClosedInputStreamPayload;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
+import org.codehaus.httpcache4j.util.NullInputStream;
 import org.junit.Test;
 import org.junit.Assert;
 import static org.junit.Assert.*;

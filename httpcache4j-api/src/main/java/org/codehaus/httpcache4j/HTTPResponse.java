@@ -18,7 +18,7 @@ package org.codehaus.httpcache4j;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import org.apache.commons.io.IOUtils;
+import com.google.common.io.Closeables;
 import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
@@ -167,7 +167,7 @@ public final class HTTPResponse {
                     InputStreamPayload transformed = new InputStreamPayload(stream, payload.getMimeType(), payload.length());
                     return f.apply(transformed);
                 } finally {
-                    IOUtils.closeQuietly(stream);
+                    Closeables.closeQuietly(stream);
                 }
             }
         });
@@ -175,7 +175,7 @@ public final class HTTPResponse {
 
     public void consume() {
         if (hasPayload()) {
-            IOUtils.closeQuietly(payload.getInputStream());
+            Closeables.closeQuietly(payload.getInputStream());
         }
     }
 

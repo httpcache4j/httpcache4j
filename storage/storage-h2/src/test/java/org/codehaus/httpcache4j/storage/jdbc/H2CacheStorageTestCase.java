@@ -15,8 +15,6 @@
 
 package org.codehaus.httpcache4j.storage.jdbc;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.input.NullInputStream;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.MIMEType;
@@ -24,6 +22,8 @@ import org.codehaus.httpcache4j.Status;
 import org.codehaus.httpcache4j.cache.CacheStorage;
 import org.codehaus.httpcache4j.cache.CacheStorageAbstractTest;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
+import org.codehaus.httpcache4j.util.DeletingFileFilter;
+import org.codehaus.httpcache4j.util.NullInputStream;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -47,7 +47,9 @@ public class H2CacheStorageTestCase extends CacheStorageAbstractTest{
 
     @AfterClass
     public static void afterClass() {
-        FileUtils.deleteQuietly(storageDirectory);
+        if (storageDirectory != null) {
+            storageDirectory.listFiles(new DeletingFileFilter());
+        }
     }
 
     protected CacheStorage createCacheStorage() {

@@ -15,15 +15,16 @@
 
 package org.codehaus.httpcache4j.payload;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.Parameter;
 import org.codehaus.httpcache4j.util.URIEncoder;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +68,7 @@ public class FormDataPayload implements Payload {
     }
 
     public InputStream getInputStream() {
-        return IOUtils.toInputStream(value);
+        return new ByteArrayInputStream(value.getBytes(Charsets.UTF_8));
     }
 
     @Deprecated

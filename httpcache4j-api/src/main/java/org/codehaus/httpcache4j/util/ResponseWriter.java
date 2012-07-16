@@ -18,6 +18,7 @@ package org.codehaus.httpcache4j.util;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.StatusLine;
 
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 
@@ -29,20 +30,19 @@ import java.io.Writer;
  */
 public class ResponseWriter extends AbstractHTTPWriter {
     public void write(HTTPResponse response) {
-        write(response, new PrintWriter(System.out));
+        write(response, System.out);
     }
 
-    public void write(HTTPResponse response, Writer output) {
-        PrintWriter writer = new PrintWriter(output);
-        writeStatus(writer, response.getStatusLine());
-        writeHeaders(writer, response.getHeaders());
+    public void write(HTTPResponse response, PrintStream stream) {
+        writeStatus(stream, response.getStatusLine());
+        writeHeaders(stream, response.getHeaders());
         if (response.hasPayload()) {
-            writeBody(writer, response.getPayload());
+            writeBody(stream, response.getPayload());
         }
-        writer.flush();
+        stream.flush();
     }
 
-    private void writeStatus(PrintWriter writer, StatusLine status) {
+    private void writeStatus(PrintStream writer, StatusLine status) {
         println(writer, String.format("%s %s %s", status.getStatus().getCode(), status.getMessage(), status.getVersion()));
         writer.print("\r\n");
     }

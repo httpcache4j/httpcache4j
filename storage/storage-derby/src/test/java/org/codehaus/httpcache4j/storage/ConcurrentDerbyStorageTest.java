@@ -17,8 +17,8 @@ package org.codehaus.httpcache4j.storage;
 
 import org.codehaus.httpcache4j.cache.ConcurrentCacheStorageAbstractTest;
 import org.codehaus.httpcache4j.cache.CacheStorage;
+import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.util.TestUtil;
-import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -45,6 +45,6 @@ public class ConcurrentDerbyStorageTest extends ConcurrentCacheStorageAbstractTe
 
     @AfterClass
     public static void afterClass() {
-        FileUtils.deleteQuietly(testFile);
+        testFile.listFiles(new DeletingFileFilter());
     }
 }

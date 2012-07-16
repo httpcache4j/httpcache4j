@@ -21,7 +21,7 @@ import org.codehaus.httpcache4j.Headers;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
-import java.io.PrintWriter;
+import java.io.PrintStream;
 
 /**
  * Experimental for debugging: do not use.
@@ -32,24 +32,24 @@ import java.io.PrintWriter;
 public class RequestWriter extends AbstractHTTPWriter {
 
     public void write(HTTPRequest request) {
-        write(new PrintWriter(System.out), request);
+        write(System.out, request);
     }
 
-    public void write(PrintWriter writer, HTTPRequest request) {
-        writeRequestLine(writer, request);
+    public void write(PrintStream stream, HTTPRequest request) {
+        writeRequestLine(stream, request);
 
         Headers all = request.getAllHeaders();
         all = all.add(HeaderUtils.toHttpDate("Date", new DateTime(DateTimeZone.forID("UTC"))));
         all = all.add("Connection", "close");
-        writeHeaders(writer, all);
+        writeHeaders(stream, all);
         if (request.hasPayload()) {
-            writeBody(writer, request.getPayload());
+            writeBody(stream, request.getPayload());
         }
-        writer.print("\r\n");
-        writer.flush();
+        stream.print("\r\n");
+        stream.flush();
     }
 
-    private void writeRequestLine(PrintWriter writer, HTTPRequest request) {
+    private void writeRequestLine(PrintStream writer, HTTPRequest request) {
         writer.print(String.format("%s %s HTTP/1.1\r\n", request.getMethod().toString(), request.getRequestURI().getPath()));
     }
 }

@@ -15,16 +15,18 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import org.apache.commons.io.input.NullInputStream;
-import org.apache.commons.io.IOUtils;
+import com.google.common.io.CharStreams;
+import com.google.common.io.Closeables;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
+import org.codehaus.httpcache4j.util.NullInputStream;
 import org.junit.After;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,13 +122,13 @@ public abstract class ConcurrentCacheStorageAbstractTest {
         assertTrue("Payload was not available", response.getPayload().isAvailable());
         InputStream is = response.getPayload().getInputStream();
         try {
-            IOUtils.toString(is);
+            CharStreams.toString(new InputStreamReader(is));
         } catch (IOException e) {
             e.printStackTrace();
             fail("unable to create string from stream");
         }
         finally {
-            IOUtils.closeQuietly(is);
+            Closeables.closeQuietly(is);
         }
     }
 

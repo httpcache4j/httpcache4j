@@ -34,7 +34,7 @@ public class FormDataPayloadTest {
         parameters.add(new FormDataPayload.FormParameter("foo", "bar"));
         parameters.add(new FormDataPayload.FormParameter("bar", "foo"));
         FormDataPayload payload = new FormDataPayload(parameters);
-        Assert.assertEquals("foo=bar&bar=foo",payload.getValues());
+        Assert.assertEquals("foo=bar&bar=foo",payload.getValue());
     }
 
     @Test
@@ -43,7 +43,7 @@ public class FormDataPayloadTest {
         parameters.add(null);
         parameters.add(new FormDataPayload.FormParameter("bar", "foo"));
         FormDataPayload payload = new FormDataPayload(parameters);
-        Assert.assertEquals("bar=foo",payload.getValues());
+        Assert.assertEquals("bar=foo",payload.getValue());
     }
 
     @Test
@@ -52,7 +52,7 @@ public class FormDataPayloadTest {
         parameters.add(new FormDataPayload.FormParameter("selected song", "hey jude"));
         parameters.add(new FormDataPayload.FormParameter("bar", "foo"));
         FormDataPayload payload = new FormDataPayload(parameters);
-        Assert.assertEquals("selected+song=hey+jude&bar=foo",payload.getValues());
+        Assert.assertEquals("selected+song=hey+jude&bar=foo",payload.getValue());
     }
 
     @Test
@@ -61,6 +61,6 @@ public class FormDataPayloadTest {
         parameters.add(new FormDataPayload.FormParameter("lyrics", "Hello!\r\nIs there anybody out there?\r\nIs there anyone at home"));
         parameters.add(new FormDataPayload.FormParameter("bar", "foo"));
         FormDataPayload payload = new FormDataPayload(parameters);
-        Assert.assertEquals("lyrics=Hello%21"+ newline + "Is+there+anybody+out+there%3F"+ newline +"Is+there+anyone+at+home&bar=foo", payload.getValues());
+        Assert.assertEquals("lyrics=Hello%21"+ newline + "Is+there+anybody+out+there%3F"+ newline +"Is+there+anyone+at+home&bar=foo", payload.getValue());
     }
 }

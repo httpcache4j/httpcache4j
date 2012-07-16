@@ -19,10 +19,8 @@ package org.codehaus.httpcache4j.payload;
 import org.codehaus.httpcache4j.MIMEType;
 
 import org.apache.commons.lang.Validate;
-import org.apache.commons.io.input.ClosedInputStream;
 import org.codehaus.httpcache4j.util.AvailableInputStream;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -69,7 +67,7 @@ public class InputStreamPayload implements Payload {
     }
 
     public InputStream getInputStream() {
-        return stream.isAvailable() ? stream : ClosedInputStream.CLOSED_INPUT_STREAM;
+        return stream.isAvailable() ? stream : null;
     }
 
     public long length() {

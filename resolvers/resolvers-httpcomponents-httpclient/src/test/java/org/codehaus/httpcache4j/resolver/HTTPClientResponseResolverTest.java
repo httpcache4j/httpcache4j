@@ -15,7 +15,6 @@
 
 package org.codehaus.httpcache4j.resolver;
 
-import org.apache.commons.io.input.NullInputStream;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
@@ -27,6 +26,7 @@ import org.codehaus.httpcache4j.HTTPMethod;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.HeaderUtils;
+import org.codehaus.httpcache4j.util.NullInputStream;
 import org.joda.time.DateTime;
 import static org.junit.Assert.*;
 import org.junit.Before;

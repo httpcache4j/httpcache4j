@@ -1,6 +1,7 @@
 package org.codehaus.httpcache4j.util;
 
-import org.apache.commons.io.IOUtils;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Closeables;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.Headers;
@@ -8,7 +9,7 @@ import org.codehaus.httpcache4j.payload.Payload;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -16,7 +17,7 @@ import java.io.PrintWriter;
  */
 public abstract class AbstractHTTPWriter {
 
-    protected void writeHeaders(PrintWriter writer, Headers headers) {
+    protected void writeHeaders(PrintStream writer, Headers headers) {
         StringBuilder builder = new StringBuilder();
         for (Header header : headers) {
             if (builder.length() > 0) {
@@ -27,22 +28,22 @@ public abstract class AbstractHTTPWriter {
         println(writer, builder.toString());
     }
 
-    protected void println(PrintWriter writer, String value) {
+    protected void println(PrintStream writer, String value) {
         writer.printf("%s\r\n", value);
     }
 
-    protected void writeBody(PrintWriter writer, Payload payload) {
+    protected void writeBody(PrintStream writer, Payload payload) {
         writer.print("\r\n");
         InputStream stream = payload.getInputStream();
         try {
-            IOUtils.copy(stream, writer);
+            ByteStreams.copy(stream, writer);
             writer.print("\r\n");
         }
         catch (IOException e) {
             throw new HTTPException("Unable to write the body of the response", e);
         }
         finally {
-            IOUtils.closeQuietly(stream);
+            Closeables.closeQuietly(stream);
         }
     }
 

@@ -15,13 +15,13 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import org.codehaus.httpcache4j.util.NullInputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
 import org.junit.After;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
-import org.apache.commons.io.input.NullInputStream;
 
 import java.net.URI;
 import java.io.IOException;
