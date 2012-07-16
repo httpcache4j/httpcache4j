@@ -15,16 +15,14 @@
 
 package org.codehaus.httpcache4j.auth.digest;
 
-import org.apache.commons.codec.digest.DigestUtils;
+import com.google.common.hash.Hashing;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.httpcache4j.*;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.text.NumberFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -134,7 +132,7 @@ public class RequestDigest {
             case MD5:
             case MD5_SESSION:
                 try {
-                    return DigestUtils.md5Hex(input.getBytes(charset));
+                    return Hashing.md5().hashBytes(input.getBytes(charset)).toString();
                 } catch (UnsupportedEncodingException e) {
                     throw new Error(e);
                 }

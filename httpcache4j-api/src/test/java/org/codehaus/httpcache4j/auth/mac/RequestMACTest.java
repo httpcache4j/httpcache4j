@@ -2,10 +2,11 @@ package org.codehaus.httpcache4j.auth.mac;
 
 import java.net.URI;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.digest.DigestUtils;
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
 import org.codehaus.httpcache4j.HTTPMethod;
 import org.codehaus.httpcache4j.HTTPRequest;
+import org.codehaus.httpcache4j.util.Base64;
 import org.joda.time.DateTimeUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class RequestMACTest {
         URI uri = URI.create("http://example.com/request?b5=%3D%253D&a3=a&c%40=&a2=r%20b&c2&a3=2+q");
         DateTimeUtils.setCurrentMillisFixed(264095 * 1000L);
         Nonce n = new Nonce("7d8f3e4a");
-        String ext = String.format("bodyhash=\"%s\"", Base64.encodeBase64String(DigestUtils.md5("Hello World!")).trim());
+        String ext = String.format("bodyhash=\"%s\"", Base64.encodeBytes(Hashing.md5().hashString("Hello World!", Charsets.UTF_8).asBytes()));
         
         RequestMAC mac = new RequestMAC("2134gfdg", n, ext);
         String calculated = mac.getMac(new HTTPRequest(uri, HTTPMethod.POST), Algorithm.HMAC_SHA_1);

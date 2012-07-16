@@ -15,7 +15,8 @@
 
 package org.codehaus.httpcache4j.urlconnection;
 
-import org.apache.commons.io.IOUtils;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Closeables;
 import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
@@ -99,16 +100,15 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
     private void writeRequest(HTTPRequest request, HttpURLConnection connection) throws IOException {
         if (request.hasPayload()) {
             InputStream requestStream = request.getPayload().getInputStream();
-            OutputStream connectionStream = null;
+            OutputStream connectionStream;
             try {
                 if (getConfiguration().isUseChunked()) {
                     connection.setChunkedStreamingMode(2048);
                 }
                 connectionStream = connection.getOutputStream();
-                IOUtils.copy(requestStream, connectionStream);
+                ByteStreams.copy(requestStream, connectionStream);
             } finally {
-                IOUtils.closeQuietly(requestStream);
-                IOUtils.closeQuietly(connectionStream);
+                Closeables.closeQuietly(requestStream);
             }
         }
     }

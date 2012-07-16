@@ -6,8 +6,8 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.google.common.base.Charsets;
+import org.codehaus.httpcache4j.util.Base64;
 
-import org.apache.commons.codec.binary.Base64;
 
 /**
  *  @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -43,6 +43,6 @@ public enum Algorithm {
     public String encode(String key, String value) {
         Mac encoder = getEncoder(key);
         byte[] encoded = encoder.doFinal(value.getBytes(Charsets.UTF_8));
-        return Base64.encodeBase64String(encoded).trim();
+        return Base64.encodeBytes(encoded).trim();
     }
 }

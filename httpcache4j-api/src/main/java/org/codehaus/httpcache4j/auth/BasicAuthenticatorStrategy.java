@@ -16,9 +16,6 @@
 package org.codehaus.httpcache4j.auth;
 
 import org.codehaus.httpcache4j.*;
-import org.apache.commons.codec.binary.Base64;
-
-import java.nio.charset.Charset;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>

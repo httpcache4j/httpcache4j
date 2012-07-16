@@ -2,7 +2,7 @@ package org.codehaus.httpcache4j.auth.mac;
 
 import java.security.SecureRandom;
 
-import org.apache.commons.codec.binary.Hex;
+import org.codehaus.httpcache4j.util.Hex;
 import org.codehaus.httpcache4j.util.SecureRandomFactory;
 
 /**
@@ -21,7 +21,7 @@ public final class Nonce {
     public static Nonce generate() {
         byte[] bytes = new byte[1024];
         rnd.nextBytes(bytes);
-        String s = Hex.encodeHexString(bytes);
+        String s = Hex.encode(bytes);
         int length = s.length();
         int index = rnd.nextInt(length);
         while((index + OFFSET) >= length) {

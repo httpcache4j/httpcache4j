@@ -18,8 +18,7 @@ package org.codehaus.httpcache4j.cache;
 
 import java.io.*;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import com.google.common.io.Closeables;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.HTTPResponse;
@@ -113,7 +112,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
             if (serializationFile.exists()) {
                 FileInputStream inputStream = null;
                 try {
-                    inputStream = FileUtils.openInputStream(serializationFile);
+                    inputStream = new FileInputStream(serializationFile);
                     cache = (InvalidateOnRemoveLRUHashMap) SerializationUtils.deserialize(inputStream);
                 }
                 catch (Exception e) {
@@ -122,7 +121,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
                     cache = new InvalidateOnRemoveLRUHashMap(capacity);
                 }
                 finally {
-                    IOUtils.closeQuietly(inputStream);
+                    Closeables.closeQuietly(inputStream);
                 }
             }
             else {
@@ -138,14 +137,14 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 
         FileOutputStream outputStream = null;
         try {
-            outputStream = FileUtils.openOutputStream(serializationFile);
+            outputStream = new FileOutputStream(serializationFile);
             SerializationUtils.serialize(snapshot, outputStream);
         }
         catch (Exception e) {
             //Ignored, we create a new one.
         }
         finally {
-            IOUtils.closeQuietly(outputStream);
+            Closeables.closeQuietly(outputStream);
         }
     }
 }

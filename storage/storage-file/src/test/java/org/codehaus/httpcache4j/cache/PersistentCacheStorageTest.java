@@ -17,13 +17,13 @@
 package org.codehaus.httpcache4j.cache;
 
 import junit.framework.Assert;
-import org.apache.commons.io.input.NullInputStream;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.Status;
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
+import org.codehaus.httpcache4j.util.NullInputStream;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.junit.Test;
 

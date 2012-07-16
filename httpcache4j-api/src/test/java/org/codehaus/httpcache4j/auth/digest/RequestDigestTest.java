@@ -15,7 +15,6 @@
 
 package org.codehaus.httpcache4j.auth.digest;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.AuthScheme;
 import org.junit.Assert;

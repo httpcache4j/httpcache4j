@@ -4,7 +4,10 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.codec.digest.DigestUtils;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.InputSupplier;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.util.AvailableInputStream;
 
@@ -20,19 +23,19 @@ public class MD5CaculcatingPayload implements Payload {
     private final AvailableInputStream stream;
     private final String md5;
 
-    private MD5CaculcatingPayload(InputStream stream, MIMEType mimeType, long length) {
+    private MD5CaculcatingPayload(final InputStream stream, MIMEType mimeType, long length) {
         this.mimeType = mimeType;
         this.length = length;
         try {
             stream.mark(Integer.MAX_VALUE);
-            this.md5 = DigestUtils.md5Hex(stream);
+            this.md5 = hash(stream).toString();
             stream.reset();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         this.stream = new AvailableInputStream(stream);
     }
-    
+
     public String getMD5() {
         return md5;
     }
@@ -59,5 +62,14 @@ public class MD5CaculcatingPayload implements Payload {
             stream = new BufferedInputStream(stream, 8048);
         }
         return new MD5CaculcatingPayload(stream, p.getMimeType(), p.length());
+    }
+
+    private HashCode hash(final InputStream stream) throws IOException {
+        return ByteStreams.hash(new InputSupplier<InputStream>() {
+            @Override
+            public InputStream getInput() throws IOException {
+                return stream;
+            }
+        }, Hashing.md5());
     }
 }

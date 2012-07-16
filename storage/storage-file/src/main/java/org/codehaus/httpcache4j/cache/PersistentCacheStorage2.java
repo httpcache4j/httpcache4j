@@ -16,23 +16,18 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
-import com.google.common.collect.MapMaker;
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 import com.google.common.io.Closeables;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.filefilter.SuffixFileFilter;
+import com.google.common.io.Files;
 import org.apache.commons.lang.Validate;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.HTTPRequest;
@@ -110,16 +105,12 @@ public class PersistentCacheStorage2 implements CacheStorage {
 
     private Pair<Key, CacheItem> readItem(File metadata) throws IOException {
         if (metadata.exists()) {
-            FileReader reader = null;
             try {
-                reader = new FileReader(metadata);
-                String string = IOUtils.toString(reader);
+                String string = Files.toString(metadata, Charsets.UTF_8);
                 JSONObject object = new JSONObject(string);
                 return Pair.of(Key.parseObject(object.getJSONObject("key")), SerializableCacheItem.parseObject(object.getJSONObject("item")));
             } catch (JSONException e) {
                 throw new HTTPException(e);
-            } finally {
-                Closeables.closeQuietly(reader);
             }
         }
         return null;
@@ -155,7 +146,7 @@ public class PersistentCacheStorage2 implements CacheStorage {
     @Override
     public synchronized CacheItem get(HTTPRequest request) {
         File uri = fileManager.resolve(request.getRequestURI());
-        File[] files = uri.listFiles((FileFilter) new SuffixFileFilter(".metadata"));
+        File[] files = uri.listFiles((FileFilter) new SuffixFileFilter("metadata"));
         if (files != null && files.length > 0) {
             for (File file : files) {
                 try {
@@ -214,5 +205,23 @@ public class PersistentCacheStorage2 implements CacheStorage {
             }
         }
         return Collections.unmodifiableList(keys).iterator();
+    }
+
+    class SuffixFileFilter implements FileFilter, FilenameFilter {
+        private String extension;
+        public SuffixFileFilter(String extension) {
+            this.extension = extension;
+        }
+
+        @Override
+        public boolean accept(File pathname) {
+            String ext = Files.getFileExtension(pathname.getName());
+            return extension.equals(ext);
+        }
+
+        @Override
+        public boolean accept(File dir, String name) {
+            return accept(new File(dir, name));
+        }
     }
 }
