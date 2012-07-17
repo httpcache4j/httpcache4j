@@ -16,6 +16,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import com.google.common.collect.Iterators;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import org.codehaus.httpcache4j.HTTPException;
@@ -24,6 +25,7 @@ import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.util.Pair;
+import org.codehaus.httpcache4j.util.PropertiesLoader;
 import org.codehaus.httpcache4j.util.StorageUtil;
 
 import java.io.*;
@@ -91,19 +93,10 @@ public class PersistentCacheStorage2 implements CacheStorage {
         }
     }
 
-    private Pair<Key, CacheItem> readItem(File metadata) throws IOException {
+    private Pair<Key, CacheItem> readItem(File metadata) {
         if (metadata.exists()) {
-            FileReader reader = null;
-            try {
-                reader = new FileReader(metadata);
-                Properties properties = new Properties();
-                properties.load(reader);
-                return Pair.of(Key.parse(properties), SerializableCacheItem.parse(properties));
-            } catch (IOException e) {
-                throw new HTTPException(e);
-            } finally {
-                Closeables.closeQuietly(reader);
-            }
+            Properties properties = PropertiesLoader.get(metadata);
+            return Pair.of(Key.parse(properties), SerializableCacheItem.parse(properties));
         }
         return null;
     }
@@ -124,13 +117,9 @@ public class PersistentCacheStorage2 implements CacheStorage {
     @Override
     public synchronized CacheItem get(Key key) {
         File metadata = new File(fileManager.resolve(key).getAbsolutePath() + ".metadata");
-        try {
-            Pair<Key, CacheItem> pair = readItem(metadata);
-            if (pair != null) {
-                return pair.getValue();
-            }
-        } catch (IOException e) {
-            throw new HTTPException(e);
+        Pair<Key, CacheItem> pair = readItem(metadata);
+        if (pair != null) {
+            return pair.getValue();
         }
         return null;
     }
@@ -139,16 +128,10 @@ public class PersistentCacheStorage2 implements CacheStorage {
     public synchronized CacheItem get(HTTPRequest request) {
         File uri = fileManager.resolve(request.getRequestURI());
         File[] files = uri.listFiles((FileFilter) new SuffixFileFilter("metadata"));
-        if (files != null && files.length > 0) {
-            for (File file : files) {
-                try {
-                    Pair<Key, CacheItem> pair = readItem(file);
-                    if (pair != null && pair.getKey().getVary().matches(request)) {
-                        return pair.getValue();
-                    }
-                } catch (IOException e) {
-                    throw new HTTPException(e);
-                }
+        for (File file : new FilesIterable(files)) {
+            Pair<Key, CacheItem> pair = readItem(file);
+            if (pair != null && pair.getKey().getVary().matches(request)) {
+                return pair.getValue();
             }
         }
         return null;
@@ -168,8 +151,8 @@ public class PersistentCacheStorage2 implements CacheStorage {
     public synchronized int size() {
         int count = 0;
         File base = fileManager.getBaseDirectory();
-        for (File hash : base.listFiles()) {
-            for (File uriHash : hash.listFiles()) {
+        for (File hash : new FilesIterable(base.listFiles())) {
+            for (File uriHash : new FilesIterable(hash.listFiles())) {
                 String[] metadata = uriHash.list(new SuffixFileFilter("metadata"));
                 count += metadata.length;
             }
@@ -181,17 +164,13 @@ public class PersistentCacheStorage2 implements CacheStorage {
     public synchronized Iterator<Key> iterator() {
         List<Key> keys = new ArrayList<Key>();
         File base = fileManager.getBaseDirectory();
-        for (File hash : base.listFiles()) {
-            for (File uriHash : hash.listFiles()) {
+        for (File hash : new FilesIterable(base.listFiles())) {
+            for (File uriHash : new FilesIterable(hash.listFiles())) {
                 File[] metadata = uriHash.listFiles((FileFilter) new SuffixFileFilter("metadata"));
-                for (File m : metadata) {
-                    try {
-                        Pair<Key, CacheItem> item = readItem(m);
-                        if (item != null) {
-                            keys.add(item.getKey());
-                        }
-                    } catch (IOException e) {
-                        throw new HTTPException(e);
+                for (File m : new FilesIterable(metadata)) {
+                    Pair<Key, CacheItem> item = readItem(m);
+                    if (item != null) {
+                        keys.add(item.getKey());
                     }
                 }
             }
@@ -199,7 +178,23 @@ public class PersistentCacheStorage2 implements CacheStorage {
         return Collections.unmodifiableList(keys).iterator();
     }
 
-    class SuffixFileFilter implements FileFilter, FilenameFilter {
+    private static class FilesIterable implements Iterable<File> {
+        private File[] files;
+
+        public FilesIterable(File[] files) {
+            this.files = files;
+        }
+
+        @Override
+        public Iterator<File> iterator() {
+            if (files == null) {
+                return Collections.<File>emptyList().iterator();
+            }
+            return Iterators.forArray(files);
+        }
+    }
+
+    private static class SuffixFileFilter implements FileFilter, FilenameFilter {
         private String extension;
         public SuffixFileFilter(String extension) {
             this.extension = extension;

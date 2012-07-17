@@ -9,6 +9,19 @@ public final class PropertiesLoader {
     private PropertiesLoader() {
     }
 
+    public static Properties get(Reader reader) {
+        Properties properties = new Properties();
+        try {
+            properties.load(reader);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+            Closeables.closeQuietly(reader);
+        }
+        return properties;
+    }
+
     public static Properties get(InputStream stream) {
         Properties properties = new Properties();
         try {
