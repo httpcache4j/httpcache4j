@@ -15,6 +15,7 @@
 
 package org.codehaus.httpcache4j.util;
 
+import com.google.common.base.Strings;
 import org.codehaus.httpcache4j.*;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import java.util.List;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class DirectivesParser {
+public final class DirectivesParser {
 
     public static final int CR = 13; // <US-ASCII CR, carriage return (13)>
     public static final int LF = 10; // <US-ASCII LF, linefeed (10)>
@@ -41,14 +42,6 @@ public class DirectivesParser {
         return ch == SP || ch == HT || ch == CR || ch == LF;
     }
 
-    /**
-     * A default instance of this class, for use as default or fallback.
-     * Note that {@link DirectivesParser} is not a singleton, there
-     * can be many instances of the class itself and of derived classes.
-     * The instance here provides non-customized, default behavior.
-     */
-    public final static DirectivesParser DEFAULT = new DirectivesParser();
-
     private final static char PARAM_DELIMITER = ';';
     private final static char ELEM_DELIMITER = ',';
     private final static char[] ALL_DELIMITERS = new char[]{
@@ -57,33 +50,17 @@ public class DirectivesParser {
     };
 
 
-    public List<Directive> parse(String value) {
+    public static Directives parse(String value) {
         if (value.length() > 0) {
             StringBuilder builder = new StringBuilder(value);
             ParserCursor cursor = new ParserCursor(0, value.length());
-            return parseDirectives(builder, cursor);
+            DirectivesParser parser = new DirectivesParser();
+            return new Directives(parser.parseDirectives(builder, cursor));
         }
-        return Collections.emptyList();
-    }
-
-    public List<Parameter> parseParameters(String value) {        
-        if (value.length() > 0) {
-            StringBuilder builder = new StringBuilder(value);
-            ParserCursor cursor = new ParserCursor(0, value.length());
-            return parseParameters(builder, cursor);
-        }
-        return Collections.emptyList();
+        return new Directives();
     }
 
     private List<Directive> parseDirectives(final StringBuilder buffer, final ParserCursor cursor) {
-
-        if (buffer == null) {
-            throw new IllegalArgumentException("Char array buffer may not be null");
-        }
-        if (cursor == null) {
-            throw new IllegalArgumentException("Parser cursor may not be null");
-        }
-
         List<Directive> elements = new ArrayList<Directive>();
         while (!cursor.atEnd()) {
             Directive element = parseDirective(buffer, cursor);
@@ -95,14 +72,6 @@ public class DirectivesParser {
     }
 
     private Directive parseDirective(final StringBuilder buffer, final ParserCursor cursor) {
-
-        if (buffer == null) {
-            throw new IllegalArgumentException("Char array buffer may not be null");
-        }
-        if (cursor == null) {
-            throw new IllegalArgumentException("Parser cursor may not be null");
-        }
-
         Parameter parameter = parseParameter(buffer, cursor, ALL_DELIMITERS);
         List<Parameter> params = Collections.emptyList();
         if (!cursor.atEnd()) {
@@ -132,7 +101,7 @@ public class DirectivesParser {
             return new QuotedDirective(name, value, params);
         }
         if (HeaderConstants.LINK_HEADER.equals(name)) {
-            return new LinkDirective(new Directive(name, value, params));
+            return new LinkDirective(value, params);
         }
         return new Directive(name, value, params);
     }
@@ -285,14 +254,14 @@ public class DirectivesParser {
      * @param value the value, or <code>null</code>
      * @return a name-value pair representing the arguments
      */
-    private Parameter createParameter(final String name, final String value) {
+    static Parameter createParameter(final String name, final String value) {
         if (value != null && isQuoted(value)) {
             return new QuotedParameter(name, value);
         }
         return new Parameter(name, value);
     }
 
-    private boolean isQuoted(String value) {
+    static boolean isQuoted(String value) {
         return value.startsWith("\"") && value.endsWith("\"");
     }
 

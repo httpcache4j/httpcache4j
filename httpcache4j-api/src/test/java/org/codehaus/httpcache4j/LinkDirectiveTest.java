@@ -16,12 +16,10 @@ import java.util.List;
  */
 public class LinkDirectiveTest {
 
-    private final DirectivesParser parser = new DirectivesParser();
-
     @Test
     public void testFirstExample() {
         String expected = "<http://www.cern.ch/TheBook/chapter2>; rel=\"Previous\"";
-        LinkDirective linkDirective = new LinkDirective(parser.parse(expected).get(0));
+        LinkDirective linkDirective = new LinkDirective(DirectivesParser.parse(expected).iterator().next());
         Assert.assertEquals("Previous", linkDirective.getRel());
         Assert.assertEquals(URI.create("http://www.cern.ch/TheBook/chapter2"), linkDirective.getURI());
         Assert.assertEquals(expected, linkDirective.toString());
@@ -33,7 +31,7 @@ public class LinkDirectiveTest {
     @Test
     public void testTestSecondExample() {
         final String expected = "<mailto:timbl@w3.org>; rev=\"Made\"; title=\"Tim Berners-Lee\"";
-        LinkDirective linkDirective = new LinkDirective(parser.parse(expected).get(0));
+        LinkDirective linkDirective = new LinkDirective(DirectivesParser.parse(expected).iterator().next());
         Assert.assertNull(linkDirective.getRel());
         Assert.assertNull(linkDirective.getAnchor());
         Assert.assertEquals("Tim Berners-Lee", linkDirective.getTitle());
@@ -45,7 +43,7 @@ public class LinkDirectiveTest {
     @Test
     public void testTestThirdExample() {
         String expected = "<../media/contrast.css>; rel=\"stylesheet alternate\"; title=\"High Contrast Styles\"; type=\"text/css\"; media=\"screen\", <../media/print.css>; rel=\"stylesheet\"; type=\"text/css\"; media=\"print\"";
-        List<Directive> directives = parser.parse(expected);
+        Directives directives = DirectivesParser.parse(expected);
         Assert.assertEquals(2, directives.size());
         
         List<LinkDirective> linkDirectives = new ArrayList<LinkDirective>();

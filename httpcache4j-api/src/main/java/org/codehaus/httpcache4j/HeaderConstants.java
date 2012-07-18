@@ -16,6 +16,12 @@
 
 package org.codehaus.httpcache4j;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+
+import java.util.Locale;
+import java.util.Set;
+
 public final class HeaderConstants {
     public static final String LINK_HEADER = "Link";
 
@@ -65,4 +71,9 @@ public final class HeaderConstants {
     public static final String RETRY_AFTER = "Retry-After";
 
     public static final String X_CACHE = "X-Cache";
+
+    static final Set<String> AUTHENTICATION_HEADERS = ImmutableSet.of(
+            WWW_AUTHENTICATE.toLowerCase(Locale.ENGLISH),
+            PROXY_AUTHENTICATE.toLowerCase(Locale.ENGLISH)
+    );
 }

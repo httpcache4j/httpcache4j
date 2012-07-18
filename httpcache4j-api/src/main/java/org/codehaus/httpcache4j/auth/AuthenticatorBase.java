@@ -15,10 +15,17 @@
 
 package org.codehaus.httpcache4j.auth;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import org.codehaus.httpcache4j.Directive;
 import org.codehaus.httpcache4j.HTTPHost;
+import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.Header;
+import org.codehaus.httpcache4j.util.Pair;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,6 +35,12 @@ import java.util.List;
 //TODO: Find an algorithm for selecting the most secure supported authentication method.
 //I imagine the Set of ("Digest", "Basic"); and anything else is more secure than those.
 class AuthenticatorBase {
+    private static final Function<Directive,AuthScheme> AuthSchemeF = new Function<Directive, AuthScheme>() {
+        @Override
+        public AuthScheme apply(Directive input) {
+            return new AuthScheme(input);
+        }
+    };
     private final List<AuthenticatorStrategy> strategies = Lists.newArrayList();
     protected final SchemeRegistry registry = new DefaultSchemeRegistry();
 
@@ -44,20 +57,34 @@ class AuthenticatorBase {
         return ImmutableList.of(new DigestAuthenticatorStrategy(), new BasicAuthenticatorStrategy());
     }
 
-    protected AuthenticatorStrategy select(AuthScheme authScheme) {
+    protected Pair<AuthenticatorStrategy, AuthScheme> select(List<AuthScheme> authScheme) {
         AuthenticatorStrategy selected = null;
+        AuthScheme selectedScheme = null;
         for (AuthenticatorStrategy strategy : strategies) {
-            if (strategy.supports(authScheme)) {
-                selected = strategy;
+            for (AuthScheme scheme : authScheme) {
+                if (strategy.supports(scheme)) {
+                    selected = strategy;
+                    selectedScheme = scheme;
+                    break;
+                }
             }
         }
         if (selected == null) {
             selected = new NullAuthenticatorStrategy();
         }
-        return selected;
+        return Pair.of(selected, selectedScheme);
     }
 
     public boolean canAuthenticatePreemptively(HTTPHost host) {       
         return registry.matches(host);
+    }
+
+    protected List<AuthScheme> toAuthSchemes(HTTPResponse response, String name) {
+        List<Header> authenticateHeader = response.getHeaders().getHeaders(name);
+        List<Directive> directives = new ArrayList<Directive>();
+        for (Header header : authenticateHeader) {
+            Iterables.addAll(directives, header.getDirectives());
+        }
+        return Lists.transform(directives, AuthSchemeF);
     }
 }

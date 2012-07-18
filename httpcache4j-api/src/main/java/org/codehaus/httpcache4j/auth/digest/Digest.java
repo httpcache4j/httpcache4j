@@ -17,6 +17,7 @@ package org.codehaus.httpcache4j.auth.digest;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import org.codehaus.httpcache4j.Directive;
 import org.codehaus.httpcache4j.Directives;
 import org.codehaus.httpcache4j.HTTPHost;
 import org.codehaus.httpcache4j.auth.AuthScheme;
@@ -43,15 +44,15 @@ public class Digest {
 
     public Digest(HTTPHost host, AuthScheme scheme) {
         this.scheme = scheme;
-        Directives directives = scheme.getDirectives();
+        Directive directives = scheme.getDirective();
 
         this.host = host;
-        this.nonce = directives.get("nonce");
-        this.domain = parseDomain(directives.get("domain"));
-        this.opaque = directives.get("opaque");
-        this.stale = Boolean.parseBoolean(directives.get("stale"));
-        this.algorithm = Algorithm.getAlgorithm(directives.get("algorithm"));
-        this.qop = directives.get("qop");
+        this.nonce = directives.getParameterValue("nonce");
+        this.domain = parseDomain(directives.getParameterValue("domain"));
+        this.opaque = directives.getParameterValue("opaque");
+        this.stale = Boolean.parseBoolean(directives.getParameterValue("stale"));
+        this.algorithm = Algorithm.getAlgorithm(directives.getParameterValue("algorithm"));
+        this.qop = directives.getParameterValue("qop");
     }
 
     private List<URI> parseDomain(String domain) {

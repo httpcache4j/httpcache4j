@@ -18,10 +18,17 @@ package org.codehaus.httpcache4j;
 
 import static org.junit.Assert.*;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+import org.codehaus.httpcache4j.mutable.MutableHeaders;
+import org.codehaus.httpcache4j.util.AuthDirectivesParser;
+import org.codehaus.httpcache4j.util.DirectivesParser;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.List;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class HeadersTest {
@@ -106,5 +113,30 @@ public class HeadersTest {
         Headers h2 = Headers.parse(string);
         assertEquals(h, h2);
     }
-    
+
+    @Test
+    public void storeAndParseHeaders() {
+        MutableHeaders headers = new MutableHeaders();
+        headers.add("Content-Type", "text/plain");
+        headers.add("Content-Length", "23");
+        String string = headers.toString();
+        Headers parsed = Headers.parse(string);
+        assertEquals(headers.toHeaders(), parsed);
+    }
+
+    @Test
+    public void multipleAuthChallenges() throws IOException {
+        /**
+         * Note: User agents will need to take special care in parsing the WWW-
+         Authenticate or Proxy-Authenticate header field value if it contains
+         more than one challenge, or if more than one WWW-Authenticate header
+         field is provided, since the contents of a challenge may itself
+         contain a comma-separated list of authentication parameters.
+         */
+        String value = Resources.toString(getClass().getResource("/multiple-auth.txt"), Charsets.ISO_8859_1);
+        Iterable<Directive> parsed = AuthDirectivesParser.parse(value);
+        Directives directives = new Directives(parsed);
+
+    }
+
 }

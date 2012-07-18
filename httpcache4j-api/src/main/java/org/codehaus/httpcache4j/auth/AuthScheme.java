@@ -15,8 +15,7 @@
 
 package org.codehaus.httpcache4j.auth;
 
-import org.codehaus.httpcache4j.Directives;
-import org.codehaus.httpcache4j.Header;
+import org.codehaus.httpcache4j.Directive;
 
 /**
  * Represents the *-Authenticate header defined by: http://tools.ietf.org/html/rfc2617
@@ -26,38 +25,22 @@ import org.codehaus.httpcache4j.Header;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class AuthScheme {
-    private final Header header;
-    private final String type;
-    private final Directives directives;
+public final class AuthScheme {
+    private final Directive directive;
 
-    public AuthScheme(final Header header) {
-        this.header = header;
-        String headervalue = header.getValue();
-        final int index = headervalue.indexOf(" ");
-        if (index != -1) {
-            type = headervalue.substring(0, index);
-            directives = new Directives(headervalue.substring(index + 1).trim());
-        }
-        else {
-            type = headervalue.trim(); //TO support the MAC auth.
-            directives = new Directives();
-        }
-    }
-
-    public Header getHeader() {
-        return header;
+    public AuthScheme(Directive directive) {
+        this.directive = directive;
     }
 
     public String getType() {
-        return type;
+        return directive.getName();
     }
 
     public String getRealm() {
-        return directives.get("realm");
+        return directive.getParameterValue("realm");
     }
 
-    public Directives getDirectives() {
-        return directives;
+    public Directive getDirective() {
+        return directive;
     }
 }

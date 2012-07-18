@@ -77,15 +77,14 @@ public class DigestAuthenticatorStrategy implements AuthenticatorStrategy {
         if (header != null) {
             String nextNonce = header.getDirectives().get("nextnonce");
             if (nextNonce != null) {
-                List<Directive> directives = Lists.newArrayList(scheme.getDirectives());
-                for (Directive directive : scheme.getDirectives()) {
-                    if ("nonce".equals(directive.getName())) {
-                        directives.remove(directive);
+                List<Parameter> params = Lists.newArrayList(scheme.getDirective().getParameters());
+                for (Parameter parameter : scheme.getDirective().getParameters()) {
+                    if ("nonce".equals(parameter.getName())) {
+                        params.remove(parameter);
                     }
                 }
-                directives.add(new Directive("nonce", nextNonce));
-                Directives dirs = new Directives(directives);
-                return new AuthScheme(new Header(scheme.getHeader().getName(), dirs));
+                params.add(new QuotedParameter("nonce", nextNonce));
+                return new AuthScheme(new AuthDirective("Digest", null, params));
             }
         }
         return scheme;

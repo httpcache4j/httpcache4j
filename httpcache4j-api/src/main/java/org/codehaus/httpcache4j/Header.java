@@ -16,6 +16,11 @@
 
 package org.codehaus.httpcache4j;
 
+import org.codehaus.httpcache4j.util.AuthDirectivesParser;
+import org.codehaus.httpcache4j.util.DirectivesParser;
+
+import java.util.Locale;
+
 /**
  * Represents a HTTP Header.
  */
@@ -38,7 +43,12 @@ public final class Header extends NameValue {
 
     public Directives getDirectives() {
         if (directives == null) {
-            directives = new Directives(value);
+            if (HeaderConstants.AUTHENTICATION_HEADERS.contains(getName().toLowerCase(Locale.ENGLISH))) {
+                directives = AuthDirectivesParser.parse(value);
+            }
+            else {
+                directives = DirectivesParser.parse(value);
+            }
         }
         return directives;
     }

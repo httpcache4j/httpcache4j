@@ -20,7 +20,7 @@ import org.codehaus.httpcache4j.*;
 
 import java.util.List;
 
-import com.google.common.collect.Lists;
+import org.codehaus.httpcache4j.util.Pair;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -42,17 +42,19 @@ public class DefaultAuthenticator extends AuthenticatorBase implements Authentic
         if (response == null && registry.matches(host)) {
             //preemptive auth.
             AuthScheme authScheme = registry.get(host);
-            AuthenticatorStrategy selected = select(authScheme);
-            return selected.prepare(request, authScheme);
+            Pair<AuthenticatorStrategy, AuthScheme> selected = select(ImmutableList.of(authScheme));
+            return selected.getKey().prepare(request, authScheme);
 
         }
         if (response != null && response.getStatus() == Status.UNAUTHORIZED) {
-            Header authenticateHeader = response.getHeaders().getFirstHeader(HeaderConstants.WWW_AUTHENTICATE);
-            if (authenticateHeader != null && request.getChallenge() != null) {
-                AuthScheme scheme = new AuthScheme(authenticateHeader);
-                req = select(scheme).prepare(request, scheme);
-                if (req != request) { //If authentication header was added
-                    registry.register(host, scheme);
+            List<AuthScheme> schemes = toAuthSchemes(response, HeaderConstants.WWW_AUTHENTICATE);
+            if (!schemes.isEmpty() && request.getChallenge() != null) {
+                Pair<AuthenticatorStrategy, AuthScheme> selected = select(schemes);
+                if (selected.getValue() != null) {
+                    req = selected.getKey().prepare(request, selected.getValue());
+                    if (req != request) { //If authentication header was added
+                        registry.register(host, selected.getValue());
+                    }
                 }
             }
         }
@@ -71,7 +73,8 @@ public class DefaultAuthenticator extends AuthenticatorBase implements Authentic
         HTTPHost host = new HTTPHost(request.getRequestURI());
         if (registry.matches(host)) {
             AuthScheme scheme = registry.get(host);
-            AuthScheme updatedScheme = select(scheme).afterSuccessfulAuthentication(scheme, responseHeaders);
+            Pair<AuthenticatorStrategy, AuthScheme> select = select(ImmutableList.of(scheme));
+            AuthScheme updatedScheme = select.getKey().afterSuccessfulAuthentication(scheme, responseHeaders);
             if (updatedScheme != scheme) {
                 registry.register(host, updatedScheme);                
             }

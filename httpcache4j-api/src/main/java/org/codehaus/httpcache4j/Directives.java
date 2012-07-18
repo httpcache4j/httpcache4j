@@ -38,11 +38,15 @@ public class Directives implements Iterable<Directive>, Serializable {
     }
 
     public Directives() {
-        this("");
+        directives = Collections.emptyMap();
     }
 
+    @Deprecated
+    /**
+     * @deprecated Use {@link DirectivesParser} or {@link org.codehaus.httpcache4j.util.AuthDirectivesParser} instead.
+     */
     public Directives(String value) {
-        this(DirectivesParser.DEFAULT.parse(value));
+        this(DirectivesParser.parse(value));
     }
 
     public boolean hasDirective(String key) {

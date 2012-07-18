@@ -16,12 +16,14 @@
 package org.codehaus.httpcache4j.auth;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import org.codehaus.httpcache4j.*;
 
 import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.collect.Lists;
+import org.codehaus.httpcache4j.util.Pair;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -52,16 +54,15 @@ public class DefaultProxyAuthenticator extends AuthenticatorBase implements Prox
             if (response == null && registry.matches(configuration.getHost())) {
                 //preemptive auth.
                 AuthScheme authScheme = registry.get(configuration.getHost());
-                return doAuth(request, authScheme);
+                return doAuth(request, ImmutableList.of(authScheme));
             }
             if (response != null && response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) {
                 if (proxyChallenge == null) {
                     proxyChallenge = configuration.getProvider().getChallenge();
                 }
                 if (proxyChallenge != null) {
-                    AuthScheme scheme = new AuthScheme(response.getHeaders().getFirstHeader(HeaderConstants.PROXY_AUTHENTICATE));
-                    registry.register(configuration.getHost(), scheme);
-                    return doAuth(request, scheme);
+                    List<AuthScheme> schemes = toAuthSchemes(response, HeaderConstants.PROXY_AUTHENTICATE);
+                    return doAuth(request, schemes);
                 }
             }
         }
@@ -76,9 +77,18 @@ public class DefaultProxyAuthenticator extends AuthenticatorBase implements Prox
         return prepareAuthentication(request, null);
     }
 
-    private HTTPRequest doAuth(HTTPRequest request, AuthScheme scheme) {
+    private HTTPRequest doAuth(HTTPRequest request, List<AuthScheme> schemes) {
         if (!configuration.isHostIgnored(request.getRequestURI().getHost())) {
-            return select(scheme).prepareWithProxy(request, proxyChallenge, scheme);
+
+            Pair<AuthenticatorStrategy,AuthScheme> selected = select(schemes);
+            if (selected.getValue() != null) {
+                HTTPRequest req = selected.getKey().prepareWithProxy(request, proxyChallenge, selected.getValue());
+
+                if (req != request) {
+                    registry.register(configuration.getHost(), selected.getValue());
+                }
+                return req;
+            }
         }
         return request;
     }
@@ -86,7 +96,7 @@ public class DefaultProxyAuthenticator extends AuthenticatorBase implements Prox
     public void afterSuccessfulAuthentication(Headers responseHeaders) {
         if (registry.matches(configuration.getHost())) {
             AuthScheme scheme = registry.get(configuration.getHost());
-            select(scheme).afterSuccessfulProxyAuthentication(scheme, responseHeaders);
+            select(ImmutableList.of(scheme)).getKey().afterSuccessfulProxyAuthentication(scheme, responseHeaders);
         }
     }
 

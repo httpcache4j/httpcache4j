@@ -17,6 +17,7 @@ package org.codehaus.httpcache4j.auth.digest;
 
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.AuthScheme;
+import org.codehaus.httpcache4j.util.AuthDirectivesParser;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -32,7 +33,7 @@ public class RequestDigestTest {
 
     @Test
     public void testCalculateHashA1() {
-        AuthScheme scheme = new AuthScheme(new Header(HeaderConstants.WWW_AUTHENTICATE, "Digest realm=\"realm1\", nonce=\"f2a3f18799759d4f1a1c068b92b573cb\""));
+        AuthScheme scheme = new AuthScheme(AuthDirectivesParser.parse("Digest realm=\"realm1\", nonce=\"f2a3f18799759d4f1a1c068b92b573cb\"").iterator().next());
         Digest digest = new Digest(new HTTPHost("http", "localhost", -1), scheme);
         assertEquals("f2a3f18799759d4f1a1c068b92b573cb", digest.getNonce());
         RequestDigest requestDigest = new RequestDigest(
@@ -46,7 +47,7 @@ public class RequestDigestTest {
 
     @Test
     public void testCalculateHashA2() {
-        AuthScheme scheme = new AuthScheme(new Header(HeaderConstants.WWW_AUTHENTICATE, "Digest realm=\"realm1\", nonce=\"f2a3f18799759d4f1a1c068b92b573cb\""));
+        AuthScheme scheme = new AuthScheme(AuthDirectivesParser.parse("Digest realm=\"realm1\", nonce=\"f2a3f18799759d4f1a1c068b92b573cb\"").iterator().next());
         Digest digest = new Digest(new HTTPHost("http", "localhost", -1), scheme);
         assertEquals("f2a3f18799759d4f1a1c068b92b573cb", digest.getNonce());
         RequestDigest requestDigest = new RequestDigest(
@@ -61,7 +62,7 @@ public class RequestDigestTest {
 
     @Test
     public void testDigestAuthenticationFromRFC() {
-        AuthScheme scheme = new AuthScheme(new Header(HeaderConstants.WWW_AUTHENTICATE, "Digest realm=\"testrealm@host.com\", qop=\"auth\", nonce=\"dcd98b7102dd2f0e8b11d0f600bfb0c093\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\""));
+        AuthScheme scheme = new AuthScheme(AuthDirectivesParser.parse("Digest realm=\"testrealm@host.com\", qop=\"auth\", nonce=\"dcd98b7102dd2f0e8b11d0f600bfb0c093\", opaque=\"5ccc069c403ebaf9f0171e9517f40e41\"").iterator().next());
         Digest digest = new Digest(new HTTPHost("http", "localhost", -1), scheme);
         assertEquals("dcd98b7102dd2f0e8b11d0f600bfb0c093", digest.getNonce());
         assertEquals("5ccc069c403ebaf9f0171e9517f40e41", digest.getOpaque());
@@ -98,7 +99,7 @@ public class RequestDigestTest {
     
     @Test
     public void testDigestAuthenticationFromLocalApache() {
-        AuthScheme scheme = new AuthScheme(new Header(HeaderConstants.WWW_AUTHENTICATE, "Digest realm=\"The Shit\", nonce=\"74x09bV+BAA=00c61ef4d62ad0b8616a45d0714b47a39f833e91\", algorithm=MD5, qop=\"auth\""));
+        AuthScheme scheme = new AuthScheme(AuthDirectivesParser.parse("Digest realm=\"The Shit\", nonce=\"74x09bV+BAA=00c61ef4d62ad0b8616a45d0714b47a39f833e91\", algorithm=MD5, qop=\"auth\"").iterator().next());
         Digest digest = new Digest(new HTTPHost("http", "localhost", -1), scheme);
         assertEquals("74x09bV+BAA=00c61ef4d62ad0b8616a45d0714b47a39f833e91", digest.getNonce());
         RequestDigest requestDigest = new RequestDigest(

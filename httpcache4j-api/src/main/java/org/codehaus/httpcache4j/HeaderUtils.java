@@ -166,7 +166,7 @@ public final class HeaderUtils {
             if (directive instanceof LinkDirective) {
                 links.add((LinkDirective) directive);
             } else {
-                links.add(new LinkDirective(directive));
+                links.add(new LinkDirective(directive.getName(), directive.getParameters()));
             }
         }
         return links.build();

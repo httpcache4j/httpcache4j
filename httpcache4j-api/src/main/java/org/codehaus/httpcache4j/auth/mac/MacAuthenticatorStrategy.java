@@ -20,7 +20,7 @@ public final class MacAuthenticatorStrategy implements AuthenticatorStrategy {
     }
 
     public HTTPRequest prepare(HTTPRequest request, AuthScheme scheme) {
-        String error = scheme.getDirectives().get("error");
+        String error = scheme.getDirective().getParameterValue("error");
         if (error != null) {
             return request;
         }

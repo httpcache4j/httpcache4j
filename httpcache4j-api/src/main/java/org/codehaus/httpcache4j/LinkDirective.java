@@ -19,6 +19,7 @@ import com.google.common.collect.Lists;
 import java.net.URI;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,12 +32,15 @@ public class LinkDirective extends Directive {
     private final URI uri;
 
     public LinkDirective(Directive directive) {
-        super("Link", directive.getValue(), directive.getParameters());
-        uri = URI.create(directive.getValue());
+        this(directive.getName(), directive.getParameters());
+    }
+
+    public LinkDirective(String name, List<Parameter> parameters) {
+        this(URI.create(name), parameters);
     }
 
     public LinkDirective(URI uri, Iterable<Parameter> parameters) {
-        super("Link", "<" + uri + ">", Lists.newArrayList(parameters));
+        super(uri.toString(), null, Lists.newArrayList(parameters));
         this.uri = uri;
     }
 
@@ -46,15 +50,6 @@ public class LinkDirective extends Directive {
 
     public String getRel() {
         return getParameterValue("rel");
-    }
-
-    public String getParameterValue(final String key) {
-        for (Parameter param : getParameters()) {
-            if (param.getName().equals(key)) {
-                return param.getValue();
-            }
-        }
-        return null;
     }
 
     public String getRev() {
