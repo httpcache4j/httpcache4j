@@ -143,6 +143,12 @@ public final class HTTPRequest {
         return method;
     }
 
+    public HTTPRequest method(HTTPMethod method) {
+        Preconditions.checkNotNull(method, "You may not set null method");
+        if (method == this.method) return this;
+        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
+    }
+
     public Preferences getPreferences() {
         return preferences;
     }
