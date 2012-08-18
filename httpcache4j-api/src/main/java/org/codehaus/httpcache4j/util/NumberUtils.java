@@ -1,7 +1,7 @@
 package org.codehaus.httpcache4j.util;
 
 /**
- * @author Erlend Hamnaberg<erlend.hamnaberg@arktekk.no>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class NumberUtils {
     public static int toInt(String input, int defaultValue) {

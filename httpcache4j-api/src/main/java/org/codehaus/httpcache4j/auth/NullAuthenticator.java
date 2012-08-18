@@ -1,12 +1,11 @@
 package org.codehaus.httpcache4j.auth;
 
-import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
 
 /**
- * @author Erlend Hamnaberg<erlend.hamnaberg@arktekk.no>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public final class NullAuthenticator implements Authenticator, ProxyAuthenticator {
     public final static NullAuthenticator INSTANCE = new NullAuthenticator();
