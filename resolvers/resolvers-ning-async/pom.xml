@@ -32,8 +32,7 @@
     <dependency>
       <groupId>com.ning</groupId>
       <artifactId>async-http-client</artifactId>
-      <classifier>shaded</classifier>
-      <version>1.6.3</version>
+      <version>1.7.5</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.httpcache4j</groupId>
