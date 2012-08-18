@@ -20,6 +20,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Closeables;
+import org.codehaus.httpcache4j.annotation.Internal;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.joda.time.DateTime;
@@ -98,6 +99,16 @@ public final class HTTPResponse {
         if (headers.hasHeader(CONTENT_LOCATION)) {
             contentLocation = URI.create(headers.getFirstHeaderValue(CONTENT_LOCATION));
         }
+    }
+
+    @Internal
+    public HTTPResponse withHeaders(Headers headers) {
+        return new HTTPResponse(payload, statusLine, headers);
+    }
+
+    @Internal
+    public HTTPResponse withPayload(Payload payload) {
+        return new HTTPResponse(payload, statusLine, headers);
     }
 
     public boolean hasPayload() {
