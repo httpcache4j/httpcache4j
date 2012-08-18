@@ -40,9 +40,9 @@ public class MemoryCacheStorage implements CacheStorage {
 
     protected final int capacity;
     protected InvalidateOnRemoveLRUHashMap cache;
-    private final ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock();
-    private final Lock read = rwlock.readLock();
-    private final Lock write = rwlock.writeLock();
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    protected final Lock read = lock.readLock();
+    protected final Lock write = lock.writeLock();
 
     public MemoryCacheStorage() {
         this(1000);
@@ -73,13 +73,12 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
 
-    public HTTPResponse insert(final HTTPRequest request, final HTTPResponse response) {
+    public final HTTPResponse insert(final HTTPRequest request, final HTTPResponse response) {
         write.lock();
         Key key = Key.create(request, response);
-        invalidate(key);
-        HTTPResponse cacheableResponse = rewriteResponse(key, response);
-
         try {
+            invalidate(key);
+            HTTPResponse cacheableResponse = rewriteResponse(key, response);
             return putImpl(key, cacheableResponse);
         } finally {
             write.unlock();
@@ -95,7 +94,7 @@ public class MemoryCacheStorage implements CacheStorage {
         return new DefaultCacheItem(pCacheableResponse);
     }
 
-    public HTTPResponse update(final HTTPRequest request, final HTTPResponse response) {
+    public final HTTPResponse update(final HTTPRequest request, final HTTPResponse response) {
         Key key = Key.create(request, response);
         return putImpl(key, response);
     }
@@ -108,7 +107,7 @@ public class MemoryCacheStorage implements CacheStorage {
         return null;
     }
 
-    public CacheItem get(HTTPRequest request) {
+    public final CacheItem get(HTTPRequest request) {
         read.lock();
 
         try {
@@ -124,7 +123,7 @@ public class MemoryCacheStorage implements CacheStorage {
         }
     }
 
-    public void invalidate(URI uri) {
+    public final void invalidate(URI uri) {
         write.lock();
 
         try {
@@ -142,7 +141,7 @@ public class MemoryCacheStorage implements CacheStorage {
         }
     }
 
-    public CacheItem get(Key key) {
+    public final CacheItem get(Key key) {
         read.lock();
 
         try {
@@ -157,12 +156,7 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     private void invalidate(Key key) {
-        write.lock();
-        try {
-            cache.remove(key);
-        } finally {
-            write.unlock();
-        }
+        cache.remove(key);
     }
 
     public final void clear() {
@@ -183,7 +177,7 @@ public class MemoryCacheStorage implements CacheStorage {
     protected void afterClear() {
     }
 
-    public int size() {
+    public final int size() {
         read.lock();
         try {
             return cache.size();
@@ -192,7 +186,7 @@ public class MemoryCacheStorage implements CacheStorage {
         }
     }
 
-    public Iterator<Key> iterator() {
+    public final Iterator<Key> iterator() {
         read.lock();
         try {
             return Collections.unmodifiableSet(cache.keySet()).iterator();
