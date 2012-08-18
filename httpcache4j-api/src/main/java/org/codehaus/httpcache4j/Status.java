@@ -18,6 +18,8 @@ package org.codehaus.httpcache4j;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
+import com.google.common.collect.Ranges;
 
 import java.util.Collection;
 import java.util.Map;
@@ -77,16 +79,14 @@ public final class Status implements Comparable<Status> {
         CLIENT_ERROR(400, 499),
         SERVER_ERROR(500, 599);
 
-        private int min;
-        private int max;
+        private final Range<Integer> range;
 
         private Category(int min, int max) {
-            this.min = min;
-            this.max = max;
+            range = Ranges.closed(min, max);
         }
 
         public boolean contains(Status status) {
-            return min >= status.getCode() && status.getCode() <= max;
+            return range.contains(status.getCode());
         }
 
         public static Category valueOf(Status status) {
