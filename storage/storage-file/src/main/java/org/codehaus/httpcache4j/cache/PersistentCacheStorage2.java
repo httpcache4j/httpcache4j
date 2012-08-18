@@ -16,6 +16,8 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import com.google.common.annotations.Beta;
+import com.google.common.cache.Cache;
 import com.google.common.collect.Iterators;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
@@ -37,6 +39,7 @@ import java.util.*;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
+@Beta
 public class PersistentCacheStorage2 implements CacheStorage {
     private final FileManager fileManager;
 
@@ -126,12 +129,20 @@ public class PersistentCacheStorage2 implements CacheStorage {
 
     @Override
     public synchronized CacheItem get(HTTPRequest request) {
+        Pair<Key, CacheItem> item = getItem(request);
+        if (item != null) {
+            return item.getValue();
+        }
+        return null;
+    }
+
+    synchronized Pair<Key, CacheItem> getItem(HTTPRequest request) {
         File uri = fileManager.resolve(request.getRequestURI());
         File[] files = uri.listFiles((FileFilter) new SuffixFileFilter("metadata"));
         for (File file : new FilesIterable(files)) {
             Pair<Key, CacheItem> pair = readItem(file);
             if (pair != null && pair.getKey().getVary().matches(request)) {
-                return pair.getValue();
+                return pair;
             }
         }
         return null;
@@ -140,6 +151,10 @@ public class PersistentCacheStorage2 implements CacheStorage {
     @Override
     public synchronized void invalidate(URI uri) {
         fileManager.clear(uri);
+    }
+
+    synchronized void invalidate(Key key) {
+        fileManager.remove(key);
     }
 
     @Override
