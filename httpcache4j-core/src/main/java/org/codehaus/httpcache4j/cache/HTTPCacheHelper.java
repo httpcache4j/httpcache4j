@@ -199,7 +199,7 @@ class HTTPCacheHelper {
         if (stale) {
             headers = warnStale(headers);
         }
-        return new HTTPResponse(response.getPayload(), response.getStatus(), headers);
+        return response.withHeaders(headers);
     }
 
 

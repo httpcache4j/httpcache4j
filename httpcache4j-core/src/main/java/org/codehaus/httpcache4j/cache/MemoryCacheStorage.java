@@ -59,7 +59,7 @@ public class MemoryCacheStorage implements CacheStorage {
             InputStream stream = null;
             try {
                 stream = payload.getInputStream();
-                return new HTTPResponse(createPayload(key, payload, stream), response.getStatus(), new Headers(response.getHeaders()));
+                return response.withPayload(createPayload(key, payload, stream));
             } catch (IOException ignore) {
             }
             finally {
