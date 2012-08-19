@@ -3,37 +3,44 @@ package org.codehaus.httpcache4j.payload;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
-import com.google.common.hash.HashCode;
-import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.FileBackedOutputStream;
 import com.google.common.io.InputSupplier;
+import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
-import org.codehaus.httpcache4j.util.AvailableInputStream;
+import org.codehaus.httpcache4j.util.Hex;
 
 /**
- * Requires that the payload can be re-used. If the delegate is an InputstreamPayload, the stream will be changed into a byte-array.
- * This WILL be a problem with large entities, as the entire content must reside in memory.
+ * Calculates the MD5 of the payload.
+ * Copies the payload into a byte array if the data is small enough, changes to a backing file if the
+ * content is large.
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class MD5CaculcatingPayload implements Payload {
     private final MIMEType mimeType;
     private final long length;
-    private final AvailableInputStream stream;
     private final String md5;
+    private final InputSupplier<InputStream> supplier;
 
     private MD5CaculcatingPayload(final InputStream stream, MIMEType mimeType, long length) {
         this.mimeType = mimeType;
         this.length = length;
+        FileBackedOutputStream os = new FileBackedOutputStream(1024);
         try {
-            stream.mark(Integer.MAX_VALUE);
-            this.md5 = hash(stream).toString();
-            stream.reset();
+            DigestInputStream md5Stream = new DigestInputStream(stream, MessageDigest.getInstance("MD5"));
+            ByteStreams.copy(md5Stream, os);
+            this.md5 = Hex.encode(md5Stream.getMessageDigest().digest());
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
-        this.stream = new AvailableInputStream(stream);
+        supplier = os.getSupplier();
     }
 
     public String getMD5() {
@@ -45,7 +52,11 @@ public class MD5CaculcatingPayload implements Payload {
     }
 
     public InputStream getInputStream() {
-        return stream;
+        try {
+            return supplier.getInput();
+        } catch (IOException e) {
+            throw new HTTPException(e);
+        }
     }
 
     public long length() {
@@ -53,23 +64,10 @@ public class MD5CaculcatingPayload implements Payload {
     }
 
     public boolean isAvailable() {
-        return stream.isAvailable();
+        return true;
     }
     
     public static MD5CaculcatingPayload payloadFor(Payload p) {
-        InputStream stream = p.getInputStream();
-        if (!stream.markSupported()) {
-            stream = new BufferedInputStream(stream, 8048);
-        }
-        return new MD5CaculcatingPayload(stream, p.getMimeType(), p.length());
-    }
-
-    private HashCode hash(final InputStream stream) throws IOException {
-        return ByteStreams.hash(new InputSupplier<InputStream>() {
-            @Override
-            public InputStream getInput() throws IOException {
-                return stream;
-            }
-        }, Hashing.md5());
+        return new MD5CaculcatingPayload(p.getInputStream(), p.getMimeType(), p.length());
     }
 }
