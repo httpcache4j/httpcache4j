@@ -73,6 +73,10 @@ public final class MIMEType {
         return mimeType.getPrimaryType();
     }
 
+    public String getCharset() {
+        return getParameter("charset");
+    }
+
     @Override
     public int hashCode() {
         return 31 * (getPrimaryType().hashCode() + getSubType().hashCode());
@@ -124,6 +128,10 @@ public final class MIMEType {
                     && (getSubType().equals(mimeType.getSubType()) || "*".equals(getSubType()));
         }
         return includes;
+    }
+
+    public String getParameter(String name) {
+        return mimeType.getParameter(name);
     }
 
     public List<Parameter> getParameters() {
