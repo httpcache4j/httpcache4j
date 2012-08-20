@@ -1,5 +1,14 @@
 # HTTPCache4j a Java Browser cache.
 
+HTTP Cache 4 Java is a project that tries to uphold the caching rules defined in HTTP.
+The rules are mostly defined in [Section 13](http://tools.ietf.org/html/rfc2616#section-13) in RFC2616.
+The rules are changing slightly in httpbis, and will result in a new set of RFCs which will invalidate RFC2616.
+
+Most types in HTTPCache4j are immutable. Meaning all builders, and other types of objects.
+
+I have created a few mutable versions which delegates to the immutable types underneath.
+The mutable versions are not thread safe.
+
 ## Usage
 
 ### Maven
