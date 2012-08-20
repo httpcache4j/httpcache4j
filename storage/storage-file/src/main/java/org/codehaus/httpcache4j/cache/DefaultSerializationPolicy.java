@@ -17,7 +17,7 @@ public class DefaultSerializationPolicy implements SerializationPolicy {
     }
 
     public boolean shouldWePersist(long numberOfModifications, long lastSerializationTime) {
-        return isWithinTreshold(numberOfModifications) && hasTimeoutOccured(lastSerializationTime);
+        return isWithinTreshold(numberOfModifications) || hasTimeoutOccured(lastSerializationTime);
     }
 
     private boolean hasTimeoutOccured(long lastSerializationTime) {

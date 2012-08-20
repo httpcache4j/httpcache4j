@@ -23,7 +23,6 @@ import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.google.common.io.OutputSupplier;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
-import org.codehaus.httpcache4j.util.StorageUtil;
 
 import java.io.*;
 import java.net.URI;
@@ -41,12 +40,6 @@ public final class FileManager implements Serializable {
         this.baseDirectory = createFilesDirectory(baseDirectory);
     }
 
-    private File createFilesDirectory(File baseDirectory) {
-        File files = new File(baseDirectory, "files");
-        StorageUtil.ensureDirectoryExists(files);
-        return files;
-    }
-
     public File getBaseDirectory() {
         return baseDirectory;
     }
@@ -54,7 +47,7 @@ public final class FileManager implements Serializable {
     public synchronized File createFile(Key key, InputStream stream) throws IOException {
         File file = resolve(key);
         if (!file.getParentFile().exists()) {
-            StorageUtil.ensureDirectoryExists(file.getParentFile());
+            ensureDirectoryExists(file.getParentFile());
         }
         OutputSupplier<FileOutputStream> outputStream = Files.newOutputStreamSupplier(file);
         try {
@@ -92,14 +85,10 @@ public final class FileManager implements Serializable {
         }
     }
 
-    private boolean directoryIsEmpty(File directory) {
-        if (directory.isDirectory()) {
-            String[] list = directory.list();
-            if (list == null || list.length == 0) {
-                return true;
-            }
+    public synchronized void ensureDirectoryExists(File directory) {
+        if (!directory.exists() && !directory.mkdirs()) {
+            throw new IllegalArgumentException(String.format("Directory %s did not exist, and could not be created", directory));
         }
-        return false;
     }
 
     public synchronized File resolve(Key key) {
@@ -118,5 +107,21 @@ public final class FileManager implements Serializable {
         String uriHex = Hashing.md5().hashString(uri.toString(), Charsets.UTF_8).toString().trim();
         String distribution = uriHex.substring(0, 2);
         return new File(new File(baseDirectory, distribution), uriHex);
+    }
+
+    private boolean directoryIsEmpty(File directory) {
+        if (directory.isDirectory()) {
+            String[] list = directory.list();
+            if (list == null || list.length == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private File createFilesDirectory(File baseDirectory) {
+        File files = new File(baseDirectory, "files");
+        ensureDirectoryExists(files);
+        return files;
     }
 }

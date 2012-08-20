@@ -17,7 +17,6 @@
 package org.codehaus.httpcache4j.cache;
 
 import com.google.common.annotations.Beta;
-import com.google.common.cache.Cache;
 import com.google.common.collect.Iterators;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
@@ -28,7 +27,6 @@ import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.util.Pair;
 import org.codehaus.httpcache4j.util.PropertiesLoader;
-import org.codehaus.httpcache4j.util.StorageUtil;
 
 import java.io.*;
 import java.net.URI;
@@ -82,7 +80,7 @@ public class PersistentCacheStorage2 implements CacheStorage {
     private void writeItem(Key key, SerializableCacheItem item) throws IOException {
         File metadata = new File(fileManager.resolve(key).getAbsolutePath() + ".metadata");
         if (!metadata.getParentFile().exists()) {
-            StorageUtil.ensureDirectoryExists(metadata.getParentFile());
+            fileManager.ensureDirectoryExists(metadata.getParentFile());
         }
         FileWriter writer = null;
         try {
