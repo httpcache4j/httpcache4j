@@ -93,6 +93,11 @@ public class HTTPCache {
         return execute(request, true);
     }
 
+    public void shutdown() {
+        storage.shutdown();
+        resolver.shutdown();
+    }
+
     @Deprecated
     public HTTPResponse doCachedRequest(final HTTPRequest request, boolean force) {
         return execute(request, force);

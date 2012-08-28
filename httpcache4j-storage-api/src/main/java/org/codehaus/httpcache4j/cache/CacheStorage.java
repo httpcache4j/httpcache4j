@@ -38,4 +38,6 @@ public interface CacheStorage extends Iterable<Key> {
     void clear();
 
     int size();
+
+    void shutdown();
 }

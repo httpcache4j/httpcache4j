@@ -116,4 +116,9 @@ public class IndexedPersistentCacheStorage implements CacheStorage, RemovalListe
     public void onRemoval(RemovalNotification<Key, CacheItem> notification) {
         backing.invalidate(notification.getKey());
     }
+
+    @Override
+    public void shutdown() {
+        backing.shutdown();
+    }
 }
