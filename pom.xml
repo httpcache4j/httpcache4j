@@ -15,7 +15,8 @@
   ~
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.codehaus.httpcache4j</groupId>
   <artifactId>httpcache4j</artifactId>
@@ -155,13 +156,13 @@
               <artifactId>maven-project-info-reports-plugin</artifactId>
               <version>2.2</version>
             </plugin>
-<!--
-            <plugin>
-              <groupId>org.codehaus.mojo</groupId>
-              <artifactId>findbugs-maven-plugin</artifactId>
-              <version>2.3.1</version>
-            </plugin>
--->
+            <!--
+                        <plugin>
+                          <groupId>org.codehaus.mojo</groupId>
+                          <artifactId>findbugs-maven-plugin</artifactId>
+                          <version>2.3.1</version>
+                        </plugin>
+            -->
             <plugin>
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>taglist-maven-plugin</artifactId>
@@ -284,6 +285,7 @@
     <module>httpcache4j-core</module>
     <module>httpcache4j-api</module>
     <module>httpcache4j-storage-api</module>
+    <module>httpcache4j-spring</module>
     <module>resolvers</module>
     <module>storage</module>
     <module>httpcache4j-it</module>
