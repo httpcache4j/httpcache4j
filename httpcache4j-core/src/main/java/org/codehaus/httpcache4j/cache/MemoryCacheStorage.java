@@ -195,4 +195,7 @@ public class MemoryCacheStorage implements CacheStorage {
         }
     }
 
+    @Override
+    public void shutdown() {
+    }
 }

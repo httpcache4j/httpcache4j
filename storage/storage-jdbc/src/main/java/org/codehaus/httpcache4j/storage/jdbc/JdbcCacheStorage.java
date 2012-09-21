@@ -297,6 +297,14 @@ public class JdbcCacheStorage implements CacheStorage {
         }
     }
 
+    @Override
+    public void shutdown() {
+        try {
+            getConnection().close();
+        } catch (SQLException ignore) {
+        }
+    }
+
     protected void maybeCreateTables(final boolean dropTables) {
         final boolean createTables = shouldWeCreateTables();
         Connection connection = getConnection();

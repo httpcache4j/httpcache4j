@@ -191,6 +191,10 @@ public class PersistentCacheStorage2 implements CacheStorage {
         return Collections.unmodifiableList(keys).iterator();
     }
 
+    @Override
+    public void shutdown() {
+    }
+
     private static class FilesIterable implements Iterable<File> {
         private File[] files;
 

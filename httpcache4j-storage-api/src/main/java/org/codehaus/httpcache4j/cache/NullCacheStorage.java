@@ -57,4 +57,8 @@ public class NullCacheStorage implements CacheStorage {
     public Iterator<Key> iterator() {
         return Collections.<Key>emptySet().iterator();
     }
+
+    @Override
+    public void shutdown() {
+    }
 }
