@@ -136,7 +136,8 @@ public class HeadersTest {
         String value = Resources.toString(getClass().getResource("/multiple-auth.txt"), Charsets.ISO_8859_1);
         Iterable<Directive> parsed = AuthDirectivesParser.parse(value);
         Directives directives = new Directives(parsed);
-
+        assertNotNull(directives.getAsDirective("Basic"));
+        assertNotNull(directives.getAsDirective("Digest"));
     }
 
 }
