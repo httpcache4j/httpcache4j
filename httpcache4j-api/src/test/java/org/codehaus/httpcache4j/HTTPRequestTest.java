@@ -23,9 +23,7 @@ import org.codehaus.httpcache4j.util.NullInputStream;
 import org.junit.Test;
 import org.junit.Assert;
 import static org.junit.Assert.*;
-import org.codehaus.httpcache4j.preference.Preferences;
 
-import java.io.InputStream;
 import java.net.URI;
 import java.util.Locale;
 
@@ -47,12 +45,12 @@ public class HTTPRequestTest {
     @Test
     public void testAllHeaders() {
         Conditionals conditionals = new Conditionals().addIfMatch(new Tag("2345"));
-        Preferences preferences = new Preferences().addLocale(Locale.UK).addMIMEType(MIMEType.valueOf("application/xml"));
+        Headers preferences = new Headers().addAcceptLanguage(Locale.UK).addAccept(MIMEType.valueOf("application/xml"));
         HTTPRequest request = new HTTPRequest(REQUEST_URI);
         request = request.addHeader("X-Foo-Bar", "Foo");
         request = request.conditionals(conditionals);
-        request = request.preferences(preferences);
-        Headers headers = new Headers().add("X-Foo-Bar", "Foo").add("If-Match", new Tag("2345").format()).add(HeaderConstants.ACCEPT_LANGUAGE, "en").add(HeaderConstants.ACCEPT, "application/xml");
+        request = request.headers(request.getHeaders().add(preferences));
+        Headers headers = new Headers().add("X-Foo-Bar", "Foo").add("If-Match", new Tag("2345").format()).add(HeaderConstants.ACCEPT_LANGUAGE, "en-gb").add(HeaderConstants.ACCEPT, "application/xml");
         Assert.assertEquals(headers, request.getAllHeaders());
     }
 

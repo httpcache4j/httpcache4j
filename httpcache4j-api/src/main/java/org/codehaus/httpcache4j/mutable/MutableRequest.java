@@ -30,7 +30,6 @@ public class MutableRequest {
     private final HTTPMethod method;
     private final MutableHeaders headers;
     private final MutableConditionals conditionals;
-    private final MutablePreferences preferences;
     private Challenge challenge;
     private Payload payload;
 
@@ -39,19 +38,17 @@ public class MutableRequest {
     }
 
     public MutableRequest(URI uri, HTTPMethod method) {
-        this(uri, method, new MutableHeaders(), new MutableConditionals(), new MutablePreferences());
+        this(uri, method, new MutableHeaders(), new MutableConditionals());
     }
 
     private MutableRequest(URI uri,
                            HTTPMethod method,
                            MutableHeaders headers,
-                           MutableConditionals conditionals,
-                           MutablePreferences preferences) {
+                           MutableConditionals conditionals) {
         this.uri = uri;
         this.method = method;
         this.headers = headers;
         this.conditionals = conditionals;
-        this.preferences = preferences;
     }
 
     public URI getRequestURI() {
@@ -68,10 +65,6 @@ public class MutableRequest {
 
     public MutableConditionals getConditionals() {
         return conditionals;
-    }
-
-    public MutablePreferences getPreferences() {
-        return preferences;
     }
 
     public Challenge getChallenge() {
@@ -107,7 +100,6 @@ public class MutableRequest {
                 method,
                 headers.toHeaders(),
                 conditionals.toConditionals(),
-                preferences.toPreferences(),
                 challenge,
                 payload,
                 new DateTime()
@@ -119,8 +111,7 @@ public class MutableRequest {
                 request.getRequestURI(),
                 request.getMethod(),
                 new MutableHeaders(request.getHeaders()),
-                new MutableConditionals(request.getConditionals()),
-                new MutablePreferences(request.getPreferences())
+                new MutableConditionals(request.getConditionals())
         );
         mutableRequest.setChallenge(request.getChallenge());
         if (request.getMethod().canHavePayload()) {

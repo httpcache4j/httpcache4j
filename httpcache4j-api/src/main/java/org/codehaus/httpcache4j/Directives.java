@@ -80,4 +80,11 @@ public class Directives implements Iterable<Directive>, Serializable {
     public String toString() {
         return Joiner.on(", ").join(directives.values());
     }
+
+    public Directives add(Directive directive) {
+        ImmutableList.Builder<Directive> dirs = ImmutableList.builder();
+        dirs.addAll(this);
+        dirs.add(directive);
+        return new Directives(dirs.build());
+    }
 }

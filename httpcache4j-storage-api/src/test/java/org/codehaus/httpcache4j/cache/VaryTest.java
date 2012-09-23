@@ -2,7 +2,7 @@ package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.MIMEType;
-import org.codehaus.httpcache4j.preference.Preferences;
+import org.codehaus.httpcache4j.preference.Preference;
 import org.junit.Test;
 import org.junit.Assert;
 import org.codehaus.httpcache4j.HTTPRequest;
@@ -105,8 +105,7 @@ public class VaryTest {
         Assert.assertEquals("Header names added", 1, vary.size());
         HTTPRequest request = new HTTPRequest(URI.create("no.uri"));
         request = request.addHeader("Accept", "application/xml");
-        request = request.headers(new Headers());
-        request = request.preferences(new Preferences().addMIMEType(MIMEType.valueOf("application/xml")));
+        request = request.headers(new Headers().addAccept(MIMEType.valueOf("application/xml")));
         Assert.assertTrue("request did not specify application/xml", vary.matches(request));
     }
 
@@ -119,8 +118,7 @@ public class VaryTest {
         Assert.assertEquals("Header names added", 1, vary.size());
         HTTPRequest request = new HTTPRequest(URI.create("no.uri"));
         request = request.addHeader("Accept", "application/xml");
-        request = request.headers(new Headers());
-        request = request.preferences(new Preferences().addMIMEType(MIMEType.valueOf("application/xml")).addMIMEType(MIMEType.valueOf("application/json")));
+        request = request.headers(new Headers().addAccept(MIMEType.valueOf("application/xml"), MIMEType.valueOf("application/json")));
         Assert.assertTrue("request did not specify application/xml", vary.matches(request));
     }
 

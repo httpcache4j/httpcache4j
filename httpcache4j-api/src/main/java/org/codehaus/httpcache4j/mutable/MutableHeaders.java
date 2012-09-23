@@ -16,11 +16,14 @@
 package org.codehaus.httpcache4j.mutable;
 
 import com.google.common.base.Preconditions;
-import org.codehaus.httpcache4j.Header;
-import org.codehaus.httpcache4j.Headers;
+import org.codehaus.httpcache4j.*;
+import org.codehaus.httpcache4j.preference.Charset;
+import org.codehaus.httpcache4j.preference.Preference;
+import org.joda.time.DateTime;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -105,5 +108,89 @@ public class MutableHeaders implements Iterable<Header> {
 
     public Iterator<Header> iterator() {
         return headers.iterator();
+    }
+
+    public void setCacheControl(CacheControl cc) {
+        headers = headers.withCacheControl(cc);
+    }
+
+    public void addAcceptLanguage(Preference<Locale>... accept) {
+        headers = headers.addAcceptLanguage(accept);
+    }
+
+    public List<Preference<Locale>> getAcceptLanguage() {
+        return headers.getAcceptLanguage();
+    }
+
+    public void setAcceptCharset(List<Preference<Charset>> charsets) {
+        headers = headers.withAcceptCharset(charsets);
+    }
+
+    public List<Preference<Charset>> getAcceptCharset() {
+        return headers.getAcceptCharset();
+    }
+
+    public void setExpires(DateTime expires) {
+        headers = headers.withExpires(expires);
+    }
+
+    public void addAccept(Preference<MIMEType>... accept) {
+        headers = headers.addAccept(accept);
+    }
+
+    public DateTime getLastModified() {
+        return headers.getLastModified();
+    }
+
+    public void addAcceptCharset(Preference<Charset>... accept) {
+        headers = headers.addAcceptCharset(accept);
+    }
+
+    public void setAllow(Set<HTTPMethod> allow) {
+        headers = headers.withAllow(allow);
+    }
+
+    public void setAccept(List<Preference<MIMEType>> charsets) {
+        headers = headers.withAccept(charsets);
+    }
+
+    public List<Preference<MIMEType>> getAccept() {
+        return headers.getAccept();
+    }
+
+    public void setAcceptLanguage(List<Preference<Locale>> acceptLanguage) {
+        headers = headers.withAcceptLanguage(acceptLanguage);
+    }
+
+    public void setLastModified(DateTime lm) {
+        headers = headers.withLastModified(lm);
+    }
+
+    public void setETag(Tag tag) {
+        headers = headers.withETag(tag);
+    }
+
+    public DateTime getExpires() {
+        return headers.getExpires();
+    }
+
+    public DateTime getDate() {
+        return headers.getDate();
+    }
+
+    public void setDate(DateTime dt) {
+        headers = headers.withDate(dt);
+    }
+
+    public Set<HTTPMethod> getAllow() {
+        return headers.getAllow();
+    }
+
+    public CacheControl getCacheControl() {
+        return headers.getCacheControl();
+    }
+
+    public Tag getETag() {
+        return headers.getETag();
     }
 }

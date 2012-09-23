@@ -19,7 +19,6 @@ package org.codehaus.httpcache4j;
 import com.google.common.base.Preconditions;
 
 import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.preference.Preferences;
 import org.joda.time.DateTime;
 
 import java.net.URI;
@@ -36,7 +35,6 @@ public final class HTTPRequest {
     private final URI requestURI;
     private final HTTPMethod method;
     private final Conditionals conditionals;
-    private final Preferences preferences;
     private final Headers headers;
     private final Challenge challenge;
     private final Payload payload;
@@ -46,7 +44,6 @@ public final class HTTPRequest {
                        HTTPMethod method,
                        Headers headers,
                        Conditionals conditionals,
-                       Preferences preferences,
                        Challenge challenge,
                        Payload payload,
                        DateTime requestTime) {
@@ -55,7 +52,6 @@ public final class HTTPRequest {
         this.method = method == null ? HTTPMethod.GET : method;
         this.headers = headers == null ? new Headers() : headers;
         this.conditionals = conditionals == null? new Conditionals() : conditionals;
-        this.preferences = preferences == null ? new Preferences() : preferences;
         this.challenge = challenge;
         this.payload = payload;
         this.requestTime = requestTime == null ? new DateTime() : requestTime;
@@ -66,7 +62,6 @@ public final class HTTPRequest {
              getMethod(),
              getHeaders(),
              getConditionals(),
-             getPreferences(),
              getChallenge(),
              getPayload(),
              getRequestTime());
@@ -85,7 +80,7 @@ public final class HTTPRequest {
     }
 
     public HTTPRequest(URI requestURI, HTTPMethod method) {
-        this(requestURI, method, new Headers(), new Conditionals(), new Preferences(), null, null, new DateTime());
+        this(requestURI, method, new Headers(), new Conditionals(), null, null, new DateTime());
     }
 
     public URI getRequestURI() {
@@ -105,9 +100,8 @@ public final class HTTPRequest {
     public Headers getAllHeaders() {
         Headers requestHeaders = getHeaders();
         Headers conditionalHeaders = getConditionals().toHeaders();
-        Headers preferencesHeaders = getPreferences().toHeaders();
 
-        requestHeaders = merge(merge(requestHeaders, conditionalHeaders), preferencesHeaders);
+        requestHeaders = merge(requestHeaders, conditionalHeaders);
         if (hasPayload()) {
             requestHeaders = requestHeaders.remove(HeaderConstants.CONTENT_TYPE);
             requestHeaders = requestHeaders.add(HeaderConstants.CONTENT_TYPE, getPayload().getMimeType().toString());
@@ -123,7 +117,7 @@ public final class HTTPRequest {
 
     public HTTPRequest addHeader(Header header) {
         Headers headers = this.headers.add(header);
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
+        return new HTTPRequest(requestURI, method, headers, conditionals, challenge, payload, new DateTime());
     }
 
     public HTTPRequest addHeader(String name, String value) {
@@ -136,7 +130,7 @@ public final class HTTPRequest {
 
     public HTTPRequest conditionals(Conditionals conditionals) {
         Preconditions.checkNotNull(conditionals, "You may not set null conditionals");
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
+        return new HTTPRequest(requestURI, method, headers, conditionals, challenge, payload, new DateTime());
     }
 
     public HTTPMethod getMethod() {
@@ -146,16 +140,7 @@ public final class HTTPRequest {
     public HTTPRequest method(HTTPMethod method) {
         Preconditions.checkNotNull(method, "You may not set null method");
         if (method == this.method) return this;
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
-    }
-
-    public Preferences getPreferences() {
-        return preferences;
-    }
-
-    public HTTPRequest preferences(Preferences preferences) {
-        Preconditions.checkNotNull(preferences, "You may not set null preferences");
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
+        return new HTTPRequest(requestURI, method, headers, conditionals, challenge, payload, new DateTime());
     }
 
     public Challenge getChallenge() {
@@ -163,7 +148,7 @@ public final class HTTPRequest {
     }
 
     public HTTPRequest challenge(Challenge challenge) {
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
+        return new HTTPRequest(requestURI, method, headers, conditionals, challenge, payload, new DateTime());
     }
 
     public Payload getPayload() {
@@ -174,12 +159,12 @@ public final class HTTPRequest {
         if (!method.canHavePayload()) {
             throw new IllegalStateException(String.format("Unable to add payload to a %s request", method));
         }        
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
+        return new HTTPRequest(requestURI, method, headers, conditionals, challenge, payload, new DateTime());
     }
 
     public HTTPRequest headers(final Headers headers) {
         Preconditions.checkNotNull(headers, "You may not set null headers");
-        return new HTTPRequest(requestURI, method, headers, conditionals, preferences, challenge, payload, new DateTime());
+        return new HTTPRequest(requestURI, method, headers, conditionals, challenge, payload, new DateTime());
     }
 
     public boolean hasPayload() {
