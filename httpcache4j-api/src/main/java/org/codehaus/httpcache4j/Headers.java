@@ -258,6 +258,15 @@ public final class Headers implements Iterable<Header> {
         return set(HeaderUtils.toHttpDate(HeaderConstants.DATE, dt));
     }
 
+    public MIMEType getContentType() {
+        String ct = getFirstHeaderValue(HeaderConstants.CONTENT_TYPE);
+        return ct == null ? null : MIMEType.valueOf(ct);
+    }
+
+    public Headers withContentType(MIMEType ct) {
+        return set(HeaderConstants.CONTENT_TYPE, ct.toString());
+    }
+
     public DateTime getExpires() {
         return HeaderUtils.fromHttpDate(getFirstHeader(HeaderConstants.EXPIRES));
     }
@@ -328,6 +337,8 @@ public final class Headers implements Iterable<Header> {
         }
         return headers.toHeaders();
     }
+
+
 
     private static class HeaderHashMap extends LinkedHashMap<CaseInsensitiveKey, List<String>> {
         private static final long serialVersionUID = 2714358409043444835L;
