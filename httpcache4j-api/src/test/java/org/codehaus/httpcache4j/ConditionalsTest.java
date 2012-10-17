@@ -28,7 +28,7 @@ public class ConditionalsTest {
         assertEquals(1, conditionals.getMatch().size());
         conditionals = conditionals.addIfMatch(Tag.parse("\"bar\""));
         assertEquals(2, conditionals.getMatch().size());
-        Header header = new Header(HeaderConstants.IF_MATCH, "\"foo\", \"bar\"");
+        Header header = new Header(HeaderConstants.IF_MATCH, "\"foo\",\"bar\"");
         assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_MATCH));
     }
 
@@ -112,8 +112,8 @@ public class ConditionalsTest {
         assertEquals(1, conditionals.getNoneMatch().size());
         conditionals = conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
         assertEquals(2, conditionals.getNoneMatch().size());
-        Header header = new Header(HeaderConstants.IF_NON_MATCH, "\"foo\", \"bar\"");
-        assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_NON_MATCH));
+        Header header = new Header(HeaderConstants.IF_NONE_MATCH, "\"foo\",\"bar\"");
+        assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_NONE_MATCH));
     }
 
     @Test

@@ -92,7 +92,7 @@ public class HTTPCacheTest {
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(resolvedResponse);
         when(cacheStorage.insert(isA(HTTPRequest.class), eq(resolvedResponse))).thenReturn(resolvedResponse);
         HTTPResponse response = cache.execute(request);
-        assertTrue("None match was not empty",request.getConditionals().getNoneMatch().isEmpty());
+        assertTrue("None match was not empty",request.getHeaders().getConditionals().getNoneMatch().isEmpty());
         verify(responseResolver, atLeast(1)).resolve(isA(HTTPRequest.class));
         assertTrue("response did not have payload", response.hasPayload());
         assertTrue(response.getPayload().isAvailable());
@@ -117,7 +117,7 @@ public class HTTPCacheTest {
         when(cacheStorage.insert(isA(HTTPRequest.class), eq(resolvedResponse))).thenReturn(resolvedResponse);
 
         HTTPResponse response = cache.execute(request);
-        assertTrue("None match was not empty",request.getConditionals().getNoneMatch().isEmpty());
+        assertTrue("None match was not empty",request.getHeaders().getConditionals().getNoneMatch().isEmpty());
         verify(responseResolver, atLeast(1)).resolve(isA(HTTPRequest.class));
         verify(cacheStorage, times(1)).insert(isA(HTTPRequest.class), eq(resolvedResponse));
         assertTrue("Response did not have a payload", response.hasPayload());
@@ -128,8 +128,7 @@ public class HTTPCacheTest {
     public void testExternalConditionalRequestWhereResponsePayloadHasBeenRemoved() throws IOException {
         HTTPRequest request = new HTTPRequest(DUMMY_URI);
         Tag tag = new Tag("foo", false);
-        Conditionals conditionals = request.getConditionals().addIfNoneMatch(tag);
-        request = request.conditionals(conditionals);
+        request = request.addIfNoneMatch(tag);
         Headers headers = new Headers();
         headers = headers.add(HeaderConstants.ETAG, tag.format());
         headers = headers.add(HeaderConstants.CACHE_CONTROL, "max-age=10");
@@ -172,7 +171,7 @@ public class HTTPCacheTest {
     @Test
     public void testExternalConditionalGet() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("foo"));
-        request = request.conditionals(request.getConditionals().addIfNoneMatch(new Tag("1234")));
+        request = request.addIfNoneMatch(new Tag("1234"));
         Headers responseHeaders = new Headers();
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
         responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
@@ -208,7 +207,7 @@ public class HTTPCacheTest {
         DateTime dateHeader = new DateTime();
         DateTime lastModified = dateHeader.minusSeconds(2);
         HTTPRequest request = new HTTPRequest(URI.create("foo"));
-        request = request.conditionals(request.getConditionals().ifModifiedSince(lastModified));
+        request = request.withIfModifiedSince(lastModified);
         Headers responseHeaders = new Headers();
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
         responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, dateHeader));
@@ -224,7 +223,7 @@ public class HTTPCacheTest {
     @Test
     public void testExternalConditionalGetWitchDoesNotMatch() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("foo"));
-        request.getConditionals().addIfNoneMatch(new Tag("12345"));
+        request = request.addIfNoneMatch(new Tag("12345"));
         Headers responseHeaders = new Headers();
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
         responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
@@ -239,7 +238,7 @@ public class HTTPCacheTest {
     @Test
     public void testUnconditionalGET() throws IOException {
         HTTPRequest request = new HTTPRequest(REQUEST_URI);
-        request.getConditionals().addIfNoneMatch(Tag.ALL);
+        request = request.addIfNoneMatch(Tag.ALL);
         Headers responseHeaders = new Headers();
         responseHeaders = responseHeaders.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
         responseHeaders = responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
@@ -297,7 +296,7 @@ public class HTTPCacheTest {
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(null, Status.OK, new Headers()));
         HTTPResponse response = cache.execute(request);
         assertFalse(response.hasPayload());
-        assertEquals(0, request.getConditionals().toHeaders().size());
+        assertEquals(0, request.getHeaders().size());
         when(cacheStorage.size()).thenReturn(1);
         assertEquals(1, cacheStorage.size());
         response = doGet(new Headers(), Status.OK, 1);
@@ -321,7 +320,7 @@ public class HTTPCacheTest {
             }
         });
         HTTPResponse response = cache.execute(request);
-        assertEquals("Conditionals was set, incorrect", 0, request.getConditionals().toHeaders().size());        
+        assertEquals("Conditionals was set, incorrect", 0, request.getHeaders().getConditionals().toHeaders().size());
         assertFalse(response.hasPayload());
         response = doGet(new Headers(), Status.OK, 1);
         assertTrue("No payload on get", response.hasPayload());

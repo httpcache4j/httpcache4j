@@ -27,7 +27,6 @@ import java.net.URI;
 /**
  * TODO:
  * Support Warning header http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.46 partly supported now...
- * Support Range headers. http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35
  *
  */
 
@@ -115,7 +114,7 @@ public class HTTPCache {
             boolean shouldUnlock = true;
             try {
                 if (mutex.acquire(request.getRequestURI())) {
-                    response = doRequest(request, force || request.getConditionals().isUnconditional());
+                    response = doRequest(request, force || (request.getHeaders().getCacheControl() != null && request.getHeaders().getCacheControl().isNoStore()));
                 } else {
                     response = new HTTPResponse(null, Status.BAD_GATEWAY, new Headers());
                     shouldUnlock = false;
@@ -176,7 +175,7 @@ public class HTTPCache {
         if (!staleResponse.hasPayload() || staleResponse.getPayload().isAvailable()) {
             return helper.prepareConditionalGETRequest(request, staleResponse);
         }
-        return request.conditionals(new Conditionals());
+        return request.headers(request.getHeaders().withConditionals(new Conditionals()));
     }
 
     private HTTPResponse unconditionalResolve(final HTTPRequest request) {

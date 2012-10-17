@@ -95,11 +95,12 @@ public class MutableRequest {
     }
 
     public HTTPRequest toRequest() {
+        Headers heads = headers.toHeaders().withConditionals(conditionals.toConditionals());
+
         return new HTTPRequest(
                 uri,
                 method,
-                headers.toHeaders(),
-                conditionals.toConditionals(),
+                heads,
                 challenge,
                 payload,
                 new DateTime()
@@ -111,7 +112,7 @@ public class MutableRequest {
                 request.getRequestURI(),
                 request.getMethod(),
                 new MutableHeaders(request.getHeaders()),
-                new MutableConditionals(request.getConditionals())
+                new MutableConditionals(request.getHeaders().getConditionals())
         );
         mutableRequest.setChallenge(request.getChallenge());
         if (request.getMethod().canHavePayload()) {

@@ -16,10 +16,17 @@
 
 package org.codehaus.httpcache4j;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -89,7 +96,7 @@ public final class Conditionals {
      */
     public Conditionals addIfMatch(Tag tag) {
         Preconditions.checkArgument(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_MODIFIED_SINCE));
-        Preconditions.checkArgument(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_NON_MATCH));
+        Preconditions.checkArgument(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_NONE_MATCH));
         List<Tag> match = new ArrayList<Tag>(this.match);
 
         if (tag == null) {
@@ -122,8 +129,8 @@ public final class Conditionals {
      * @return a new Conditionals object with the If-None-Match tag added.
      */
     public Conditionals addIfNoneMatch(Tag tag) {
-        Preconditions.checkArgument(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_UNMODIFIED_SINCE));
-        Preconditions.checkArgument(match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_NON_MATCH, HeaderConstants.IF_MATCH));
+        Preconditions.checkArgument(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_NONE_MATCH, HeaderConstants.IF_UNMODIFIED_SINCE));
+        Preconditions.checkArgument(match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_NONE_MATCH, HeaderConstants.IF_MATCH));
         List<Tag> noneMatch = new ArrayList<Tag>(this.noneMatch);
         if (tag == null) {
             tag = Tag.ALL;
@@ -175,7 +182,7 @@ public final class Conditionals {
      * @return the conditionals with the If-Unmodified-Since date set.
      */
     public Conditionals ifUnModifiedSince(DateTime time) {
-        Preconditions.checkArgument(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_NON_MATCH));
+        Preconditions.checkArgument(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_NONE_MATCH));
         Preconditions.checkArgument(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_MODIFIED_SINCE));
         time = time.toDateTime(DateTimeZone.forID("UTC"));
         time = time.withMillisOfSecond(0);
@@ -203,7 +210,7 @@ public final class Conditionals {
      * @return {@code true} if the Conditionals represents a unconditional request. 
      */
     public boolean isUnconditional() {
-      return noneMatch.contains(Tag.ALL) || match.contains(Tag.ALL);
+      return noneMatch.contains(Tag.ALL) || match.contains(Tag.ALL) || (match.isEmpty() && unModifiedSince == null) || (noneMatch.isEmpty() && modifiedSince == null) ;
     }
 
     /**
@@ -215,26 +222,46 @@ public final class Conditionals {
             headers = headers.add(new Header(HeaderConstants.IF_MATCH, buildTagHeaderValue(getMatch())));
         }
         if (!getNoneMatch().isEmpty()) {
-            headers = headers.add(new Header(HeaderConstants.IF_NON_MATCH, buildTagHeaderValue(getNoneMatch())));
+            headers = headers.add(new Header(HeaderConstants.IF_NONE_MATCH, buildTagHeaderValue(getNoneMatch())));
         }
         if (modifiedSince != null) {
-            headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, modifiedSince));
+            headers = headers.set(HeaderUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, modifiedSince));
         }
         if (unModifiedSince != null) {
-            headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.IF_UNMODIFIED_SINCE, unModifiedSince));
+            headers = headers.set(HeaderUtils.toHttpDate(HeaderConstants.IF_UNMODIFIED_SINCE, unModifiedSince));
         }
 
         return headers;
     }
 
-    private String buildTagHeaderValue(List<Tag> match) {
-        StringBuilder builder = new StringBuilder();
-        for (Tag tag : match) {
-            if (builder.length() > 0) {
-                builder.append(", ");
-            }
-            builder.append(tag.format());
-        }
-        return builder.toString();
+    public static Conditionals valueOf(Headers headers) {
+        ImmutableList<Tag> ifMatch = makeTags(headers.getFirstHeaderValue(HeaderConstants.IF_MATCH));
+        ImmutableList<Tag> ifNoneMatch = makeTags(headers.getFirstHeaderValue(HeaderConstants.IF_NONE_MATCH));
+        DateTime modifiedSince = HeaderUtils.fromHttpDate(headers.getFirstHeader(HeaderConstants.IF_MODIFIED_SINCE));
+        DateTime unModifiedSince = HeaderUtils.fromHttpDate(headers.getFirstHeader(HeaderConstants.IF_UNMODIFIED_SINCE));
+        return new Conditionals(ifMatch, ifNoneMatch, modifiedSince, unModifiedSince);
     }
+
+    private static ImmutableList<Tag> makeTags(String ifMatch) {
+        if (ifMatch == null) {
+            return ImmutableList.of();
+        }
+        return ImmutableList.copyOf(Iterables.transform(Splitter.on(",").omitEmptyStrings().trimResults().split(ifMatch), tagFunction));
+    }
+
+    private String buildTagHeaderValue(List<Tag> match) {
+        return Joiner.on(",").join(Collections2.transform(match, new Function<Tag, String>() {
+            @Override
+            public String apply(Tag input) {
+                return input.format();
+            }
+        }));
+    }
+
+    public static Function<String, Tag> tagFunction = new Function<String, Tag>() {
+        @Override
+        public Tag apply(String input) {
+            return Tag.parse(input);
+        }
+    };
 }

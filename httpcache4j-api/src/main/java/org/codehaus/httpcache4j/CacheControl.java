@@ -16,6 +16,9 @@ public class CacheControl {
     }
 
     public CacheControl(Header header) {
+        if (header == null) {
+            header = new Header(HeaderConstants.CACHE_CONTROL, "");
+        }
         if (!HeaderConstants.CACHE_CONTROL.equalsIgnoreCase(header.getName())) {
             throw new IllegalArgumentException("Not a Cache-Control header");
         }

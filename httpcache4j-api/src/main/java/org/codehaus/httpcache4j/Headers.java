@@ -283,6 +283,14 @@ public final class Headers implements Iterable<Header> {
         return set(HeaderUtils.toHttpDate(HeaderConstants.LAST_MODIFIED, lm));
     }
 
+    public Conditionals getConditionals() {
+        return Conditionals.valueOf(this);
+    }
+
+    public Headers withConditionals(Conditionals conditionals) {
+        return add(conditionals.toHeaders());
+    }
+
     public Tag getETag() {
         Header tag = getFirstHeader(HeaderConstants.ETAG);
         if (tag != null) {

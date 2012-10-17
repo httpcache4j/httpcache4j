@@ -36,7 +36,7 @@ public class HTTPRequestTest {
         HTTPRequest request = new HTTPRequest(REQUEST_URI);
         HTTPRequest request2 = request.addHeader(new Header("foo", "bar"));
         Assert.assertNotSame("Request objects were the same", request, request2);
-        request = request.conditionals(new Conditionals().addIfNoneMatch(Tag.ALL));
+        request = request.addIfNoneMatch(Tag.ALL);
         Assert.assertNotSame("Request objects were the same", request, request2);
         request2 = request.challenge(new UsernamePasswordChallenge("foo", "bar"));
         Assert.assertNotSame("Request objects were the same", request, request2);
@@ -44,11 +44,10 @@ public class HTTPRequestTest {
 
     @Test
     public void testAllHeaders() {
-        Conditionals conditionals = new Conditionals().addIfMatch(new Tag("2345"));
         Headers preferences = new Headers().addAcceptLanguage(Locale.UK).addAccept(MIMEType.valueOf("application/xml"));
         HTTPRequest request = new HTTPRequest(REQUEST_URI);
         request = request.addHeader("X-Foo-Bar", "Foo");
-        request = request.conditionals(conditionals);
+        request = request.addIfMatch(new Tag("2345"));
         request = request.headers(request.getHeaders().add(preferences));
         Headers headers = new Headers().add("X-Foo-Bar", "Foo").add("If-Match", new Tag("2345").format()).add(HeaderConstants.ACCEPT_LANGUAGE, "en-gb").add(HeaderConstants.ACCEPT, "application/xml");
         Assert.assertEquals(headers, request.getAllHeaders());

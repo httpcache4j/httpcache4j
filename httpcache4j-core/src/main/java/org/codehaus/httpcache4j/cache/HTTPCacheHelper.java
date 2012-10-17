@@ -104,7 +104,7 @@ class HTTPCacheHelper {
     }
 
     HTTPRequest prepareConditionalGETRequest(HTTPRequest request, HTTPResponse staleResponse) {
-        Conditionals conditionals = request.getConditionals();
+        Conditionals conditionals = request.getHeaders().getConditionals();
         if (request.getMethod() == HTTPMethod.GET && conditionals.toHeaders().isEmpty()) {
             if (staleResponse.getETag() != null) {
                 conditionals = new Conditionals().addIfNoneMatch(staleResponse.getETag());
@@ -112,7 +112,7 @@ class HTTPCacheHelper {
             else if (staleResponse.getLastModified() != null) {
                 conditionals = conditionals.ifModifiedSince(staleResponse.getLastModified());
             }
-            return request.conditionals(conditionals);
+            return request.headers(request.getHeaders().withConditionals(conditionals));
         }
         return request;
     }
@@ -149,16 +149,16 @@ class HTTPCacheHelper {
     }
 
     HTTPResponse rewriteStaleResponse(HTTPRequest request, HTTPResponse cachedResponse, int age) {
-        return rewriteResponse(request, cachedResponse, true, age);
+        return rewriteResponse(request, cachedResponse, true, age, age < 0);
     }
 
     HTTPResponse rewriteResponse(HTTPRequest request, HTTPResponse cachedResponse, int age) {
-        return rewriteResponse(request, cachedResponse, false, age);
+        return rewriteResponse(request, cachedResponse, false, age, age < 0);
     }
 
-    private HTTPResponse rewriteResponse(HTTPRequest request, HTTPResponse cachedResponse, boolean stale, int age) {
+    private HTTPResponse rewriteResponse(HTTPRequest request, HTTPResponse cachedResponse, boolean stale, int age, boolean hasBeenCached) {
         HTTPResponse response = cachedResponse;
-        Headers headers = response.getHeaders();
+        Headers headers = cachedResponse.getHeaders();
         if (request.getMethod().isSafe()) {
             if (age < 0) {
                 headers = headers.add(cacheHeaderBuilder.createMISSXCacheHeader());
@@ -178,16 +178,16 @@ class HTTPCacheHelper {
             }            
         }
         if (request.getMethod() == HTTPMethod.GET) {
-            List<Tag> noneMatch = request.getConditionals().getNoneMatch();
+            List<Tag> noneMatch = request.getHeaders().getConditionals().getNoneMatch();
             Tag eTag = response.getETag();
-            if (eTag != null && !noneMatch.isEmpty()) {
+            if (eTag != null && !noneMatch.isEmpty() && !hasBeenCached) {
                 if (noneMatch.contains(eTag) || noneMatch.contains(Tag.ALL)) {
                     response = new HTTPResponse(null, Status.NOT_MODIFIED, headers);
                 }
             }
             DateTime lastModified = response.getLastModified();
-            DateTime modifiedSince = request.getConditionals().getModifiedSince();
-            if (lastModified != null && modifiedSince != null) {
+            DateTime modifiedSince = request.getHeaders().getConditionals().getModifiedSince();
+            if (lastModified != null && modifiedSince != null && !hasBeenCached) {
                 if (lastModified.equals(modifiedSince)) {
                     response = new HTTPResponse(null, Status.NOT_MODIFIED, headers);
                 }
