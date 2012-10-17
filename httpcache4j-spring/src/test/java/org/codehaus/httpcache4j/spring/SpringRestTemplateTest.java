@@ -41,7 +41,7 @@ public class SpringRestTemplateTest {
             public HTTPResponse resolve(HTTPRequest request) throws IOException {
                 return new HTTPResponse(
                         new InputStreamPayload(new NullInputStream(1), MIMEType.APPLICATION_OCTET_STREAM), Status.OK,
-                        new Headers().add("Content-Type", MIMEType.APPLICATION_OCTET_STREAM.toString()));
+                        new Headers().withContentType(MIMEType.APPLICATION_OCTET_STREAM));
             }
 
             @Override
