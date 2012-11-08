@@ -31,6 +31,9 @@ public class URIEncoder {
     }
 
     public static String encode(String input, String encoding) {
+        if (input == null) {
+            return null;
+        }
         try {
             return URLEncoder.encode(input, encoding);
         } catch (UnsupportedEncodingException e) {

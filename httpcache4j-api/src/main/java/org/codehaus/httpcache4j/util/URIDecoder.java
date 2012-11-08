@@ -31,6 +31,9 @@ public class URIDecoder {
     }
 
     public static String decode(String input, String encoding) {
+        if (input == null) {
+            return null;
+        }
         try {
             return URLDecoder.decode(input, encoding);
         } catch (UnsupportedEncodingException e) {

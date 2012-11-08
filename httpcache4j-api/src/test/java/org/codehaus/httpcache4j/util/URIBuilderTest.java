@@ -168,6 +168,7 @@ public class URIBuilderTest {
         builder = URIBuilder.empty().scheme("http").host("example.com").noParameters().addParameter("q", URIEncoder.encodeUTF8("$ & < > ? ; # : = , \" ' ~ +"));
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
     }
+
     @Test
     public void testFromExistingURIWithEscapedQueryStringWithPlusSign() {
         URI uri = URI.create("http://example.com?q=a%252Bb");
@@ -175,4 +176,11 @@ public class URIBuilderTest {
         builder = builder.scheme("http").host("example.com").addParameter("q", URIEncoder.encodeUTF8("a+b"));
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
     }    
+
+    @Test
+    public void testFromExistingQueryWithNullValue() {
+        URI uri = URI.create("http://example.com?q=");
+        URIBuilder builder = URIBuilder.empty().scheme("http").host("example.com").addParameter("q", null);
+        Assert.assertEquals("URIs did not match", uri, builder.toURI());
+    }
 }

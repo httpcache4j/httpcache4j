@@ -392,7 +392,9 @@ public final class URIBuilder {
         if (list == null) {
             list = new ArrayList<String>();
         }
-        list.add(value);
+        if (value != null) {
+            list.add(value);
+        }
         map.put(name, list);
     }
 
