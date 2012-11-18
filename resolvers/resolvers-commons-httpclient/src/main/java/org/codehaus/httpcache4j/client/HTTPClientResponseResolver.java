@@ -22,16 +22,20 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.params.HttpClientParams;
 
+import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.apache.commons.httpclient.protocol.Protocol;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.StatusLine;
 import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
+import org.codehaus.httpcache4j.resolver.ConnectionConfiguration;
 import org.codehaus.httpcache4j.resolver.ResolverConfiguration;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Map;
 
 import static org.codehaus.httpcache4j.HTTPMethod.*;
 
@@ -40,6 +44,7 @@ import static org.codehaus.httpcache4j.HTTPMethod.*;
  * <p/>
  * If you need to use SSL, please follow the guide here.
  * http://hc.apache.org/httpclient-3.x/sslguide.html
+ * Note that his disables the built in authentication mechanism.
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
@@ -57,12 +62,34 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         if(params==null) { 
         	params = new HttpClientParams();
         	client.setParams(params);
-        }        
+        }
+        configureConnections(client, configuration);
+        params.setAuthenticationPreemptive(false);
+        client.setState(new HttpState());
         params.setParameter(HttpClientParams.USER_AGENT, getConfiguration().getUserAgent());        
     }
 
+    private void configureConnections(HttpClient client, ResolverConfiguration configuration) {
+        ConnectionConfiguration connectionConfiguration = configuration.getConnectionConfiguration();
+        HttpConnectionManagerParams connectionsParams = client.getHttpConnectionManager().getParams();
+        if (connectionsParams == null) {
+            connectionsParams = new HttpConnectionManagerParams();
+            client.getHttpConnectionManager().setParams(connectionsParams);
+        }
+        connectionsParams.setDefaultMaxConnectionsPerHost(connectionConfiguration.getDefaultConnectionsPerHost());
+        connectionsParams.setMaxTotalConnections(connectionConfiguration.getMaxConnections());
+        connectionsParams.setSoTimeout(connectionConfiguration.getSocketTimeout());
+        connectionsParams.setConnectionTimeout(connectionConfiguration.getTimeout());
+        for (Map.Entry<HTTPHost, Integer> entry : connectionConfiguration.getConnectionsPerHost().entrySet()) {
+            HostConfiguration hostConfig = new HostConfiguration();
+            HTTPHost host = entry.getKey();
+            hostConfig.setHost(new HttpHost(host.getHost(), host.getPort(), Protocol.getProtocol(host.getScheme())));
+            connectionsParams.setMaxConnectionsPerHost(hostConfig, entry.getValue());
+        }
+    }
+
     protected HTTPClientResponseResolver(HttpClient client, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
-        this(client, new ResolverConfiguration(proxyAuthenticator, authenticator));
+        this(client, new ResolverConfiguration(proxyAuthenticator, authenticator, new ConnectionConfiguration()));
     }
 
     public HTTPClientResponseResolver(HttpClient client, ProxyConfiguration configuration) {
@@ -83,8 +110,19 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         this(client, new ProxyConfiguration());
     }
 
+    public static HTTPClientResponseResolver createMultithreadedInstance(ResolverConfiguration configuration) {
+        return new HTTPClientResponseResolver(
+                new HttpClient(new MultiThreadedHttpConnectionManager()),
+                configuration
+        );
+    }
+
+    public static HTTPClientResponseResolver createMultithreadedInstance(ConnectionConfiguration configuration) {
+        return createMultithreadedInstance(new ResolverConfiguration().withConnectionConfiguration(configuration));
+    }
+
     public static HTTPClientResponseResolver createMultithreadedInstance() {
-        return new HTTPClientResponseResolver(new HttpClient(new MultiThreadedHttpConnectionManager()));
+        return createMultithreadedInstance(new ConnectionConfiguration());
     }
 
     public final HttpClient getClient() {

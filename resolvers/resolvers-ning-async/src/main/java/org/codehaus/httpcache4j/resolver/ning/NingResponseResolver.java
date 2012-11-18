@@ -13,6 +13,7 @@ import org.codehaus.httpcache4j.auth.Authenticator;
 import org.codehaus.httpcache4j.auth.ProxyAuthenticator;
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
+import org.codehaus.httpcache4j.resolver.ConnectionConfiguration;
 import org.codehaus.httpcache4j.resolver.ResolverConfiguration;
 
 import java.io.IOException;
@@ -34,8 +35,19 @@ public class NingResponseResolver extends AbstractResponseResolver {
 
     protected NingResponseResolver(ResolverConfiguration configuration, AsyncHttpClientConfig asyncConfig) {
         super(configuration);
-        client = new AsyncHttpClient(new AsyncHttpClientConfig.Builder(Preconditions.checkNotNull(asyncConfig, "Async config may not be null")).
-                setUserAgent(configuration.getUserAgent()).build());
+        AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder(Preconditions.checkNotNull(asyncConfig, "Async config may not be null")).
+                setUserAgent(configuration.getUserAgent());
+        config.setAllowPoolingConnection(true);
+        config.setFollowRedirects(false);
+        ConnectionConfiguration connectionConfiguration = configuration.getConnectionConfiguration();
+        config.setMaximumConnectionsTotal(connectionConfiguration.getMaxConnections());
+        config.setMaximumConnectionsPerHost(connectionConfiguration.getDefaultConnectionsPerHost());
+        config.setConnectionTimeoutInMs(connectionConfiguration.getTimeout());
+        config.setWebSocketIdleTimeoutInMs(connectionConfiguration.getSocketTimeout());
+        if (!connectionConfiguration.getConnectionsPerHost().isEmpty()) {
+            throw new UnsupportedOperationException("This Resolver does not support connections per host");
+        }
+        client = new AsyncHttpClient(config.build());
     }
 
     public NingResponseResolver(ResolverConfiguration configuration) {
@@ -43,7 +55,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
     }
 
     public NingResponseResolver(ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
-        this(new ResolverConfiguration(proxyAuthenticator, authenticator));
+        this(new ResolverConfiguration(proxyAuthenticator, authenticator, new ConnectionConfiguration()));
     }
 
     @Override

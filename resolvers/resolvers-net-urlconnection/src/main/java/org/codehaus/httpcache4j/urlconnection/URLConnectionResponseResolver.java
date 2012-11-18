@@ -23,6 +23,7 @@ import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
 import org.codehaus.httpcache4j.auth.DefaultProxyAuthenticator;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
+import org.codehaus.httpcache4j.resolver.ConnectionConfiguration;
 import org.codehaus.httpcache4j.resolver.ResolverConfiguration;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -38,11 +39,16 @@ import java.util.Map;
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 public class URLConnectionResponseResolver extends AbstractResponseResolver {
-    private final URLConnectionConfigurator configuration;
 
-    public URLConnectionResponseResolver(URLConnectionConfigurator configuration) {
-        super(new ResolverConfiguration(new DefaultProxyAuthenticator(configuration.getProxyConfiguration()), new DefaultAuthenticator()));
-        this.configuration = Preconditions.checkNotNull(configuration, "Configuration may not be null");
+    public URLConnectionResponseResolver(ResolverConfiguration configuration) {
+        super(configuration);
+        if (!configuration.getConnectionConfiguration().getConnectionsPerHost().isEmpty()) {
+            throw new UnsupportedOperationException("This Resolver does not support connections per host");
+        }
+    }
+
+    public URLConnectionResponseResolver(ConnectionConfiguration connectionConfiguration) {
+        this(new ResolverConfiguration(new DefaultProxyAuthenticator(), new DefaultAuthenticator(), connectionConfiguration));
     }
 
     @Override
@@ -126,12 +132,9 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
     }
 
     private void configureConnection(HttpURLConnection connection) {
-        if (configuration.getConnectTimeout() > 0) {
-            connection.setConnectTimeout(configuration.getConnectTimeout());
-        }
-        if (configuration.getReadTimeout() > 0) {
-            connection.setReadTimeout(configuration.getReadTimeout());
-        }
+        ConnectionConfiguration configuration = getConfiguration().getConnectionConfiguration();
+        connection.setConnectTimeout(configuration.getSocketTimeout());
+        connection.setReadTimeout(configuration.getSocketTimeout());
         connection.setAllowUserInteraction(false);
     }
 

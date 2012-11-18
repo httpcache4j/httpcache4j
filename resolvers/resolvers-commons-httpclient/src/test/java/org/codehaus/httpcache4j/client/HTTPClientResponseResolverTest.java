@@ -29,16 +29,25 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class HTTPClientResponseResolverTest {
     private HttpClient httpClient;
-    
+    private MultiThreadedHttpConnectionManager connectionManager;
+
     @Before
     public void init() {
         httpClient = mock(HttpClient.class);
+        connectionManager = new MultiThreadedHttpConnectionManager();
+        when(httpClient.getHttpConnectionManager()).thenReturn(connectionManager);
+    }
+
+    @After
+    public void after() {
+        connectionManager.shutdown();
     }
 
     @Test
