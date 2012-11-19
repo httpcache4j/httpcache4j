@@ -42,6 +42,12 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
 
     public URLConnectionResponseResolver(ResolverConfiguration configuration) {
         super(configuration);
+        if (configuration.getConnectionConfiguration().getMaxConnections().isPresent()) {
+            throw new UnsupportedOperationException("Single Connection only resolver");
+        }
+        if (configuration.getConnectionConfiguration().getDefaultConnectionsPerHost().isPresent()) {
+            throw new UnsupportedOperationException("Single Connection only resolver");
+        }
         if (!configuration.getConnectionConfiguration().getConnectionsPerHost().isEmpty()) {
             throw new UnsupportedOperationException("This Resolver does not support connections per host");
         }
@@ -133,8 +139,12 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
 
     private void configureConnection(HttpURLConnection connection) {
         ConnectionConfiguration configuration = getConfiguration().getConnectionConfiguration();
-        connection.setConnectTimeout(configuration.getSocketTimeout());
-        connection.setReadTimeout(configuration.getSocketTimeout());
+        if (configuration.getSocketTimeout().isPresent()) {
+            connection.setConnectTimeout(configuration.getSocketTimeout().get());
+        }
+        if (configuration.getTimeout().isPresent()) {
+            connection.setReadTimeout(configuration.getTimeout().get());
+        }
         connection.setAllowUserInteraction(false);
     }
 

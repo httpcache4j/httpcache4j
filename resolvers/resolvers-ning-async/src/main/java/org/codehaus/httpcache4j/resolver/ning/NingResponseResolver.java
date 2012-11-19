@@ -39,15 +39,28 @@ public class NingResponseResolver extends AbstractResponseResolver {
                 setUserAgent(configuration.getUserAgent());
         config.setAllowPoolingConnection(true);
         config.setFollowRedirects(false);
-        ConnectionConfiguration connectionConfiguration = configuration.getConnectionConfiguration();
-        config.setMaximumConnectionsTotal(connectionConfiguration.getMaxConnections());
-        config.setMaximumConnectionsPerHost(connectionConfiguration.getDefaultConnectionsPerHost());
-        config.setConnectionTimeoutInMs(connectionConfiguration.getTimeout());
-        config.setWebSocketIdleTimeoutInMs(connectionConfiguration.getSocketTimeout());
+        ConnectionConfiguration connectionConfiguration = configureConnections(configuration, config);
         if (!connectionConfiguration.getConnectionsPerHost().isEmpty()) {
             throw new UnsupportedOperationException("This Resolver does not support connections per host");
         }
         client = new AsyncHttpClient(config.build());
+    }
+
+    private ConnectionConfiguration configureConnections(ResolverConfiguration configuration, AsyncHttpClientConfig.Builder config) {
+        ConnectionConfiguration connectionConfiguration = configuration.getConnectionConfiguration();
+        if (connectionConfiguration.getMaxConnections().isPresent()) {
+            config.setMaximumConnectionsTotal(connectionConfiguration.getMaxConnections().get());
+        }
+        if (connectionConfiguration.getDefaultConnectionsPerHost().isPresent()) {
+            config.setMaximumConnectionsPerHost(connectionConfiguration.getDefaultConnectionsPerHost().get());
+        }
+        if (connectionConfiguration.getTimeout().isPresent()) {
+            config.setConnectionTimeoutInMs(connectionConfiguration.getTimeout().get());
+        }
+        if (connectionConfiguration.getSocketTimeout().isPresent()) {
+            config.setWebSocketIdleTimeoutInMs(connectionConfiguration.getSocketTimeout().get());
+        }
+        return connectionConfiguration;
     }
 
     public NingResponseResolver(ResolverConfiguration configuration) {

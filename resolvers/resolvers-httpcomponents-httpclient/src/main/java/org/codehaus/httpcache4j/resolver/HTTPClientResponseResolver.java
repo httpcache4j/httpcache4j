@@ -78,16 +78,23 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             ClientConnectionManager connectionManager = client.getConnectionManager();
             if (connectionManager instanceof PoolingClientConnectionManager) {
                 PoolingClientConnectionManager cm = (PoolingClientConnectionManager) connectionManager;
-                cm.setDefaultMaxPerRoute(config.getDefaultConnectionsPerHost());
-                cm.setMaxTotal(config.getMaxConnections());
+                if (config.getDefaultConnectionsPerHost().isPresent()) {
+                    cm.setDefaultMaxPerRoute(config.getDefaultConnectionsPerHost().get());
+                }
+                if (config.getMaxConnections().isPresent()) {
+                    cm.setMaxTotal(config.getMaxConnections().get());
+                }
                 for (Map.Entry<HTTPHost, Integer> entry : config.getConnectionsPerHost().entrySet()) {
                     HTTPHost host = entry.getKey();
                     cm.setMaxPerRoute(new HttpRoute(new HttpHost(host.getHost(), host.getPort(), host.getScheme())), entry.getValue());
                 }
             }
-
-            HttpConnectionParams.setSoTimeout(params, config.getSocketTimeout());
-            HttpConnectionParams.setConnectionTimeout(params, config.getTimeout());
+            if (config.getSocketTimeout().isPresent()) {
+                HttpConnectionParams.setSoTimeout(params, config.getSocketTimeout().get());
+            }
+            if (config.getTimeout().isPresent()) {
+                HttpConnectionParams.setConnectionTimeout(params, config.getTimeout().get());
+            }
 
         }
         HttpClientParams.setAuthenticating(params, false);

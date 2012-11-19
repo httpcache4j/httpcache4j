@@ -76,10 +76,18 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             connectionsParams = new HttpConnectionManagerParams();
             client.getHttpConnectionManager().setParams(connectionsParams);
         }
-        connectionsParams.setDefaultMaxConnectionsPerHost(connectionConfiguration.getDefaultConnectionsPerHost());
-        connectionsParams.setMaxTotalConnections(connectionConfiguration.getMaxConnections());
-        connectionsParams.setSoTimeout(connectionConfiguration.getSocketTimeout());
-        connectionsParams.setConnectionTimeout(connectionConfiguration.getTimeout());
+        if (connectionConfiguration.getDefaultConnectionsPerHost().isPresent()) {
+            connectionsParams.setDefaultMaxConnectionsPerHost(connectionConfiguration.getDefaultConnectionsPerHost().get());
+        }
+        if (connectionConfiguration.getMaxConnections().isPresent()) {
+            connectionsParams.setMaxTotalConnections(connectionConfiguration.getMaxConnections().get());
+        }
+        if (connectionConfiguration.getSocketTimeout().isPresent()) {
+            connectionsParams.setSoTimeout(connectionConfiguration.getSocketTimeout().get());
+        }
+        if (connectionConfiguration.getTimeout().isPresent()) {
+            connectionsParams.setConnectionTimeout(connectionConfiguration.getTimeout().get());
+        }
         for (Map.Entry<HTTPHost, Integer> entry : connectionConfiguration.getConnectionsPerHost().entrySet()) {
             HostConfiguration hostConfig = new HostConfiguration();
             HTTPHost host = entry.getKey();

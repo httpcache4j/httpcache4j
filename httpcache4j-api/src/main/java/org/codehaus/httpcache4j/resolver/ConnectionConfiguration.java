@@ -1,5 +1,6 @@
 package org.codehaus.httpcache4j.resolver;
 
+import com.google.common.base.Optional;
 import org.codehaus.httpcache4j.HTTPHost;
 
 import java.util.Collections;
@@ -11,13 +12,13 @@ import java.util.Map;
  * @version $Revision: $
  */
 public class ConnectionConfiguration {
-    private final int timeout;
-    private final int socketTimeout;
-    private final int defaultConnectionsPerHost;
-    private final int maxConnections;
+    private final Optional<Integer> timeout;
+    private final Optional<Integer> socketTimeout;
+    private final Optional<Integer> defaultConnectionsPerHost;
+    private final Optional<Integer> maxConnections;
     private final Map<HTTPHost, Integer> connectionsPerHost = new HashMap<HTTPHost, Integer>();
 
-    public ConnectionConfiguration(int timeout, int socketTimeout, int defaultConnectionsPerHost, int maxConnections, Map<HTTPHost, Integer> connectionsPerHost) {
+    public ConnectionConfiguration(Optional<Integer> timeout, Optional<Integer> socketTimeout, Optional<Integer> defaultConnectionsPerHost, Optional<Integer> maxConnections, Map<HTTPHost, Integer> connectionsPerHost) {
         this.timeout = timeout;
         this.socketTimeout = socketTimeout;
         this.defaultConnectionsPerHost = defaultConnectionsPerHost;
@@ -26,22 +27,22 @@ public class ConnectionConfiguration {
     }
 
     public ConnectionConfiguration() {
-        this(0, 0, 5, 20, Collections.<HTTPHost, Integer>emptyMap());
+        this(Optional.<Integer>absent(), Optional.<Integer>absent(), Optional.<Integer>absent(), Optional.<Integer>absent(), Collections.<HTTPHost, Integer>emptyMap());
     }
 
-    public int getTimeout() {
+    public Optional<Integer> getTimeout() {
         return timeout;
     }
 
-    public int getSocketTimeout() {
+    public Optional<Integer> getSocketTimeout() {
         return socketTimeout;
     }
 
-    public int getDefaultConnectionsPerHost() {
+    public Optional<Integer> getDefaultConnectionsPerHost() {
         return defaultConnectionsPerHost;
     }
 
-    public int getMaxConnections() {
+    public Optional<Integer> getMaxConnections() {
         return maxConnections;
     }
 
@@ -53,45 +54,29 @@ public class ConnectionConfiguration {
      * Mutable builder.
      */
     public static class Builder {
-        private int timeout = 0;
-        private int socketTimeout = 0;
-        private int defaultConnectionPerHost = 5;
-        private int maxConnections = 20;
+        private Optional<Integer> timeout = Optional.absent();
+        private Optional<Integer> socketTimeout = Optional.absent();
+        private Optional<Integer> defaultConnectionPerHost = Optional.absent();
+        private Optional<Integer> maxConnections = Optional.absent();
         private final Map<HTTPHost, Integer> connectionsPerHost = new HashMap<HTTPHost, Integer>();
 
-        public int getTimeout() {
-            return timeout;
-        }
-
         public Builder setTimeout(int timeout) {
-            this.timeout = timeout;
+            this.timeout = Optional.of(timeout);
             return this;
-        }
-
-        public int getSocketTimeout() {
-            return socketTimeout;
         }
 
         public Builder setSocketTimeout(int socketTimeout) {
-            this.socketTimeout = socketTimeout;
+            this.socketTimeout = Optional.of(socketTimeout);
             return this;
-        }
-
-        public int getDefaultConnectionPerHost() {
-            return defaultConnectionPerHost;
         }
 
         public Builder setDefaultConnectionPerHost(int defaultConnectionPerHost) {
-            this.defaultConnectionPerHost = defaultConnectionPerHost;
+            this.defaultConnectionPerHost = Optional.of(defaultConnectionPerHost);
             return this;
         }
 
-        public int getMaxConnections() {
-            return maxConnections;
-        }
-
         public Builder setMaxConnections(int maxConnections) {
-            this.maxConnections = maxConnections;
+            this.maxConnections = Optional.of(maxConnections);
             return this;
         }
 
