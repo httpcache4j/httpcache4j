@@ -112,7 +112,7 @@ public class EhCacheStorage implements CacheStorage {
 
     public CacheItem get(HTTPRequest request) {
         if (httpcache.isSearchable()) {
-            List<Result> results = findMatching(request.getRequestURI(), true);
+            List<Result> results = findMatching(request.getNormalizedURI(), true);
             for (Result result : results) {
                 Key key = (Key) result.getKey();
                 if (key.getVary().matches(request)) {

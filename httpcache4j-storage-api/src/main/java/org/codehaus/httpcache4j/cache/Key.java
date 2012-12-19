@@ -19,6 +19,7 @@ import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
+import org.codehaus.httpcache4j.util.URIBuilder;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -44,11 +45,11 @@ public class Key implements Serializable {
     public static Key create(URI uri, Vary vary) {
         Preconditions.checkNotNull(uri, "URI may not be null");
         Preconditions.checkNotNull(vary, "vary may not be null");
-        return new Key(uri, vary);
+        return new Key(URIBuilder.fromURI(uri).toNormalizedURI(), vary);
     }
 
     public static Key create(HTTPRequest request, HTTPResponse response) {
-        URI uri = request.getRequestURI();
+        URI uri = request.getNormalizedURI();
         return new Key(uri, determineVariation(response.getHeaders(), request.getAllHeaders()));
     }
 
@@ -132,7 +133,7 @@ public class Key implements Serializable {
         URI uri = null;
         Vary vary = null;
         if (properties.containsKey("uri")) {
-            uri = URI.create(properties.getProperty("uri"));
+            uri = URIBuilder.fromURI(URI.create(properties.getProperty("uri"))).toNormalizedURI();
         }
         if (properties.containsKey("vary")) {
             vary = Vary.parse(properties.getProperty("vary"));

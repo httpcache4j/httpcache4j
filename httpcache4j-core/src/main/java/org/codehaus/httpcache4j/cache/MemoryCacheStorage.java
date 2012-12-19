@@ -19,7 +19,6 @@ package org.codehaus.httpcache4j.cache;
 import com.google.common.io.Closeables;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.ByteArrayPayload;
 import org.codehaus.httpcache4j.util.InvalidateOnRemoveLRUHashMap;
@@ -113,7 +112,7 @@ public class MemoryCacheStorage implements CacheStorage {
         try {
             for (Map.Entry<Key, CacheItem> entry : cache.entrySet()) {
                 Key key = entry.getKey();
-                if (request.getRequestURI().equals(key.getURI()) && key.getVary().matches(request)) {
+                if (request.getNormalizedURI().equals(key.getURI()) && key.getVary().matches(request)) {
                     return entry.getValue();
                 }
             }

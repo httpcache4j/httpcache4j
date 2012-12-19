@@ -198,7 +198,7 @@ public class HTTPCache {
         }
         if (resolvedResponse != null) {
             if (!request.getMethod().isSafe() && resolvedResponse.getStatus().getCategory() == Status.Category.SUCCESS) {
-                storage.invalidate(request.getRequestURI());
+                storage.invalidate(request.getNormalizedURI());
             }
 
             boolean updated = false;

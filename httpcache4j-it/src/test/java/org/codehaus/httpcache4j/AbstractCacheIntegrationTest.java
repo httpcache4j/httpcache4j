@@ -210,6 +210,7 @@ public abstract class AbstractCacheIntegrationTest {
     public void GETWithVaryForAccept() {
         HTTPRequest request = new HTTPRequest(baseCustomRequestURI, HTTPMethod.GET).addHeader(HeaderConstants.ACCEPT, "text/plain");
         HTTPResponse response = cache.execute(request);
+        System.out.println("request.getRequestURI() = " + request.getRequestURI());
         assertEquals(Status.OK, response.getStatus());
         assertTrue(MIMEType.valueOf("text/plain").includes(response.getPayload().getMimeType()));
         assertFalse(response.isCached());

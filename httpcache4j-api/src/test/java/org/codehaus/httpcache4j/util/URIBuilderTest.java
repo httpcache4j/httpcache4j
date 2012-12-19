@@ -50,7 +50,7 @@ public class URIBuilderTest {
     public void testBuildPathFromBaseURI() {
         URI base = URI.create("http://www.example.com");
         URI uri = URI.create("http://www.example.com/a/path/here");
-        URIBuilder builder = URIBuilder.fromURI(base).path("a", "path", "here");
+        URIBuilder builder = URIBuilder.fromURI(base).withPath("a", "path", "here");
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
     }
 
@@ -66,7 +66,7 @@ public class URIBuilderTest {
     public void testBuildWithPathToURI() {
         URI uri = URI.create("http://www.example.com/a/path/here");
         URIBuilder builder = URIBuilder.empty();
-        builder = builder.withScheme("http").withHost("www.example.com").path("a", "path", "here");
+        builder = builder.withScheme("http").withHost("www.example.com").withPath("a", "path", "here");
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
     }
 
@@ -190,5 +190,11 @@ public class URIBuilderTest {
         URI uri = URI.create("http://example.com?q=");
         URIBuilder builder = URIBuilder.empty().withScheme("http").withHost("example.com").addParameter("q", null);
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
+    }
+
+    @Test
+    public void uriEndsWithSlashMustBeRetained() {
+        URI uri = URI.create("http://example.com/foo/");
+        Assert.assertEquals("URIs did not match", uri, URIBuilder.fromURI(uri).toURI());
     }
 }

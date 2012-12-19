@@ -19,6 +19,7 @@ package org.codehaus.httpcache4j;
 import com.google.common.base.Preconditions;
 
 import org.codehaus.httpcache4j.payload.Payload;
+import org.codehaus.httpcache4j.util.URIBuilder;
 import org.joda.time.DateTime;
 
 import java.net.URI;
@@ -81,6 +82,10 @@ public final class HTTPRequest {
 
     public URI getRequestURI() {
         return requestURI;
+    }
+
+    public URI getNormalizedURI() {
+        return URIBuilder.fromURI(requestURI).toNormalizedURI();
     }
 
     public Headers getHeaders() {
@@ -186,5 +191,7 @@ public final class HTTPRequest {
         return headers(headers.withConditionals(headers.getConditionals().ifModifiedSince(dt)));
     }
 
-
+    public boolean isSecure() {
+        return "https".equalsIgnoreCase(requestURI.getScheme());
+    }
 }
