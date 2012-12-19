@@ -41,14 +41,6 @@ public class Directives implements Iterable<Directive>, Serializable {
         directives = Collections.emptyMap();
     }
 
-    @Deprecated
-    /**
-     * @deprecated Use {@link DirectivesParser} or {@link org.codehaus.httpcache4j.util.AuthDirectivesParser} instead.
-     */
-    public Directives(String value) {
-        this(DirectivesParser.parse(value));
-    }
-
     public boolean hasDirective(String key) {
         return directives.containsKey(key);
     }
