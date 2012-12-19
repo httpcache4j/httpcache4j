@@ -315,7 +315,7 @@ public final class URIBuilder {
         return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(map), wasPathAbsolute, endsWithSlash);
     }
 
-    private String toPath() {
+    private String toPath(boolean encodepath) {
         if (path.isEmpty()) {
             return null;
         }
@@ -324,7 +324,7 @@ public final class URIBuilder {
             if (builder.length() > 0) {
                 builder.append("/");
             }
-            builder.append(pathElement.getEncodedValue());
+            builder.append(encodepath ? pathElement.getEncodedValue() : pathElement.getValue());
         }
         if ((wasPathAbsolute || host != null) && builder.length() > 1) {
             if (!"/".equals(builder.substring(0, 1))) {
@@ -339,18 +339,21 @@ public final class URIBuilder {
 
     public URI toURI() {
         try {
-            return new URI(scheme, null, host, port, toPath(), toQuery(false), fragment);
+            return new URI(scheme, null, host, port, toPath(true), toQuery(false), fragment);
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    public URI toNormalizedURI() {
+    public URI toNormalizedURI(boolean encodePath) {
         try {
-            return new URI(scheme, null, host, port, toPath(), toQuery(true), fragment).normalize();
+            return new URI(scheme, null, host, port, toPath(encodePath), toQuery(true), fragment).normalize();
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e);
         }
+    }
+    public URI toNormalizedURI() {
+        return toNormalizedURI(false);
     }
 
     /**
@@ -363,7 +366,7 @@ public final class URIBuilder {
     public URI toAbsoluteURI() {
         if (isRelative()) {
             try {
-                String path = toPath();
+                String path = toPath(true);
                 if (!path.startsWith("/")) {
                     path = "/" + path;
                 }
@@ -468,7 +471,7 @@ public final class URIBuilder {
     }
 
     public String getCurrentPath() {
-        return toPath();
+        return toPath(false);
     }
 
     public String getFragment() {

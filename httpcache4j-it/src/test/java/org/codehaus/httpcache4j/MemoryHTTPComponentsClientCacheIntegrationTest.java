@@ -15,19 +15,13 @@
 
 package org.codehaus.httpcache4j;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.codehaus.httpcache4j.cache.CacheStorage;
 import org.codehaus.httpcache4j.cache.MemoryCacheStorage;
-import org.codehaus.httpcache4j.client.HTTPClientResponseResolver;
+import org.codehaus.httpcache4j.resolver.HTTPClientResponseResolver;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
 
-/**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
- * @version $Revision: $
- */
-public class MemoryHTTPComponentsCacheIntegrationTest extends AbstractCacheIntegrationTest {
+public class MemoryHTTPComponentsClientCacheIntegrationTest extends AbstractCacheIntegrationTest {
 
     @Override
     protected CacheStorage createStorage() {
