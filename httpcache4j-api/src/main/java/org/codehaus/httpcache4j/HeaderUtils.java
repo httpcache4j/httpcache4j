@@ -51,12 +51,14 @@ public final class HeaderUtils {
         if ("0".equals(header.getValue().trim())) {
             return new DateTime(1970, 1, 1, 0, 0, 0, 0).withZone(DateTimeZone.forID("UTC"));
         }
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(PATTERN_RFC1123).
-                withZone(DateTimeZone.forID("UTC")).
-                withLocale(Locale.US);
+        return parseGMTString(header.getValue());
+    }
+
+    public static DateTime parseGMTString(String value) {
+        DateTimeFormatter formatter = getFormatter();
         DateTime formattedDate = null;
         try {
-            formattedDate = formatter.parseDateTime(header.getValue());
+            formattedDate = formatter.parseDateTime(value);
         } catch (IllegalArgumentException ignore) {
         }
 
@@ -65,10 +67,18 @@ public final class HeaderUtils {
 
 
     public static Header toHttpDate(String headerName, DateTime time) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(PATTERN_RFC1123).
+        return new Header(headerName, toGMTString(time));
+    }
+
+    public static String toGMTString(DateTime time) {
+        DateTimeFormatter formatter = getFormatter();
+        return formatter.print(time);
+    }
+
+    private static DateTimeFormatter getFormatter() {
+        return DateTimeFormat.forPattern(PATTERN_RFC1123).
                 withZone(DateTimeZone.forID("UTC")).
                 withLocale(Locale.US);
-        return new Header(headerName, formatter.print(time));
     }
 
     public static long getHeaderAsDate(Header header) {
