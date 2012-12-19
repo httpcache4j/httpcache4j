@@ -59,7 +59,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
 
     @Override
     protected HTTPResponse resolveImpl(HTTPRequest request) throws IOException {
-        URL url = request.getRequestURI().toURL();
+        URL url = request.getNormalizedURI().toURL();
         URLConnection openConnection = url.openConnection();
         if (openConnection instanceof HttpsURLConnection) {
             HttpsURLConnection connection = (HttpsURLConnection) openConnection;

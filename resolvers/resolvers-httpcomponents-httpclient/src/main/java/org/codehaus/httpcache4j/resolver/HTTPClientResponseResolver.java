@@ -64,16 +64,15 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
         HTTPHost proxyHost = getProxyAuthenticator().getConfiguration().getHost();
         HttpParams params = httpClient.getParams();
-        if(params==null) {
-        	params = new BasicHttpParams();
-        	if(httpClient instanceof DefaultHttpClient) {
-        		((DefaultHttpClient)httpClient).setParams(params);
-        	}
+        if (params == null) {
+            params = new BasicHttpParams();
+            if (httpClient instanceof AbstractHttpClient) {
+                ((AbstractHttpClient) httpClient).setParams(params);
+            }
         }
         if (httpClient instanceof AbstractHttpClient) {
             ConnectionConfiguration config = configuration.getConnectionConfiguration();
             AbstractHttpClient client = (AbstractHttpClient) httpClient;
-            client.setRedirectStrategy(new DoNotRedirectStrategy());
             client.getCredentialsProvider().clear();
             ClientConnectionManager connectionManager = client.getConnectionManager();
             if (connectionManager instanceof PoolingClientConnectionManager) {
@@ -98,7 +97,6 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
         }
         HttpClientParams.setAuthenticating(params, false);
-        HttpClientParams.setRedirecting(params, false);
         if (proxyHost != null) {
             HttpHost host = new HttpHost(proxyHost.getHost(), proxyHost.getPort(), proxyHost.getScheme());
             params.setParameter(ConnRoutePNames.DEFAULT_PROXY, host);
@@ -151,7 +149,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     }
 
     private HttpUriRequest convertRequest(HTTPRequest request) {
-        HttpUriRequest realRequest = getMethod(request.getMethod(), request.getRequestURI());
+        HttpUriRequest realRequest = getMethod(request.getMethod(), request.getNormalizedURI());
 
         Headers headers = request.getAllHeaders();
         for (Header header : headers) {
@@ -270,16 +268,4 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         }
 
     }
-    private static class DoNotRedirectStrategy implements RedirectStrategy {
-        @Override
-        public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context) throws ProtocolException {
-            return false;
-        }
-
-        @Override
-        public HttpUriRequest getRedirect(HttpRequest request, HttpResponse response, HttpContext context) throws ProtocolException {
-            return (HttpUriRequest) request;
-        }
-    }
-
 }

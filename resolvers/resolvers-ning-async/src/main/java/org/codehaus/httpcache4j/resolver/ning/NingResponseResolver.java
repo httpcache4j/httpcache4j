@@ -71,6 +71,18 @@ public class NingResponseResolver extends AbstractResponseResolver {
         this(new ResolverConfiguration(proxyAuthenticator, authenticator, new ConnectionConfiguration()));
     }
 
+    public static NingResponseResolver newInstance(ResolverConfiguration configuration) {
+        return new NingResponseResolver(configuration);
+    }
+
+    public static NingResponseResolver newInstance(ConnectionConfiguration configuration) {
+        return newInstance(new ResolverConfiguration().withConnectionConfiguration(configuration));
+    }
+
+    public static NingResponseResolver newInstance() {
+        return newInstance(new ConnectionConfiguration());
+    }
+
     @Override
     protected HTTPResponse resolveImpl(HTTPRequest request) throws IOException {
         Future<Response> responseFuture = execute(request);
@@ -104,7 +116,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
     }
 
     private Future<Response> execute(final HTTPRequest request) throws IOException {
-        AsyncHttpClient.BoundRequestBuilder builder = builder(request.getRequestURI(), request.getMethod());
+        AsyncHttpClient.BoundRequestBuilder builder = builder(request.getNormalizedURI(), request.getMethod());
         if (request.getMethod().canHavePayload() && request.hasPayload()) {
             if (getConfiguration().isUseChunked()) {
                 builder.setBody(new InputStreamBodyGenerator(request.getPayload().getInputStream()));

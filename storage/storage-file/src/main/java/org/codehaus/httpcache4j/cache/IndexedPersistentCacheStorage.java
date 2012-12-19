@@ -68,7 +68,7 @@ public class IndexedPersistentCacheStorage implements CacheStorage, RemovalListe
         Set<Key> filtered = Sets.filter(keys, new Predicate<Key>() {
             @Override
             public boolean apply(Key input) {
-                if (input.getURI().equals(request.getRequestURI())) {
+                if (input.getURI().equals(request.getNormalizedURI())) {
                     return input.getVary().matches(request);
                 }
                 return false;

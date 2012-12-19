@@ -135,7 +135,7 @@ public class PersistentCacheStorage2 implements CacheStorage {
     }
 
     synchronized Pair<Key, CacheItem> getItem(HTTPRequest request) {
-        File uri = fileManager.resolve(request.getRequestURI());
+        File uri = fileManager.resolve(request.getNormalizedURI());
         File[] files = uri.listFiles((FileFilter) new SuffixFileFilter("metadata"));
         for (File file : new FilesIterable(files)) {
             Pair<Key, CacheItem> pair = readItem(file);

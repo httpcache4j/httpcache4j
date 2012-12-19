@@ -146,7 +146,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     }
 
     private HttpMethod convertRequest(HTTPRequest request) throws IOException {
-        URI requestURI = request.getRequestURI();
+        URI requestURI = request.getNormalizedURI();
         HttpMethod method = getMethod(request.getMethod(), requestURI);
         Headers requestHeaders = request.getAllHeaders();
         addHeaders(requestHeaders, method);
@@ -209,28 +209,12 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
      * @param requestURI the request URI.
      * @return a new HttpMethod subclass.
      */
-    protected HttpMethod getMethod(HTTPMethod method, URI requestURI) {
-        if (CONNECT.equals(method)) {
-            HostConfiguration config = new HostConfiguration();
-            config.setHost(requestURI.getHost(), requestURI.getPort(), requestURI.getScheme());
-            return new ConnectMethod(config);
-        } else if (DELETE.equals(method)) {
-            return new DeleteMethod(requestURI.toString());
-        } else if (GET.equals(method)) {
-            return new GetMethod(requestURI.toString());
-        } else if (HEAD.equals(method)) {
-            return new HeadMethod(requestURI.toString());
-        } else if (OPTIONS.equals(method)) {
-            return new OptionsMethod(requestURI.toString());
-        } else if (POST.equals(method)) {
-            return new PostMethod(requestURI.toString());
-        } else if (PUT.equals(method)) {
-            return new PutMethod(requestURI.toString());
-        } else if (TRACE.equals(method)) {
-            return new TraceMethod(requestURI.toString());
+    protected HttpMethod getMethod(final HTTPMethod method, URI requestURI) {
+        if (method.canHavePayload()) {
+            return new MethodWithBody(method, requestURI);
         } else {
-            throw new IllegalArgumentException("Cannot handle method: " + method);
-        }
+            return new Method(method, requestURI);
+         }
     }
 
     public void shutdown() {
@@ -254,4 +238,32 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         }
     }
 
+    private static class MethodWithBody extends EntityEnclosingMethod {
+        private final HTTPMethod method;
+
+        public MethodWithBody(HTTPMethod method, URI uri) {
+            super(uri.toString());
+            this.method = method;
+        }
+
+        @Override
+        public String getName() {
+            return method.getMethod();
+        }
+    }
+
+    private static class Method extends HttpMethodBase {
+        private final HTTPMethod method;
+
+        public Method(HTTPMethod method, URI uri) {
+            super(uri.toString());
+            this.method = method;
+            setFollowRedirects(GET == method);
+        }
+
+        @Override
+        public String getName() {
+            return method.getMethod();
+        }
+    }
 }
