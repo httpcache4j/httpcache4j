@@ -140,6 +140,29 @@ public class MutexTest {
         thread2.join();
     }
 
+    @Test(timeout = 5000)
+    public void testTiming() throws Exception {
+        Thread[] threads = new Thread[]{
+                new TimingThread("URI1", 100, 1100),
+                new TimingThread("URI2", 200, 1200),
+                new TimingThread("URI3", 300, 1300),
+                new TimingThread("URI2", 400, 1400),
+                new TimingThread("URI3", 500, 1500),
+                new TimingThread("URI1", 600, 1600),
+                new TimingThread("URI2", 700, 1700),
+                new TimingThread("URI3", 800, 1800),
+                new TimingThread("URI1", 900, 1900),
+        };
+        for (Thread thread : threads) {
+            thread.start();
+        }
+        for (Thread thread : threads) {
+            thread.join();
+        }
+    }
+
+
+
     private List<Thread> testWithRunnables(final Runnable worker, URI uri) throws InterruptedException {
         List<Thread> threads = new ArrayList<Thread>();
         final DoTheThingSlowly runnable = new DoTheThingSlowly(uri);
@@ -208,6 +231,43 @@ public class MutexTest {
                 Thread.currentThread().interrupt();
             } finally {
                 mutex.release(URI.create(uri));
+            }
+        }
+    }
+
+
+    private class TimingThread extends Thread {
+        private final URI uri;
+        private final long initialDelay;
+        private final long lockDelay;
+
+        private TimingThread(String uri, long initialDelay, long lockDelay) {
+            this.uri = URI.create(uri);
+            this.initialDelay = initialDelay;
+            this.lockDelay = lockDelay;
+        }
+
+        @Override
+        public void run() {
+            if (!delay(initialDelay)) {
+                return;
+            }
+            if (!mutex.acquire(uri)) {
+                return;
+            }
+            try {
+                delay(lockDelay);
+            } finally {
+                mutex.release(uri);
+            }
+        }
+
+        private boolean delay(final long pTime) {
+            try {
+                sleep(pTime);
+                return true;
+            } catch (InterruptedException ignore) {
+                return false;
             }
         }
     }

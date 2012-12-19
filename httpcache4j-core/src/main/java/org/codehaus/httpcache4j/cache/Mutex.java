@@ -76,7 +76,7 @@ class Mutex<T> {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(String.format("Removing %s from locks", object));
                 }
-                condition.signal();
+                condition.signalAll();
             }
 
         } finally {
