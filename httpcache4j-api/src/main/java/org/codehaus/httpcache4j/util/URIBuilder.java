@@ -16,13 +16,17 @@
 package org.codehaus.httpcache4j.util;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.codehaus.httpcache4j.Parameter;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.Collator;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Immutable URI builder.
@@ -35,6 +39,8 @@ import java.util.*;
  * @version $Revision: $
  */
 public final class URIBuilder {
+    public static AtomicReference<URISchemeDefaults> schemeDefaults = new AtomicReference<URISchemeDefaults>(new URISchemeDefaults());
+
     private final String scheme;
     private final String host;
     private final int port;
@@ -58,7 +64,50 @@ public final class URIBuilder {
      * @param scheme the scheme
      * @return a new URIBuilder with the new scheme set.
      */
+    @Deprecated
     public URIBuilder scheme(String scheme) {        
+        return withScheme(scheme);
+    }
+
+    @Deprecated
+    public URIBuilder host(String host) {
+        return withHost(host);
+    }
+
+    public URIBuilder withHost(String host) {
+        return new URIBuilder(scheme, host, port, path, fragment, parameters, wasPathAbsolute);
+    }
+
+    /**
+     * Sets the port. This is not required to set if you are using default ports for 'http' or 'https'
+     * @param port the port to set
+     * @return a new URIBuilder with the port set
+     */
+    @Deprecated
+    public URIBuilder port(int port) {
+        return withPort(port);
+    }
+
+    /**
+     * Sets the port. This is not required to set if you are using default ports for 'http' or 'https'
+     * @param port the port to set
+     * @return a new URIBuilder with the port set
+     */
+    public URIBuilder withPort(int port) {
+        Optional<Integer> defaultPort = schemeDefaults.get().getPort(scheme);
+        if (defaultPort.isPresent() && (port == defaultPort.get())) {
+            port = -1;
+        }
+        return new URIBuilder(scheme, host, port, path, fragment, parameters, wasPathAbsolute);
+    }
+
+
+    /**
+     * This is the scheme to use. Usually 'http' or 'https'.
+     * @param scheme the scheme
+     * @return a new URIBuilder with the new scheme set.
+     */
+    public URIBuilder withScheme(String scheme) {
         return new URIBuilder(scheme, host, port, path, fragment, parameters, wasPathAbsolute);
     }
 
@@ -109,20 +158,19 @@ public final class URIBuilder {
      * @param path path elements.
      * @return a new URI builder which contains the new path.
      */
+    @Deprecated
     public URIBuilder path(String... path) {
-        return path(Arrays.asList(path));
+        return withPath(Arrays.asList(path));
     }
-    
+
     /**
      * @see #path(java.util.List)
      *
      * @param path path elements.
      * @return a new URI builder which contains the new path.
      */
-    public URIBuilder rawPath(String path) {
-        boolean pathAbsoulute = path.startsWith("/");
-        List<Path> parts = toPathParts(path);
-        return pathInternal(parts, pathAbsoulute);
+    public URIBuilder withPath(String... path) {
+        return withPath(Arrays.asList(path));
     }
 
     /**
@@ -133,35 +181,57 @@ public final class URIBuilder {
      * @param pathList path elements.
      * @return a new URI builder which contains the new path.
      */
+    @Deprecated
     public URIBuilder path(List<String> pathList) {
+       return withPath(pathList);
+    }
+
+    /**
+     * Sets the path of the uri.
+     * We do not expect the path separator '/' to appear here, as each element will be URLEncoded.
+     * If the '/' character do appear it will be URLEncoded with the rest of the path.
+     *
+     * @param pathList path elements.
+     * @return a new URI builder which contains the new path.
+     */
+    public URIBuilder withPath(List<String> pathList) {
         List<Path> paths = Lists.transform(pathList, stringToPath);
         return pathInternal(paths, false);
+    }
+
+    /**
+     * @see #path(java.util.List)
+     *
+     * @param path path elements.
+     * @return a new URI builder which contains the new path.
+     */
+    @Deprecated
+    public URIBuilder rawPath(String path) {
+        return withRawPath(path);
+    }
+
+    /**
+     * @see #path(java.util.List)
+     *
+     * @param path path elements.
+     * @return a new URI builder which contains the new path.
+     */
+    public URIBuilder withRawPath(String path) {
+        boolean pathAbsoulute = path.startsWith("/");
+        List<Path> parts = toPathParts(path);
+        return pathInternal(parts, pathAbsoulute);
     }
 
     private URIBuilder pathInternal(List<Path> pathList, boolean pathAbsolute) {
         return new URIBuilder(scheme, host, port, ImmutableList.copyOf(pathList), fragment, parameters, pathAbsolute);
     }
 
-    public URIBuilder host(String host) {
-        return new URIBuilder(scheme, host, port, path, fragment, parameters, wasPathAbsolute);
-    }
-
-    /**
-     * Sets the port. This is not required to set if you are using default ports for 'http' or 'https'
-     * @param port the port to set
-     * @return a new URIBuilder with the port set
-     */
-    public URIBuilder port(int port) {
-        if ("http".equals(scheme) && port == 80) {
-            port = -1;
-        }
-        else if ("https".equals(scheme) && port == 443) {
-            port = -1;
-        }
-        return new URIBuilder(scheme, host, port, path, fragment, parameters, wasPathAbsolute);
-    }
-
+    @Deprecated
     public URIBuilder fragment(String fragment) {
+        return withFragment(fragment);
+    }
+
+    public URIBuilder withFragment(String fragment) {
         return new URIBuilder(scheme, host, port, path, fragment, parameters, wasPathAbsolute);
     }
 
@@ -170,7 +240,18 @@ public final class URIBuilder {
      * @return new URIBuilder with no parameters.
      */
     public URIBuilder noParameters() {
-        return parameters(Collections.<Parameter>emptyList());
+        return withParameters(Collections.<Parameter>emptyList());
+    }
+
+    /**
+     * Sets a list of parameters. This will clear out all previously set parameters in the new instance.
+     * @param parameters the list of parameters
+     * @return new URIBuilder with parameters.
+     * @deprecated use #withParameters instead
+     */
+    @Deprecated
+    public URIBuilder parameters(List<Parameter> parameters) {
+        return withParameters(parameters);
     }
 
     /**
@@ -178,7 +259,7 @@ public final class URIBuilder {
      * @param parameters the list of parameters
      * @return new URIBuilder with parameters.
      */
-    public URIBuilder parameters(List<Parameter> parameters) {
+    public URIBuilder withParameters(List<Parameter> parameters) {
         Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>();
         for (Parameter parameter : parameters) {
             addToQueryMap(paraMap, parameter.getName(), parameter.getValue());
@@ -195,19 +276,6 @@ public final class URIBuilder {
     public URIBuilder addParameter(String name, String value) {
         return addParameter(new Parameter(name, value));
     }
-    
-    public URIBuilder removeParameters(String name) {
-        Map<String, List<String>> map = new HashMap<String, List<String>>(this.parameters);
-        map.remove(name);
-        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(map), wasPathAbsolute);
-    }
-    
-    public URIBuilder replaceParameter(String name, String value) {
-        Map<String, List<String>> map = new HashMap<String, List<String>>(this.parameters);
-        map.remove(name);
-        addToQueryMap(map, name, value);
-        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(map), wasPathAbsolute);
-    }
 
     /**
      * Adds a new Parameter to the collection of parameters
@@ -215,9 +283,32 @@ public final class URIBuilder {
      * @return a new instance of the URIBuilder
      */
     public URIBuilder addParameter(Parameter parameter) {
-        Map<String, List<String>> parameters = new LinkedHashMap<String, List<String>>(this.parameters);
-        addToQueryMap(parameters, parameter.getName(), parameter.getValue());
-        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(parameters), wasPathAbsolute);
+        return addParameters(Arrays.asList(parameter));
+    }
+
+    /**
+     * Adds Parameters to the collection of parameters
+     * @return a new instance of the URIBuilder
+     */
+    public URIBuilder addParameters(List<Parameter> parameters) {
+        Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>(this.parameters);
+        for (Parameter parameter : parameters) {
+            addToQueryMap(paraMap, parameter.getName(), parameter.getValue());
+        }
+        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute);
+    }
+
+    public URIBuilder removeParameters(String name) {
+        Map<String, List<String>> map = new HashMap<String, List<String>>(this.parameters);
+        map.remove(name);
+        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(map), wasPathAbsolute);
+    }
+
+    public URIBuilder replaceParameter(String name, String value) {
+        Map<String, List<String>> map = new HashMap<String, List<String>>(this.parameters);
+        map.remove(name);
+        addToQueryMap(map, name, value);
+        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(map), wasPathAbsolute);
     }
 
     private String toPath() {
@@ -241,7 +332,15 @@ public final class URIBuilder {
 
     public URI toURI() {
         try {
-            return new URI(scheme, null, host, port, toPath(), toQuery(), fragment);
+            return new URI(scheme, null, host, port, toPath(), toQuery(false), fragment);
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public URI toNormalizedURI() {
+        try {
+            return new URI(scheme, null, host, port, toPath(), toQuery(true), fragment).normalize();
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e);
         }
@@ -261,7 +360,7 @@ public final class URIBuilder {
                 if (!path.startsWith("/")) {
                     path = "/" + path;
                 }
-                return new URI(null, null, null, -1, path, toQuery(), fragment);
+                return new URI(null, null, null, -1, path, toQuery(false), fragment);
             } catch (URISyntaxException e) {
                 throw new IllegalStateException(e);
             }
@@ -269,9 +368,18 @@ public final class URIBuilder {
         return toURI();
     }
 
-    private String toQuery() {
+    private String toQuery(boolean sort) {
         StringBuilder builder = new StringBuilder();
-        for (Parameter parameter : getParametersAsList()) {
+        List<Parameter> params = getParametersAsList();
+        if (sort) {
+            Collections.sort(params, new Comparator<Parameter>() {
+                @Override
+                public int compare(Parameter o1, Parameter o2) {
+                    return Collator.getInstance(Locale.getDefault()).compare(o1.getName(), o2.getName());
+                }
+            });
+        }
+        for (Parameter parameter : params) {
             if (builder.length() > 0) {
                 builder.append("&");
             }
@@ -363,10 +471,10 @@ public final class URIBuilder {
         return Collections.unmodifiableList(getParametersAsList());
     }
 
-    private static Map<String, List<String>> toQueryMap(String query) {
+    public static Map<String, List<String>> toQueryMap(String query) {
         Map<String, List<String>> map = new LinkedHashMap<String, List<String>>();
         if (query != null) {
-            String[] parts = query.split("&");
+            Iterable<String> parts = Splitter.on("&").omitEmptyStrings().trimResults().split(query);
             for (String part : parts) {
                 String[] equalParts = part.split("=");
                 String name = null;

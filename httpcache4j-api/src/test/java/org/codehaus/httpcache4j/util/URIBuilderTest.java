@@ -58,7 +58,7 @@ public class URIBuilderTest {
     public void testBuildToBaseURI() {
         URI base = URI.create("http://www.example.com");
         URIBuilder builder = URIBuilder.empty();
-        builder = builder.scheme("http").host("www.example.com");
+        builder = builder.withScheme("http").withHost("www.example.com");
         Assert.assertEquals("URIs did not match", base, builder.toURI());
     }
 
@@ -66,7 +66,7 @@ public class URIBuilderTest {
     public void testBuildWithPathToURI() {
         URI uri = URI.create("http://www.example.com/a/path/here");
         URIBuilder builder = URIBuilder.empty();
-        builder = builder.scheme("http").host("www.example.com").path("a", "path", "here");
+        builder = builder.withScheme("http").withHost("www.example.com").path("a", "path", "here");
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
     }
 
@@ -74,15 +74,23 @@ public class URIBuilderTest {
     public void testBuildWithQueryParameters() {
         URI uri = URI.create("http://www.example.com/a/path/here?foo=bar&bar=foo");
         URIBuilder builder = URIBuilder.empty();
-        builder = builder.scheme("http").host("www.example.com").path("a", "path", "here").addParameter("foo", "bar").addParameter("bar", "foo");
+        builder = builder.withScheme("http").withHost("www.example.com").withPath("a", "path", "here").addParameter("foo", "bar").addParameter("bar", "foo");
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
+    }
+
+    @Test
+    public void testNormalizedBuildWithQueryParameters() {
+        URI uri = URI.create("http://www.example.com/a/path/here?bar=foo&foo=bar");
+        URIBuilder builder = URIBuilder.empty();
+        builder = builder.withScheme("http").withHost("www.example.com").withPath("a", "path", "here").addParameter("foo", "bar").addParameter("bar", "foo");
+        Assert.assertEquals("URIs did not match", uri, builder.toNormalizedURI());
     }
 
     @Test
     public void testFromURIThenResetAndBuildWithQueryParameters() {
         URI uri = URI.create("http://www.example.com/a/path/here?foo=bar&bar=foo");
         URIBuilder builder = URIBuilder.fromURI(uri);
-        builder = builder.scheme("http").host("www.example.com").path("a", "path", "here").noParameters().addParameter("foo", "bar").addParameter("bar", "foo");
+        builder = builder.withScheme("http").withHost("www.example.com").withPath("a", "path", "here").noParameters().addParameter("foo", "bar").addParameter("bar", "foo");
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
     }
 
@@ -97,7 +105,7 @@ public class URIBuilderTest {
     public void testBuildRelativeURI() {
         URI uri = URI.create("/a/relative/PATH");
         URIBuilder builder = URIBuilder.empty();
-        builder = builder.path("a", "relative", "PATH");
+        builder = builder.withPath("a", "relative", "PATH");
         Assert.assertTrue(builder.isRelative());
         Assert.assertEquals("URIs did not match", uri, builder.toAbsoluteURI());
     }
@@ -106,7 +114,7 @@ public class URIBuilderTest {
     public void testBuildRelativeURIWithMultiplePathInvocations() {
         URI uri = URI.create("/PATH");
         URIBuilder builder = URIBuilder.empty();
-        builder = builder.path("a").path("relative").path("PATH");
+        builder = builder.withPath("a").withPath("relative").withPath("PATH");
         Assert.assertTrue(builder.isRelative());
         Assert.assertEquals("URIs did not match", uri, builder.toAbsoluteURI());
     }
@@ -135,7 +143,7 @@ public class URIBuilderTest {
     public void testRawPath() {
         URI uri = URI.create("/PATH/boo/foo");
         URIBuilder builder = URIBuilder.empty();
-        builder = builder.rawPath("/PATH/boo/foo");
+        builder = builder.withRawPath("/PATH/boo/foo");
         Assert.assertTrue(builder.isRelative());
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
     }
@@ -144,7 +152,7 @@ public class URIBuilderTest {
     public void testBuildRelativeURIWithoutStartingSlash() {
         URI uri = URI.create("a/relative/PATH");
         URIBuilder builder = URIBuilder.empty();
-        builder = builder.path("a", "relative", "PATH");
+        builder = builder.withPath("a", "relative", "PATH");
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
     }
 
@@ -162,10 +170,10 @@ public class URIBuilderTest {
     public void testFromExistingURIWithEscapedQueryString() {
         URI uri = URI.create("http://example.com?q=A+Testing+Escaped");
         URIBuilder builder = URIBuilder.empty();
-        builder = builder.scheme("http").host("example.com").addParameter("q", "A+Testing+Escaped");
+        builder = builder.withScheme("http").withHost("example.com").addParameter("q", "A+Testing+Escaped");
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
         uri = URI.create("http://example.com?q=%2524+%2526+%253C+%253E+%253F+%253B+%2523+%253A+%253D+%252C+%2522+%2527+%257E+%252B");
-        builder = URIBuilder.empty().scheme("http").host("example.com").noParameters().addParameter("q", URIEncoder.encodeUTF8("$ & < > ? ; # : = , \" ' ~ +"));
+        builder = URIBuilder.empty().withScheme("http").withHost("example.com").noParameters().addParameter("q", URIEncoder.encodeUTF8("$ & < > ? ; # : = , \" ' ~ +"));
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
     }
 
@@ -173,14 +181,14 @@ public class URIBuilderTest {
     public void testFromExistingURIWithEscapedQueryStringWithPlusSign() {
         URI uri = URI.create("http://example.com?q=a%252Bb");
         URIBuilder builder = URIBuilder.empty();
-        builder = builder.scheme("http").host("example.com").addParameter("q", URIEncoder.encodeUTF8("a+b"));
+        builder = builder.withScheme("http").withHost("example.com").addParameter("q", URIEncoder.encodeUTF8("a+b"));
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
     }    
 
     @Test
     public void testFromExistingQueryWithNullValue() {
         URI uri = URI.create("http://example.com?q=");
-        URIBuilder builder = URIBuilder.empty().scheme("http").host("example.com").addParameter("q", null);
+        URIBuilder builder = URIBuilder.empty().withScheme("http").withHost("example.com").addParameter("q", null);
         Assert.assertEquals("URIs did not match", uri, builder.toURI());
     }
 }
