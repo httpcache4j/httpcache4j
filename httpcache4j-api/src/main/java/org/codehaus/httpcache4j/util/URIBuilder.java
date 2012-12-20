@@ -272,7 +272,7 @@ public final class URIBuilder {
     }
 
     public URIBuilder withParameters(Map<String, List<String>> params) {
-        Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>(this.parameters);
+        Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>();
         paraMap.putAll(params);
 
         return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute, endsWithSlash);
