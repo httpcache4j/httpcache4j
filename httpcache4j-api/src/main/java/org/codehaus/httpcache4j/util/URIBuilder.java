@@ -268,6 +268,13 @@ public final class URIBuilder {
         for (Parameter parameter : parameters) {
             addToQueryMap(paraMap, parameter.getName(), parameter.getValue());
         }
+        return withParameters(paraMap);
+    }
+
+    public URIBuilder withParameters(Map<String, List<String>> params) {
+        Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>(this.parameters);
+        paraMap.putAll(params);
+
         return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute, endsWithSlash);
     }
 
