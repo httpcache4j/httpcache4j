@@ -302,6 +302,13 @@ public final class URIBuilder {
         return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute, endsWithSlash);
     }
 
+    public URIBuilder addParameters(Map<String, List<String>> params) {
+        Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>(this.parameters);
+        paraMap.putAll(params);
+
+        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute, endsWithSlash);
+    }
+
     public URIBuilder removeParameters(String name) {
         Map<String, List<String>> map = new HashMap<String, List<String>>(this.parameters);
         map.remove(name);
