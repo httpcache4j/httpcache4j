@@ -244,7 +244,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         public MethodWithBody(HTTPMethod method, URI uri) {
             super(uri.toString());
             if (!method.canHavePayload()) {
-                throw new IllegalArgumentException("Wrong method created for " + method.getMethod())
+                throw new IllegalArgumentException("Wrong method created for " + method.getMethod());
             }
             this.method = method;
         }
