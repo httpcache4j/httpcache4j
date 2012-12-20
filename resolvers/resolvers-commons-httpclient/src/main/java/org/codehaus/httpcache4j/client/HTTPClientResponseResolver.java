@@ -243,6 +243,9 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
         public MethodWithBody(HTTPMethod method, URI uri) {
             super(uri.toString());
+            if (!method.canHavePayload()) {
+                throw new IllegalArgumentException("Wrong method created for " + method.getMethod());
+            }
             this.method = method;
         }
 
@@ -258,7 +261,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         public Method(HTTPMethod method, URI uri) {
             super(uri.toString());
             this.method = method;
-            setFollowRedirects(GET == method);
+            setFollowRedirects(method.isSafe());
         }
 
         @Override
