@@ -258,7 +258,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         public Method(HTTPMethod method, URI uri) {
             super(uri.toString());
             this.method = method;
-            setFollowRedirects(GET == method);
+            setFollowRedirects(method.isSafe());
         }
 
         @Override
