@@ -33,6 +33,7 @@ import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.*;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.*;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.DefaultHttpClient;
