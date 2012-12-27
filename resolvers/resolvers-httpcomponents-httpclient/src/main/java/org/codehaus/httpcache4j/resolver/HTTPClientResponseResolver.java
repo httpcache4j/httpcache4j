@@ -33,6 +33,7 @@ import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.*;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.*;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -159,6 +160,8 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         if (request.hasPayload() && realRequest instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest req = (HttpEntityEnclosingRequest) realRequest;
             req.setEntity(new PayloadEntity(request.getPayload(), getConfiguration().isUseChunked()));
+            req.removeHeaders(HTTP.CONTENT_LEN);
+            req.removeHeaders(HTTP.TRANSFER_ENCODING);
         }
         return realRequest;
     }
