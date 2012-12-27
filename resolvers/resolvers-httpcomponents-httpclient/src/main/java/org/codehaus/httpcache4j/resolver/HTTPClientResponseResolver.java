@@ -159,6 +159,8 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         if (request.hasPayload() && realRequest instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest req = (HttpEntityEnclosingRequest) realRequest;
             req.setEntity(new PayloadEntity(request.getPayload(), getConfiguration().isUseChunked()));
+            req.removeHeaders(HTTP.CONTENT_LEN);
+            req.removeHeaders(HTTP.TRANSFER_ENCODING);
         }
         return realRequest;
     }
