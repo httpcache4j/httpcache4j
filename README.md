@@ -17,7 +17,7 @@ Add this to your POM
     <dependency>
       <groupId>org.codehaus.httpcache4j</groupId>
       <artifactId>httpcache4j-core</artifactId>
-      <version>3.4</version>
+      <version>4.0-M3</version>
     </dependency>
 
 Now choose your resolver.
@@ -25,25 +25,25 @@ Now choose your resolver.
     <dependency>
       <groupId>org.codehaus.httpcache4j.resolvers</groupId>
       <artifactId>resolvers-commons-httpclient</artifactId>
-      <version>3.4</version>
+      <version>4.0-M3</version>
     </dependency>
 
     <dependency>
       <groupId>org.codehaus.httpcache4j.resolvers</groupId>
       <artifactId>resolvers-httpcomponents-httpclient</artifactId>
-      <version>3.4</version>
+      <version>4.0-M3</version>
     </dependency>
 
     <dependency>
       <groupId>org.codehaus.httpcache4j.resolvers</groupId>
       <artifactId>resolvers-net-urlconnection</artifactId>
-      <version>3.4</version>
+      <version>4.0-M3</version>
     </dependency>
 
     <dependency>
       <groupId>org.codehaus.httpcache4j.resolvers</groupId>
       <artifactId>resolvers-ning-async</artifactId>
-      <version>3.4</version>
+      <version>4.0-M3</version>
     </dependency>
 
 Then choose your storage mechanizm
