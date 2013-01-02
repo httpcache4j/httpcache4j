@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.codehaus.httpcache4j</groupId>
     <artifactId>httpcache4j</artifactId>
-    <version>4.0-M4</version>
+    <version>4.0-M5-SNAPSHOT</version>
   </parent>
   <groupId>org.codehaus.httpcache4j</groupId>
   <artifactId>httpcache4j-storage-api</artifactId>
