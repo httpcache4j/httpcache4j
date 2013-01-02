@@ -11,6 +11,15 @@ The mutable versions are not thread safe.
 
 ## Usage
 
+### Spring support
+I have added spring support to be able to use the RestTemplate.
+
+    <dependency>
+      <groupId>org.codehaus.httpcache4j</groupId>
+      <artifactId>httpcache4j-spring</artifactId>
+      <version>4.0-M3</version>
+    </dependency>
+
 ### Maven
 Add this to your POM
 
@@ -46,7 +55,7 @@ Now choose your resolver.
       <version>4.0-M3</version>
     </dependency>
 
-Then choose your storage mechanizm
+Then choose your storage mechanism.
 
 The core has a built in Memory storage, and is useful for non-persistent small data.
 
@@ -55,22 +64,22 @@ If this is not enough, there are a number of persistent storages to choose from
       <dependency>
         <groupId>org.codehaus.httpcache4j.storage</groupId>
         <artifactId>storage-h2</artifactId>
-        <version>3.4</version>
+        <version>4.0-M3</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.httpcache4j.storage</groupId>
         <artifactId>storage-file</artifactId>
-        <version>3.4</version>
+        <version>4.0-M3</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.httpcache4j.storage</groupId>
         <artifactId>storage-derby</artifactId>
-        <version>3.4</version>
+        <version>4.0-M3</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.httpcache4j.storage</groupId>
         <artifactId>storage-ehcache</artifactId>
-        <version>3.4</version>
+        <version>4.0-M3</version>
       </dependency>
 
 
