@@ -17,6 +17,8 @@ package org.codehaus.httpcache4j;
 
 import java.io.File;
 
+import org.apache.http.protocol.HTTP;
+import org.codehaus.httpcache4j.payload.StringPayload;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.eclipse.jetty.server.Handler;
@@ -92,6 +94,14 @@ public abstract class AbstractCacheIntegrationTest {
     protected abstract ResponseResolver createReponseResolver();
 
     protected abstract CacheStorage createStorage();
+
+    @Test
+    public void POSTWithContentLength() {
+        HTTPRequest req = new HTTPRequest(baseCustomRequestURI, HTTPMethod.POST).addHeader(HeaderConstants.CONTENT_LENGTH, "1000");
+        req = req.payload(new StringPayload("test", MIMEType.valueOf("text/plain")));
+        HTTPResponse response = cache.execute(req);
+        assertEquals(Status.OK, response.getStatus());
+    }
 
     @Test
     public void GETNotCacheableResponse() {
@@ -234,7 +244,7 @@ public abstract class AbstractCacheIntegrationTest {
         assertTrue(MIMEType.valueOf("text/xml").includes(response.getPayload().getMimeType()));
         assertEquals(2, storage.size());
     }
-    
+
     /**
      * Tests that requests come from the cache, but that the 
      * response isn't specified that the cache is used when the response

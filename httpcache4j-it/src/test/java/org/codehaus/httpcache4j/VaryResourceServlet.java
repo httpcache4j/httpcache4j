@@ -43,6 +43,14 @@ public class VaryResourceServlet extends HttpServlet {
         }
     }
 
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException
+    {
+        response.setContentType("text/plain");
+        commonWrites(response, "");
+    }
+
     private void writeTextPlain(HttpServletRequest request,
                                 HttpServletResponse response) throws IOException {
         response.setContentType("text/plain");
