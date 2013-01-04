@@ -25,6 +25,7 @@ import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.impl.conn.SchemeRegistryFactory;
 import org.apache.http.params.*;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.RequestContent;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.Header;
@@ -97,6 +98,11 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             }
 
         }
+        if (httpClient instanceof DefaultHttpClient) {
+            DefaultHttpClient client = (DefaultHttpClient) httpClient;
+            client.removeRequestInterceptorByClass(RequestContent.class);
+            client.addRequestInterceptor(new RequestContent(true));
+        }
         HttpClientParams.setAuthenticating(params, false);
         if (proxyHost != null) {
             HttpHost host = new HttpHost(proxyHost.getHost(), proxyHost.getPort(), proxyHost.getScheme());
@@ -160,8 +166,6 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         if (request.hasPayload() && realRequest instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest req = (HttpEntityEnclosingRequest) realRequest;
             req.setEntity(new PayloadEntity(request.getPayload(), getConfiguration().isUseChunked()));
-            req.removeHeaders(HTTP.CONTENT_LEN);
-            req.removeHeaders(HTTP.TRANSFER_ENCODING);
         }
         return realRequest;
     }
