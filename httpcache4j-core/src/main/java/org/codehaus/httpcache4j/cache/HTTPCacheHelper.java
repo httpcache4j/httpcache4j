@@ -121,6 +121,11 @@ class HTTPCacheHelper {
         return warn(headers, null);
     }
 
+    boolean isEndToEndReloadRequest(HTTPRequest request) {
+        CacheControl cacheControl = request.getCacheControl();
+        return request.getMethod().isCacheable() && cacheControl != null ? cacheControl.isNoCache() : false;
+    }
+
     boolean isCacheableRequest(HTTPRequest request) {
         if (request.getMethod().isCacheable()) {
             if (request.getHeaders().hasHeader(CACHE_CONTROL)) {
