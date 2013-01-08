@@ -254,6 +254,41 @@ public class HTTPCacheTest {
     }
 
     @Test
+    public void testEndToEndReload() throws IOException {
+        String initialETagVal = "\"1\"";
+        String updatedETagVal = "\"2\"";
+
+        HTTPRequest request = new HTTPRequest(REQUEST_URI).addHeader(HeaderConstants.CACHE_CONTROL, "no-cache");
+
+        // Setup initial response
+        Headers initialResponseHeaders = new Headers();
+        initialResponseHeaders = initialResponseHeaders.add(new Header(HeaderConstants.ETAG, initialETagVal));
+        initialResponseHeaders = initialResponseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
+        HTTPResponse initialResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, initialResponseHeaders);
+
+        // Setup response returned on end-to-end reload request
+        Headers updatedResponseHeaders = new Headers();
+        updatedResponseHeaders = updatedResponseHeaders.add(new Header(HeaderConstants.ETAG, updatedETagVal));
+        HTTPResponse updatedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, updatedResponseHeaders);
+
+        // Setup cache mock
+        when(cacheStorage.insert(eq(request), eq(initialResponse))).thenReturn(initialResponse);
+        when(cacheStorage.insert(eq(request), eq(updatedResponse))).thenReturn(updatedResponse);
+
+        // When attempting to look the request up in the cache, return the initial response
+        when(cacheStorage.get(request)).thenReturn(new DefaultCacheItem(initialResponse));
+
+        // When attempting to resolve the request against the origin server, return the updated response
+        when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(updatedResponse);
+
+        HTTPResponse response = cache.execute(request);
+
+        Assert.assertEquals("Wrong status", Status.OK, response.getStatus());
+        Assert.assertFalse("Got the cached response instead of the updated one.", Tag.parse(initialETagVal).equals(response.getHeaders().getETag()));
+        Assert.assertEquals("Did not get the updated response (ETag does not match)", Tag.parse(updatedETagVal), response.getHeaders().getETag());
+    }
+
+    @Test
     public void testCacheResponseWithInvalidationPUT() {
         Headers responseHeaders = new Headers();
         responseHeaders.add(new Header(HeaderConstants.CACHE_CONTROL, "private, max-age=60"));
