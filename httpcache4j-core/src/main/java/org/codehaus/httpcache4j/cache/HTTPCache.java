@@ -74,16 +74,6 @@ public class HTTPCache {
         return statistics;
     }
 
-    @Deprecated
-    public HTTPResponse doCachedRequest(final HTTPRequest request) {
-        return execute(request, false);
-    }
-
-    @Deprecated
-    public HTTPResponse refreshCachedRequest(final HTTPRequest request) {
-        return execute(request, true);
-    }
-
     public HTTPResponse execute(final HTTPRequest request) {
         return execute(request, helper.isEndToEndReloadRequest(request));
     }
@@ -97,12 +87,7 @@ public class HTTPCache {
         resolver.shutdown();
     }
 
-    @Deprecated
-    public HTTPResponse doCachedRequest(final HTTPRequest request, boolean force) {
-        return execute(request, force);
-    }
-
-    public HTTPResponse execute(final HTTPRequest request, boolean force) {
+    private HTTPResponse execute(final HTTPRequest request, boolean force) {
         if (resolver == null) {
             throw new IllegalStateException("The resolver was not set, no point of continuing with the request");
         }
