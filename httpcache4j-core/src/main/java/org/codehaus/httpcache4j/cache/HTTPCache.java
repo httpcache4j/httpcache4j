@@ -85,12 +85,7 @@ public class HTTPCache {
     }
 
     public HTTPResponse execute(final HTTPRequest request) {
-        if (helper.isEndToEndReloadRequest(request)){
-            return executeRefresh(request);
-        } else {
-            return execute(request, false);
-        }
-
+        return execute(request, helper.isEndToEndReloadRequest(request));
     }
 
     public HTTPResponse executeRefresh(final HTTPRequest request) {
