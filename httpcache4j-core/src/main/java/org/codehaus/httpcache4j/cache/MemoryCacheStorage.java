@@ -16,6 +16,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import com.google.common.collect.Sets;
 import com.google.common.io.Closeables;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
@@ -85,7 +86,13 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     protected HTTPResponse putImpl(final Key pKey, final HTTPResponse pCacheableResponse) {
-        cache.put(pKey, createCacheItem(pCacheableResponse));
+        CacheItem item = createCacheItem(pCacheableResponse);
+        Map<Vary, CacheItem> varyCacheItemMap = cache.get(pKey.getURI());
+        if (varyCacheItemMap == null) {
+            varyCacheItemMap = new HashMap<Vary, CacheItem>();
+            cache.put(pKey.getURI(), varyCacheItemMap);
+        }
+        varyCacheItemMap.put(pKey.getVary(), item);
         return pCacheableResponse;
     }
 
@@ -110,10 +117,15 @@ public class MemoryCacheStorage implements CacheStorage {
         read.lock();
 
         try {
-            for (Map.Entry<Key, CacheItem> entry : cache.entrySet()) {
-                Key key = entry.getKey();
-                if (request.getNormalizedURI().equals(key.getURI()) && key.getVary().matches(request)) {
-                    return entry.getValue();
+            Map<Vary, CacheItem> varyCacheItemMap = cache.get(request.getNormalizedURI());
+            if (varyCacheItemMap == null) {
+                return null;
+            }
+            else {
+                for (Map.Entry<Vary, CacheItem> entry : varyCacheItemMap.entrySet()) {
+                    if (entry.getKey().matches(request)) {
+                        return entry.getValue();
+                    }
                 }
             }
             return null;
@@ -126,14 +138,13 @@ public class MemoryCacheStorage implements CacheStorage {
         write.lock();
 
         try {
-            Set<Key> keys = new HashSet<Key>();
-            for (Key key : cache.keySet()) {
-                if (key.getURI().equals(uri)) {
-                    keys.add(key);
+            Map<Vary, CacheItem> varyCacheItemMap = cache.get(uri);
+            if (varyCacheItemMap != null) {
+                Set<Vary> vary = new HashSet<Vary>(varyCacheItemMap.keySet());
+                for (Vary v : vary) {
+                    Key key = new Key(uri, v);
+                    cache.remove(key);
                 }
-            }
-            for (Key key : keys) {
-                cache.remove(key);
             }
         } finally {
             write.unlock();
@@ -144,9 +155,9 @@ public class MemoryCacheStorage implements CacheStorage {
         read.lock();
 
         try {
-            CacheItem cacheItem = cache.get(key);
-            if (cacheItem != null) {
-                return cacheItem;
+            Map<Vary, CacheItem> varyCacheItemMap = cache.get(key.getURI());
+            if (varyCacheItemMap != null) {
+                return varyCacheItemMap.get(key.getVary());
             }
             return null;
         } finally {
@@ -162,8 +173,8 @@ public class MemoryCacheStorage implements CacheStorage {
         write.lock();
 
         try {
-            Set<Key> uris = new HashSet<Key>(cache.keySet());
-            for (Key uri : uris) {
+            Set<URI> uris = new HashSet<URI>(cache.keySet());
+            for (URI uri : uris) {
                 cache.remove(uri);
             }
             afterClear();
@@ -179,7 +190,11 @@ public class MemoryCacheStorage implements CacheStorage {
     public final int size() {
         read.lock();
         try {
-            return cache.size();
+            int size = 0;
+            for (Map<Vary, CacheItem> map : cache.values()) {
+                size += map.size();
+            }
+            return size;
         } finally {
             read.unlock();
         }
@@ -188,7 +203,13 @@ public class MemoryCacheStorage implements CacheStorage {
     public final Iterator<Key> iterator() {
         read.lock();
         try {
-            return Collections.unmodifiableSet(cache.keySet()).iterator();
+            HashSet<Key> keys = Sets.newHashSet();
+            for (Map.Entry<URI, Map<Vary, CacheItem>> entry : cache.entrySet()) {
+                for (Vary vary : entry.getValue().keySet()) {
+                    keys.add(new Key(entry.getKey(), vary));
+                }
+            }
+            return Collections.unmodifiableSet(keys).iterator();
         } finally {
             read.unlock();
         }
