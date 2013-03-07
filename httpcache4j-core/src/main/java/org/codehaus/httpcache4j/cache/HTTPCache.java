@@ -18,8 +18,8 @@ package org.codehaus.httpcache4j.cache;
 
 import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.mutable.MutableRequest;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
+import org.codehaus.httpcache4j.util.URIBuilder;
 
 import java.io.IOException;
 import java.net.URI;
@@ -183,7 +183,12 @@ public class HTTPCache {
         }
         if (resolvedResponse != null) {
             if (!request.getMethod().isSafe() && resolvedResponse.getStatus().getCategory() == Status.Category.SUCCESS) {
-                storage.invalidate(request.getNormalizedURI());
+                URI requestUri = request.getNormalizedURI();
+                storage.invalidate(requestUri);
+
+                // http://tools.ietf.org/html/rfc2616#section-13.10
+                invalidateIfSameHostAsRequest(resolvedResponse.getLocation(), requestUri);
+                invalidateIfSameHostAsRequest(resolvedResponse.getContentLocation(), requestUri);
             }
 
             boolean updated = false;
@@ -238,5 +243,11 @@ public class HTTPCache {
 
     public void setTranslateHEADToGET(boolean translateHEADToGET) {
         this.translateHEADToGET = translateHEADToGET;
+    }
+
+    private void invalidateIfSameHostAsRequest(URI uri, URI requestUri) {
+        if (uri != null && uri.getHost() != null && uri.getHost().equals(requestUri.getHost())) {
+            storage.invalidate(URIBuilder.fromURI(uri).toNormalizedURI());
+        }
     }
 }
