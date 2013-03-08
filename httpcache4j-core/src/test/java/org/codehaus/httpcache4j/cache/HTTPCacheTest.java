@@ -426,6 +426,56 @@ public class HTTPCacheTest {
         assertEquals(1, merged.getHeaders("Allow").size());
     }
 
+    @Test
+    public void testContentLocationAndLocationUriInvalidatedOnPUT() throws IOException {
+        testContentLocationAndLocationInvalidationOnSuccess(HTTPMethod.PUT);
+    }
+
+    @Test
+    public void testContentLocationAndLocationUriInvalidatedOnPOST() throws IOException {
+        testContentLocationAndLocationInvalidationOnSuccess(HTTPMethod.POST);
+    }
+
+    @Test
+    public void testContentLocationAndLocationUriInvalidatedOnDELETE() throws IOException {
+        testContentLocationAndLocationInvalidationOnSuccess(HTTPMethod.DELETE);
+    }
+
+    @Test
+    public void testNeitherContentLocationNorLocationInvalidatedIfHostNotSameAsRequest() throws IOException {
+        URI requestUri = URI.create("http://host1/some");
+        URI contentLocationUri = URI.create("http://host2/some/content/location");
+        URI locationUri = URI.create("http://host3/some/location");
+
+        HTTPRequest request = new HTTPRequest(requestUri, HTTPMethod.POST);
+        Headers responseHeaders = new Headers().
+                add(new Header(HeaderConstants.CONTENT_LOCATION, contentLocationUri.toString())).
+                add(new Header(HeaderConstants.LOCATION, locationUri.toString()));
+        when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(null, Status.CREATED, responseHeaders));
+
+        cache.execute(request);
+
+        verify(cacheStorage, never()).invalidate(contentLocationUri);
+        verify(cacheStorage, never()).invalidate(locationUri);
+    }
+
+    private void testContentLocationAndLocationInvalidationOnSuccess(HTTPMethod httpMethod) throws IOException {
+        URI requestUri = URI.create("http://foo/some");
+        URI contentLocationUri = URI.create("http://foo/some/content/location");
+        URI locationUri = URI.create("http://foo/some/location");
+
+        HTTPRequest request = new HTTPRequest(requestUri, httpMethod);
+        Headers responseHeaders = new Headers().
+                add(new Header(HeaderConstants.CONTENT_LOCATION, contentLocationUri.toString())).
+                add(new Header(HeaderConstants.LOCATION, locationUri.toString()));
+        when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(new HTTPResponse(null, Status.CREATED, responseHeaders));
+
+        cache.execute(request);
+
+        verify(cacheStorage).invalidate(contentLocationUri);
+        verify(cacheStorage).invalidate(locationUri);
+    }
+
 
     private Headers dryCleanHeaders(Headers headers, Headers updatedHeaders) {
         CacheStorage storage = new NullCacheStorage();
