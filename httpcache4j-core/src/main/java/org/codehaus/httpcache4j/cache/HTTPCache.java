@@ -182,7 +182,7 @@ public class HTTPCache {
             }
         }
         if (resolvedResponse != null) {
-            if (!request.getMethod().isSafe() && resolvedResponse.getStatus().getCategory() == Status.Category.SUCCESS) {
+            if (!request.getMethod().isSafe() && isSuccessfulResponse(resolvedResponse)) {
                 URI requestUri = request.getNormalizedURI();
                 storage.invalidate(requestUri);
 
@@ -218,6 +218,12 @@ public class HTTPCache {
             }
         }
         return response;
+    }
+
+    //http://tools.ietf.org/html/draft-ietf-httpbis-p6-cache-22#section-6
+    private boolean isSuccessfulResponse(HTTPResponse resolvedResponse) {
+        Status.Category category = resolvedResponse.getStatus().getCategory();
+        return category == Status.Category.SUCCESS || category == Status.Category.REDIRECTION;
     }
 
     private HTTPResponse resolveWithHeadRewrite(HTTPRequest request, HTTPResponse resolvedResponse) throws IOException {
