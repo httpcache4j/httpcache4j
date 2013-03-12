@@ -194,10 +194,10 @@ public class HTTPCache {
             boolean updated = false;
 
             if (request.getMethod() == HTTPMethod.HEAD && !isTranslateHEADToGET()) {
-                if (item != null) {
-                    response = updateHeadersFromResolved(request, item, resolvedResponse);
-                } else {
-                    response = resolvedResponse;
+                response = resolvedResponse;
+                if(item != null && resolvedResponse.getStatus() != Status.NOT_MODIFIED) {
+                    updated = true;
+                    storage.invalidate(request.getNormalizedURI());
                 }
             } else if (helper.isCacheableResponse(resolvedResponse) && helper.shouldBeStored(resolvedResponse)) {
                 response = storage.insert(request, resolvedResponse);
