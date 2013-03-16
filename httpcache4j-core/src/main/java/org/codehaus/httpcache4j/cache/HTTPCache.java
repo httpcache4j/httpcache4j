@@ -116,7 +116,10 @@ public class HTTPCache {
         return response;
     }
 
-    private HTTPResponse doRequest(final HTTPRequest request, final boolean force) {
+    private HTTPResponse doRequest(HTTPRequest request, final boolean force) {
+        if (request.getMethod() == HTTPMethod.HEAD && isTranslateHEADToGET()) {
+            request = request.method(HTTPMethod.GET);
+        }
         HTTPResponse response;
         if (force) {
             response = unconditionalResolve(request);
@@ -171,7 +174,7 @@ public class HTTPCache {
         HTTPResponse response = null;
         HTTPResponse resolvedResponse = null;
         try {
-            resolvedResponse = resolveWithHeadRewrite(request, resolvedResponse);
+            resolvedResponse = resolver.resolve(request);
         } catch (IOException e) {
             //No cached item found, we throw an exception.
             if (item == null) {
@@ -182,24 +185,21 @@ public class HTTPCache {
             }
         }
         if (resolvedResponse != null) {
-            if (!request.getMethod().isSafe() && isSuccessfulResponse(resolvedResponse)) {
-                URI requestUri = request.getNormalizedURI();
-                storage.invalidate(requestUri);
-
-                // http://tools.ietf.org/html/rfc2616#section-13.10
-                invalidateIfSameHostAsRequest(resolvedResponse.getLocation(), requestUri);
-                invalidateIfSameHostAsRequest(resolvedResponse.getContentLocation(), requestUri);
-            }
-
             boolean updated = false;
 
-            if (request.getMethod() == HTTPMethod.HEAD && !isTranslateHEADToGET()) {
+            if (isInvalidating(request, resolvedResponse, item)) {
                 response = resolvedResponse;
-                if(item != null && resolvedResponse.getStatus() != Status.NOT_MODIFIED) {
-                    updated = true;
-                    storage.invalidate(request.getNormalizedURI());
+                URI requestUri = request.getNormalizedURI();
+                storage.invalidate(requestUri);
+                updated = true;
+
+                if (!request.getMethod().isSafe()) {
+                    // http://tools.ietf.org/html/rfc2616#section-13.10
+                    invalidateIfSameHostAsRequest(resolvedResponse.getLocation(), requestUri);
+                    invalidateIfSameHostAsRequest(resolvedResponse.getContentLocation(), requestUri);
                 }
-            } else if (helper.isCacheableResponse(resolvedResponse) && helper.shouldBeStored(resolvedResponse)) {
+            }
+            else if (helper.isCacheableResponse(resolvedResponse) && helper.shouldBeStored(resolvedResponse)) {
                 response = storage.insert(request, resolvedResponse);
                 updated = true;
 
@@ -220,20 +220,23 @@ public class HTTPCache {
         return response;
     }
 
+    //http://tools.ietf.org/html/rfc2616#section-9.4
+    private boolean isInvalidatingHEADResponse(HTTPRequest request, CacheItem item, HTTPResponse resolvedResponse) {
+        return request.getMethod() == HTTPMethod.HEAD && item != null && resolvedResponse.getStatus() != Status.NOT_MODIFIED;
+    }
+
+    private boolean isInvalidating(HTTPRequest request, HTTPResponse resolvedResponse, CacheItem item) {
+        boolean invalidatingHEAD = isInvalidatingHEADResponse(request, item, resolvedResponse);
+        boolean unsafe = !request.getMethod().isSafe() && isSuccessfulResponseToUnsafeRequest(resolvedResponse);
+        return unsafe || invalidatingHEAD;
+    }
+
     //http://tools.ietf.org/html/draft-ietf-httpbis-p6-cache-22#section-6
-    private boolean isSuccessfulResponse(HTTPResponse resolvedResponse) {
+    private boolean isSuccessfulResponseToUnsafeRequest(HTTPResponse resolvedResponse) {
         Status.Category category = resolvedResponse.getStatus().getCategory();
         return category == Status.Category.SUCCESS || category == Status.Category.REDIRECTION;
     }
 
-    private HTTPResponse resolveWithHeadRewrite(HTTPRequest request, HTTPResponse resolvedResponse) throws IOException {
-        if (request.getMethod() == HTTPMethod.HEAD && isTranslateHEADToGET()) { // We change this to GET and cache the result.
-            resolvedResponse = resolver.resolve(request.method(HTTPMethod.GET));
-        } else {
-            resolvedResponse = resolver.resolve(request);
-        }
-        return resolvedResponse;
-    }
 
     HTTPResponse updateHeadersFromResolved(final HTTPRequest request, final CacheItem item, final HTTPResponse resolvedResponse) {
         HTTPResponse cachedResponse = item.getResponse();
