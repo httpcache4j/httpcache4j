@@ -18,6 +18,7 @@ package org.codehaus.httpcache4j.cache;
 import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.HeaderConstants;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 
@@ -36,7 +37,7 @@ import static org.codehaus.httpcache4j.HeaderConstants.VARY;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-public class Key implements Serializable {
+public final class Key implements Serializable {
     private static final long serialVersionUID = 5827064595759738979L;
 
     private URI uri;
@@ -50,10 +51,11 @@ public class Key implements Serializable {
 
     public static Key create(HTTPRequest request, HTTPResponse response) {
         URI uri = request.getNormalizedURI();
-        return new Key(uri, determineVariation(response.getHeaders(), request.getAllHeaders()));
+        return new Key(uri, determineVariation(response.getHeaders(), request));
     }
 
-    private static Vary determineVariation(Headers responseHeaders, Headers requestHeaders) {
+    private static Vary determineVariation(Headers responseHeaders, HTTPRequest request) {
+        Headers requestHeaders = request.getAllHeaders();
         String varyHeader = responseHeaders.getFirstHeaderValue(VARY);
         Map<String, String> resolvedVaryHeaders = new HashMap<String, String>();
         if (varyHeader != null) {
@@ -64,6 +66,9 @@ public class Key implements Serializable {
                     resolvedVaryHeaders.put(vary, value);
                 }
             }
+        }
+        if (request.getChallenge() != null && Boolean.getBoolean("Vary.authorization")) {
+            resolvedVaryHeaders.put(HeaderConstants.AUTHORIZATION, request.getChallenge().getIdentifier());
         }
         return new Vary(resolvedVaryHeaders);
     }

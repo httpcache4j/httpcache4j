@@ -30,6 +30,7 @@ import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.Header;
+import org.codehaus.httpcache4j.HeaderConstants;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.preference.Preference;
@@ -100,15 +101,21 @@ public final class Vary {
      * @return {@code true} if the request matches the variance. {@code false} if not.
      */
     public boolean matches(final HTTPRequest request) {
+        Headers headers = request.getAllHeaders();
+
         for (Map.Entry<String, String> varyEntry : varyHeaders.entrySet()) {
-
-            Headers headers = request.getAllHeaders();
-            List<Header> requestHeaderValue = headers.getHeaders(varyEntry.getKey());
-            boolean valid = requestHeaderValue.isEmpty() ? varyEntry.getValue() == null : headers.getFirstHeader(varyEntry.getKey()).getValue().equals(varyEntry.getValue());
-            if (!valid) {
-                return false;
+            if (request.getChallenge() != null && varyEntry.getKey().equals(HeaderConstants.AUTHORIZATION)) {
+                if (!request.getChallenge().getIdentifier().equals(varyEntry.getValue())) {
+                    return false;
+                }
             }
-
+            else {
+                List<Header> requestHeaderValue = headers.getHeaders(varyEntry.getKey());
+                boolean valid = requestHeaderValue.isEmpty() ? varyEntry.getValue() == null : headers.getFirstHeader(varyEntry.getKey()).getValue().equals(varyEntry.getValue());
+                if (!valid) {
+                    return false;
+                }
+            }
         }
         return true;
     }
