@@ -93,24 +93,18 @@ public final class HTTPRequest {
     }
 
     /**
-     * Returns all headers with the headers from the Conditionals, Payload and Preferences.
-     * If you have explicitly set headers on the request that are the same as the Conditionals and Preferences they are overwritten.
+     * Returns all headers with the headers from the Payload
      *
      * @return All the headers
      */
     public Headers getAllHeaders() {
         Headers requestHeaders = getHeaders();
         if (hasPayload()) {
-            requestHeaders = requestHeaders.remove(HeaderConstants.CONTENT_TYPE);
-            requestHeaders = requestHeaders.add(HeaderConstants.CONTENT_TYPE, getPayload().getMimeType().toString());
+            requestHeaders = requestHeaders.set(HeaderConstants.CONTENT_TYPE, getPayload().getMimeType().toString());
         }
 
         //We don't want to add headers more than once.
         return requestHeaders;
-    }
-
-    private Headers merge(final Headers base, final Headers toMerge) {
-        return new Headers().add(base).add(toMerge);        
     }
 
     public HTTPRequest addHeader(Header header) {
