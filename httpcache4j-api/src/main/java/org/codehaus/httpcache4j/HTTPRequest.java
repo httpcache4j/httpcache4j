@@ -39,6 +39,7 @@ public final class HTTPRequest {
     private final Challenge challenge;
     private final Payload payload;
     private final DateTime requestTime;
+    private URI normalizedURI;
 
     public HTTPRequest(URI requestURI,
                        HTTPMethod method,
@@ -48,6 +49,7 @@ public final class HTTPRequest {
                        DateTime requestTime) {
 
         this.requestURI = Preconditions.checkNotNull(requestURI, "You MUST have a URI");
+        this.normalizedURI = URIBuilder.fromURI(requestURI).toNormalizedURI();
         this.method = method == null ? HTTPMethod.GET : method;
         this.headers = headers == null ? new Headers() : headers;
         this.challenge = challenge;
@@ -85,7 +87,7 @@ public final class HTTPRequest {
     }
 
     public URI getNormalizedURI() {
-        return URIBuilder.fromURI(requestURI).toNormalizedURI();
+        return normalizedURI;
     }
 
     public Headers getHeaders() {
