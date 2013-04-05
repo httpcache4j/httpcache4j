@@ -123,7 +123,7 @@ class HTTPCacheHelper {
 
     boolean isEndToEndReloadRequest(HTTPRequest request) {
         CacheControl cacheControl = request.getCacheControl();
-        return request.getMethod().isCacheable() && cacheControl != null ? cacheControl.isNoCache() : false;
+        return request.getMethod().isCacheable() && cacheControl != null && cacheControl.isNoCache();
     }
 
     boolean isCacheableRequest(HTTPRequest request) {

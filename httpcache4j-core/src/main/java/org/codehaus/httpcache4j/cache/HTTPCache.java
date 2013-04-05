@@ -39,27 +39,18 @@ public class HTTPCache {
     private final HTTPCacheHelper helper;
     private final CacheStatistics statistics = new CacheStatistics();
     private final CacheStorage storage;
-    private ResponseResolver resolver;
+    private final ResponseResolver resolver;
     private final Mutex<URI> mutex = new Mutex<URI>();
     private boolean translateHEADToGET = false;
 
     public HTTPCache(CacheStorage storage, ResponseResolver resolver) {
         this.storage = Preconditions.checkNotNull(storage, "Cache storage may not be null");
-        this.resolver = resolver;
+        this.resolver = Preconditions.checkNotNull(resolver, "Resolver may not be null");
         helper = new HTTPCacheHelper(CacheHeaderBuilder.getBuilder());
-    }
-
-    public HTTPCache(CacheStorage storage) {
-        this(storage, null);
     }
 
     public void clear() {
         storage.clear();
-    }
-
-    public void setResolver(final ResponseResolver resolver) {
-        Preconditions.checkArgument(this.resolver == null, "You may not set the response resolver more than once.");
-        this.resolver = Preconditions.checkNotNull(resolver, "Resolver may not be null");
     }
 
     public CacheStorage getStorage() {
@@ -88,9 +79,6 @@ public class HTTPCache {
     }
 
     private HTTPResponse execute(final HTTPRequest request, boolean force) {
-        if (resolver == null) {
-            throw new IllegalStateException("The resolver was not set, no point of continuing with the request");
-        }
         HTTPResponse response;
         if (!helper.isCacheableRequest(request)) {
             response = unconditionalResolve(request);

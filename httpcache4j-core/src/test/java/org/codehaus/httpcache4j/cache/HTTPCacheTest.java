@@ -52,20 +52,14 @@ public class HTTPCacheTest {
 
     @Test
     public void testCreate() {
-        HTTPCache cache = new HTTPCache(cacheStorage);
-        cache.setResolver(responseResolver);
+        HTTPCache cache = new HTTPCache(cacheStorage, responseResolver);
         this.cache = cache;
         testCacheResponse();
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testRequestWithInvalidConfiguredCache() {
-        this.cache = new HTTPCache(cacheStorage);
-        try {
-            testCacheResponse();
-            fail("Expected IllegalStateException");
-        } catch (IllegalStateException expected) {
-        }
+        this.cache = new HTTPCache(cacheStorage, null);
     }
 
     @Test
