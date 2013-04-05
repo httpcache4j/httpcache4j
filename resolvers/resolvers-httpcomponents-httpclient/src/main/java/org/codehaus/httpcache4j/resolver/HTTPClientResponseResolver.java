@@ -151,6 +151,14 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         return convertResponse(realRequest, response);
     }
 
+    public void setRedirecting(boolean redirect) {
+        HttpClientParams.setRedirecting(httpClient.getParams(), redirect);
+    }
+
+    public boolean isRedirecting() {
+        return HttpClientParams.isRedirecting(httpClient.getParams());
+    }
+
     public void shutdown() {
         httpClient.getConnectionManager().shutdown();
     }
