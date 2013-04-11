@@ -16,7 +16,6 @@
 package org.codehaus.httpcache4j.resolver;
 
 import org.apache.http.annotation.NotThreadSafe;
-import org.apache.http.client.RedirectStrategy;
 import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.routing.HttpRoute;
@@ -24,7 +23,6 @@ import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.impl.conn.SchemeRegistryFactory;
 import org.apache.http.params.*;
-import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.RequestContent;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.httpcache4j.*;
@@ -34,7 +32,6 @@ import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.*;
-import org.apache.http.protocol.HTTP;
 import org.apache.http.*;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -178,13 +175,6 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         return realRequest;
     }
 
-    /**
-     * Determines the HttpClient's request method from the HTTPMethod enum.
-     *
-     * @param method     the HTTPCache enum that determines
-     * @param requestURI the request URI.
-     * @return a new HttpMethod subclass.
-     */
     protected HttpUriRequest getMethod(HTTPMethod method, URI requestURI) {
         if (method.canHavePayload()) {
             return new MethodWithBody(requestURI, method);
