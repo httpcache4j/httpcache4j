@@ -30,15 +30,15 @@ import java.util.Map;
  */
 public final class HTTPMethod {
     public static final HTTPMethod CONNECT = new HTTPMethod("CONNECT");
-    public static final HTTPMethod DELETE = new HTTPMethod("DELETE", false, Idempotency.IDEMPOTENT);
-    public static final HTTPMethod GET = new HTTPMethod("GET", true, Idempotency.IDEMPOTENT);
-    public static final HTTPMethod HEAD = new HTTPMethod("HEAD", true, Idempotency.IDEMPOTENT);
-    public static final HTTPMethod OPTIONS = new HTTPMethod("OPTIONS", false, Idempotency.IDEMPOTENT);
+    public static final HTTPMethod DELETE = new HTTPMethod("DELETE", Idempotency.IDEMPOTENT, Safety.UNSAFE);
+    public static final HTTPMethod GET = new HTTPMethod("GET", Idempotency.IDEMPOTENT, Safety.SAFE);
+    public static final HTTPMethod HEAD = new HTTPMethod("HEAD", Idempotency.IDEMPOTENT, Safety.SAFE);
+    public static final HTTPMethod OPTIONS = new HTTPMethod("OPTIONS", Idempotency.IDEMPOTENT, Safety.SAFE);
     public static final HTTPMethod PATCH = new HTTPMethod("PATCH");
     public static final HTTPMethod POST = new HTTPMethod("POST");
     public static final HTTPMethod PURGE = new HTTPMethod("PURGE");
-    public static final HTTPMethod PUT = new HTTPMethod("PUT", false, Idempotency.IDEMPOTENT);
-    public static final HTTPMethod TRACE = new HTTPMethod("TRACE", false, Idempotency.IDEMPOTENT);
+    public static final HTTPMethod PUT = new HTTPMethod("PUT", Idempotency.IDEMPOTENT, Safety.UNSAFE);
+    public static final HTTPMethod TRACE = new HTTPMethod("TRACE", Idempotency.IDEMPOTENT, Safety.SAFE);
 
     private static Map<String, HTTPMethod> defaultMethods = ImmutableMap.<String, HTTPMethod>builder()
             .put(CONNECT.getMethod().toUpperCase(Locale.ENGLISH), CONNECT)
@@ -54,22 +54,27 @@ public final class HTTPMethod {
             .build();
 
     private final String method;
-    private final boolean cacheable;
     private final Idempotency idempotency;
+    private final Safety safety;
 
     public static enum Idempotency {
         IDEMPOTENT,
         NON_IDEMPOTENT
     }
 
-    private HTTPMethod(String method) {
-        this(method, false, Idempotency.NON_IDEMPOTENT);
+    public static enum Safety {
+        SAFE,
+        UNSAFE
     }
 
-    private HTTPMethod(String method, boolean cacheable, Idempotency idempotency) {
+    private HTTPMethod(String method) {
+        this(method, Idempotency.NON_IDEMPOTENT, Safety.UNSAFE);
+    }
+
+    private HTTPMethod(String method, Idempotency idempotency, Safety safety) {
         this.method = method;
-        this.cacheable = cacheable;
         this.idempotency = idempotency;
+        this.safety = safety;
     }
 
     public String getMethod() {
@@ -127,11 +132,11 @@ public final class HTTPMethod {
     }
 
     public boolean isSafe() {
-        return this == GET || this == HEAD;
+        return this.safety == Safety.SAFE;
     }
 
     public boolean isCacheable() {
-        return cacheable;
+        return this == GET || this == HEAD;
     }
 
     public boolean isIdempotent() {

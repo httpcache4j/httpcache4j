@@ -86,6 +86,7 @@ public class HTTPCache {
             //request is cacheable
             boolean shouldUnlock = true;
             try {
+                force = force || request.getMethod() == HTTPMethod.OPTIONS || request.getMethod() == HTTPMethod.TRACE;
                 if (mutex.acquire(request.getRequestURI())) {
                     response = doRequest(request, force || (request.getHeaders().getCacheControl() != null && request.getHeaders().getCacheControl().isNoStore()));
                 } else {
