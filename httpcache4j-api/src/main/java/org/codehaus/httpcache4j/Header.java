@@ -16,6 +16,7 @@
 
 package org.codehaus.httpcache4j;
 
+import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.util.AuthDirectivesParser;
 import org.codehaus.httpcache4j.util.DirectivesParser;
 
@@ -29,6 +30,7 @@ public final class Header extends NameValue {
 
     public Header(String name, String value) {
         super(name, value);
+        Preconditions.checkArgument(name != null && !name.trim().isEmpty(), "You may not have an empty name in a header");
     }
 
     public Header(String name, Directives directives) {

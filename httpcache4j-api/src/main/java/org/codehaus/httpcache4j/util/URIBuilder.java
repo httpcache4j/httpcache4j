@@ -185,7 +185,7 @@ public final class URIBuilder {
      * @return new URIBuilder with no parameters.
      */
     public URIBuilder noParameters() {
-        return withParameters(Collections.<Parameter>emptyList());
+        return withParameters(Collections.<String, List<String>>emptyMap());
     }
 
     /**
@@ -202,10 +202,13 @@ public final class URIBuilder {
     }
 
     public URIBuilder withParameters(Map<String, List<String>> params) {
-        Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>();
-        paraMap.putAll(params);
+        if (!params.isEmpty()) {
+            Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>();
+            paraMap.putAll(params);
+            params = paraMap;
+        }
 
-        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute, endsWithSlash);
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, Collections.unmodifiableMap(params), wasPathAbsolute, endsWithSlash);
     }
 
     /**
@@ -231,32 +234,38 @@ public final class URIBuilder {
      * Adds Parameters to the collection of parameters
      * @return a new instance of the URIBuilder
      */
-    public URIBuilder addParameters(List<Parameter> parameters) {
-        Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>(this.parameters);
-        for (Parameter parameter : parameters) {
-            addToQueryMap(paraMap, parameter.getName(), parameter.getValue());
+    public URIBuilder addParameters(List<Parameter> newParams) {
+        if (newParams.isEmpty()) {
+            return this;
         }
-        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute, endsWithSlash);
+
+        List<Parameter> params = new ArrayList<Parameter>(getParametersAsList());
+        params.addAll(newParams);
+        return withParameters(params);
     }
 
-    public URIBuilder addParameters(Map<String, List<String>> params) {
-        Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>(this.parameters);
-        paraMap.putAll(params);
+    public URIBuilder addParameters(Map<String, List<String>> newParams) {
+        if (newParams.isEmpty()) {
+            return this;
+        }
 
-        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute, endsWithSlash);
+        Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>(this.parameters);
+        paraMap.putAll(newParams);
+
+        return withParameters(paraMap);
     }
 
     public URIBuilder removeParameters(String name) {
-        Map<String, List<String>> map = new HashMap<String, List<String>>(this.parameters);
+        Map<String, List<String>> map = new LinkedHashMap<String, List<String>>(this.parameters);
         map.remove(name);
-        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, Collections.unmodifiableMap(map), wasPathAbsolute, endsWithSlash);
+        return withParameters(map);
     }
 
     public URIBuilder replaceParameter(String name, String value) {
-        Map<String, List<String>> map = new HashMap<String, List<String>>(this.parameters);
+        Map<String, List<String>> map = new LinkedHashMap<String, List<String>>(this.parameters);
         map.remove(name);
         addToQueryMap(map, name, value);
-        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, Collections.unmodifiableMap(map), wasPathAbsolute, endsWithSlash);
+        return withParameters(map);
     }
 
     private String toPath(boolean encodepath) {
