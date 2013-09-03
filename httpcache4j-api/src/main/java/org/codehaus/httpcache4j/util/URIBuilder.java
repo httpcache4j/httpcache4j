@@ -49,9 +49,11 @@ public final class URIBuilder {
     private final Map<String, List<String>> parameters;
     private final boolean wasPathAbsolute;
     private final boolean endsWithSlash;
+    private final String schemeSpecificPart;
 
-    private URIBuilder(String scheme, String host, int port, List<Path> path, String fragment, Map<String, List<String>> parameters, boolean wasPathAbsolute, boolean endsWithSlash) {
+    private URIBuilder(String scheme, String schemeSpecificPart, String host, int port, List<Path> path, String fragment, Map<String, List<String>> parameters, boolean wasPathAbsolute, boolean endsWithSlash) {
         this.scheme = scheme;
+        this.schemeSpecificPart = schemeSpecificPart;
         this.host = host;
         this.port = port;
         this.path = path;
@@ -61,33 +63,8 @@ public final class URIBuilder {
         this.endsWithSlash = endsWithSlash;
     }
 
-    /**
-     * This is the scheme to use. Usually 'http' or 'https'.
-     * @param scheme the scheme
-     * @return a new URIBuilder with the new scheme set.
-     */
-    @Deprecated
-    public URIBuilder scheme(String scheme) {        
-        return withScheme(scheme);
-    }
-
-    @Deprecated
-    public URIBuilder host(String host) {
-        return withHost(host);
-    }
-
     public URIBuilder withHost(String host) {
-        return new URIBuilder(scheme, host, port, path, fragment, parameters, wasPathAbsolute, endsWithSlash);
-    }
-
-    /**
-     * Sets the port. This is not required to set if you are using default ports for 'http' or 'https'
-     * @param port the port to set
-     * @return a new URIBuilder with the port set
-     */
-    @Deprecated
-    public URIBuilder port(int port) {
-        return withPort(port);
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, parameters, wasPathAbsolute, endsWithSlash);
     }
 
     /**
@@ -100,7 +77,11 @@ public final class URIBuilder {
         if (defaultPort.isPresent() && (port == defaultPort.get())) {
             port = -1;
         }
-        return new URIBuilder(scheme, host, port, path, fragment, parameters, wasPathAbsolute, endsWithSlash);
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, parameters, wasPathAbsolute, endsWithSlash);
+    }
+
+    private boolean isURN() {
+        return scheme != null && scheme.startsWith("urn");
     }
 
 
@@ -110,7 +91,7 @@ public final class URIBuilder {
      * @return a new URIBuilder with the new scheme set.
      */
     public URIBuilder withScheme(String scheme) {
-        return new URIBuilder(scheme, host, port, path, fragment, parameters, wasPathAbsolute, endsWithSlash);
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, parameters, wasPathAbsolute, endsWithSlash);
     }
 
     /**
@@ -125,7 +106,7 @@ public final class URIBuilder {
         ImmutableList.Builder<Path> currentPath = ImmutableList.builder();
         currentPath.addAll(this.path);
         currentPath.addAll(appendedPath);
-        return new URIBuilder(scheme, host, port, currentPath.build(), fragment, parameters, pathAbsolute, endsWithSlash);
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, currentPath.build(), fragment, parameters, pathAbsolute, endsWithSlash);
 
     }
 
@@ -142,7 +123,7 @@ public final class URIBuilder {
         ImmutableList.Builder<Path> currentPath = ImmutableList.builder();
         currentPath.addAll(this.path);
         currentPath.addAll(appendedPath);
-        return new URIBuilder(scheme, host, port, currentPath.build(), fragment, parameters, wasPathAbsolute, endsWithSlash);
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, currentPath.build(), fragment, parameters, wasPathAbsolute, endsWithSlash);
     }
 
     /**
@@ -156,18 +137,7 @@ public final class URIBuilder {
     }
 
     /**
-     * @see #path(java.util.List)
-     *
-     * @param path path elements.
-     * @return a new URI builder which contains the new path.
-     */
-    @Deprecated
-    public URIBuilder path(String... path) {
-        return withPath(Arrays.asList(path));
-    }
-
-    /**
-     * @see #path(java.util.List)
+     * @see #withPath(java.util.List)
      *
      * @param path path elements.
      * @return a new URI builder which contains the new path.
@@ -184,37 +154,13 @@ public final class URIBuilder {
      * @param pathList path elements.
      * @return a new URI builder which contains the new path.
      */
-    @Deprecated
-    public URIBuilder path(List<String> pathList) {
-       return withPath(pathList);
-    }
-
-    /**
-     * Sets the path of the uri.
-     * We do not expect the path separator '/' to appear here, as each element will be URLEncoded.
-     * If the '/' character do appear it will be URLEncoded with the rest of the path.
-     *
-     * @param pathList path elements.
-     * @return a new URI builder which contains the new path.
-     */
     public URIBuilder withPath(List<String> pathList) {
         List<Path> paths = Lists.transform(pathList, stringToPath);
         return pathInternal(paths, false, false);
     }
 
     /**
-     * @see #path(java.util.List)
-     *
-     * @param path path elements.
-     * @return a new URI builder which contains the new path.
-     */
-    @Deprecated
-    public URIBuilder rawPath(String path) {
-        return withRawPath(path);
-    }
-
-    /**
-     * @see #path(java.util.List)
+     * @see #withPath(java.util.List)
      *
      * @param path path elements.
      * @return a new URI builder which contains the new path.
@@ -227,16 +173,11 @@ public final class URIBuilder {
     }
 
     private URIBuilder pathInternal(List<Path> pathList, boolean pathAbsolute, boolean endsWithSlash) {
-        return new URIBuilder(scheme, host, port, ImmutableList.copyOf(pathList), fragment, parameters, pathAbsolute, endsWithSlash);
-    }
-
-    @Deprecated
-    public URIBuilder fragment(String fragment) {
-        return withFragment(fragment);
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, ImmutableList.copyOf(pathList), fragment, parameters, pathAbsolute, endsWithSlash);
     }
 
     public URIBuilder withFragment(String fragment) {
-        return new URIBuilder(scheme, host, port, path, fragment, parameters, wasPathAbsolute, endsWithSlash);
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, parameters, wasPathAbsolute, endsWithSlash);
     }
 
     /**
@@ -245,17 +186,6 @@ public final class URIBuilder {
      */
     public URIBuilder noParameters() {
         return withParameters(Collections.<Parameter>emptyList());
-    }
-
-    /**
-     * Sets a list of parameters. This will clear out all previously set parameters in the new instance.
-     * @param parameters the list of parameters
-     * @return new URIBuilder with parameters.
-     * @deprecated use #withParameters instead
-     */
-    @Deprecated
-    public URIBuilder parameters(List<Parameter> parameters) {
-        return withParameters(parameters);
     }
 
     /**
@@ -275,7 +205,7 @@ public final class URIBuilder {
         Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>();
         paraMap.putAll(params);
 
-        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute, endsWithSlash);
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute, endsWithSlash);
     }
 
     /**
@@ -306,27 +236,27 @@ public final class URIBuilder {
         for (Parameter parameter : parameters) {
             addToQueryMap(paraMap, parameter.getName(), parameter.getValue());
         }
-        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute, endsWithSlash);
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute, endsWithSlash);
     }
 
     public URIBuilder addParameters(Map<String, List<String>> params) {
         Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>(this.parameters);
         paraMap.putAll(params);
 
-        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute, endsWithSlash);
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, Collections.unmodifiableMap(paraMap), wasPathAbsolute, endsWithSlash);
     }
 
     public URIBuilder removeParameters(String name) {
         Map<String, List<String>> map = new HashMap<String, List<String>>(this.parameters);
         map.remove(name);
-        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(map), wasPathAbsolute, endsWithSlash);
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, Collections.unmodifiableMap(map), wasPathAbsolute, endsWithSlash);
     }
 
     public URIBuilder replaceParameter(String name, String value) {
         Map<String, List<String>> map = new HashMap<String, List<String>>(this.parameters);
         map.remove(name);
         addToQueryMap(map, name, value);
-        return new URIBuilder(scheme, host, port, path, fragment, Collections.unmodifiableMap(map), wasPathAbsolute, endsWithSlash);
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, Collections.unmodifiableMap(map), wasPathAbsolute, endsWithSlash);
     }
 
     private String toPath(boolean encodepath) {
@@ -353,6 +283,9 @@ public final class URIBuilder {
 
     public URI toURI() {
         try {
+            if (isURN()) {
+                return new URI(scheme, schemeSpecificPart, fragment);
+            }
             return new URI(scheme, null, host, port, toPath(true), toQuery(false), fragment);
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e);
@@ -451,9 +384,9 @@ public final class URIBuilder {
      * @return a new URIBuilder which has the information from the URI.
      */
     public static URIBuilder fromURI(URI uri) {
-        boolean pathAbsoluteness = uri.getPath().startsWith("/");
-        boolean endsWithSlash = uri.getPath().endsWith("/");
-        return new URIBuilder(uri.getScheme(), uri.getHost(), uri.getPort(), toPathParts(uri.getPath()), uri.getFragment(), toQueryMap(uri.getQuery()), pathAbsoluteness, endsWithSlash);
+        boolean pathAbsoluteness = uri.getPath() != null && uri.getPath().startsWith("/");
+        boolean endsWithSlash = uri.getPath() != null && uri.getPath().endsWith("/");
+        return new URIBuilder(uri.getScheme(), uri.getSchemeSpecificPart(), uri.getHost(), uri.getPort(), toPathParts(uri.getPath()), uri.getFragment(), toQueryMap(uri.getQuery()), pathAbsoluteness, endsWithSlash);
     }
 
     /**
@@ -461,7 +394,7 @@ public final class URIBuilder {
      * @return an empty URIBuilder which result of {@link #toURI()} ()} will return "".
      */
     public static URIBuilder empty() {
-        return new URIBuilder(null, null, -1, Collections.<Path>emptyList(), null, Collections.<String, List<String>>emptyMap(), false, false);
+        return new URIBuilder(null, "", null, -1, Collections.<Path>emptyList(), null, Collections.<String, List<String>>emptyMap(), false, false);
     }
 
     public String getScheme() {

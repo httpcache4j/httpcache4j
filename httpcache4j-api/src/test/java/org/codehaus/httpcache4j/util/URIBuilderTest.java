@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.net.URI;
+import java.util.UUID;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -195,6 +196,14 @@ public class URIBuilderTest {
     @Test
     public void uriEndsWithSlashMustBeRetained() {
         URI uri = URI.create("http://example.com/foo/");
+        Assert.assertEquals("URIs did not match", uri, URIBuilder.fromURI(uri).toURI());
+    }
+
+    @Test
+    public void urnParsedMustBeThesame() {
+        URI uri = URI.create("urn:foo:bar");
+        Assert.assertEquals("URIs did not match", uri, URIBuilder.fromURI(uri).toURI());
+        uri = URI.create("urn:uuid:" + UUID.randomUUID().toString());
         Assert.assertEquals("URIs did not match", uri, URIBuilder.fromURI(uri).toURI());
     }
 }
