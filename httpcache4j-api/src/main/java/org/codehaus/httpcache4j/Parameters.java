@@ -66,7 +66,7 @@ public class Parameters implements Iterable<Parameter> {
         return new Parameters(params);
     }
 
-    public Parameters set(List<Parameter> params) {
+    public Parameters set(Iterable<Parameter> params) {
         Map<String, List<String>> map = toMap(params);
         return new Parameters(map);
     }

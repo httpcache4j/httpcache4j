@@ -194,7 +194,7 @@ public final class URIBuilder {
      * @param parameters the list of parameters
      * @return new URIBuilder with parameters.
      */
-    public URIBuilder withParameters(List<Parameter> parameters) {
+    public URIBuilder withParameters(Iterable<Parameter> parameters) {
         Parameters updated = this.parameters.set(parameters);
         return withParameters(updated);
     }
@@ -402,8 +402,12 @@ public final class URIBuilder {
         return fragment;
     }
 
-    public List<Parameter> getParameters() {
-        return parameters.asList();
+    public Iterable<Parameter> getParameters() {
+        return parameters;
+    }
+
+    public Parameters getParametersAsObject() {
+        return parameters;
     }
 
     public Map<String, List<String>> getParametersAsMap() {
