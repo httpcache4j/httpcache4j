@@ -414,6 +414,9 @@ public final class URIBuilder {
         return parameters.asMap();
     }
 
+    /**
+     * @deprecated use {@link Parameters#parse(String)} instead.
+     */
     @Deprecated
     public static Map<String, List<String>> toQueryMap(String query) {
         return Parameters.parse(query).asMap();
