@@ -21,6 +21,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.codehaus.httpcache4j.Parameter;
+import org.codehaus.httpcache4j.Parameters;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -46,12 +47,12 @@ public final class URIBuilder {
     private final int port;
     private final List<Path> path;
     private final String fragment;
-    private final Map<String, List<String>> parameters;
+    private final Parameters parameters;
     private final boolean wasPathAbsolute;
     private final boolean endsWithSlash;
     private final String schemeSpecificPart;
 
-    private URIBuilder(String scheme, String schemeSpecificPart, String host, int port, List<Path> path, String fragment, Map<String, List<String>> parameters, boolean wasPathAbsolute, boolean endsWithSlash) {
+    private URIBuilder(String scheme, String schemeSpecificPart, String host, int port, List<Path> path, String fragment, Parameters parameters, boolean wasPathAbsolute, boolean endsWithSlash) {
         this.scheme = scheme;
         this.schemeSpecificPart = schemeSpecificPart;
         this.host = host;
@@ -185,7 +186,7 @@ public final class URIBuilder {
      * @return new URIBuilder with no parameters.
      */
     public URIBuilder noParameters() {
-        return withParameters(Collections.<String, List<String>>emptyMap());
+        return withParameters(parameters.empty());
     }
 
     /**
@@ -194,22 +195,19 @@ public final class URIBuilder {
      * @return new URIBuilder with parameters.
      */
     public URIBuilder withParameters(List<Parameter> parameters) {
-        Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>();
-        for (Parameter parameter : parameters) {
-            addToQueryMap(paraMap, parameter.getName(), parameter.getValue());
-        }
-        return withParameters(paraMap);
+        Parameters updated = this.parameters.set(parameters);
+        return withParameters(updated);
     }
 
     public URIBuilder withParameters(Map<String, List<String>> params) {
-        if (!params.isEmpty()) {
-            Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>();
-            paraMap.putAll(params);
-            params = paraMap;
-        }
-
-        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, Collections.unmodifiableMap(params), wasPathAbsolute, endsWithSlash);
+        Parameters updated = this.parameters.set(params);
+        return withParameters(updated);
     }
+
+    public URIBuilder withParameters(Parameters params) {
+        return new URIBuilder(scheme, schemeSpecificPart, host, port, path, fragment, params, wasPathAbsolute, endsWithSlash);
+    }
+
 
     /**
      * Adds a new Parameter to the collection of parameters
@@ -238,34 +236,24 @@ public final class URIBuilder {
         if (newParams.isEmpty()) {
             return this;
         }
-
-        List<Parameter> params = new ArrayList<Parameter>(getParametersAsList());
-        params.addAll(newParams);
-        return withParameters(params);
+        Parameters updated = this.parameters.add(newParams);
+        return withParameters(updated);
     }
 
     public URIBuilder addParameters(Map<String, List<String>> newParams) {
         if (newParams.isEmpty()) {
             return this;
         }
-
-        Map<String, List<String>> paraMap = new LinkedHashMap<String, List<String>>(this.parameters);
-        paraMap.putAll(newParams);
-
-        return withParameters(paraMap);
+        Parameters updated = this.parameters.add(newParams);
+        return withParameters(updated);
     }
 
     public URIBuilder removeParameters(String name) {
-        Map<String, List<String>> map = new LinkedHashMap<String, List<String>>(this.parameters);
-        map.remove(name);
-        return withParameters(map);
+        return withParameters(this.parameters.remove(name));
     }
 
     public URIBuilder replaceParameter(String name, String value) {
-        Map<String, List<String>> map = new LinkedHashMap<String, List<String>>(this.parameters);
-        map.remove(name);
-        addToQueryMap(map, name, value);
-        return withParameters(map);
+        return withParameters(this.parameters.set(name, value));
     }
 
     private String toPath(boolean encodepath) {
@@ -338,7 +326,7 @@ public final class URIBuilder {
             }
             if (!parameters.isEmpty()) {
                 sb.append("?");
-                sb.append(toQuery(sortQP));
+                sb.append(parameters.toQuery(sortQP));
             }
             if (fragment != null) {
                 sb.append("#");
@@ -350,39 +338,6 @@ public final class URIBuilder {
         }
     }
 
-    private String toQuery(boolean sort) {
-        StringBuilder builder = new StringBuilder();
-        List<Parameter> params = getParametersAsList();
-        if (sort) {
-            Collections.sort(params, new Comparator<Parameter>() {
-                @Override
-                public int compare(Parameter o1, Parameter o2) {
-                    return Collator.getInstance(Locale.getDefault()).compare(o1.getName(), o2.getName());
-                }
-            });
-        }
-        for (Parameter parameter : params) {
-            if (builder.length() > 0) {
-                builder.append("&");
-            }
-            String value = parameter.getValue();
-            builder.append(parameter.getName()).append("=").append(URIEncoder.encodeUTF8(value));
-        }
-        if (builder.length() == 0) {
-            return null;
-        }
-        return builder.toString();
-    }
-
-    private List<Parameter> getParametersAsList() {
-        List<Parameter> list = new ArrayList<Parameter>();
-        for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
-            for (String value : entry.getValue()) {
-                list.add(new Parameter(entry.getKey(), value));
-            }
-        }
-        return list;
-    }
     
     public List<Parameter> getParametersByName(final String name) {
         List<String> params = parameters.get(name);
@@ -397,11 +352,7 @@ public final class URIBuilder {
     }
 
     public String getFirstParameterValueByName(final String name) {
-        List<Parameter> list = getParametersByName(name);
-        if (!list.isEmpty()) {
-            return list.get(0).getValue();
-        }
-        return null;
+        return parameters.getFirst(name);
     }
 
     /**
@@ -412,7 +363,7 @@ public final class URIBuilder {
     public static URIBuilder fromURI(URI uri) {
         boolean pathAbsoluteness = uri.getPath() != null && uri.getPath().startsWith("/");
         boolean endsWithSlash = uri.getPath() != null && uri.getPath().endsWith("/");
-        return new URIBuilder(uri.getScheme(), uri.getSchemeSpecificPart(), uri.getHost(), uri.getPort(), toPathParts(uri.getPath()), uri.getFragment(), toQueryMap(uri.getQuery()), pathAbsoluteness, endsWithSlash);
+        return new URIBuilder(uri.getScheme(), uri.getSchemeSpecificPart(), uri.getHost(), uri.getPort(), toPathParts(uri.getPath()), uri.getFragment(), Parameters.parse(uri.getQuery()), pathAbsoluteness, endsWithSlash);
     }
 
     /**
@@ -420,7 +371,7 @@ public final class URIBuilder {
      * @return an empty URIBuilder which result of {@link #toURI()} ()} will return "".
      */
     public static URIBuilder empty() {
-        return new URIBuilder(null, "", null, -1, Collections.<Path>emptyList(), null, Collections.<String, List<String>>emptyMap(), false, false);
+        return new URIBuilder(null, "", null, -1, Collections.<Path>emptyList(), null, new Parameters(), false, false);
     }
 
     public String getScheme() {
@@ -452,46 +403,16 @@ public final class URIBuilder {
     }
 
     public List<Parameter> getParameters() {
-        return Collections.unmodifiableList(getParametersAsList());
+        return parameters.asList();
     }
 
     public Map<String, List<String>> getParametersAsMap() {
-        return Collections.unmodifiableMap(parameters);
+        return parameters.asMap();
     }
 
+    @Deprecated
     public static Map<String, List<String>> toQueryMap(String query) {
-        Map<String, List<String>> map = new LinkedHashMap<String, List<String>>();
-        if (query != null) {
-            Iterable<String> parts = Splitter.on("&").omitEmptyStrings().trimResults().split(query);
-            for (String part : parts) {
-                String[] equalParts = part.split("=");
-                String name = null;
-                String value = null;
-                if (equalParts.length == 1) {
-                    name = equalParts[0];
-                }
-                else if (equalParts.length == 2) {
-                    name = equalParts[0];
-                    value = equalParts[1];
-                }
-                if (name != null) {
-                    addToQueryMap(map, URIDecoder.decodeUTF8(name), URIDecoder.decodeUTF8(value));
-                }
-            }
-        }
-
-        return Collections.unmodifiableMap(map);
-    }
-
-    private static void addToQueryMap(Map<String, List<String>> map, String name, String value) {
-        List<String> list = map.get(name);
-        if (list == null) {
-            list = new ArrayList<String>();
-        }
-        if (value != null) {
-            list.add(value);
-        }
-        map.put(name, list);
+        return Parameters.parse(query).asMap();
     }
 
     private static List<Path> toPathParts(String path) {
