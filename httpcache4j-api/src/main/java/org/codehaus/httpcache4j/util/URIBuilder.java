@@ -366,11 +366,7 @@ public final class URIBuilder {
                 builder.append("&");
             }
             String value = parameter.getValue();
-            boolean encoded = value.contains("%");
-            if (!encoded) {
-                value = URIEncoder.encodeUTF8(value);
-            }
-            builder.append(parameter.getName()).append("=").append(value);
+            builder.append(parameter.getName()).append("=").append(URIEncoder.encodeUTF8(value));
         }
         if (builder.length() == 0) {
             return null;

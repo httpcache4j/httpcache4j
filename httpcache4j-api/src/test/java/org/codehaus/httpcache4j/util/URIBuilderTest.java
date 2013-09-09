@@ -178,7 +178,7 @@ public class URIBuilderTest {
         builder = builder.withScheme("http").withHost("example.com").addParameter("q", "with spaces");
         assertEquals("URIs did not match", uri, builder.toURI());
         uri = URI.create("http://example.com?q=%24+%26+%3C+%3E+%3F+%3B+%23+%3A+%3D+%2C+%22+%27+%7E+%2B");
-        builder = URIBuilder.empty().withScheme("http").withHost("example.com").noParameters().addParameter("q", URIEncoder.encodeUTF8("$ & < > ? ; # : = , \" ' ~ +"));
+        builder = URIBuilder.empty().withScheme("http").withHost("example.com").noParameters().addParameter("q", "$ & < > ? ; # : = , \" ' ~ +");
         assertEquals("URIs did not match", uri, builder.toURI());
     }
 
@@ -186,7 +186,7 @@ public class URIBuilderTest {
     public void testFromExistingURIWithEscapedQueryStringWithPlusSign() {
         URI uri = URI.create("http://example.com?q=a%2Bb");
         URIBuilder builder = URIBuilder.empty();
-        builder = builder.withScheme("http").withHost("example.com").addParameter("q", URIEncoder.encodeUTF8("a+b"));
+        builder = builder.withScheme("http").withHost("example.com").addParameter("q", "a+b");
         assertEquals("URIs did not match", uri, builder.toURI());
     }
 
