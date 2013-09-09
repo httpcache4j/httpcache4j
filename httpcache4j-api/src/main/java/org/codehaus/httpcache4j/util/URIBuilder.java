@@ -291,25 +291,15 @@ public final class URIBuilder {
     }
 
     public URI toURI() {
-        try {
-            if (isURN()) {
-                return new URI(scheme, schemeSpecificPart, fragment);
-            }
-            return new URI(scheme, null, host, port, toPath(true), toQuery(false), fragment);
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException(e);
-        }
+        return toURI(true, false, false);
     }
 
     public URI toNormalizedURI(boolean encodePath) {
-        try {
-            return new URI(scheme, null, host, port, toPath(encodePath), toQuery(true), fragment).normalize();
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException(e);
-        }
+        return toURI(encodePath, true, false).normalize();
     }
+
     public URI toNormalizedURI() {
-        return toNormalizedURI(false);
+        return toNormalizedURI(true);
     }
 
     /**
@@ -320,18 +310,44 @@ public final class URIBuilder {
     }
 
     public URI toAbsoluteURI() {
-        if (isRelative()) {
-            try {
-                String path = toPath(true);
-                if (!path.startsWith("/")) {
+        return toURI(true, false, true);
+    }
+
+    private URI toURI(boolean encodePath, boolean sortQP, boolean absolutify) {
+        try {
+            if (isURN()) {
+                return new URI(scheme, schemeSpecificPart, fragment);
+            }
+            StringBuilder sb = new StringBuilder();
+            if (scheme != null) {
+                sb.append(scheme);
+                sb.append("://");
+            }
+            if (host != null) {
+                sb.append(host);
+            }
+            if (port > -1) {
+                sb.append(":").append(port);
+            }
+            if (!path.isEmpty()) {
+                String path = toPath(encodePath);
+                if (absolutify && isRelative() && !path.startsWith("/")) {
                     path = "/" + path;
                 }
-                return new URI(null, null, null, -1, path, toQuery(false), fragment);
-            } catch (URISyntaxException e) {
-                throw new IllegalStateException(e);
+                sb.append(path);
             }
+            if (!parameters.isEmpty()) {
+                sb.append("?");
+                sb.append(toQuery(sortQP));
+            }
+            if (fragment != null) {
+                sb.append("#");
+                sb.append(fragment);
+            }
+            return URI.create(sb.toString());
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException(e);
         }
-        return toURI();
     }
 
     private String toQuery(boolean sort) {
@@ -349,7 +365,12 @@ public final class URIBuilder {
             if (builder.length() > 0) {
                 builder.append("&");
             }
-            builder.append(parameter);
+            String value = parameter.getValue();
+            boolean encoded = value.contains("%");
+            if (!encoded) {
+                value = URIEncoder.encodeUTF8(value);
+            }
+            builder.append(parameter.getName()).append("=").append(value);
         }
         if (builder.length() == 0) {
             return null;
@@ -436,6 +457,10 @@ public final class URIBuilder {
 
     public List<Parameter> getParameters() {
         return Collections.unmodifiableList(getParametersAsList());
+    }
+
+    public Map<String, List<String>> getParametersAsMap() {
+        return Collections.unmodifiableMap(parameters);
     }
 
     public static Map<String, List<String>> toQueryMap(String query) {
