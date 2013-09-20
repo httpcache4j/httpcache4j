@@ -166,29 +166,37 @@ public class URIBuilderTest {
         URI uri = URI.create("http://example.com/A+Testing+Escaped");
         URIBuilder builder = URIBuilder.fromURI(uri);
         assertEquals("URIs did not match", uri, builder.toURI());
-        uri = URI.create("http://example.com/%2524+%2526+%253C+%253E+%253F+%253B+%2523+%253A+%253D+%252C+%2522+%2527+%257E+%252B");
+        uri = URI.create("http://example.com/%24+%26+%3C+%3E+%3F+%3B+%23+%3A+%3D+%2C+%22+%27+%7E++");
         builder = URIBuilder.fromURI(uri);
         assertEquals("URIs did not match", uri, builder.toURI());
     }
 
     @Test
     public void testFromExistingURIWithEscapedQueryString() {
-        URI uri = URI.create("http://example.com?q=A+Testing+Escaped");
+        URI uri = URI.create("http://example.com?q=with+spaces");
         URIBuilder builder = URIBuilder.empty();
-        builder = builder.withScheme("http").withHost("example.com").addParameter("q", "A+Testing+Escaped");
+        builder = builder.withScheme("http").withHost("example.com").addParameter("q", "with spaces");
         assertEquals("URIs did not match", uri, builder.toURI());
-        uri = URI.create("http://example.com?q=%2524+%2526+%253C+%253E+%253F+%253B+%2523+%253A+%253D+%252C+%2522+%2527+%257E+%252B");
-        builder = URIBuilder.empty().withScheme("http").withHost("example.com").noParameters().addParameter("q", URIEncoder.encodeUTF8("$ & < > ? ; # : = , \" ' ~ +"));
+        uri = URI.create("http://example.com?q=%24+%26+%3C+%3E+%3F+%3B+%23+%3A+%3D+%2C+%22+%27+%7E+%2B");
+        builder = URIBuilder.empty().withScheme("http").withHost("example.com").noParameters().addParameter("q", "$ & < > ? ; # : = , \" ' ~ +");
         assertEquals("URIs did not match", uri, builder.toURI());
     }
 
     @Test
     public void testFromExistingURIWithEscapedQueryStringWithPlusSign() {
-        URI uri = URI.create("http://example.com?q=a%252Bb");
+        URI uri = URI.create("http://example.com?q=a%2Bb");
         URIBuilder builder = URIBuilder.empty();
-        builder = builder.withScheme("http").withHost("example.com").addParameter("q", URIEncoder.encodeUTF8("a+b"));
+        builder = builder.withScheme("http").withHost("example.com").addParameter("q", "a+b");
         assertEquals("URIs did not match", uri, builder.toURI());
-    }    
+    }
+
+    @Test
+    public void testFromExistingURIWithEscapedQueryStringWithAmpersand() {
+        URI uri = URI.create("http://example.com?q=B%26W");
+        URIBuilder builder = URIBuilder.empty();
+        builder = builder.withScheme("http").withHost("example.com").addParameter("q", "B&W");
+        assertEquals("URIs did not match", uri, builder.toURI());
+    }
 
     @Test
     public void testFromExistingQueryWithNullValue() {
