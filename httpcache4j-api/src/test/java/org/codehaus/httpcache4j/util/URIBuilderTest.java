@@ -15,12 +15,12 @@
 
 package org.codehaus.httpcache4j.util;
 
+import com.google.common.collect.Iterables;
 import org.codehaus.httpcache4j.Parameter;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -224,7 +224,7 @@ public class URIBuilderTest {
         URI uri = URI.create("lala?=hei");
         URIBuilder builder = URIBuilder.fromURI(uri);
         assertEquals("URIs did not match", uri, builder.toURI());
-        List<Parameter> parameters = builder.getParameters();
-        assertEquals(1, parameters.size());
+        Iterable<Parameter> parameters = builder.getParameters();
+        assertEquals(1, Iterables.size(parameters));
     }
 }
