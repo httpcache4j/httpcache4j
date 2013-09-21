@@ -20,7 +20,7 @@
   <groupId>org.codehaus.httpcache4j</groupId>
   <artifactId>httpcache4j</artifactId>
   <packaging>pom</packaging>
-  <version>4.0-M7-SNAPSHOT</version>
+  <version>4.0-RC1</version>
   <name>Java HTTP cache</name>
   <url>http://httpcache4j.codehaus.org</url>
   <description>HttpCache4j is a library for caching HTTP requests from a client.</description>
@@ -254,6 +254,7 @@
     <connection>scm:git:git://git.codehaus.org/httpcache4j.git</connection>
     <developerConnection>scm:git:ssh://git@git.codehaus.org/httpcache4j.git</developerConnection>
     <url>http://fisheye.codehaus.org/browse/httpcache4j</url>
+    <tag>httpcache4j-4.0-RC1</tag>
   </scm>
 
   <distributionManagement>
