@@ -51,7 +51,7 @@ public class Parameters implements Iterable<Parameter> {
         return add(Arrays.asList(param));
     }
 
-    public Parameters add(List<Parameter> params) {
+    public Parameters add(Iterable<Parameter> params) {
         Map<String, List<String>> map = toMap(params);
         return add(map);
     }
