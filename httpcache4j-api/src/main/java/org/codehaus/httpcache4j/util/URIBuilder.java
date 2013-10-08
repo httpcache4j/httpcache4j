@@ -232,8 +232,8 @@ public final class URIBuilder {
      * Adds Parameters to the collection of parameters
      * @return a new instance of the URIBuilder
      */
-    public URIBuilder addParameters(List<Parameter> newParams) {
-        if (newParams.isEmpty()) {
+    public URIBuilder addParameters(Iterable<Parameter> newParams) {
+        if (!newParams.iterator().hasNext()) {
             return this;
         }
         Parameters updated = this.parameters.add(newParams);
