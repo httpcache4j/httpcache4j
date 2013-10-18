@@ -40,11 +40,18 @@ public class Parameters implements Iterable<Parameter> {
 
     public boolean contains(Parameter parameter) {
         List<String> values = parameters.get(parameter.getName());
-        return values != null && values.contains(parameter.getValue());
+        return values != null && (values.isEmpty() && parameter.getValue().isEmpty() || values.contains(parameter.getValue()));
     }
 
-    public Parameters add(String name, String value) {
-        return add(new Parameter(name, value));
+    public Parameters add(String name, String... value) {
+        List<Parameter> p = new ArrayList<Parameter>();
+        if (value.length == 0) {
+            p.add(new Parameter(name, null));
+        }
+        for (String v: value) {
+            p.add(new Parameter(name, v));
+        }
+        return add(p);
     }
 
     public Parameters add(Parameter param) {
@@ -57,6 +64,9 @@ public class Parameters implements Iterable<Parameter> {
     }
 
     public Parameters add(Map<String, List<String>> params) {
+        if (params.isEmpty()) {
+            return this;
+        }
         LinkedHashMap<String, List<String>> copy = copy();
         copy.putAll(params);
         return new Parameters(copy);
@@ -119,6 +129,9 @@ public class Parameters implements Iterable<Parameter> {
     public List<Parameter> asList() {
         List<Parameter> list = new ArrayList<Parameter>();
         for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
+            if (entry.getValue().isEmpty()) {
+                list.add(new Parameter(entry.getKey(), ""));
+            }
             for (String value : entry.getValue()) {
                 list.add(new Parameter(entry.getKey(), value));
             }
@@ -146,7 +159,12 @@ public class Parameters implements Iterable<Parameter> {
                 builder.append("&");
             }
             String value = parameter.getValue();
-            builder.append(parameter.getName()).append("=").append(URIEncoder.encodeUTF8(value));
+            if (value != null && value.isEmpty()) {
+                builder.append(parameter.getName());
+            }
+            else {
+                builder.append(parameter.getName()).append("=").append(URIEncoder.encodeUTF8(value));
+            }
         }
         if (builder.length() == 0) {
             return null;

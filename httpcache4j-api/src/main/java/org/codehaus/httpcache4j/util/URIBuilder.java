@@ -240,6 +240,11 @@ public final class URIBuilder {
         return withParameters(updated);
     }
 
+    public URIBuilder addParameters(String name, String... values) {
+        Parameters updated = this.parameters.add(name, values);
+        return withParameters(updated);
+    }
+
     public URIBuilder addParameters(Map<String, List<String>> newParams) {
         if (newParams.isEmpty()) {
             return this;

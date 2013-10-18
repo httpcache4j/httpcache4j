@@ -24,6 +24,7 @@ import java.net.URI;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -102,6 +103,12 @@ public class URIBuilderTest {
     @Test
     public void testFromURIWithSingleParameter() {
         URI uri = URI.create("http://www.example.com/a/path/here?foo=bar");
+        URIBuilder builder = URIBuilder.fromURI(uri);
+        assertEquals("URIs did not match", uri, builder.toURI());
+    }
+    @Test
+    public void testFromURIWithSingleParameterNoValue() {
+        URI uri = URI.create("http://www.example.com/a/path/here?foo");
         URIBuilder builder = URIBuilder.fromURI(uri);
         assertEquals("URIs did not match", uri, builder.toURI());
     }
@@ -200,9 +207,18 @@ public class URIBuilderTest {
 
     @Test
     public void testFromExistingQueryWithNullValue() {
-        URI uri = URI.create("http://example.com?q=");
+        URI uri = URI.create("http://example.com?q");
         URIBuilder builder = URIBuilder.empty().withScheme("http").withHost("example.com").addParameter("q", null);
         assertEquals("URIs did not match", uri, builder.toURI());
+    }
+
+    @Test
+    public void addParameterToEmptyParameter() {
+        URI uri = URI.create("http://example.com?q");
+        URIBuilder builder = URIBuilder.fromURI(uri).addParameter("bar", "baz");
+        assertEquals("URIs did not match", URI.create("http://example.com?q&bar=baz"), builder.toURI());
+        builder = URIBuilder.fromURI(URI.create("http://example.com?q&bar=baz"));
+        assertTrue(builder.getParametersAsObject().contains("q", null));
     }
 
     @Test
