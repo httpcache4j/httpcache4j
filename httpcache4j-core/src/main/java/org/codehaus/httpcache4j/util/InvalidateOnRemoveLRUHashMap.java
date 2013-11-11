@@ -55,7 +55,7 @@ public class InvalidateOnRemoveLRUHashMap extends LinkedHashMap<URI, Map<Vary, C
         return null;
     }
 
-    public CacheItem remove(URI uri) {
+    public void remove(URI uri) {
         Map<Vary, CacheItem> varyCacheItemMap = super.get(uri);
         if (varyCacheItemMap != null) {
             for (Vary vary : varyCacheItemMap.keySet()) {
@@ -64,9 +64,8 @@ public class InvalidateOnRemoveLRUHashMap extends LinkedHashMap<URI, Map<Vary, C
                     listener.onRemoveFromMap(key);
                 }
             }
-
+            super.remove(uri);
         }
-        return null;
     }
 
     public void setListener(RemoveListener listener) {
