@@ -19,7 +19,6 @@ package org.codehaus.httpcache4j;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
-import com.google.common.collect.Ranges;
 
 import java.util.Collection;
 import java.util.Map;
@@ -82,7 +81,7 @@ public final class Status implements Comparable<Status> {
         private final Range<Integer> range;
 
         private Category(int min, int max) {
-            range = Ranges.closed(min, max);
+            range = Range.closed(min, max);
         }
 
         public boolean contains(Status status) {

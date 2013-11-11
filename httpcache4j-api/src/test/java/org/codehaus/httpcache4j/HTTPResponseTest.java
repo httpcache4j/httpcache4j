@@ -23,8 +23,6 @@ import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.StringPayload;
 import org.junit.Test;
 
-import javax.annotation.Nullable;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 
