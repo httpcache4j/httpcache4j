@@ -75,6 +75,15 @@
       <name>Imran M Yousuf</name>
       <email>imran@smartitengineering.com</email>
     </contributor>
+    <contributor>
+      <name>Stig Henriksen</name>
+    </contributor>
+    <contributor>
+      <name>Hans Kristian Kismul</name>
+    </contributor>
+    <contributor>
+      <name>Kåre Blakstad</name>
+    </contributor>
   </contributors>
 
   <build>
@@ -287,7 +296,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-enforcer-plugin</artifactId>
-            <version>1.0</version>
+            <version>1.3.1</version>
             <executions>
               <execution>
                 <goals>
@@ -313,7 +322,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.1</version>
+            <version>1.4</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -326,93 +335,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>reporting-aggregate</id>
-      <!-- To generate aggregate reports -->
-      <!-- To deploy both aggregate reports for top-level project and standalone reports for modules, call
-           mvn site -Preporting-aggregate
-           mvn -Pdist assembly:single
-           mvn -N site:deploy
-
-mvn site -Preporting-aggregate && && mvn -N -Pdist assembly:single && mvn -N site:deploy
-      -->
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.7</version>
-            <executions>
-              <execution>
-                <id>aggregate</id>
-                <inherited>false</inherited>
-                <goals>
-                  <goal>aggregate</goal>
-                </goals>
-                <phase>site</phase>
-                <configuration>
-                  <links>
-                    <!-- TODO: Fix these links -->
-                    <link>http://java.sun.com/j2se/1.5.0/docs/api</link>
-                    <link>http://junit.sourceforge.net/javadoc/</link>
-                  </links>
-                  <maxmemory>1024m</maxmemory>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <artifactId>maven-site-plugin</artifactId>
-            <configuration>
-              <reportPlugins>
-                <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-jxr-plugin</artifactId>
-                  <version>2.1</version>
-                  <configuration>
-                    <aggregate>true</aggregate>
-                  </configuration>
-                </plugin>
-              </reportPlugins>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>dist</id>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <version>2.2</version>
-            <configuration>
-              <appendAssemblyId>false</appendAssemblyId>
-              <attach>false</attach>
-              <descriptors>
-                <descriptor>src/assembly/dist.xml</descriptor>
-              </descriptors>
-              <outputDirectory>${project.build.directory}/site/download</outputDirectory>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-
-      <dependencies>
-        <dependency>
-          <groupId>org.codehaus.httpcache4j</groupId>
-          <artifactId>httpcache4j-core</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.codehaus.httpcache4j.resolvers</groupId>
-          <artifactId>resolvers-commons-httpclient</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.codehaus.httpcache4j.resolvers</groupId>
-          <artifactId>resolvers-net-urlconnection</artifactId>
-        </dependency>
-      </dependencies>
     </profile>
   </profiles>
 </project>
