@@ -101,8 +101,13 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     public final HTTPResponse update(final HTTPRequest request, final HTTPResponse response) {
+        write.lock();
         Key key = Key.create(request, response);
-        return putImpl(key, response);
+        try {
+            return putImpl(key, response);
+        } finally {
+            write.unlock();
+        }
     }
 
     protected Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException {
