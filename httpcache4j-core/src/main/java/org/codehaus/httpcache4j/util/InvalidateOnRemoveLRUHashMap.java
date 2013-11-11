@@ -64,9 +64,8 @@ public class InvalidateOnRemoveLRUHashMap extends LinkedHashMap<URI, Map<Vary, C
                     listener.onRemoveFromMap(key);
                 }
             }
-            super.remove(key.getURI());
+            super.remove(uri);
         }
-        return null;
     }
 
     public void setListener(RemoveListener listener) {
