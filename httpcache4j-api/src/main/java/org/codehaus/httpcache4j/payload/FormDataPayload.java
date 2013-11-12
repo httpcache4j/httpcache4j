@@ -22,7 +22,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.Parameter;
-import org.codehaus.httpcache4j.util.URIEncoder;
+import org.codehaus.httpcache4j.uri.URIEncoder;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

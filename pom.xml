@@ -165,6 +165,11 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>org.codehaus.httpcache4j.uribuilder</groupId>
+        <artifactId>uribuilder</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
         <groupId>org.codehaus.httpcache4j</groupId>
         <artifactId>httpcache4j-core</artifactId>
         <version>${project.version}</version>

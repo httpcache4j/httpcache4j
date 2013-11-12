@@ -19,7 +19,7 @@ package org.codehaus.httpcache4j;
 import com.google.common.base.Preconditions;
 
 import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.util.URIBuilder;
+import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.joda.time.DateTime;
 
 import java.net.URI;
