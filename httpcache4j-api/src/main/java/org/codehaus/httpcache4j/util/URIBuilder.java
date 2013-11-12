@@ -17,7 +17,6 @@ package org.codehaus.httpcache4j.util;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.codehaus.httpcache4j.Parameter;
@@ -25,7 +24,6 @@ import org.codehaus.httpcache4j.Parameters;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.Collator;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -368,7 +366,7 @@ public final class URIBuilder {
     public static URIBuilder fromURI(URI uri) {
         boolean pathAbsoluteness = uri.getPath() != null && uri.getPath().startsWith("/");
         boolean endsWithSlash = uri.getPath() != null && uri.getPath().endsWith("/");
-        return new URIBuilder(uri.getScheme(), uri.getSchemeSpecificPart(), uri.getHost(), uri.getPort(), toPathParts(uri.getPath()), uri.getFragment(), Parameters.parse(uri.getQuery()), pathAbsoluteness, endsWithSlash);
+        return new URIBuilder(uri.getScheme(), uri.getSchemeSpecificPart(), uri.getHost(), uri.getPort(), toPathParts(uri.getPath()), uri.getFragment(), Parameters.parse(uri.getRawQuery()), pathAbsoluteness, endsWithSlash);
     }
 
     /**

@@ -17,10 +17,12 @@ package org.codehaus.httpcache4j.util;
 
 import com.google.common.collect.Iterables;
 import org.codehaus.httpcache4j.Parameter;
+import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -90,6 +92,12 @@ public class URIBuilderTest {
         URIBuilder builder = URIBuilder.empty();
         builder = builder.withScheme("http").withHost("www.example.com").withPath("a", "path", "here").addParameter("foo", "bar").addParameter("bar", "foo");
         assertEquals("URIs did not match", uri, builder.toNormalizedURI());
+    }
+
+    @Test
+    public void testNormalizedFromURIWithEncodedQueryParameters() {
+        URI uri = URI.create("http://example.com?q=" + URIEncoder.encodeUTF8("2013-11-12T14:40:17.967+01:00"));
+        assertEquals("URIs did not match", uri, URIBuilder.fromURI(uri).toNormalizedURI());
     }
 
     @Test
