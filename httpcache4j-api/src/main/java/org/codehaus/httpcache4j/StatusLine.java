@@ -22,7 +22,7 @@ public final class StatusLine {
     public StatusLine(HTTPVersion version, Status status, String message) {
         this.version = Preconditions.checkNotNull(version, "Version may not be null");
         this.status = Preconditions.checkNotNull(status, "Status may not be null");
-        this.message = message == null ? "" : message;
+        this.message = message == null ? status.getName() : message;
     }
 
     public HTTPVersion getVersion() {
@@ -63,5 +63,10 @@ public final class StatusLine {
         int result = version != null ? version.hashCode() : 0;
         result = 31 * result + (status != null ? status.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "HTTP/" + version.toString() + " " + status.getCode() + " " + message;
     }
 }
