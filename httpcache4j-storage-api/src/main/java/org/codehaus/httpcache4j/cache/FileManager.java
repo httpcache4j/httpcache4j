@@ -17,12 +17,12 @@ package org.codehaus.httpcache4j.cache;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import com.google.common.io.OutputSupplier;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
+import org.codehaus.httpcache4j.util.Digester;
 
 import java.io.*;
 import java.net.URI;
@@ -98,13 +98,13 @@ public final class FileManager implements Serializable {
             vary = "default";
         }
         else {
-            vary = Hashing.md5().hashString(key.getVary().toString(), Charsets.UTF_8).toString().trim();
+            vary = Digester.md5(key.getVary().toString(), Charsets.UTF_8);
         }
         return new File(uriFolder, vary);
     }
 
     public synchronized File resolve(URI uri) {
-        String uriHex = Hashing.md5().hashString(uri.toString(), Charsets.UTF_8).toString().trim();
+        String uriHex = Digester.md5(uri.toString(), Charsets.UTF_8);
         String distribution = uriHex.substring(0, 2);
         return new File(new File(baseDirectory, distribution), uriHex);
     }

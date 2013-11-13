@@ -16,11 +16,11 @@
 package org.codehaus.httpcache4j.auth.digest;
 
 import com.google.common.base.Strings;
-import com.google.common.hash.Hashing;
 import org.codehaus.httpcache4j.*;
+import org.codehaus.httpcache4j.util.Digester;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -131,11 +131,7 @@ public class RequestDigest {
         switch (algorithm) {
             case MD5:
             case MD5_SESSION:
-                try {
-                    return Hashing.md5().hashBytes(input.getBytes(charset)).toString();
-                } catch (UnsupportedEncodingException e) {
-                    throw new Error(e);
-                }
+                return Digester.md5(input, Charset.forName(charset));
             case TOKEN:
             default:
                 throw new IllegalArgumentException("No such algorithm");
