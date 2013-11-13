@@ -19,12 +19,12 @@ package org.codehaus.httpcache4j;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.io.Closeables;
 import org.codehaus.httpcache4j.annotation.Internal;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.joda.time.DateTime;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collections;
@@ -168,23 +168,31 @@ public final class HTTPResponse {
     }
 
     public <A> Optional<A> transform(final Function<Payload, A> f) {
-        return Optional.fromNullable(payload).transform(new Function<Payload, A>() {
-            @Override
-            public A apply(Payload payload) {
-                InputStream stream = payload.getInputStream();
-                try {
-                    InputStreamPayload transformed = new InputStreamPayload(stream, payload.getMimeType(), payload.length());
-                    return f.apply(transformed);
-                } finally {
-                    Closeables.closeQuietly(stream);
-                }
+        if (hasPayload()) {
+            InputStream is = payload.getInputStream();
+            try {
+                InputStreamPayload isp = new InputStreamPayload(is, payload.getMimeType(), payload.length());
+                return Optional.fromNullable(f.apply(isp));
+            } finally {
+                closeQuietly(is);
             }
-        });
+        }
+        return Optional.absent();
     }
 
     public void consume() {
         if (hasPayload()) {
-            Closeables.closeQuietly(payload.getInputStream());
+            closeQuietly(payload.getInputStream());
+        }
+    }
+
+    private void closeQuietly(InputStream is) {
+        try {
+            if (is != null) {
+                is.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
