@@ -10,7 +10,7 @@ public class Digester {
     }
 
     public static String sha256(byte[] bytes) {
-        return doDigest(bytes, "SHA-1");
+        return doDigest(bytes, "SHA-256");
     }
 
     public static String sha1(String bytes, Charset charset) {
