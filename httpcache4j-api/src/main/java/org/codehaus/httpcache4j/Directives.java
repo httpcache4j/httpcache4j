@@ -26,7 +26,7 @@ import java.util.*;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class Directives implements Iterable<Directive>, Serializable {
+public final class Directives implements Iterable<Directive>, Serializable {
     private final Map<String, Directive> directives;
 
     public Directives(Iterable<Directive> directives) {

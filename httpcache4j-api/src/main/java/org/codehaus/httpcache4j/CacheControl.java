@@ -8,7 +8,7 @@ import org.codehaus.httpcache4j.util.NumberUtils;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class CacheControl {
+public final class CacheControl {
     private final Directives directives;
 
     public CacheControl(String value) {

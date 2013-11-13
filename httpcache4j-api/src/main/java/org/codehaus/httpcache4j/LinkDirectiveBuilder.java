@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class LinkDirectiveBuilder {
+public final class LinkDirectiveBuilder {
     private final LinkMap parameters = new LinkMap();
     private final URI uri;
 
