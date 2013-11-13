@@ -43,7 +43,7 @@ public class ResponseWriter extends AbstractHTTPWriter {
     }
 
     private void writeStatus(PrintStream writer, StatusLine status) {
-        println(writer, String.format("%s %s %s", status.getStatus().getCode(), status.getMessage(), status.getVersion()));
+        println(writer, status.toString());
         writer.print("\r\n");
     }
 }
