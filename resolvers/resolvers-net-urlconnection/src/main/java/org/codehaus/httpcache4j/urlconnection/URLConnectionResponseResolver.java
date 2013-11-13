@@ -15,9 +15,6 @@
 
 package org.codehaus.httpcache4j.urlconnection;
 
-import com.google.common.base.Preconditions;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
 import org.codehaus.httpcache4j.auth.DefaultProxyAuthenticator;
@@ -25,6 +22,7 @@ import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
 import org.codehaus.httpcache4j.resolver.ConnectionConfiguration;
 import org.codehaus.httpcache4j.resolver.ResolverConfiguration;
+import org.codehaus.httpcache4j.util.IOUtils;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
@@ -117,9 +115,9 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
                     connection.setChunkedStreamingMode(2048);
                 }
                 connectionStream = connection.getOutputStream();
-                ByteStreams.copy(requestStream, connectionStream);
+                IOUtils.copy(requestStream, connectionStream);
             } finally {
-                Closeables.closeQuietly(requestStream);
+                IOUtils.closeQuietly(requestStream);
             }
         }
     }

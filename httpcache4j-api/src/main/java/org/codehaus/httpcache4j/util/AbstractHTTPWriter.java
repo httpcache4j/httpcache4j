@@ -1,7 +1,5 @@
 package org.codehaus.httpcache4j.util;
 
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.Headers;
@@ -36,14 +34,14 @@ public abstract class AbstractHTTPWriter {
         writer.print("\r\n");
         InputStream stream = payload.getInputStream();
         try {
-            ByteStreams.copy(stream, writer);
+            IOUtils.copy(stream, writer);
             writer.print("\r\n");
         }
         catch (IOException e) {
             throw new HTTPException("Unable to write the body of the response", e);
         }
         finally {
-            Closeables.closeQuietly(stream);
+            IOUtils.closeQuietly(stream);
         }
     }
 

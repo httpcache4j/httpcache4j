@@ -22,9 +22,9 @@ import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.annotation.Internal;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
+import org.codehaus.httpcache4j.util.IOUtils;
 import org.joda.time.DateTime;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collections;
@@ -174,7 +174,7 @@ public final class HTTPResponse {
                 InputStreamPayload isp = new InputStreamPayload(is, payload.getMimeType(), payload.length());
                 return Optional.fromNullable(f.apply(isp));
             } finally {
-                closeQuietly(is);
+                IOUtils.closeQuietly(is);
             }
         }
         return Optional.absent();
@@ -182,17 +182,7 @@ public final class HTTPResponse {
 
     public void consume() {
         if (hasPayload()) {
-            closeQuietly(payload.getInputStream());
-        }
-    }
-
-    private void closeQuietly(InputStream is) {
-        try {
-            if (is != null) {
-                is.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+            IOUtils.closeQuietly(payload.getInputStream());
         }
     }
 
