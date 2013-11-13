@@ -130,6 +130,10 @@ public final class MIMEType {
         return includes;
     }
 
+    public boolean includes(String mimeType) {
+        return includes(valueOf(mimeType));
+    }
+
     public String getParameter(String name) {
         return mimeType.getParameter(name);
     }
@@ -165,5 +169,9 @@ public final class MIMEType {
 
     public static MIMEType valueOf(final String primaryType, final String subType) {
         return new MIMEType(primaryType, subType);
+    }
+
+    public static boolean includes(String mimeType1, String mimeType2) {
+        return valueOf(mimeType1).includes(MIMEType.valueOf(mimeType2));
     }
 }
