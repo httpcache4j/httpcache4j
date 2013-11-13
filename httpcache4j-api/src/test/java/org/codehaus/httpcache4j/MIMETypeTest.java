@@ -85,7 +85,7 @@ public class MIMETypeTest {
         assertTrue("All type did not include jpeg type", type.includes(jpegType));
         type = MIMEType.valueOf("image", "jpg");
         assertTrue("Same type was not the same as jpeg type", type.includes(jpegType));
-        assertTrue("type type did not include null type", type.includes(null));
+        assertTrue("type type did not include null type", type.includes((MIMEType)null));
     }
 
     @Test
