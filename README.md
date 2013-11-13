@@ -1,5 +1,7 @@
 # HTTPCache4j a Java Browser cache.
 
+[![Build Status](https://travis-ci.org/httpcache4j/httpcache4j.png)](https://travis-ci.org/httpcache4j/httpcache4j)
+
 HTTP Cache 4 Java is a project that tries to uphold the caching rules defined in HTTP.
 The rules are mostly defined in [Section 13](http://tools.ietf.org/html/rfc2616#section-13) in RFC2616.
 The rules are changing slightly in httpbis, and will result in a new set of RFCs which will invalidate RFC2616.
