@@ -16,12 +16,11 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.collect.Sets;
-import com.google.common.io.Closeables;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.ByteArrayPayload;
+import org.codehaus.httpcache4j.util.IOUtils;
 import org.codehaus.httpcache4j.util.InvalidateOnRemoveLRUHashMap;
 
 import java.net.URI;
@@ -63,7 +62,7 @@ public class MemoryCacheStorage implements CacheStorage {
             } catch (IOException ignore) {
             }
             finally {
-                Closeables.closeQuietly(stream);
+                IOUtils.closeQuietly(stream);
             }
         }
         else {
@@ -208,7 +207,7 @@ public class MemoryCacheStorage implements CacheStorage {
     public final Iterator<Key> iterator() {
         read.lock();
         try {
-            HashSet<Key> keys = Sets.newHashSet();
+            HashSet<Key> keys = new HashSet<Key>();
             for (Map.Entry<URI, Map<Vary, CacheItem>> entry : cache.entrySet()) {
                 for (Vary vary : entry.getValue().keySet()) {
                     keys.add(new Key(entry.getKey(), vary));
