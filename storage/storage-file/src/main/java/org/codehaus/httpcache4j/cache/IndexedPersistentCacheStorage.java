@@ -18,7 +18,7 @@ import java.util.Set;
  */
 @Beta
 public class IndexedPersistentCacheStorage implements CacheStorage, RemovalListener<Key, CacheItem> {
-    private final PersistentCacheStorage2 backing;
+    private final FilePersistentCacheStorage backing;
     private final Cache<Key, CacheItem> index;
     private final CacheLoader<Key, CacheItem> loader;
 
@@ -27,7 +27,7 @@ public class IndexedPersistentCacheStorage implements CacheStorage, RemovalListe
     }
 
     public IndexedPersistentCacheStorage(File storageDir, int maxSize) {
-        backing = new PersistentCacheStorage2(storageDir);
+        backing = new FilePersistentCacheStorage(storageDir);
         loader = new CacheLoader<Key, CacheItem>() {
             @Override
             public CacheItem load(Key key) throws Exception {

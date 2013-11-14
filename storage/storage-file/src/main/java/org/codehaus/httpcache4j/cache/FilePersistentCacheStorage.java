@@ -17,8 +17,6 @@
 package org.codehaus.httpcache4j.cache;
 
 import com.google.common.annotations.Beta;
-import com.google.common.collect.Iterators;
-import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.HTTPRequest;
@@ -35,13 +33,15 @@ import java.util.*;
 /**
  * Completely file-persistent storage, also for metadata.
  *
+ * TODO: This will be greatly improved by Java 7 NIO 2
+ *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 @Beta
-public class PersistentCacheStorage2 implements CacheStorage {
+public class FilePersistentCacheStorage implements CacheStorage {
     private final FileManager fileManager;
 
-    public PersistentCacheStorage2(final File storageDirectory) {
+    public FilePersistentCacheStorage(final File storageDirectory) {
         fileManager = new FileManager(storageDirectory);
     }
 
@@ -90,7 +90,9 @@ public class PersistentCacheStorage2 implements CacheStorage {
             writer = new FileWriter(metadata);
             properties.store(writer, null);
         } finally {
-            Closeables.closeQuietly(writer);
+            if (writer != null) {
+                writer.close();
+            }
         }
     }
 
@@ -175,6 +177,7 @@ public class PersistentCacheStorage2 implements CacheStorage {
 
     @Override
     public synchronized Iterator<Key> iterator() {
+        //TODO: Consider making this lazy if possible.
         List<Key> keys = new ArrayList<Key>();
         File base = fileManager.getBaseDirectory();
         for (File hash : new FilesIterable(base.listFiles())) {
@@ -207,7 +210,7 @@ public class PersistentCacheStorage2 implements CacheStorage {
             if (files == null) {
                 return Collections.<File>emptyList().iterator();
             }
-            return Iterators.forArray(files);
+            return Arrays.asList(files).iterator();
         }
     }
 
