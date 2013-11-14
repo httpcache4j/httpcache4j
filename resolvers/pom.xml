@@ -61,14 +61,9 @@
         <artifactId>httpcache4j-api</artifactId>
         <version>${project.version}</version>
       </dependency>
-      <dependency>
-        <groupId>org.mockito</groupId>
-        <artifactId>mockito-core</artifactId>
-        <version>1.7</version>
-        <scope>test</scope>
-      </dependency>
     </dependencies>
   </dependencyManagement>
+<!--
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -78,6 +73,7 @@
     </dependency>
 
   </dependencies>
+-->
 
   <modules>
     <module>resolvers-commons-httpclient</module>

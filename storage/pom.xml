@@ -28,6 +28,7 @@
   <packaging>pom</packaging>
   <name>Java HTTP cache :: Storage Engines</name>
 
+<!--
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -36,6 +37,7 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+-->
 
   <modules>
     <module>storage-file</module>
