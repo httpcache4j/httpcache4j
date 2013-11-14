@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.codehaus.httpcache4j.resolvers</groupId>
     <artifactId>resolvers</artifactId>
-    <version>4.0-RC2</version>
+    <version>4.0-RC3-SNAPSHOT</version>
   </parent>
   <artifactId>resolvers-commons-httpclient</artifactId>
   <packaging>jar</packaging>
