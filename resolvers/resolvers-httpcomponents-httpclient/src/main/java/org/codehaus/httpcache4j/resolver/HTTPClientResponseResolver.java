@@ -16,39 +16,29 @@
 package org.codehaus.httpcache4j.resolver;
 
 import org.apache.http.annotation.NotThreadSafe;
-import org.apache.http.client.params.HttpClientParams;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.impl.client.AbstractHttpClient;
-import org.apache.http.impl.conn.PoolingClientConnectionManager;
-import org.apache.http.impl.conn.SchemeRegistryFactory;
-import org.apache.http.params.*;
-import org.apache.http.protocol.RequestContent;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.StatusLine;
 import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.*;
 import org.apache.http.*;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.entity.InputStreamEntity;
 import org.codehaus.httpcache4j.payload.Payload;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 public class HTTPClientResponseResolver extends AbstractResponseResolver {
-    private final HttpClient httpClient;
+    private final CloseableHttpClient httpClient;
 
 
     /**
@@ -57,77 +47,22 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
      * Sets the user agent with the configured user agent.
      *
      */
-    public HTTPClientResponseResolver(HttpClient httpClient, ResolverConfiguration configuration) {
+    public HTTPClientResponseResolver(CloseableHttpClient httpClient, ResolverConfiguration configuration) {
         super(configuration);
         this.httpClient = httpClient;
-
-        HTTPHost proxyHost = getProxyAuthenticator().getConfiguration().getHost();
-        HttpParams params = httpClient.getParams();
-        if (params == null) {
-            params = new BasicHttpParams();
-            if (httpClient instanceof AbstractHttpClient) {
-                ((AbstractHttpClient) httpClient).setParams(params);
-            }
-        }
-        if (httpClient instanceof AbstractHttpClient) {
-            ConnectionConfiguration config = configuration.getConnectionConfiguration();
-            AbstractHttpClient client = (AbstractHttpClient) httpClient;
-            client.getCredentialsProvider().clear();
-            ClientConnectionManager connectionManager = client.getConnectionManager();
-            if (connectionManager instanceof PoolingClientConnectionManager) {
-                PoolingClientConnectionManager cm = (PoolingClientConnectionManager) connectionManager;
-                if (config.getDefaultConnectionsPerHost().isPresent()) {
-                    cm.setDefaultMaxPerRoute(config.getDefaultConnectionsPerHost().get());
-                }
-                if (config.getMaxConnections().isPresent()) {
-                    cm.setMaxTotal(config.getMaxConnections().get());
-                }
-                for (Map.Entry<HTTPHost, Integer> entry : config.getConnectionsPerHost().entrySet()) {
-                    HTTPHost host = entry.getKey();
-                    cm.setMaxPerRoute(new HttpRoute(new HttpHost(host.getHost(), host.getPort(), host.getScheme())), entry.getValue());
-                }
-            }
-            if (config.getSocketTimeout().isPresent()) {
-                HttpConnectionParams.setSoTimeout(params, config.getSocketTimeout().get());
-            }
-            if (config.getTimeout().isPresent()) {
-                HttpConnectionParams.setConnectionTimeout(params, config.getTimeout().get());
-            }
-
-        }
-        if (httpClient instanceof DefaultHttpClient) {
-            DefaultHttpClient client = (DefaultHttpClient) httpClient;
-            client.removeRequestInterceptorByClass(RequestContent.class);
-            client.addRequestInterceptor(new RequestContent(true));
-        }
-        HttpClientParams.setAuthenticating(params, false);
-        if (proxyHost != null) {
-            HttpHost host = new HttpHost(proxyHost.getHost(), proxyHost.getPort(), proxyHost.getScheme());
-            params.setParameter(ConnRoutePNames.DEFAULT_PROXY, host);
-        }
-        params.setParameter(CoreProtocolPNames.USER_AGENT, getConfiguration().getUserAgent());
     }
 
-    public HTTPClientResponseResolver(HttpClient httpClient, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
+    public HTTPClientResponseResolver(CloseableHttpClient httpClient, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
         this(httpClient, new ResolverConfiguration(proxyAuthenticator, authenticator, new ConnectionConfiguration()));
     }
     
-    public HTTPClientResponseResolver(HttpClient httpClient, ProxyConfiguration proxyConfiguration) {
+    public HTTPClientResponseResolver(CloseableHttpClient httpClient, ProxyConfiguration proxyConfiguration) {
         this(httpClient, new DefaultProxyAuthenticator(proxyConfiguration), new DefaultAuthenticator());
     }
 
-    public HTTPClientResponseResolver(HttpClient httpClient) {
+    public HTTPClientResponseResolver(CloseableHttpClient httpClient) {
         this(httpClient, new ProxyConfiguration());
     }
-
-    public static HTTPClientResponseResolver createMultithreadedInstance(ResolverConfiguration configuration) {
-        DefaultHttpClient client = new DefaultHttpClient(
-                new PoolingClientConnectionManager(SchemeRegistryFactory.createDefault()),
-                new SyncBasicHttpParams()
-        );
-        return new HTTPClientResponseResolver(client, configuration);
-    }
-
 
     public static HTTPClientResponseResolver createMultithreadedInstance(ConnectionConfiguration config) {
         return createMultithreadedInstance(new ResolverConfiguration().withConnectionConfiguration(config));
@@ -137,7 +72,13 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         return createMultithreadedInstance(new ConnectionConfiguration());
     }
 
-    public final HttpClient getHttpClient() {
+    public static HTTPClientResponseResolver createMultithreadedInstance(ResolverConfiguration configuration) {
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        CloseableHttpClient client = new HttpClientFactory().configure(builder, configuration);
+        return new HTTPClientResponseResolver(client, configuration);
+    }
+
+    public final CloseableHttpClient getHttpClient() {
         return httpClient;
     }
 
@@ -148,16 +89,19 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         return convertResponse(realRequest, response);
     }
 
+    @Deprecated
     public void setRedirecting(boolean redirect) {
-        HttpClientParams.setRedirecting(httpClient.getParams(), redirect);
-    }
-
-    public boolean isRedirecting() {
-        return HttpClientParams.isRedirecting(httpClient.getParams());
+        throw new UnsupportedOperationException("You need to set this when creating the HttpClient, sorry!");
     }
 
     public void shutdown() {
-        httpClient.getConnectionManager().shutdown();
+        if (httpClient != null) {
+            try {
+                httpClient.close();
+            } catch (IOException e) {
+                throw new HTTPException(e);
+            }
+        }
     }
 
     private HttpUriRequest convertRequest(HTTPRequest request) {

@@ -18,8 +18,10 @@ package org.codehaus.httpcache4j.resolver;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicStatusLine;
 import org.codehaus.httpcache4j.HTTPMethod;
@@ -44,18 +46,18 @@ import java.net.URI;
  */
 public class HTTPClientResponseResolverTest {
 
-    private HttpClient client;
+    private CloseableHttpClient client;
 
     @Before
     public void setUp() {
-        client = mock(HttpClient.class);
+        client = mock(CloseableHttpClient.class);
     }
 
 
     @Test
     public void testSimpleGET() throws IOException {
         HTTPClientResponseResolver resolver = new TestableResolver();
-        HttpResponse mockedResponse = mock(HttpResponse.class);
+        CloseableHttpResponse mockedResponse = mock(CloseableHttpResponse.class);
         when(mockedResponse.getAllHeaders()).thenReturn(new org.apache.http.Header[0]);
         when(mockedResponse.getStatusLine()).thenReturn(new BasicStatusLine(new HttpVersion(1, 1),200, "OK"));
         when(client.execute(Mockito.<HttpUriRequest>anyObject())).thenReturn(mockedResponse);
@@ -68,7 +70,7 @@ public class HTTPClientResponseResolverTest {
     @Test
     public void testNotSoSimpleGET() throws IOException {
         HTTPClientResponseResolver resolver = new TestableResolver();
-        HttpResponse mockedResponse = mock(HttpResponse.class);
+        CloseableHttpResponse mockedResponse = mock(CloseableHttpResponse.class);
         when(mockedResponse.getAllHeaders()).thenReturn(new org.apache.http.Header[] {new BasicHeader("Date", HeaderUtils.toHttpDate("Date", new DateTime()).getValue())});
         when(mockedResponse.getStatusLine()).thenReturn(new BasicStatusLine(new HttpVersion(1, 1),200, "OK"));
         when(mockedResponse.getEntity()).thenReturn(new InputStreamEntity(new NullInputStream(1), 1));
@@ -82,7 +84,7 @@ public class HTTPClientResponseResolverTest {
     @Test
     public void testPUT() throws IOException {
         HTTPClientResponseResolver resolver = new TestableResolver();
-        HttpResponse mockedResponse = mock(HttpResponse.class);
+        CloseableHttpResponse mockedResponse = mock(CloseableHttpResponse.class);
         when(mockedResponse.getAllHeaders()).thenReturn(new org.apache.http.Header[] {new BasicHeader("Date", HeaderUtils.toHttpDate("Date", new DateTime()).getValue())});
         when(mockedResponse.getStatusLine()).thenReturn(new BasicStatusLine(new HttpVersion(1, 1), 200, "OK"));
         when(mockedResponse.getEntity()).thenReturn(null);
