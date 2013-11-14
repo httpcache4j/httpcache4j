@@ -1,6 +1,5 @@
-package org.codehaus.httpcache4j.cache;
+package org.codehaus.httpcache4j.util;
 
-import org.codehaus.httpcache4j.util.LRUMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
