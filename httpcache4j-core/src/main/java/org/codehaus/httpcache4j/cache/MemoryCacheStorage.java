@@ -21,7 +21,8 @@ import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.ByteArrayPayload;
 import org.codehaus.httpcache4j.util.IOUtils;
-import org.codehaus.httpcache4j.util.InvalidateOnRemoveLRUHashMap;
+import org.codehaus.httpcache4j.util.MemoryCache;
+import org.codehaus.httpcache4j.util.LRUMap;
 
 import java.net.URI;
 import java.util.*;
@@ -38,18 +39,20 @@ import java.io.IOException;
 public class MemoryCacheStorage implements CacheStorage {
 
     protected final int capacity;
-    protected InvalidateOnRemoveLRUHashMap cache;
+    protected MemoryCache cache;
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     protected final Lock read = lock.readLock();
     protected final Lock write = lock.writeLock();
+    private int varyCapacity;
 
     public MemoryCacheStorage() {
-        this(1000);
+        this(1000, 10);
     }
 
-    protected MemoryCacheStorage(int capacity) {
+    protected MemoryCacheStorage(int capacity, int varyCapacity) {
         this.capacity = capacity;
-        cache = new InvalidateOnRemoveLRUHashMap(this.capacity);
+        this.cache = new MemoryCache(this.capacity);
+        this.varyCapacity = varyCapacity;
     }
 
     private HTTPResponse rewriteResponse(Key key, HTTPResponse response) {
@@ -86,9 +89,9 @@ public class MemoryCacheStorage implements CacheStorage {
 
     protected HTTPResponse putImpl(final Key pKey, final HTTPResponse pCacheableResponse) {
         CacheItem item = createCacheItem(pCacheableResponse);
-        Map<Vary, CacheItem> varyCacheItemMap = cache.get(pKey.getURI());
+        LRUMap<Vary, CacheItem> varyCacheItemMap = cache.get(pKey.getURI());
         if (varyCacheItemMap == null) {
-            varyCacheItemMap = new HashMap<Vary, CacheItem>();
+            varyCacheItemMap = new LRUMap<Vary, CacheItem>(varyCapacity);
             cache.put(pKey.getURI(), varyCacheItemMap);
         }
         varyCacheItemMap.put(pKey.getVary(), item);
@@ -208,7 +211,7 @@ public class MemoryCacheStorage implements CacheStorage {
         read.lock();
         try {
             HashSet<Key> keys = new HashSet<Key>();
-            for (Map.Entry<URI, Map<Vary, CacheItem>> entry : cache.entrySet()) {
+            for (Map.Entry<URI, LRUMap<Vary, CacheItem>> entry : cache.entrySet()) {
                 for (Vary vary : entry.getValue().keySet()) {
                     keys.add(new Key(entry.getKey(), vary));
                 }

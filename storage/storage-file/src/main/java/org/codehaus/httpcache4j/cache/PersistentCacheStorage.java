@@ -24,7 +24,7 @@ import com.google.common.io.Closeables;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.util.InvalidateOnRemoveLRUHashMap;
+import org.codehaus.httpcache4j.util.MemoryCache;
 import org.codehaus.httpcache4j.util.SerializationUtils;
 
 /**
@@ -33,7 +33,7 @@ import org.codehaus.httpcache4j.util.SerializationUtils;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public class PersistentCacheStorage extends MemoryCacheStorage implements Serializable, InvalidateOnRemoveLRUHashMap.RemoveListener {
+public class PersistentCacheStorage extends MemoryCacheStorage implements Serializable, MemoryCache.KeyListener {
 
 
     private static final long serialVersionUID = 2551525125071085301L;
@@ -50,7 +50,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     }
 
     public PersistentCacheStorage(final int capacity, final File storageDirectory, final String name) {
-        super(capacity);
+        super(capacity, 10);
         Preconditions.checkArgument(capacity > 0, "You may not have a empty persistent cache");
         Preconditions.checkNotNull(storageDirectory, "You may not have a null storageDirectory");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(name), "You may not have a empty file name");
@@ -66,7 +66,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
         }));
     }
 
-    public void onRemoveFromMap(Key key) {
+    public void onRemove(Key key) {
         fileManager.remove(key);
     }
 
@@ -110,27 +110,28 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 
     private void getCacheFromDisk() {
         write.lock();
+        cache.setKeyListener(null);
         try {
             if (serializationFile.exists()) {
                 FileInputStream inputStream = null;
                 try {
                     inputStream = new FileInputStream(serializationFile);
-                    cache = (InvalidateOnRemoveLRUHashMap) SerializationUtils.deserialize(inputStream);
+                    cache = (MemoryCache) SerializationUtils.deserialize(inputStream);
                 }
                 catch (Exception e) {
                     serializationFile.delete();
                     //Ignored, we create a new one.
-                    cache = new InvalidateOnRemoveLRUHashMap(capacity);
+                    cache = new MemoryCache(capacity);
                 }
                 finally {
                     Closeables.closeQuietly(inputStream);
                 }
             }
             else {
-                cache = new InvalidateOnRemoveLRUHashMap(capacity);
+                cache = new MemoryCache(capacity);
             }
         } finally {
-            cache.setListener(this);
+            cache.setKeyListener(this);
             write.unlock();
         }
     }
