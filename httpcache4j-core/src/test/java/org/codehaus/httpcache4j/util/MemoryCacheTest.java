@@ -32,7 +32,9 @@ public class MemoryCacheTest {
         LRUMap<Vary, CacheItem> value = new LRUMap<Vary, CacheItem>(2);
         URI uri = URI.create("foo");
         cache.put(uri, value);
+
         value.put(new Vary(), new TestCacheItem());
+        value.put(new Vary(new Headers().addAccept(MIMEType.valueOf("application/json"))), new TestCacheItem());
 
         cache.remove(Key.create(uri, new Vary()));
         assertThat(counter.get(), equalTo(1));
