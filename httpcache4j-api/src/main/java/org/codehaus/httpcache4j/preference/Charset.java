@@ -1,7 +1,7 @@
 package org.codehaus.httpcache4j.preference;
 
 /**
- * @author Erlend Hamnaberg<erlend.hamnaberg@arktekk.no>
+ * @author Erlend Hamnaberg<hamnis@codehaus.org>
  */
 public class Charset {
     private final String name;
