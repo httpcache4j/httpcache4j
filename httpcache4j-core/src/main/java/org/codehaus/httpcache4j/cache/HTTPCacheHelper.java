@@ -138,13 +138,13 @@ class HTTPCacheHelper {
         return false;
     }
 
-    boolean allowStale(CacheItem item, HTTPRequest req) {
+    boolean allowStale(CacheItem item, HTTPRequest req, DateTime requestTime) {
         if (req.getHeaders().hasHeader(CACHE_CONTROL)) {
             CacheControl control = req.getCacheControl();
             int maxStale = control.getMaxStale();
             if (maxStale > -1) {
                 int ttl = item.getTTL();
-                int age = item.getAge(req);
+                int age = item.getAge(requestTime);
                 if ((ttl - maxStale - age) < 0) {
                     return true;
                 }

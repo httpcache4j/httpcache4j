@@ -52,8 +52,7 @@ public class HTTPCacheTest {
 
     @Test
     public void testCreate() {
-        HTTPCache cache = new HTTPCache(cacheStorage, responseResolver);
-        this.cache = cache;
+        this.cache = new HTTPCache(cacheStorage, responseResolver);
         testCacheResponse();
     }
 
@@ -80,7 +79,7 @@ public class HTTPCacheTest {
         Payload payload = mock(Payload.class);
         when(payload.isAvailable()).thenReturn(false);
         CacheItem item = new DefaultCacheItem(new HTTPResponse(payload, Status.OK, new Headers()));
-        assertTrue("The cached item was not stale", item.isStale(request));
+        assertTrue("The cached item was not stale", item.isStale(DateTime.now()));
         when(cacheStorage.get(request)).thenReturn(item);
         HTTPResponse resolvedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
         when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(resolvedResponse);
@@ -344,7 +343,7 @@ public class HTTPCacheTest {
         //when(responseResolver.resolve(isA(HTTPRequest.class))).thenReturn(cachedResponse);
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(new DefaultCacheItem(cachedResponse) {
             @Override
-            public boolean isStale(HTTPRequest request) {
+            public boolean isStale(DateTime requestTime) {
                 return false;
             }
         });
@@ -362,12 +361,12 @@ public class HTTPCacheTest {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.HEAD);
         Headers headers = new Headers();
         headers = headers.add(new Header("Cache-Control", "private, max-age=65000"));
-        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
+        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.DATE, DateTime.now()));
         HTTPResponse cachedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, headers);
 
         CacheItem item = new DefaultCacheItem(cachedResponse);
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(item);
-        assertFalse(item.isStale(request));
+        assertFalse(item.isStale(DateTime.now()));
         HTTPResponse response = cache.execute(request);
         assertNull(response.getPayload());
         verify(responseResolver, never()).resolve(request);        
@@ -385,7 +384,7 @@ public class HTTPCacheTest {
         DateTimeUtils.setCurrentMillisFixed(new DateTime(2010, 2, 3, 10, 0, 10, 0).getMillis());
         HTTPRequest request = new HTTPRequest(REQUEST_URI).headers(new Headers().add(HeaderConstants.CACHE_CONTROL, "max-stale=10"));
         when(cacheStorage.get(isA(HTTPRequest.class))).thenReturn(item);
-        assertTrue("Item was not stale",item.isStale(request));
+        assertTrue("Item was not stale",item.isStale(DateTime.now()));
         HTTPResponse response = cache.execute(request);
         verify(responseResolver, never()).resolve(request);
         assertTrue("No warn header", response.getHeaders().hasHeader("warning"));
@@ -402,7 +401,7 @@ public class HTTPCacheTest {
         HTTPResponse cachedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, headers);
         CacheItem item = new DefaultCacheItem(cachedResponse) {
             @Override
-            public boolean isStale(HTTPRequest request) {
+            public boolean isStale(DateTime requestTime) {
                 return true;
             }
         };
@@ -428,7 +427,7 @@ public class HTTPCacheTest {
         HTTPResponse cachedResponse = new HTTPResponse(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM), Status.OK, headers);
         CacheItem item = new DefaultCacheItem(cachedResponse) {
             @Override
-            public boolean isStale(HTTPRequest request) {
+            public boolean isStale(DateTime requestTime) {
                 return true;
             }
         };

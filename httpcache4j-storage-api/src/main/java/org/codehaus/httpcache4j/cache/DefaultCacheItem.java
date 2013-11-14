@@ -47,15 +47,15 @@ public class DefaultCacheItem implements CacheItem {
         return ttl;
     }
 
-    public boolean isStale(HTTPRequest request) {
+    public boolean isStale(DateTime requestTime) {
         if (response.hasPayload() && !response.getPayload().isAvailable()) {
             return true;
         }
-        return ttl - getAge(request) <= 0;
+        return ttl - getAge(requestTime) <= 0;
     }
 
-    public int getAge(HTTPRequest request) {
-        return Seconds.secondsBetween(cachedTime, request.getRequestTime()).getSeconds();
+    public int getAge(DateTime requestTime) {
+        return Seconds.secondsBetween(cachedTime, requestTime).getSeconds();
     }
 
     public static int getTTL(HTTPResponse response, int defaultTTLinSeconds) {

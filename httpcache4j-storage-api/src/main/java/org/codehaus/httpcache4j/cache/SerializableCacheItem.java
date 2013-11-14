@@ -24,8 +24,7 @@ import java.io.*;
 import java.util.Properties;
 
 /**
- * @author <a href="mailto:erlend@escenic.com">Erlend Hamnaberg</a>
- * @version $Revision: $
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class SerializableCacheItem implements Serializable, CacheItem {
     private static final long serialVersionUID = 7170431954380145524L;
@@ -40,12 +39,12 @@ public class SerializableCacheItem implements Serializable, CacheItem {
         return item.getTTL();
     }
 
-    public boolean isStale(HTTPRequest request) {
-        return item.isStale(request);
+    public boolean isStale(DateTime requestTime) {
+        return item.isStale(requestTime);
     }
 
-    public int getAge(HTTPRequest request) {
-        return item.getAge(request);
+    public int getAge(DateTime dateTime) {
+        return item.getAge(dateTime);
     }
 
     public DateTime getCachedTime() {

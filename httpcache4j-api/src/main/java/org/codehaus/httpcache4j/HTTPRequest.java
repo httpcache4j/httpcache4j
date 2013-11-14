@@ -38,15 +38,13 @@ public final class HTTPRequest {
     private final Headers headers;
     private final Challenge challenge;
     private final Payload payload;
-    private final DateTime requestTime;
     private URI normalizedURI;
 
     public HTTPRequest(URI requestURI,
                        HTTPMethod method,
                        Headers headers,
                        Challenge challenge,
-                       Payload payload,
-                       DateTime requestTime) {
+                       Payload payload) {
 
         this.requestURI = Preconditions.checkNotNull(requestURI, "You MUST have a URI");
         this.normalizedURI = URIBuilder.fromURI(requestURI).toNormalizedURI();
@@ -54,16 +52,16 @@ public final class HTTPRequest {
         this.headers = headers == null ? new Headers() : headers;
         this.challenge = challenge;
         this.payload = payload;
-        this.requestTime = requestTime == null ? new DateTime() : requestTime;
     }
 
     public HTTPRequest copy() {
-        return new HTTPRequest(getRequestURI(),
-             getMethod(),
-             getHeaders(),
-             getChallenge(),
-             getPayload(),
-             getRequestTime());
+        return new HTTPRequest(
+                getRequestURI(),
+                getMethod(),
+                getHeaders(),
+                getChallenge(),
+                getPayload()
+        );
     }
 
     public HTTPRequest(URI requestURI) {
@@ -79,7 +77,7 @@ public final class HTTPRequest {
     }
 
     public HTTPRequest(URI requestURI, HTTPMethod method) {
-        this(requestURI, method, new Headers(), null, null, new DateTime());
+        this(requestURI, method, new Headers(), null, null);
     }
 
     public URI getRequestURI() {
@@ -111,7 +109,7 @@ public final class HTTPRequest {
 
     public HTTPRequest addHeader(Header header) {
         Headers headers = this.headers.add(header);
-        return new HTTPRequest(requestURI, method, headers, challenge, payload, new DateTime());
+        return new HTTPRequest(requestURI, method, headers, challenge, payload);
     }
 
     public HTTPRequest addHeader(String name, String value) {
@@ -125,7 +123,7 @@ public final class HTTPRequest {
     public HTTPRequest method(HTTPMethod method) {
         Preconditions.checkNotNull(method, "You may not set null method");
         if (method == this.method) return this;
-        return new HTTPRequest(requestURI, method, headers, challenge, payload, new DateTime());
+        return new HTTPRequest(requestURI, method, headers, challenge, payload);
     }
 
     public Challenge getChallenge() {
@@ -133,7 +131,7 @@ public final class HTTPRequest {
     }
 
     public HTTPRequest challenge(Challenge challenge) {
-        return new HTTPRequest(requestURI, method, headers, challenge, payload, new DateTime());
+        return new HTTPRequest(requestURI, method, headers, challenge, payload);
     }
 
     public Payload getPayload() {
@@ -144,12 +142,12 @@ public final class HTTPRequest {
         if (!method.canHavePayload()) {
             throw new IllegalStateException(String.format("Unable to add payload to a %s request", method));
         }        
-        return new HTTPRequest(requestURI, method, headers, challenge, payload, new DateTime());
+        return new HTTPRequest(requestURI, method, headers, challenge, payload);
     }
 
     public HTTPRequest headers(final Headers headers) {
         Preconditions.checkNotNull(headers, "You may not set null headers");
-        return new HTTPRequest(requestURI, method, headers, challenge, payload, new DateTime());
+        return new HTTPRequest(requestURI, method, headers, challenge, payload);
     }
 
     public boolean hasPayload() {
@@ -165,10 +163,6 @@ public final class HTTPRequest {
 
     public HTTPRequest cacheControl(CacheControl cc) {
         return addHeader(cc.toHeader());
-    }
-
-    public DateTime getRequestTime() {
-        return requestTime;
     }
 
     public HTTPRequest addIfNoneMatch(Tag tag) {

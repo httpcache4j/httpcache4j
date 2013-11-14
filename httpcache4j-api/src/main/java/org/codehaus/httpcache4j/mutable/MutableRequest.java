@@ -102,8 +102,7 @@ public class MutableRequest {
                 method,
                 heads,
                 challenge,
-                payload,
-                new DateTime()
+                payload
         );
     }
 

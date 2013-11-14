@@ -20,15 +20,10 @@ import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 import org.codehaus.httpcache4j.uri.URIBuilder;
+import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.net.URI;
-
-/**
- * TODO:
- * Support Warning header http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.46 partly supported now...
- *
- */
 
 /**
  * The main HTTPCache class.
@@ -119,18 +114,19 @@ public class HTTPCache {
     }
 
     private HTTPResponse getFromStorage(HTTPRequest request) {
+        final DateTime requestTime = DateTime.now();
         HTTPResponse response;
-        CacheItem item = storage.get(request);
+        final CacheItem item = storage.get(request);
         if (item != null) {
             statistics.hit();
-            if (item.isStale(request)) {
+            if (item.isStale(requestTime)) {
                 //If the cached value is stale, execute the request and try to cache it.
                 HTTPResponse staleResponse = item.getResponse();
                 //If the payload has been deleted for some reason, we want to do a unconditional GET
                 HTTPRequest conditionalRequest = maybePrepareConditionalResponse(request, staleResponse);
-                response = handleStaleResponse(conditionalRequest, request, item);
+                response = handleStaleResponse(conditionalRequest, request, item, requestTime);
             } else {
-                response = helper.rewriteResponse(request, item.getResponse(), item.getAge(request));
+                response = helper.rewriteResponse(request, item.getResponse(), item.getAge(requestTime));
             }
         } else {
             statistics.miss();
@@ -139,10 +135,10 @@ public class HTTPCache {
         return response;
     }
 
-    private HTTPResponse handleStaleResponse(HTTPRequest conditionalRequest, HTTPRequest originalRequest, CacheItem item) {
-        int age = item.getAge(conditionalRequest);
-        if (!helper.allowStale(item, originalRequest)) {
-            HTTPResponse response = handleResolve(conditionalRequest, item);
+    private HTTPResponse handleStaleResponse(HTTPRequest conditionalRequest, HTTPRequest originalRequest, CacheItem item, DateTime requestTime) {
+        int age = item.getAge(DateTime.now());
+        if (!helper.allowStale(item, originalRequest, requestTime)) {
+            HTTPResponse response = excuteImpl(conditionalRequest, item);
             return helper.rewriteResponse(originalRequest, response, age);
         }
         return helper.rewriteStaleResponse(originalRequest, item.getResponse(), age);
@@ -156,10 +152,10 @@ public class HTTPCache {
     }
 
     private HTTPResponse unconditionalResolve(final HTTPRequest request) {
-        return helper.rewriteResponse(request, handleResolve(request, null), -1);
+        return helper.rewriteResponse(request, excuteImpl(request, null), -1);
     }
 
-    private HTTPResponse handleResolve(final HTTPRequest request, final CacheItem item) {
+    private HTTPResponse excuteImpl(final HTTPRequest request, final CacheItem item) {
         HTTPResponse response = null;
         HTTPResponse resolvedResponse = null;
         try {
