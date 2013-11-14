@@ -1,5 +1,6 @@
 package org.codehaus.httpcache4j.util;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,10 +30,10 @@ public final class IOUtils {
         return total;
     }
 
-    public static void closeQuietly(InputStream is) {
+    public static void closeQuietly(Closeable closeable) {
         try {
-            if (is != null) {
-                is.close();
+            if (closeable != null) {
+                closeable.close();
             }
         } catch (IOException ignore) {
         }
