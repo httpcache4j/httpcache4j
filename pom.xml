@@ -27,8 +27,8 @@
   <inceptionYear>2008</inceptionYear>
 
   <issueManagement>
-    <system>JIRA</system>
-    <url>http://jira.codehaus.org/browse/HTCJ</url>
+    <system>github</system>
+    <url>https://github.com/httpcache4j/httpcache4j/issues</url>
   </issueManagement>
   <licenses>
     <license>
