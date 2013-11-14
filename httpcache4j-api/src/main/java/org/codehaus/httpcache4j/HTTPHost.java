@@ -22,7 +22,7 @@ import java.net.URISyntaxException;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class HTTPHost {
+public final class HTTPHost {
     private final String scheme;
     private final String host;
     private final int port;
