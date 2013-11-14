@@ -50,6 +50,12 @@ public class MemoryCacheTest {
         assertThat(counter.get(), equalTo(3));
         assertThat(cache.size(), equalTo(1));
         assertThat(cache.size() + value.size(), equalTo(3));
+
+
+        cache.remove(uri);
+
+        assertThat(counter.get(), equalTo(5));
+        assertThat(value.getListeners().size(), equalTo(0));
     }
 
 
