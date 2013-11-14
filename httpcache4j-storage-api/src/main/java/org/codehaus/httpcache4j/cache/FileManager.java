@@ -17,12 +17,9 @@ package org.codehaus.httpcache4j.cache;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
-import com.google.common.io.Files;
-import com.google.common.io.OutputSupplier;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.util.Digester;
+import org.codehaus.httpcache4j.util.IOUtils;
 
 import java.io.*;
 import java.net.URI;
@@ -49,11 +46,12 @@ public final class FileManager implements Serializable {
         if (!file.getParentFile().exists()) {
             ensureDirectoryExists(file.getParentFile());
         }
-        OutputSupplier<FileOutputStream> outputStream = Files.newOutputStreamSupplier(file);
+        FileOutputStream to = new FileOutputStream(file);
         try {
-            ByteStreams.copy(stream, outputStream);
+            IOUtils.copy(stream, to);
         } finally {
-            Closeables.closeQuietly(stream);
+            IOUtils.closeQuietly(stream);
+            to.close();
         }
         if (file.length() == 0) {
             file.delete();
