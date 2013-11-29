@@ -15,18 +15,20 @@
 
 package org.codehaus.httpcache4j.resolver;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolVersion;
 import org.apache.http.annotation.NotThreadSafe;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.Header;
-import org.codehaus.httpcache4j.StatusLine;
-import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
-import org.apache.http.client.methods.*;
-import org.apache.http.*;
-import org.apache.http.entity.InputStreamEntity;
 import org.codehaus.httpcache4j.payload.Payload;
 
 import java.io.IOException;
@@ -40,42 +42,33 @@ import java.net.URI;
 public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private final CloseableHttpClient httpClient;
 
-
-    /**
-     * Turns off the automatic authentication and redirection support of the supplied HttpClient.
-     * Overrides the default proxy support with the supplied configuration in ResolverConfiguration.
-     * Sets the user agent with the configured user agent.
-     *
-     */
-    public HTTPClientResponseResolver(CloseableHttpClient httpClient, ResolverConfiguration configuration) {
+    HTTPClientResponseResolver(CloseableHttpClient httpClient, ResolverConfiguration configuration) {
         super(configuration);
         this.httpClient = httpClient;
     }
 
-    public HTTPClientResponseResolver(CloseableHttpClient httpClient, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
-        this(httpClient, new ResolverConfiguration(proxyAuthenticator, authenticator, new ConnectionConfiguration()));
-    }
-    
-    public HTTPClientResponseResolver(CloseableHttpClient httpClient, ProxyConfiguration proxyConfiguration) {
-        this(httpClient, new DefaultProxyAuthenticator(proxyConfiguration), new DefaultAuthenticator());
-    }
-
-    public HTTPClientResponseResolver(CloseableHttpClient httpClient) {
-        this(httpClient, new ProxyConfiguration());
-    }
-
-    public static HTTPClientResponseResolver createMultithreadedInstance(ConnectionConfiguration config) {
-        return createMultithreadedInstance(new ResolverConfiguration().withConnectionConfiguration(config));
-    }
-
-    public static HTTPClientResponseResolver createMultithreadedInstance() {
-        return createMultithreadedInstance(new ConnectionConfiguration());
-    }
-
-    public static HTTPClientResponseResolver createMultithreadedInstance(ResolverConfiguration configuration) {
-        HttpClientBuilder builder = HttpClientBuilder.create();
-        CloseableHttpClient client = new HttpClientFactory().configure(builder, configuration);
+    public static HTTPClientResponseResolver create(HttpClientFactory factory,
+                                                    ResolverConfiguration configuration,
+                                                    IdleConnectionMonitor.Configuration idleConfig) {
+        HttpClientBuilder builder = factory.createHttpClientBuilder();
+        CloseableHttpClient client = factory.configure(builder, configuration, idleConfig);
         return new HTTPClientResponseResolver(client, configuration);
+    }
+
+    public static HTTPClientResponseResolver create(ResolverConfiguration configuration, IdleConnectionMonitor.Configuration idleConfig) {
+        return create(new HttpClientFactory(), configuration, idleConfig);
+    }
+
+    public static HTTPClientResponseResolver create(ResolverConfiguration configuration) {
+        return create(configuration, null);
+    }
+
+    public static HTTPClientResponseResolver create(ConnectionConfiguration config) {
+        return create(new ResolverConfiguration().withConnectionConfiguration(config));
+    }
+
+    public static HTTPClientResponseResolver create() {
+        return create(new ConnectionConfiguration());
     }
 
     public final CloseableHttpClient getHttpClient() {
@@ -87,11 +80,6 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         HttpUriRequest realRequest = convertRequest(request);
         HttpResponse response = httpClient.execute(realRequest);
         return convertResponse(realRequest, response);
-    }
-
-    @Deprecated
-    public void setRedirecting(boolean redirect) {
-        throw new UnsupportedOperationException("You need to set this when creating the HttpClient, sorry!");
     }
 
     public void shutdown() {
@@ -122,8 +110,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     protected HttpUriRequest getMethod(HTTPMethod method, URI requestURI) {
         if (method.canHavePayload()) {
             return new MethodWithBody(requestURI, method);
-        }
-        else {
+        } else {
             return new Method(requestURI, method);
         }
     }

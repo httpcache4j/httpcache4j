@@ -2,30 +2,44 @@ package org.codehaus.httpcache4j.resolver;
 
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.protocol.*;
 import org.apache.http.client.protocol.RequestExpectContinue;
 import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.*;
 import org.codehaus.httpcache4j.HTTPHost;
 import org.codehaus.httpcache4j.auth.ProxyAuthenticator;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
 public class HttpClientFactory {
 
-    public CloseableHttpClient configure(HttpClientBuilder builder, ResolverConfiguration configuration) {
+    public HttpClientBuilder createHttpClientBuilder() {
+        return HttpClientBuilder.create();
+    }
+
+    public CloseableHttpClient configure(HttpClientBuilder builder,
+                                         ResolverConfiguration configuration,
+                                         IdleConnectionMonitor.Configuration idleConfig) {
 
         builder.disableAuthCaching();
         ConnectionConfiguration config = configuration.getConnectionConfiguration();
 
-        builder.setConnectionManager(configurationManager(config));
+        HttpClientConnectionManager connManager = configurationManager(config);
+
+        builder.setConnectionManager(connManager);
         SocketConfig.Builder socketConfig = SocketConfig.copy(SocketConfig.DEFAULT);
         if (config.getSocketTimeout().isPresent()) {
             socketConfig.setSoTimeout(config.getSocketTimeout().get());
@@ -39,6 +53,13 @@ public class HttpClientFactory {
         builder.setDefaultRequestConfig(requestC);
         builder.setHttpProcessor(httpProcessor(configuration));
 
+        if (idleConfig != null) {
+            IdleConnectionMonitor monitor = new IdleConnectionMonitor(connManager, idleConfig);
+            monitor.start();
+
+            return new MonitoredCloseableHttpClient(builder.build(), monitor);
+        }
+
         return builder.build();
     }
 
@@ -51,10 +72,10 @@ public class HttpClientFactory {
                 new RequestClientConnControl(),
                 new RequestUserAgent(configuration.getUserAgent()),
                 new RequestExpectContinue());
-            b.add(new RequestAddCookies());
-            b.add(new RequestAcceptEncoding());
-            b.add(new ResponseProcessCookies());
-            b.add(new ResponseContentEncoding());
+        b.add(new RequestAddCookies());
+        b.add(new RequestAcceptEncoding());
+        b.add(new ResponseProcessCookies());
+        b.add(new ResponseContentEncoding());
         return b.build();
     }
 
@@ -86,5 +107,35 @@ public class HttpClientFactory {
         return requestConfig.build();
     }
 
+    public static class MonitoredCloseableHttpClient extends CloseableHttpClient {
+        private final CloseableHttpClient delegate;
+        private final IdleConnectionMonitor monitor;
+
+        public MonitoredCloseableHttpClient(CloseableHttpClient delegate, IdleConnectionMonitor monitor) {
+            this.delegate = delegate;
+            this.monitor = monitor;
+        }
+
+        @Override
+        protected CloseableHttpResponse doExecute(HttpHost target, HttpRequest request, HttpContext context) throws IOException, ClientProtocolException {
+            return delegate.execute(target, request, context);
+        }
+
+        @Override
+        public void close() throws IOException {
+            monitor.shutdown();
+            delegate.close();
+        }
+
+        @Override
+        public HttpParams getParams() {
+            return delegate.getParams();
+        }
+
+        @Override
+        public ClientConnectionManager getConnectionManager() {
+            return delegate.getConnectionManager();
+        }
+    }
 
 }

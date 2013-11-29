@@ -19,7 +19,6 @@ package org.codehaus.httpcache4j.cache;
 import java.io.File;
 import java.net.URI;
 
-import junit.framework.Assert;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
@@ -31,9 +30,7 @@ import org.codehaus.httpcache4j.util.NullInputStream;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class FilePersistentCacheStorageTest extends CacheStorageAbstractTest {
@@ -47,7 +44,7 @@ public class FilePersistentCacheStorageTest extends CacheStorageAbstractTest {
     public void testPUTWithRealPayload() throws Exception {
         HTTPResponse response = createRealResponse();
         storage.insert(REQUEST, response);
-        Assert.assertEquals(1, storage.size());
+        assertEquals(1, storage.size());
     }
 
     @Test

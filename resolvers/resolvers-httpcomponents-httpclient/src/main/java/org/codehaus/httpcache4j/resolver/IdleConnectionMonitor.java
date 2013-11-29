@@ -1,17 +1,17 @@
 package org.codehaus.httpcache4j.resolver;
 
+import org.apache.http.conn.HttpClientConnectionManager;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.http.conn.ClientConnectionManager;
-
 public class IdleConnectionMonitor {
-    private final ClientConnectionManager manager;
+    private final HttpClientConnectionManager manager;
     private final Configuration configuration;
 
-    public IdleConnectionMonitor(ClientConnectionManager manager, Configuration configuration) {
+    public IdleConnectionMonitor(HttpClientConnectionManager manager, Configuration configuration) {
         this.manager = manager;
         this.configuration = configuration;
     }
@@ -41,8 +41,6 @@ public class IdleConnectionMonitor {
             // Close expired connections
             manager.closeExpiredConnections();
             if (configuration.shouldCloseIdleConnections()) {
-                // Optionally, close connections
-                // that have been idle longer than 30 sec
                 manager.closeIdleConnections(configuration.getIdleTime(), TimeUnit.SECONDS);
             }
         }

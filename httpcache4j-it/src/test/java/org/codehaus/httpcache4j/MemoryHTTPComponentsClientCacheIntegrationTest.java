@@ -30,6 +30,6 @@ public class MemoryHTTPComponentsClientCacheIntegrationTest extends AbstractCach
 
     @Override
     protected ResponseResolver createReponseResolver() {
-        return HTTPClientResponseResolver.createMultithreadedInstance();
+        return HTTPClientResponseResolver.create();
     }
 }

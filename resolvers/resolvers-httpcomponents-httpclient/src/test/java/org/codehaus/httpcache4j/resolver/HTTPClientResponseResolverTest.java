@@ -97,7 +97,7 @@ public class HTTPClientResponseResolverTest {
 
     private class TestableResolver extends HTTPClientResponseResolver {
         public TestableResolver() {
-            super(HTTPClientResponseResolverTest.this.client);
+            super(HTTPClientResponseResolverTest.this.client, new ResolverConfiguration());
         }
 
         @Override
