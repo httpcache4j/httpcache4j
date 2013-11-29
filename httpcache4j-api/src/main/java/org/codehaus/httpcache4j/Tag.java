@@ -31,8 +31,6 @@ package org.codehaus.httpcache4j;
  *      Entity Tag Cache Validators</a>
  */
 public final class Tag {
-    private static final long serialVersionUID = 673213161743597801L;
-
     /** Tag matching any other tag, used in call's condition data. */
     public static final Tag ALL = Tag.parse("*");
     /** The tag weakness. */
@@ -56,18 +54,18 @@ public final class Tag {
     public static Tag parse(final String httpTag) {
         Tag result = null;
         boolean weak = false;
-        String httpTagCopy = httpTag;
+        String internal = httpTag;
 
-        if (httpTagCopy.startsWith("W/")) {
+        if (internal.startsWith("W/")) {
             weak = true;
-            httpTagCopy = httpTagCopy.substring(2);
+            internal = internal.substring(2);
         }
 
-        if (httpTagCopy.startsWith("\"") && httpTagCopy.endsWith("\"")) {
+        if (internal.startsWith("\"") && internal.endsWith("\"")) {
             result = new Tag(
-                    httpTagCopy.substring(1, httpTagCopy.length() - 1), weak);
+                    internal.substring(1, internal.length() - 1), weak);
         }
-        else if (httpTagCopy.equals("*")) {
+        else if (internal.equals("*")) {
             result = new Tag("*", weak);
         }
 
@@ -77,7 +75,7 @@ public final class Tag {
     /**
      * Constructor.
      *
-     * @param opaqueTag The tag value.
+     * @param opaqueTag The tag value without quotes.
      * @param weak      The weakness indicator.
      */
     public Tag(final String opaqueTag, boolean weak) {
@@ -88,7 +86,7 @@ public final class Tag {
     /**
      * Constructor.
      *
-     * @param opaqueTag The tag value.
+     * @param opaqueTag The tag value without quotes..
      */
     public Tag(final String opaqueTag) {
         this(opaqueTag, false);        
@@ -159,20 +157,7 @@ public final class Tag {
         }
     }
 
-    /**
-     * Returns the description.
-     *
-     * @return The description.
-     */
-    public String getDescription() {
-        return "HTTP entity tag";
-    }
 
-    /**
-     * Returns the name, corresponding to an HTTP opaque tag value.
-     *
-     * @return The name, corresponding to an HTTP opaque tag value.
-     */
     public String getName() {
         return opaqueTag;
     }
