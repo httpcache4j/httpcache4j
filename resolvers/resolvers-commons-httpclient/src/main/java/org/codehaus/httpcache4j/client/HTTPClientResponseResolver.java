@@ -31,6 +31,7 @@ import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
 import org.codehaus.httpcache4j.resolver.ConnectionConfiguration;
 import org.codehaus.httpcache4j.resolver.ResolverConfiguration;
+import org.codehaus.httpcache4j.resolver.ResponseCreator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -184,7 +185,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                     Status.valueOf(method.getStatusCode()),
                     method.getStatusText()
             );
-            response = getResponseCreator().createResponse(line, headers, stream);
+            response = ResponseCreator.createResponse(line, headers, stream);
         } finally {
             if (stream == null) {
                 method.releaseConnection();

@@ -13,15 +13,12 @@
  *   limitations under the License.
  */
 
-package org.codehaus.httpcache4j.urlconnection;
+package org.codehaus.httpcache4j.resolver;
 
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
 import org.codehaus.httpcache4j.auth.DefaultProxyAuthenticator;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
-import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
-import org.codehaus.httpcache4j.resolver.ConnectionConfiguration;
-import org.codehaus.httpcache4j.resolver.ResolverConfiguration;
 import org.codehaus.httpcache4j.util.IOUtils;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -36,9 +33,9 @@ import java.util.Map;
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-public class URLConnectionResponseResolver extends AbstractResponseResolver {
+public class JavaNetResponseResolver extends AbstractResponseResolver {
 
-    public URLConnectionResponseResolver(ResolverConfiguration configuration) {
+    public JavaNetResponseResolver(ResolverConfiguration configuration) {
         super(configuration);
         if (configuration.getConnectionConfiguration().getMaxConnections().isPresent()) {
             throw new UnsupportedOperationException("Single Connection only resolver");
@@ -51,7 +48,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         }
     }
 
-    public URLConnectionResponseResolver(ConnectionConfiguration connectionConfiguration) {
+    public JavaNetResponseResolver(ConnectionConfiguration connectionConfiguration) {
         this(new ResolverConfiguration(new DefaultProxyAuthenticator(), new DefaultAuthenticator(), connectionConfiguration));
     }
 
@@ -70,7 +67,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
             return convertResponse(connection);
         }
 
-        throw new HTTPException("This resolver only supports HTTP calls");
+        throw new HTTPException("This resolver only supports HTTP");
     }
 
     public void shutdown() {        
@@ -94,7 +91,7 @@ public class URLConnectionResponseResolver extends AbstractResponseResolver {
         Status status = Status.valueOf(connection.getResponseCode());
         String message = connection.getResponseMessage();
         Headers responseHeaders = getResponseHeaders(connection);
-        return getResponseCreator().createResponse(new StatusLine(status, message), responseHeaders, wrapResponseStream(connection, status));
+        return ResponseCreator.createResponse(new StatusLine(status, message), responseHeaders, wrapResponseStream(connection, status));
     }
 
     private InputStream wrapResponseStream(HttpURLConnection connection, Status status) {

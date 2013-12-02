@@ -15,6 +15,7 @@ import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
 import org.codehaus.httpcache4j.resolver.ConnectionConfiguration;
 import org.codehaus.httpcache4j.resolver.ResolverConfiguration;
+import org.codehaus.httpcache4j.resolver.ResponseCreator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -105,7 +106,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
                 convertedHeaders.add(Lists.transform(values, stringToHeader(key)));
             }
             InputStream stream = response.getResponseBodyAsStream();
-            return getResponseCreator().createResponse(line, convertedHeaders.toHeaders(), stream);
+            return ResponseCreator.createResponse(line, convertedHeaders.toHeaders(), stream);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {

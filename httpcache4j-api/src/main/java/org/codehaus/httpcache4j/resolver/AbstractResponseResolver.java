@@ -30,7 +30,6 @@ import java.io.IOException;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public abstract class AbstractResponseResolver implements ResponseResolver {
-    private final ResponseCreator responseCreator = new ResponseCreator();
     private final ResolverConfiguration configuration;
 
     protected AbstractResponseResolver(ResolverConfiguration configuration) {
@@ -39,10 +38,6 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
 
     protected final ProxyAuthenticator getProxyAuthenticator() {
         return configuration.getProxyAuthenticator();
-    }
-
-    protected ResponseCreator getResponseCreator() {
-        return responseCreator;
     }
 
     protected final Authenticator getAuthenticator() {
@@ -54,11 +49,12 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
     }
 
     public final HTTPResponse resolve(HTTPRequest request) throws IOException {
-        return resolveAuthenticated(request, request);
+        return resolveAuthenticated(request);
     }
 
-    private HTTPResponse resolveAuthenticated(HTTPRequest request, HTTPRequest req) throws IOException {
+    private HTTPResponse resolveAuthenticated(final HTTPRequest request) throws IOException {
         HTTPResponse convertedResponse;
+        HTTPRequest req = request;
         if (getAuthenticator().canAuthenticatePreemptively(request)) {
             req = getAuthenticator().preparePreemptiveAuthentication(request);
         }
@@ -68,34 +64,56 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
         convertedResponse = resolveImpl(req);
 
         if (convertedResponse.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) {
-            req = getProxyAuthenticator().prepareAuthentication(req, convertedResponse);
-            if (req != request) {
-                convertedResponse.consume();
-
-                convertedResponse = resolveImpl(req);
-
-                if (convertedResponse.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
-                    getProxyAuthenticator().afterFailedAuthentication(convertedResponse.getHeaders());
-                }
-                else {
-                    getProxyAuthenticator().afterSuccessfulAuthentication(convertedResponse.getHeaders());
-                }
-            }
+            return resolveProxy(req, convertedResponse);
         }
         if (convertedResponse.getStatus() == Status.UNAUTHORIZED) {
-            req = getAuthenticator().prepareAuthentication(req, convertedResponse);
-            if (req != request) {
-                convertedResponse.consume();
-                convertedResponse = resolveImpl(req);
-                if (convertedResponse.getStatus() == Status.UNAUTHORIZED) { //We failed
-                    getAuthenticator().afterFailedAuthentication(req, convertedResponse.getHeaders());
-                }
-                else {
-                    getAuthenticator().afterSuccessfulAuthentication(req, convertedResponse.getHeaders());
+            return resolveUnauthorized(req, convertedResponse);
+        }
+        return convertedResponse;
+    }
+
+    protected HTTPResponse resolveProxy(final HTTPRequest request, final HTTPResponse response) throws IOException {
+        HTTPRequest req = getProxyAuthenticator().prepareAuthentication(request, response);
+        if (req != request) {
+            response.consume();
+
+            HTTPResponse newResponse = null;
+            try {
+                newResponse = resolveImpl(req);
+                return newResponse;
+            } finally {
+                if (newResponse != null) {
+                    if (newResponse.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
+                        getProxyAuthenticator().afterFailedAuthentication(newResponse.getHeaders());
+                    } else {
+                        getProxyAuthenticator().afterSuccessfulAuthentication(newResponse.getHeaders());
+                    }
                 }
             }
         }
-        return convertedResponse;
+        return response;
+    }
+
+    protected HTTPResponse resolveUnauthorized(final HTTPRequest request, final HTTPResponse response) throws IOException {
+        HTTPRequest req = getAuthenticator().prepareAuthentication(request, response);
+        if (req != request) {
+            response.consume();
+
+            HTTPResponse newResponse = null;
+            try {
+                newResponse = resolveImpl(req);
+                return newResponse;
+            } finally {
+                if (newResponse != null) {
+                    if (newResponse.getStatus() == Status.UNAUTHORIZED) { //We failed
+                        getAuthenticator().afterFailedAuthentication(req, newResponse.getHeaders());
+                    } else {
+                        getAuthenticator().afterSuccessfulAuthentication(req, newResponse.getHeaders());
+                    }
+                }
+            }
+        }
+        return response;
     }
 
     protected abstract HTTPResponse resolveImpl(HTTPRequest request) throws IOException;

@@ -141,7 +141,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 HTTPVersion.get(protocolversion.getMajor() + "." + protocolversion.getMinor()),
                 Status.valueOf(response.getStatusLine().getStatusCode()),
                 response.getStatusLine().getReasonPhrase());
-        return getResponseCreator().createResponse(line, headers, stream);
+        return ResponseCreator.createResponse(line, headers, stream);
     }
 
     private InputStream getStream(HttpUriRequest realRequest, HttpResponse response) throws IOException {
