@@ -28,22 +28,8 @@
   <packaging>pom</packaging>
   <name>Java HTTP cache :: Storage Engines</name>
 
-<!--
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit-dep</artifactId>
-      <version>4.5</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
--->
-
   <modules>
     <module>storage-file</module>
-    <module>storage-jdbc</module>
-    <module>storage-h2</module>
-    <module>storage-derby</module>
     <module>storage-ehcache</module>
   </modules>
 </project>
