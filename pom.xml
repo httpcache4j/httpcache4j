@@ -160,7 +160,6 @@
   </build>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <currentVersion>${project.version}</currentVersion>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -182,16 +181,6 @@
       <dependency>
         <groupId>org.codehaus.httpcache4j</groupId>
         <artifactId>httpcache4j-storage-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.httpcache4j.storage</groupId>
-        <artifactId>storage-jdbc</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.httpcache4j.storage</groupId>
-        <artifactId>storage-h2</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -287,10 +276,6 @@
       <name>Codehaus maven repo</name>
       <url>https://nexus.codehaus.org/content/repositories/snapshots</url>
     </snapshotRepository>
-    <site>
-      <id>codehaus-site</id>
-      <url>dav:https://dav.codehaus.org/httpcache4j</url>
-    </site>
   </distributionManagement>
 
   <profiles>

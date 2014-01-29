@@ -54,17 +54,7 @@ If this is not enough, there are a number of persistent storages to choose from
 
       <dependency>
         <groupId>org.codehaus.httpcache4j.storage</groupId>
-        <artifactId>storage-h2</artifactId>
-        <version>4.0-RC3</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.httpcache4j.storage</groupId>
         <artifactId>storage-file</artifactId>
-        <version>4.0-RC3</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.httpcache4j.storage</groupId>
-        <artifactId>storage-derby</artifactId>
         <version>4.0-RC3</version>
       </dependency>
       <dependency>
@@ -74,7 +64,7 @@ If this is not enough, there are a number of persistent storages to choose from
       </dependency>
 
 
-There is also a generic jdbc storage which you can use to build your own jdbc based storage.
+There are also a few jdbc storages which are independently developed from the core.
 
 ## SNAPSHOT version
 
