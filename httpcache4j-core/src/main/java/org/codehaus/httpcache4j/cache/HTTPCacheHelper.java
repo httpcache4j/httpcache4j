@@ -78,8 +78,8 @@ class HTTPCacheHelper {
         Set<String> usableHeaders = new HashSet<String>(headers.keySet());
         usableHeaders.removeAll(unmodifiableHeaders);
         for (String headerName : usableHeaders) {
-            if (headers.hasHeader(headerName)) {
-                washedHeaders = washedHeaders.add(headerName, headers.getHeaders((headerName)));
+            if (headers.contains(headerName)) {
+                washedHeaders = washedHeaders.add(headers.getHeaders((headerName)));
             }
         }
         return washedHeaders;
@@ -128,7 +128,7 @@ class HTTPCacheHelper {
 
     boolean isCacheableRequest(HTTPRequest request) {
         if (request.getMethod().isCacheable()) {
-            if (request.getHeaders().hasHeader(CACHE_CONTROL)) {
+            if (request.getHeaders().contains(CACHE_CONTROL)) {
                 CacheControl cc = request.getCacheControl();
                 //If the request tells us that we shouldn't cache the response, then we don't.
                 return !cc.isNoCache() || !cc.isNoStore();
@@ -139,7 +139,7 @@ class HTTPCacheHelper {
     }
 
     boolean allowStale(CacheItem item, HTTPRequest req, DateTime requestTime) {
-        if (req.getHeaders().hasHeader(CACHE_CONTROL)) {
+        if (req.getHeaders().contains(CACHE_CONTROL)) {
             CacheControl control = req.getCacheControl();
             int maxStale = control.getMaxStale();
             if (maxStale > -1) {
@@ -173,7 +173,7 @@ class HTTPCacheHelper {
                     headers = headers.add(cacheHeaderBuilder.createHITXCacheHeader());
                     headers = headers.set(HeaderConstants.AGE, String.valueOf(age));
             	} else {
-                    if (headers.hasHeader(HeaderConstants.X_CACHE)) {
+                    if (headers.contains(HeaderConstants.X_CACHE)) {
                         headers = headers.add(cacheHeaderBuilder.createMISSXCacheHeader());
                     } else {
                         headers = headers.add(cacheHeaderBuilder.createHITXCacheHeader());

@@ -27,8 +27,6 @@ import org.joda.time.DateTime;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -46,15 +44,19 @@ public final class HTTPResponse {
     private final StatusLine statusLine;
     private final Payload payload;
     private final Headers headers;
-    private DateTime date;
-    private DateTime expires;
-    private DateTime lastModified;
-    private Tag ETag;
-    private Set<HTTPMethod> allowedMethods;
-    private CacheControl cacheControl;
-    private boolean cached;
-    private URI location;
-    private URI contentLocation;
+
+    /**
+     * Consider removing the cached values from here...
+     */
+    private final DateTime date;
+    private final DateTime expires;
+    private final DateTime lastModified;
+    private final Tag etag;
+    private final Set<HTTPMethod> allowedMethods;
+    private final CacheControl cacheControl;
+    private final boolean cached;
+    private final URI location;
+    private final URI contentLocation;
 
     public HTTPResponse(Payload payload, Status status, Headers headers) {
         this(payload, new StatusLine(status), headers);
@@ -65,39 +67,21 @@ public final class HTTPResponse {
         this.payload = payload;
         this.headers = Preconditions.checkNotNull(headers, "You must supply some Headers");
 
-        if (headers.hasHeader(ETAG)) {
-            ETag = Tag.parse(headers.getFirstHeader(ETAG).getValue());
-        }
-        if (headers.hasHeader(LAST_MODIFIED)) {
-            lastModified = HeaderUtils.fromHttpDate(headers.getFirstHeader(LAST_MODIFIED));
-        }
-        if (headers.hasHeader(ALLOW)) {
-            Directives value = headers.getFirstHeader(ALLOW).getDirectives();
-            Set<HTTPMethod> allowedMethods = new HashSet<HTTPMethod>();
-            for (Directive part : value) {
-                allowedMethods.add(HTTPMethod.valueOf(part.getName()));
-            }
-            this.allowedMethods = Collections.unmodifiableSet(allowedMethods);
-        }
-        if (headers.hasHeader(CACHE_CONTROL)) {
-            cacheControl = new CacheControl(headers.getFirstHeader(CACHE_CONTROL).getDirectives());
-        }
-        if (headers.hasHeader(DATE)) {
-            date = HeaderUtils.fromHttpDate(headers.getFirstHeader(DATE));
-        }
-        if (headers.hasHeader(EXPIRES)) {
-            expires = HeaderUtils.fromHttpDate(headers.getFirstHeader(EXPIRES));
-        }
-        if (headers.hasHeader(X_CACHE)) {
+        etag = headers.getETag();
+        lastModified = headers.getLastModified();
+        allowedMethods = headers.getAllow();
+        cacheControl = headers.getCacheControl();
+        date = headers.getDate();
+        expires = headers.getExpires();
+        location = headers.getLocation();
+        contentLocation = headers.getContentLocation();
+
+        if (headers.contains(X_CACHE)) {
             Header cacheHeader = CacheHeaderBuilder.getBuilder().createHITXCacheHeader();
             List<Header> xcacheHeaders = headers.getHeaders(X_CACHE);
             cached = xcacheHeaders.contains(cacheHeader);
-        }
-        if (headers.hasHeader(LOCATION)) {
-            location = URI.create(headers.getFirstHeaderValue(LOCATION));
-        }
-        if (headers.hasHeader(CONTENT_LOCATION)) {
-            contentLocation = URI.create(headers.getFirstHeaderValue(CONTENT_LOCATION));
+        } else {
+            cached = false;
         }
     }
 
@@ -132,7 +116,7 @@ public final class HTTPResponse {
     }
 
     public Tag getETag() {
-        return ETag;
+        return etag;
     }
 
     public DateTime getDate() {
@@ -163,9 +147,7 @@ public final class HTTPResponse {
         return cached;
     }
 
-    public Set<HTTPMethod> getAllowedMethods() {
-        return allowedMethods != null ? allowedMethods : Collections.<HTTPMethod>emptySet();
-    }
+    public Set<HTTPMethod> getAllowedMethods() { return allowedMethods; }
 
     public <A> Optional<A> transform(final Function<Payload, A> f) {
         if (hasPayload()) {

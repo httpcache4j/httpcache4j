@@ -20,6 +20,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
@@ -28,6 +29,7 @@ import org.codehaus.httpcache4j.preference.Preference;
 import org.codehaus.httpcache4j.util.CaseInsensitiveKey;
 import org.joda.time.DateTime;
 
+import java.net.URI;
 import java.util.*;
 
 
@@ -52,8 +54,17 @@ public final class Headers implements Iterable<Header> {
         this.headers.putAll(headers);
     }
 
-    public List<Header> getHeaders(String headerKey) {
-        return headers.getAsHeaders(headerKey);
+    public List<Header> getHeaders(String name) {
+        return headers.getAsHeaders(name);
+    }
+
+    public List<Directives> getDirectives(String name) {
+        return Lists.transform(getHeaders(name), new Function<Header, Directives>() {
+            @Override
+            public Directives apply(Header input) {
+                return input.getDirectives();
+            }
+        });
     }
 
     public Header getFirstHeader(String headerKey) {
@@ -72,6 +83,14 @@ public final class Headers implements Iterable<Header> {
         return null;
     }
 
+    public Directives getFirstHeaderValueAsDirectives(String headerKey) {
+        Header header = getFirstHeader(headerKey);
+        if (header != null) {
+            return header.getDirectives();
+        }
+        return null;
+    }
+
     public Headers add(Header header) {
         HeaderHashMap headers = copyMap();
         List<String> list = new ArrayList<String>(headers.get(header.getName()));
@@ -82,51 +101,8 @@ public final class Headers implements Iterable<Header> {
         return new Headers(headers);
     }
 
-    public Headers set(Header header) {
-        HeaderHashMap headers = copyMap();
-        headers.put(header.getName(), Lists.newArrayList(header.getValue()));
-        return new Headers(headers);
-    }
-
-    public Headers set(String name, String value) {
-        return set(new Header(name, value));
-    }
-
     public Headers add(String key, String value) {
         return add(new Header(key, value));
-    }
-
-    public boolean contains(Header header) {
-        List<Header> values = getHeaders(header.getName());
-        return values.contains(header);
-    }
-
-    private HeaderHashMap copyMap() {
-        return new HeaderHashMap(headers);
-    }
-
-    public Iterator<Header> iterator() {
-        return headers.headerIterator();
-    }
-
-    public Set<String> keySet() {
-        return headers.keys();
-    }
-
-    public boolean hasHeader(String headerName) {
-        return !headers.get(headerName).isEmpty();
-    }
-
-    public Headers add(String name, List<Header> headers) {
-        HeaderHashMap heads = copyMap();
-        heads.putImpl(name, headers);
-        return new Headers(heads);
-    }
-
-    public Headers remove(String name) {
-        HeaderHashMap heads = copyMap();
-        heads.remove(name);
-        return new Headers(heads);
     }
 
     public Headers add(Iterable<Header> headers) {
@@ -140,7 +116,25 @@ public final class Headers implements Iterable<Header> {
         }
         return new Headers(map);
     }
-    
+
+    public Headers add(String name, Iterable<String> values) {
+        HeaderHashMap heads = copyMap();
+        List<String> list = new ArrayList<String>(headers.get(name));
+        Iterables.addAll(list, values);
+        heads.put(name, list);
+        return new Headers(heads);
+    }
+
+    public Headers set(Header header) {
+        HeaderHashMap headers = copyMap();
+        headers.put(header.getName(), Lists.newArrayList(header.getValue()));
+        return new Headers(headers);
+    }
+
+    public Headers set(String name, String value) {
+        return set(new Header(name, value));
+    }
+
     public Headers set(Iterable<Header> headers) {
         HeaderHashMap map = copyMap();
         Headers copy = new Headers().add(headers);
@@ -149,6 +143,37 @@ public final class Headers implements Iterable<Header> {
             map.put(key, copy.headers.get(key));
         }
         return new Headers(map);
+    }
+
+    public boolean contains(Header header) {
+        List<Header> values = getHeaders(header.getName());
+        return values.contains(header);
+    }
+
+    public boolean contains(String headerName) {
+        return !headers.get(headerName).isEmpty();
+    }
+
+    /**
+     * @deprecated use {@link #contains(String)} instead
+     */
+    @Deprecated
+    public boolean hasHeader(String headerName) {
+        return !headers.get(headerName).isEmpty();
+    }
+
+    public Headers remove(String name) {
+        HeaderHashMap heads = copyMap();
+        heads.remove(name);
+        return new Headers(heads);
+    }
+
+    public Iterator<Header> iterator() {
+        return headers.headerIterator();
+    }
+
+    public Set<String> keySet() {
+        return headers.keys();
     }
 
     public int size() {
@@ -238,7 +263,7 @@ public final class Headers implements Iterable<Header> {
             String allowValue = Joiner.on(",").skipNulls().join(allow);
             return set(HeaderConstants.ALLOW, allowValue);
         }
-        return this;
+        return remove(HeaderConstants.ALLOW);
     }
 
     public CacheControl getCacheControl() {
@@ -302,6 +327,30 @@ public final class Headers implements Iterable<Header> {
         return set(HeaderConstants.ETAG, tag.format());
     }
 
+    public URI getLocation() {
+        String location = getFirstHeaderValue(HeaderConstants.LOCATION);
+        if (location != null) {
+            return URI.create(location);
+        }
+        return null;
+    }
+
+    public Headers withLocation(URI href) {
+        return set(HeaderConstants.LOCATION, href.toString());
+    }
+
+    public URI getContentLocation() {
+        String location = getFirstHeaderValue(HeaderConstants.CONTENT_LOCATION);
+        if (location != null) {
+            return URI.create(location);
+        }
+        return null;
+    }
+
+    public Headers withContentLocation(URI href) {
+        return set(HeaderConstants.CONTENT_LOCATION, href.toString());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -332,7 +381,11 @@ public final class Headers implements Iterable<Header> {
         }
         return builder.toString();
     }
-    
+
+    private HeaderHashMap copyMap() {
+        return new HeaderHashMap(headers);
+    }
+
     public static Headers parse(String input) {
         if (input == null || input.trim().isEmpty()) {
             return new Headers();
@@ -344,7 +397,6 @@ public final class Headers implements Iterable<Header> {
         }
         return headers.toHeaders();
     }
-
 
 
     private static class HeaderHashMap extends LinkedHashMap<CaseInsensitiveKey, List<String>> {
@@ -398,11 +450,6 @@ public final class Headers implements Iterable<Header> {
 
         public List<String> put(String key, List<String> value) {
             return super.put(new CaseInsensitiveKey(key), value);
-        }
-
-        List<String> putImpl(String key, List<Header> value) {
-            List<String> stringList = Lists.transform(value, headerToString);
-            return put(key, new ArrayList<String>(stringList));
         }
 
         public List<String> remove(String key) {
