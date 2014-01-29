@@ -49,6 +49,14 @@ public class MutableHeaders implements Iterable<Header> {
         headers = headers.add(key, value);
     }
 
+    public void add(String key, Iterable<String> values) {
+        headers = headers.add(key, values);
+    }
+
+    public void add(Iterable<Header> headers) {
+        this.headers = this.headers.add(headers);
+    }
+
     public void set(Header header) {
         headers = headers.set(header);
     }
@@ -61,10 +69,6 @@ public class MutableHeaders implements Iterable<Header> {
         this.headers = this.headers.set(headers);
     }
 
-    public void add(Iterable<Header> headers) {
-        this.headers = this.headers.add(headers);
-    }
-
     public List<Header> getHeaders(String headerKey) {
         return headers.getHeaders(headerKey);
     }
@@ -75,43 +79,6 @@ public class MutableHeaders implements Iterable<Header> {
 
     public String getFirstHeaderValue(String headerKey) {
         return headers.getFirstHeaderValue(headerKey);
-    }
-
-    public boolean contains(Header header) {
-        return headers.contains(header);
-    }
-
-    public boolean hasHeader(String headerName) {
-        return headers.hasHeader(headerName);
-    }
-
-    public int size() {
-        return headers.size();
-    }
-
-    public boolean isEmpty() {
-        return headers.isEmpty();
-    }
-
-    @Override
-    public String toString() {
-        return headers.toString();
-    }
-
-    public Headers toHeaders() {
-        return headers;
-    }
-
-    public Set<String> keySet() {
-        return headers.keySet();
-    }
-
-    public Iterator<Header> iterator() {
-        return headers.iterator();
-    }
-
-    public void setCacheControl(CacheControl cc) {
-        headers = headers.withCacheControl(cc);
     }
 
     public void addAcceptLanguage(Preference<Locale>... accept) {
@@ -146,10 +113,6 @@ public class MutableHeaders implements Iterable<Header> {
         headers = headers.addAcceptCharset(accept);
     }
 
-    public void setAllow(Set<HTTPMethod> allow) {
-        headers = headers.withAllow(allow);
-    }
-
     public void setAccept(List<Preference<MIMEType>> charsets) {
         headers = headers.withAccept(charsets);
     }
@@ -164,10 +127,6 @@ public class MutableHeaders implements Iterable<Header> {
 
     public void setLastModified(DateTime lm) {
         headers = headers.withLastModified(lm);
-    }
-
-    public void setETag(Tag tag) {
-        headers = headers.withETag(tag);
     }
 
     public DateTime getExpires() {
@@ -186,11 +145,62 @@ public class MutableHeaders implements Iterable<Header> {
         return headers.getAllow();
     }
 
+    public void setAllow(Set<HTTPMethod> allow) {
+        headers = headers.withAllow(allow);
+    }
+
     public CacheControl getCacheControl() {
         return headers.getCacheControl();
+    }
+
+    public void setCacheControl(CacheControl cc) {
+        headers = headers.withCacheControl(cc);
     }
 
     public Tag getETag() {
         return headers.getETag();
     }
+
+    public void setETag(Tag tag) {
+        headers = headers.withETag(tag);
+    }
+
+    public boolean contains(Header header) {
+        return headers.contains(header);
+    }
+
+    public boolean contains(String headerName) {
+        return headers.contains(headerName);
+    }
+
+    @Deprecated
+    public boolean hasHeader(String headerName) {
+        return headers.contains(headerName);
+    }
+
+    public int size() {
+        return headers.size();
+    }
+
+    public boolean isEmpty() {
+        return headers.isEmpty();
+    }
+
+    @Override
+    public String toString() {
+        return headers.toString();
+    }
+
+    public Headers toHeaders() {
+        return headers;
+    }
+
+    public Set<String> keySet() {
+        return headers.keySet();
+    }
+
+    public Iterator<Header> iterator() {
+        return headers.iterator();
+    }
+
 }
