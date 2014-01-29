@@ -29,6 +29,12 @@ public abstract class CacheHeaderBuilder {
     private static class LocalHostCacheHeaderBuilder extends CacheHeaderBuilder {
         private static final String X_CACHE_FORMAT = "%s from HTTPCache4j(%s)";
 
+        private String hostAddress;
+
+        public LocalHostCacheHeaderBuilder() {
+            hostAddress = getHostAddress();
+        }
+
         private String getHostAddress() {
             String hostname;
             try {
@@ -41,12 +47,12 @@ public abstract class CacheHeaderBuilder {
         }
 
         public Header createMISSXCacheHeader() {
-            String value = String.format(X_CACHE_FORMAT, "MISS", getHostAddress());
+            String value = String.format(X_CACHE_FORMAT, "MISS", hostAddress);
             return new Header(HeaderConstants.X_CACHE, value);
         }
 
         public Header createHITXCacheHeader() {
-            String value = String.format(X_CACHE_FORMAT, "HIT", getHostAddress());
+            String value = String.format(X_CACHE_FORMAT, "HIT", hostAddress);
             return new Header(HeaderConstants.X_CACHE, value);
 
         }
