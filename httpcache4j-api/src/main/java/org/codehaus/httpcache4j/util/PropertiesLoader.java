@@ -1,7 +1,5 @@
 package org.codehaus.httpcache4j.util;
 
-import com.google.common.io.Closeables;
-
 import java.io.*;
 import java.util.Properties;
 
@@ -17,7 +15,7 @@ public final class PropertiesLoader {
             throw new RuntimeException(e);
         }
         finally {
-            Closeables.closeQuietly(reader);
+            IOUtils.closeQuietly(reader);
         }
         return properties;
     }
@@ -30,7 +28,7 @@ public final class PropertiesLoader {
             throw new RuntimeException(e);
         }
         finally {
-            Closeables.closeQuietly(stream);
+            IOUtils.closeQuietly(stream);
         }
         return properties;
     }

@@ -20,10 +20,10 @@ import java.io.*;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.io.Closeables;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.Payload;
+import org.codehaus.httpcache4j.util.IOUtils;
 import org.codehaus.httpcache4j.util.MemoryCache;
 import org.codehaus.httpcache4j.util.SerializationUtils;
 
@@ -124,7 +124,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
                     cache = new MemoryCache(capacity);
                 }
                 finally {
-                    Closeables.closeQuietly(inputStream);
+                    IOUtils.closeQuietly(inputStream);
                 }
             }
             else {
@@ -148,7 +148,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
             //Ignored, we create a new one.
         }
         finally {
-            Closeables.closeQuietly(outputStream);
+            IOUtils.closeQuietly(outputStream);
             read.unlock();
         }
     }
