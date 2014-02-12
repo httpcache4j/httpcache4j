@@ -16,9 +16,9 @@
 package org.codehaus.httpcache4j.cache;
 
 import com.google.common.io.CharStreams;
-import com.google.common.io.Closeables;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
+import org.codehaus.httpcache4j.util.IOUtils;
 import org.codehaus.httpcache4j.util.NullInputStream;
 import org.junit.After;
 import static org.junit.Assert.*;
@@ -128,7 +128,7 @@ public abstract class ConcurrentCacheStorageAbstractTest {
             fail("unable to create string from stream");
         }
         finally {
-            Closeables.closeQuietly(is);
+            IOUtils.closeQuietly(is);
         }
     }
 

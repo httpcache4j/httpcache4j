@@ -16,8 +16,8 @@
 package org.codehaus.httpcache4j.payload;
 
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
 import org.codehaus.httpcache4j.MIMEType;
+import org.codehaus.httpcache4j.util.IOUtils;
 
 import java.io.Serializable;
 import java.io.InputStream;
@@ -38,7 +38,7 @@ public class ByteArrayPayload implements Payload, Serializable {
         try {
             this.bytes = ByteStreams.toByteArray(stream);
         } finally {
-            Closeables.closeQuietly(stream);
+            IOUtils.closeQuietly(stream);
         }
         length = bytes.length;
         this.type = type;

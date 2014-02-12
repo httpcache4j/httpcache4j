@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
 
+import com.google.common.io.ByteSource;
 import com.google.common.io.FileBackedOutputStream;
-import com.google.common.io.InputSupplier;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.util.Digester;
@@ -23,7 +23,7 @@ public class MD5CaculcatingPayload implements Payload {
     private final MIMEType mimeType;
     private final long length;
     private final String md5;
-    private final InputSupplier<InputStream> supplier;
+    private final ByteSource byteSource;
 
     private MD5CaculcatingPayload(final InputStream stream, MIMEType mimeType, long length) {
         this.mimeType = mimeType;
@@ -36,7 +36,7 @@ public class MD5CaculcatingPayload implements Payload {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        supplier = os.getSupplier();
+        byteSource = os.asByteSource();
     }
 
     public String getMD5() {
@@ -49,7 +49,7 @@ public class MD5CaculcatingPayload implements Payload {
 
     public InputStream getInputStream() {
         try {
-            return supplier.getInput();
+            return byteSource.openStream();
         } catch (IOException e) {
             throw new HTTPException(e);
         }
