@@ -22,7 +22,7 @@ Add this to your POM
     <dependency>
       <groupId>org.codehaus.httpcache4j</groupId>
       <artifactId>httpcache4j-core</artifactId>
-      <version>4.0-RC3</version>
+      <version>4.0-RC4</version>
     </dependency>
 
 Now choose your resolver.
@@ -30,19 +30,19 @@ Now choose your resolver.
     <dependency>
       <groupId>org.codehaus.httpcache4j.resolvers</groupId>
       <artifactId>resolvers-commons-httpclient</artifactId>
-      <version>4.0-RC3</version>
+      <version>4.0-RC4</version>
     </dependency>
 
     <dependency>
       <groupId>org.codehaus.httpcache4j.resolvers</groupId>
       <artifactId>resolvers-httpcomponents-httpclient</artifactId>
-      <version>4.0-RC3</version>
+      <version>4.0-RC4</version>
     </dependency>
 
     <dependency>
       <groupId>org.codehaus.httpcache4j.resolvers</groupId>
       <artifactId>resolvers-ning-async</artifactId>
-      <version>4.0-RC3</version>
+      <version>4.0-RC4</version>
     </dependency>
 
 Then choose your storage mechanism.
@@ -55,12 +55,12 @@ If this is not enough, there are a number of persistent storages to choose from
       <dependency>
         <groupId>org.codehaus.httpcache4j.storage</groupId>
         <artifactId>storage-file</artifactId>
-        <version>4.0-RC3</version>
+        <version>4.0-RC4</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.httpcache4j.storage</groupId>
         <artifactId>storage-ehcache</artifactId>
-        <version>4.0-RC3</version>
+        <version>4.0-RC4</version>
       </dependency>
 
 
