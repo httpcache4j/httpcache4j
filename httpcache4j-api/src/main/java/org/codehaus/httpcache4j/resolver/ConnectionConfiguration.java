@@ -1,6 +1,6 @@
 package org.codehaus.httpcache4j.resolver;
 
-import com.google.common.base.Optional;
+import net.hamnaberg.funclite.Optional;
 import org.codehaus.httpcache4j.HTTPHost;
 
 import java.util.Collections;
@@ -27,7 +27,7 @@ public class ConnectionConfiguration {
     }
 
     public ConnectionConfiguration() {
-        this(Optional.<Integer>absent(), Optional.<Integer>absent(), Optional.<Integer>absent(), Optional.<Integer>absent(), Collections.<HTTPHost, Integer>emptyMap());
+        this(Optional.<Integer>none(), Optional.<Integer>none(), Optional.<Integer>none(), Optional.<Integer>none(), Collections.<HTTPHost, Integer>emptyMap());
     }
 
     public Optional<Integer> getTimeout() {
@@ -54,29 +54,29 @@ public class ConnectionConfiguration {
      * Mutable builder.
      */
     public static class Builder {
-        private Optional<Integer> timeout = Optional.absent();
-        private Optional<Integer> socketTimeout = Optional.absent();
-        private Optional<Integer> defaultConnectionPerHost = Optional.absent();
-        private Optional<Integer> maxConnections = Optional.absent();
+        private Optional<Integer> timeout = Optional.none();
+        private Optional<Integer> socketTimeout = Optional.none();
+        private Optional<Integer> defaultConnectionPerHost = Optional.none();
+        private Optional<Integer> maxConnections = Optional.none();
         private final Map<HTTPHost, Integer> connectionsPerHost = new HashMap<HTTPHost, Integer>();
 
         public Builder setTimeout(int timeout) {
-            this.timeout = Optional.of(timeout);
+            this.timeout = Optional.some(timeout);
             return this;
         }
 
         public Builder setSocketTimeout(int socketTimeout) {
-            this.socketTimeout = Optional.of(socketTimeout);
+            this.socketTimeout = Optional.some(socketTimeout);
             return this;
         }
 
         public Builder setDefaultConnectionPerHost(int defaultConnectionPerHost) {
-            this.defaultConnectionPerHost = Optional.of(defaultConnectionPerHost);
+            this.defaultConnectionPerHost = Optional.some(defaultConnectionPerHost);
             return this;
         }
 
         public Builder setMaxConnections(int maxConnections) {
-            this.maxConnections = Optional.of(maxConnections);
+            this.maxConnections = Optional.some(maxConnections);
             return this;
         }
 

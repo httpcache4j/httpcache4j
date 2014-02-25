@@ -16,12 +16,7 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import net.hamnaberg.funclite.*;
 
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.preference.Charset;
@@ -59,7 +54,7 @@ public final class Headers implements Iterable<Header> {
     }
 
     public List<Directives> getDirectives(String name) {
-        return Lists.transform(getHeaders(name), new Function<Header, Directives>() {
+        return CollectionOps.map(getHeaders(name), new Function<Header, Directives>() {
             @Override
             public Directives apply(Header input) {
                 return input.getDirectives();
@@ -120,14 +115,14 @@ public final class Headers implements Iterable<Header> {
     public Headers add(String name, Iterable<String> values) {
         HeaderHashMap heads = copyMap();
         List<String> list = new ArrayList<String>(headers.get(name));
-        Iterables.addAll(list, values);
+        CollectionOps.addAll(list, values);
         heads.put(name, list);
         return new Headers(heads);
     }
 
     public Headers set(Header header) {
         HeaderHashMap headers = copyMap();
-        headers.put(header.getName(), Lists.newArrayList(header.getValue()));
+        headers.put(header.getName(), CollectionOps.of(header.getValue()));
         return new Headers(headers);
     }
 
@@ -249,18 +244,18 @@ public final class Headers implements Iterable<Header> {
     public Set<HTTPMethod> getAllow() {
         Header header = getFirstHeader(HeaderConstants.ALLOW);
         if (header != null) {
-            ImmutableSet.Builder<HTTPMethod> builder = ImmutableSet.builder();
+            Set<HTTPMethod> builder = CollectionOps.newLinkedHashSet();
             for (Directive directive : header.getDirectives()) {
                 builder.add(HTTPMethod.valueOf(directive.getName().toUpperCase(Locale.ENGLISH)));
             }
-            return builder.build();
+            return builder;
         }
         return Collections.emptySet();
     }
 
     public Headers withAllow(Set<HTTPMethod> allow) {
         if (!allow.isEmpty()) {
-            String allowValue = Joiner.on(",").skipNulls().join(allow);
+            String allowValue = CollectionOps.mkString(allow, ",");
             return set(HeaderConstants.ALLOW, allowValue);
         }
         return remove(HeaderConstants.ALLOW);
@@ -436,7 +431,7 @@ public final class Headers implements Iterable<Header> {
         List<Header> getAsHeaders(final String key) {
             List<Header> headers = new ArrayList<Header>();
             CaseInsensitiveKey name = new CaseInsensitiveKey(key);
-            headers.addAll(Lists.transform(get(name), nameToHeader(name)));
+            headers.addAll(CollectionOps.map(get(name), nameToHeader(name)));
             return Collections.unmodifiableList(headers);
         }
 
@@ -459,7 +454,7 @@ public final class Headers implements Iterable<Header> {
         Iterator<Header> headerIterator() {
             List<Header> headers = new ArrayList<Header>();
             for (Map.Entry<CaseInsensitiveKey, List<String>> entry : this.entrySet()) {
-                headers.addAll(Lists.transform(entry.getValue(), nameToHeader(entry.getKey())));
+                headers.addAll(CollectionOps.map(entry.getValue(), nameToHeader(entry.getKey())));
             }
             return headers.iterator();
         }

@@ -1,13 +1,41 @@
 package org.codehaus.httpcache4j.util;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.charset.Charset;
 
 public final class IOUtils {
     private static final int BUF_SIZE = 0x1000; // 4K
     private IOUtils() {
+    }
+
+    public static String toString(InputStream from) throws IOException {
+        return toString(from, Charsets.UTF_8);
+    }
+
+    public static String toString(InputStream from, Charset charset) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(from, charset));
+            String line;
+            while((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        }
+        finally {
+            closeQuietly(reader);
+        }
+        return sb.toString();
+    }
+
+    public static byte[] toByteArray(InputStream is) throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            copy(is, os);
+        } finally {
+            closeQuietly(is);
+        }
+        return os.toByteArray();
     }
 
     public static long copy(InputStream from, OutputStream to) throws IOException {

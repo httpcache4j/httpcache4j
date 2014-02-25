@@ -1,6 +1,7 @@
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Joiner;
+
+import net.hamnaberg.funclite.CollectionOps;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class AuthDirective extends Directive {
             output += " " + value;
         }
         if (!getParameters().isEmpty()) {
-            output = output + " " + Joiner.on(", ").join(getParameters());
+            output = output + " " + CollectionOps.mkString(getParameters(), ", ");
         }
         return output;
     }

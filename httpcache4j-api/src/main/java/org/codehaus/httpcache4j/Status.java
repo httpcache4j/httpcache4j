@@ -16,12 +16,10 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import net.hamnaberg.funclite.CollectionOps;
+
+import java.util.*;
 
 /**
  * HTTP Status to return after handling a call.
@@ -99,11 +97,11 @@ public final class Status implements Comparable<Status> {
         }
     }
 
-    private static final Set<Status> STATUSES_WITHOUT_BODY = ImmutableSet.of(RESET_CONTENT, NO_CONTENT, NOT_MODIFIED);
+    private static final Set<Status> STATUSES_WITHOUT_BODY = Collections.unmodifiableSet(CollectionOps.setOf(RESET_CONTENT, NO_CONTENT, NOT_MODIFIED));
     private static final Map<Integer, Status> STATUSES;
 
     static {
-        ImmutableMap.Builder<Integer, Status> builder = ImmutableMap.builder();
+        Map<Integer, Status> builder = new LinkedHashMap<Integer, Status>();
         builder.put(CONTINUE.getCode(), CONTINUE);
         builder.put(SWITCHING_PROTOCOLS.getCode(), SWITCHING_PROTOCOLS);
         builder.put(OK.getCode(), OK);
@@ -144,7 +142,7 @@ public final class Status implements Comparable<Status> {
         builder.put(SERVICE_UNAVAILABLE.getCode(), SERVICE_UNAVAILABLE);
         builder.put(GATEWAY_TIMEOUT.getCode(), GATEWAY_TIMEOUT);
         builder.put(HTTP_VERSION_NOT_SUPPORTED.getCode(), HTTP_VERSION_NOT_SUPPORTED);
-        STATUSES = builder.build();
+        STATUSES = Collections.unmodifiableMap(builder);
     }
 
     private final int code;

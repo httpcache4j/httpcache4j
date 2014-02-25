@@ -18,17 +18,15 @@ package org.codehaus.httpcache4j;
 
 import static org.junit.Assert.*;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.util.AuthDirectivesParser;
-import org.codehaus.httpcache4j.util.DirectivesParser;
+import org.codehaus.httpcache4j.util.IOUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.List;
+import java.nio.charset.Charset;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class HeadersTest {
@@ -133,7 +131,7 @@ public class HeadersTest {
          field is provided, since the contents of a challenge may itself
          contain a comma-separated list of authentication parameters.
          */
-        String value = Resources.toString(getClass().getResource("/multiple-auth.txt"), Charsets.ISO_8859_1);
+        String value = IOUtils.toString(getClass().getResourceAsStream("/multiple-auth.txt"), Charset.forName("ISO-8859-1"));
         Iterable<Directive> parsed = AuthDirectivesParser.parse(value);
         Directives directives = new Directives(parsed);
         assertNotNull(directives.getAsDirective("Basic"));

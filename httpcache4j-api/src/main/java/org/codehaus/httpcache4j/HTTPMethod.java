@@ -16,12 +16,10 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 
-import java.util.Locale;
-import java.util.Map;
+import net.hamnaberg.funclite.Preconditions;
+
+import java.util.*;
 
 /**
  * An enum that defines the different HTTP methods.
@@ -40,18 +38,21 @@ public final class HTTPMethod {
     public static final HTTPMethod PUT = new HTTPMethod("PUT", Idempotency.IDEMPOTENT, Safety.UNSAFE);
     public static final HTTPMethod TRACE = new HTTPMethod("TRACE", Idempotency.IDEMPOTENT, Safety.SAFE);
 
-    private static Map<String, HTTPMethod> defaultMethods = ImmutableMap.<String, HTTPMethod>builder()
-            .put(CONNECT.getMethod().toUpperCase(Locale.ENGLISH), CONNECT)
-            .put(DELETE.getMethod().toUpperCase(Locale.ENGLISH), DELETE)
-            .put(GET.getMethod().toUpperCase(Locale.ENGLISH), GET)
-            .put(HEAD.getMethod().toUpperCase(Locale.ENGLISH), HEAD)
-            .put(OPTIONS.getMethod().toUpperCase(Locale.ENGLISH), OPTIONS)
-            .put(PATCH.getMethod().toUpperCase(Locale.ENGLISH), PATCH)
-            .put(POST.getMethod().toUpperCase(Locale.ENGLISH), POST)
-            .put(PURGE.getMethod().toUpperCase(Locale.ENGLISH), PURGE)
-            .put(PUT.getMethod().toUpperCase(Locale.ENGLISH), PUT)
-            .put(TRACE.getMethod().toUpperCase(Locale.ENGLISH), TRACE)
-            .build();
+    private static Map<String, HTTPMethod> defaultMethods;
+    static {
+        Map<String, HTTPMethod> map = new LinkedHashMap<String, HTTPMethod>();
+        map.put(CONNECT.getMethod(), CONNECT);
+        map.put(DELETE.getMethod(), DELETE);
+        map.put(GET.getMethod(), GET);
+        map.put(HEAD.getMethod(), HEAD);
+        map.put(OPTIONS.getMethod(), OPTIONS);
+        map.put(PATCH.getMethod(), PATCH);
+        map.put(POST.getMethod(), POST);
+        map.put(PURGE.getMethod(), PURGE);
+        map.put(PUT.getMethod(), PUT);
+        map.put(TRACE.getMethod(), TRACE);
+        defaultMethods = Collections.unmodifiableMap(map);
+    }
 
     private final String method;
     private final Idempotency idempotency;
@@ -96,7 +97,7 @@ public final class HTTPMethod {
     }
 
     public static HTTPMethod valueOf(String method) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(method), "Method name may not be null or empty");
+        Preconditions.checkArgument(method != null && !method.trim().isEmpty(), "Method name may not be null or empty");
         String uppercaseMethod = method.toUpperCase(Locale.ENGLISH);
         if (defaultMethods.containsKey(uppercaseMethod)) {
             return defaultMethods.get(uppercaseMethod);

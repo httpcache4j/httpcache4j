@@ -1,7 +1,5 @@
 package org.codehaus.httpcache4j.storage.ehcache;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;

@@ -18,14 +18,14 @@ package org.codehaus.httpcache4j.cache;
 
 import java.io.*;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.util.IOUtils;
 import org.codehaus.httpcache4j.util.MemoryCache;
 import org.codehaus.httpcache4j.util.SerializationUtils;
+import org.codehaus.httpcache4j.util.StringUtils;
 
 /**
  * Persistent version of the in memory cache. This stores a serialized version of the
@@ -53,7 +53,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
         super(capacity, 10);
         Preconditions.checkArgument(capacity > 0, "You may not have a empty persistent cache");
         Preconditions.checkNotNull(storageDirectory, "You may not have a null storageDirectory");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(name), "You may not have a empty file name");
+        Preconditions.checkArgument(!StringUtils.isNullOrEmpty(name), "You may not have a empty file name");
         fileManager = new FileManager(storageDirectory);
 
         serializationFile = new File(storageDirectory, name);

@@ -15,7 +15,7 @@
 
 package org.codehaus.httpcache4j.auth;
 
-import com.google.common.collect.Lists;
+import net.hamnaberg.funclite.CollectionOps;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.digest.Digest;
 import org.codehaus.httpcache4j.auth.digest.RequestDigest;
@@ -77,7 +77,7 @@ public class DigestAuthenticatorStrategy implements AuthenticatorStrategy {
         if (header != null) {
             String nextNonce = header.getDirectives().get("nextnonce");
             if (nextNonce != null) {
-                List<Parameter> params = Lists.newArrayList(scheme.getDirective().getParameters());
+                List<Parameter> params = CollectionOps.newArrayList(scheme.getDirective().getParameters());
                 for (Parameter parameter : scheme.getDirective().getParameters()) {
                     if ("nonce".equals(parameter.getName())) {
                         params.remove(parameter);

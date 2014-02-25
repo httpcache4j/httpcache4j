@@ -17,7 +17,8 @@
 package org.codehaus.httpcache4j.util;
 
 
-import com.google.common.base.Preconditions;
+
+import net.hamnaberg.funclite.Preconditions;
 
 import java.io.File;
 import java.io.FileFilter;

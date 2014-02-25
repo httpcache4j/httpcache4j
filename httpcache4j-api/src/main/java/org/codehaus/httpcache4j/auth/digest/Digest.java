@@ -15,14 +15,13 @@
 
 package org.codehaus.httpcache4j.auth.digest;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import org.codehaus.httpcache4j.Directive;
-import org.codehaus.httpcache4j.Directives;
 import org.codehaus.httpcache4j.HTTPHost;
 import org.codehaus.httpcache4j.auth.AuthScheme;
+import org.codehaus.httpcache4j.util.StringUtils;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -56,10 +55,10 @@ public class Digest {
     }
 
     private List<URI> parseDomain(String domain) {
-        if (!Strings.isNullOrEmpty(domain) && !"*".equals(domain)) {
+        if (!StringUtils.isNullOrEmpty(domain) && !"*".equals(domain)) {
             String[] strings = domain.split(" ");
             if (strings.length > 0) {
-                ImmutableList.Builder<URI> builder = ImmutableList.builder();
+                List<URI> builder = new ArrayList<URI>();
                 for (String string : strings) {
                     if (string.startsWith("/")) {
                         string = host.toURI().resolve(string).toString();
@@ -70,7 +69,7 @@ public class Digest {
                     }
                     builder.add(uri);
                 }
-                return builder.build();
+                return Collections.unmodifiableList(builder);
             }            
         }
         return Collections.emptyList();

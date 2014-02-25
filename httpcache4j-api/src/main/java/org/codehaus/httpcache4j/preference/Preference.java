@@ -17,19 +17,16 @@
 package org.codehaus.httpcache4j.preference;
 
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import net.hamnaberg.funclite.CollectionOps;
+import net.hamnaberg.funclite.Function;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.Directive;
 import org.codehaus.httpcache4j.Directives;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.util.NumberUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class Preference<T> {
     private final T preference;
@@ -95,7 +92,7 @@ public class Preference<T> {
 
 
     public static <T> List<Preference<T>> wrap(T... values) {
-        return Lists.transform(Arrays.asList(values), new Function<T, Preference<T>>() {
+        return CollectionOps.map(Arrays.asList(values), new Function<T, Preference<T>>() {
             @Override
             public Preference<T> apply(T input) {
                 return new Preference<T>(input);
@@ -127,7 +124,7 @@ public class Preference<T> {
     }
 
     public static <T> List<Preference<T>> parse(Header header, Function<String, T> f) {
-        ImmutableList.Builder<Preference<T>> accept = ImmutableList.builder();
+        List<Preference<T>> accept = new ArrayList<Preference<T>>();
         Directives directives = header.getDirectives();
         for (Directive directive : directives) {
             String loc = directive.getName();
@@ -138,7 +135,7 @@ public class Preference<T> {
             double quality = NumberUtils.toDouble(directive.getParameterValue("q"), 1.0);
             accept.add(new Preference<T>(value, quality));
         }
-        return accept.build();
+        return Collections.unmodifiableList(accept);
     }
 
     public static Function<Locale, String> LocaleToString = new Function<Locale, String>() {

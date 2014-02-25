@@ -16,7 +16,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.base.Preconditions;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 import org.codehaus.httpcache4j.uri.URIBuilder;

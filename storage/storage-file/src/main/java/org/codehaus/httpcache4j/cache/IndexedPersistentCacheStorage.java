@@ -1,9 +1,8 @@
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.annotations.Beta;
-import com.google.common.base.Predicate;
 import com.google.common.cache.*;
-import com.google.common.collect.Sets;
+import net.hamnaberg.funclite.CollectionOps;
+import net.hamnaberg.funclite.Predicate;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.util.Pair;
@@ -11,12 +10,12 @@ import org.codehaus.httpcache4j.util.Pair;
 import java.io.File;
 import java.net.URI;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-@Beta
 public class IndexedPersistentCacheStorage implements CacheStorage, RemovalListener<Key, CacheItem> {
     private final FilePersistentCacheStorage backing;
     private final Cache<Key, CacheItem> index;
@@ -65,7 +64,7 @@ public class IndexedPersistentCacheStorage implements CacheStorage, RemovalListe
     @Override
     public CacheItem get(final HTTPRequest request) {
         Set<Key> keys = index.asMap().keySet();
-        Set<Key> filtered = Sets.filter(keys, new Predicate<Key>() {
+        List<Key> filtered = CollectionOps.filter(keys, new Predicate<Key>() {
             @Override
             public boolean apply(Key input) {
                 if (input.getURI().equals(request.getNormalizedURI())) {
@@ -86,7 +85,7 @@ public class IndexedPersistentCacheStorage implements CacheStorage, RemovalListe
     @Override
     public void invalidate(final URI uri) {
         Set<Key> keys = index.asMap().keySet();
-        Set<Key> filtered = Sets.filter(keys, new Predicate<Key>() {
+        List<Key> filtered = CollectionOps.filter(keys, new Predicate<Key>() {
             @Override
             public boolean apply(Key input) {
                 return input.getURI().equals(uri);

@@ -1,9 +1,9 @@
 package org.codehaus.httpcache4j.resolver;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.util.PropertiesLoader;
+import org.codehaus.httpcache4j.util.StringUtils;
 
 import java.util.Properties;
 
@@ -16,7 +16,7 @@ public final class ResolverConfiguration {
     private static String getVersionFromProperties() {
         final Properties properties = PropertiesLoader.get(ResolverConfiguration.class.getResourceAsStream("/version.properties"));
         String version = properties.getProperty("version");
-        if (Strings.isNullOrEmpty(version) || version.contains("${")) {
+        if (StringUtils.isNullOrEmpty(version) || version.contains("${")) {
             return "Development";
         }
         return version;

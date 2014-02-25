@@ -1,5 +1,6 @@
 package org.codehaus.httpcache4j.util;
 
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.AuthDirective;
 import org.codehaus.httpcache4j.Directive;
 import org.codehaus.httpcache4j.Directives;
@@ -10,7 +11,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Copied from Abdera 2, and then adapted to use.
@@ -31,7 +31,7 @@ public final class AuthDirectivesParser {
 
 
     public static Directives parse(String challenge) {
-        checkNotNull(challenge);
+        Preconditions.checkNotNull(challenge);
         List<Directive> challenges = new ArrayList<Directive>();
         Matcher matcher = pattern.matcher(challenge);
         while (matcher.find()) {

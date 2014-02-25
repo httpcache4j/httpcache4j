@@ -15,8 +15,7 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
+import net.hamnaberg.funclite.CollectionOps;
 import org.codehaus.httpcache4j.util.DirectivesParser;
 
 import java.io.Serializable;
@@ -65,18 +64,18 @@ public final class Directives implements Iterable<Directive>, Serializable {
      * @return a new Immutable iterator
      */
     public Iterator<Directive> iterator() {
-        return ImmutableList.copyOf(directives.values()).iterator();
+        return Collections.unmodifiableCollection(directives.values()).iterator();
     }
     
     @Override
     public String toString() {
-        return Joiner.on(", ").join(directives.values());
+        return CollectionOps.mkString(directives.values(), ", ");
     }
 
     public Directives add(Directive directive) {
-        ImmutableList.Builder<Directive> dirs = ImmutableList.builder();
-        dirs.addAll(this);
+        ArrayList<Directive> dirs = new ArrayList<Directive>();
+        CollectionOps.addAll(dirs, this);
         dirs.add(directive);
-        return new Directives(dirs.build());
+        return new Directives(Collections.unmodifiableList(dirs));
     }
 }

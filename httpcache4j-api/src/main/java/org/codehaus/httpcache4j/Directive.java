@@ -15,10 +15,7 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import net.hamnaberg.funclite.*;
 import org.codehaus.httpcache4j.util.NumberUtils;
 
 import java.util.Collections;
@@ -31,7 +28,7 @@ import java.util.Map;
  * @version $Revision: $
  */
 public class Directive extends NameValue {
-    private final List<Parameter> parameters;
+    private final FunctionalList<Parameter> parameters;
     private Map<String, Parameter> parameterMap;
     
     public Directive(final String name, String value) {
@@ -41,7 +38,7 @@ public class Directive extends NameValue {
     public Directive(final String name, String value, List<Parameter> parameters) {
         super(name, HeaderUtils.removeQuotes(value));
         Preconditions.checkNotNull(parameters, "Parameters may not be null");
-        this.parameters = ImmutableList.copyOf(parameters);
+        this.parameters = FunctionalList.copyOf(parameters);
     }
 
     public List<Parameter> getParameters() {
@@ -56,11 +53,11 @@ public class Directive extends NameValue {
         if (parameterMap == null) {
             synchronized (this) {
                 if (parameterMap == null) {
-                    ImmutableMap.Builder<String, Parameter> builder = ImmutableMap.builder();
+                    Map<String, Parameter> map = MapOps.newHashMap();
                     for (Parameter parameter : parameters) {
-                        builder.put(parameter.getName(), parameter);
+                        map.put(parameter.getName(), parameter);
                     }
-                    parameterMap = builder.build();
+                    parameterMap = Collections.unmodifiableMap(map);
                 }
             }
         }
@@ -82,7 +79,7 @@ public class Directive extends NameValue {
             output += "=" + value;
         }
         if (!parameters.isEmpty()) {
-            output = output + "; " + Joiner.on("; ").join(parameters);
+            output = output + "; " + CollectionOps.mkString(parameters, "; ");
         }
         return output;
     }

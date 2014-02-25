@@ -1,13 +1,13 @@
 package org.codehaus.httpcache4j.resolver.ning;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 import com.ning.http.client.Response;
 import com.ning.http.client.generators.InputStreamBodyGenerator;
+import net.hamnaberg.funclite.Function;
+import net.hamnaberg.funclite.FunctionalList;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.Authenticator;
 import org.codehaus.httpcache4j.auth.ProxyAuthenticator;
@@ -49,16 +49,16 @@ public class NingResponseResolver extends AbstractResponseResolver {
 
     private ConnectionConfiguration configureConnections(ResolverConfiguration configuration, AsyncHttpClientConfig.Builder config) {
         ConnectionConfiguration connectionConfiguration = configuration.getConnectionConfiguration();
-        if (connectionConfiguration.getMaxConnections().isPresent()) {
+        if (connectionConfiguration.getMaxConnections().isSome()) {
             config.setMaximumConnectionsTotal(connectionConfiguration.getMaxConnections().get());
         }
-        if (connectionConfiguration.getDefaultConnectionsPerHost().isPresent()) {
+        if (connectionConfiguration.getDefaultConnectionsPerHost().isSome()) {
             config.setMaximumConnectionsPerHost(connectionConfiguration.getDefaultConnectionsPerHost().get());
         }
-        if (connectionConfiguration.getTimeout().isPresent()) {
+        if (connectionConfiguration.getTimeout().isSome()) {
             config.setConnectionTimeoutInMs(connectionConfiguration.getTimeout().get());
         }
-        if (connectionConfiguration.getSocketTimeout().isPresent()) {
+        if (connectionConfiguration.getSocketTimeout().isSome()) {
             config.setWebSocketIdleTimeoutInMs(connectionConfiguration.getSocketTimeout().get());
         }
         return connectionConfiguration;
@@ -103,7 +103,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
             for (Map.Entry<String, List<String>> entry : headers) {
                 final String key = entry.getKey();
                 List<String> values = entry.getValue();
-                convertedHeaders.add(Lists.transform(values, stringToHeader(key)));
+                convertedHeaders.add(FunctionalList.create(values).map(stringToHeader(key)));
             }
             InputStream stream = response.getResponseBodyAsStream();
             return ResponseCreator.createResponse(line, convertedHeaders.toHeaders(), stream);

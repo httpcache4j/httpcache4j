@@ -1,6 +1,7 @@
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Preconditions;
+
+import net.hamnaberg.funclite.Preconditions;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
