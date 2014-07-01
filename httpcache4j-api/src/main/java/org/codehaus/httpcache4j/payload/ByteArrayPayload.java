@@ -15,7 +15,6 @@
 
 package org.codehaus.httpcache4j.payload;
 
-import com.google.common.io.ByteStreams;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.util.IOUtils;
 
@@ -36,7 +35,7 @@ public class ByteArrayPayload implements Payload, Serializable {
 
     public ByteArrayPayload(InputStream stream, MIMEType type) throws IOException {
         try {
-            this.bytes = ByteStreams.toByteArray(stream);
+            this.bytes = IOUtils.toByteArray(stream);
         } finally {
             IOUtils.closeQuietly(stream);
         }

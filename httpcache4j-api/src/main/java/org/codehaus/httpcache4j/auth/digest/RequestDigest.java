@@ -15,9 +15,9 @@
 
 package org.codehaus.httpcache4j.auth.digest;
 
-import com.google.common.base.Strings;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.util.Digester;
+import org.codehaus.httpcache4j.util.StringUtils;
 
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -56,13 +56,13 @@ public class RequestDigest {
         else {
             algorithm = Algorithm.MD5;
         }
-        if (!Strings.isNullOrEmpty(serverDigest.getQop())) {
+        if (!StringUtils.isNullOrEmpty(serverDigest.getQop())) {
             addDirective("qop", serverDigest.getQop(), false);
             addDirective("nc", CNONCE_COUNT, false);
             addDirective("cnonce", calculateCNonce(), true);
         }
         addDirective("response", calculateResponse(), true);
-        if (!Strings.isNullOrEmpty(serverDigest.getOpaque())) {
+        if (!StringUtils.isNullOrEmpty(serverDigest.getOpaque())) {
             addDirective("opaque", serverDigest.getOpaque(), true);
         }
     }

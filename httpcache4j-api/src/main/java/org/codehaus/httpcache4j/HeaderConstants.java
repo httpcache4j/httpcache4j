@@ -16,9 +16,10 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
+import net.hamnaberg.funclite.CollectionOps;
+
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Set;
 
@@ -72,8 +73,8 @@ public final class HeaderConstants {
 
     public static final String X_CACHE = "X-Cache";
 
-    static final Set<String> AUTHENTICATION_HEADERS = ImmutableSet.of(
+    static final Set<String> AUTHENTICATION_HEADERS = Collections.unmodifiableSet(CollectionOps.setOf(
             WWW_AUTHENTICATE.toLowerCase(Locale.ENGLISH),
             PROXY_AUTHENTICATE.toLowerCase(Locale.ENGLISH)
-    );
+    ));
 }

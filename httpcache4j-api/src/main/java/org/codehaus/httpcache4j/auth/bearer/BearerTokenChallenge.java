@@ -1,7 +1,7 @@
 package org.codehaus.httpcache4j.auth.bearer;
 
-import com.google.common.base.Preconditions;
 
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.Challenge;
 
 /**

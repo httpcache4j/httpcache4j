@@ -37,10 +37,10 @@ public class JavaNetResponseResolver extends AbstractResponseResolver {
 
     public JavaNetResponseResolver(ResolverConfiguration configuration) {
         super(configuration);
-        if (configuration.getConnectionConfiguration().getMaxConnections().isPresent()) {
+        if (configuration.getConnectionConfiguration().getMaxConnections().isSome()) {
             throw new UnsupportedOperationException("Single Connection only resolver");
         }
-        if (configuration.getConnectionConfiguration().getDefaultConnectionsPerHost().isPresent()) {
+        if (configuration.getConnectionConfiguration().getDefaultConnectionsPerHost().isSome()) {
             throw new UnsupportedOperationException("Single Connection only resolver");
         }
         if (!configuration.getConnectionConfiguration().getConnectionsPerHost().isEmpty()) {
@@ -134,10 +134,10 @@ public class JavaNetResponseResolver extends AbstractResponseResolver {
 
     private void configureConnection(HttpURLConnection connection) {
         ConnectionConfiguration configuration = getConfiguration().getConnectionConfiguration();
-        if (configuration.getSocketTimeout().isPresent()) {
+        if (configuration.getSocketTimeout().isSome()) {
             connection.setConnectTimeout(configuration.getSocketTimeout().get());
         }
-        if (configuration.getTimeout().isPresent()) {
+        if (configuration.getTimeout().isSome()) {
             connection.setReadTimeout(configuration.getTimeout().get());
         }
         connection.setAllowUserInteraction(false);

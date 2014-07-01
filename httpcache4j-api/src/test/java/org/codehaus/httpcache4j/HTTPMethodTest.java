@@ -1,6 +1,6 @@
 package org.codehaus.httpcache4j;
 
-import com.google.common.collect.ImmutableSet;
+import net.hamnaberg.funclite.CollectionOps;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ import static org.codehaus.httpcache4j.HTTPMethod.*;
  * @version $Revision: $
  */
 public class HTTPMethodTest {
-       static Set<HTTPMethod> defaultMethods =  ImmutableSet.of(
+       static Set<HTTPMethod> defaultMethods =  CollectionOps.setOf(
             CONNECT,
             DELETE,
             GET,
@@ -30,7 +30,7 @@ public class HTTPMethodTest {
 
     @Test
     public void testDefaultMethods() {
-        ImmutableSet<String> methods = ImmutableSet.of(
+        Set<String> methods = CollectionOps.setOf(
                 "connect",
                 "DELEte",
                 "geT",

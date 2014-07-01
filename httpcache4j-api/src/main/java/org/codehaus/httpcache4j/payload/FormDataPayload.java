@@ -15,17 +15,16 @@
 
 package org.codehaus.httpcache4j.payload;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
+import net.hamnaberg.funclite.CollectionOps;
+import net.hamnaberg.funclite.Function;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.Parameter;
 import org.codehaus.httpcache4j.uri.URIEncoder;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,7 @@ public class FormDataPayload implements Payload {
     }
 
     private static List<FormParameter> convert(final String key, List<String> values) {
-        return Lists.transform(values, new Function<String, FormParameter>() {
+        return CollectionOps.map(values, new Function<String, FormParameter>() {
             public FormParameter apply(String from) {
                 return new FormParameter(key, from);
             }
@@ -60,7 +59,7 @@ public class FormDataPayload implements Payload {
     }
 
     public FormDataPayload(Iterable<FormParameter> parameters) {
-        value = Joiner.on("&").skipNulls().join(parameters);
+        value = CollectionOps.mkString(parameters, "&");
     }
 
     public MIMEType getMimeType() {
@@ -68,7 +67,7 @@ public class FormDataPayload implements Payload {
     }
 
     public InputStream getInputStream() {
-        return new ByteArrayInputStream(value.getBytes(Charsets.UTF_8));
+        return new ByteArrayInputStream(value.getBytes(Charset.forName("UTF-8")));
     }
 
     @Deprecated

@@ -15,10 +15,8 @@
 
 package org.codehaus.httpcache4j.auth;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import net.hamnaberg.funclite.CollectionOps;
+import net.hamnaberg.funclite.Function;
 import org.codehaus.httpcache4j.Directive;
 import org.codehaus.httpcache4j.HTTPHost;
 import org.codehaus.httpcache4j.HTTPResponse;
@@ -41,7 +39,7 @@ class AuthenticatorBase {
             return new AuthScheme(input);
         }
     };
-    private final List<AuthenticatorStrategy> strategies = Lists.newArrayList();
+    private final List<AuthenticatorStrategy> strategies = CollectionOps.newArrayList();
     protected final SchemeRegistry registry = new DefaultSchemeRegistry();
 
     public AuthenticatorBase() {
@@ -54,7 +52,7 @@ class AuthenticatorBase {
 
 
     protected static List<AuthenticatorStrategy> defaultStrategies() {
-        return ImmutableList.of(new DigestAuthenticatorStrategy(), new BasicAuthenticatorStrategy());
+        return CollectionOps.of(new DigestAuthenticatorStrategy(), new BasicAuthenticatorStrategy());
     }
 
     protected Pair<AuthenticatorStrategy, AuthScheme> select(List<AuthScheme> authScheme) {
@@ -83,8 +81,8 @@ class AuthenticatorBase {
         List<Header> authenticateHeader = response.getHeaders().getHeaders(name);
         List<Directive> directives = new ArrayList<Directive>();
         for (Header header : authenticateHeader) {
-            Iterables.addAll(directives, header.getDirectives());
+            CollectionOps.addAll(directives, header.getDirectives());
         }
-        return Lists.transform(directives, AuthSchemeF);
+        return CollectionOps.map(directives, AuthSchemeF);
     }
 }

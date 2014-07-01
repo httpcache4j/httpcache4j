@@ -16,7 +16,7 @@
 
 package org.codehaus.httpcache4j.client;
 
-import com.google.common.base.Preconditions;
+import net.hamnaberg.funclite.Preconditions;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.methods.*;
@@ -77,16 +77,16 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             connectionsParams = new HttpConnectionManagerParams();
             client.getHttpConnectionManager().setParams(connectionsParams);
         }
-        if (connectionConfiguration.getDefaultConnectionsPerHost().isPresent()) {
+        if (connectionConfiguration.getDefaultConnectionsPerHost().isSome()) {
             connectionsParams.setDefaultMaxConnectionsPerHost(connectionConfiguration.getDefaultConnectionsPerHost().get());
         }
-        if (connectionConfiguration.getMaxConnections().isPresent()) {
+        if (connectionConfiguration.getMaxConnections().isSome()) {
             connectionsParams.setMaxTotalConnections(connectionConfiguration.getMaxConnections().get());
         }
-        if (connectionConfiguration.getSocketTimeout().isPresent()) {
+        if (connectionConfiguration.getSocketTimeout().isSome()) {
             connectionsParams.setSoTimeout(connectionConfiguration.getSocketTimeout().get());
         }
-        if (connectionConfiguration.getTimeout().isPresent()) {
+        if (connectionConfiguration.getTimeout().isSome()) {
             connectionsParams.setConnectionTimeout(connectionConfiguration.getTimeout().get());
         }
         for (Map.Entry<HTTPHost, Integer> entry : connectionConfiguration.getConnectionsPerHost().entrySet()) {

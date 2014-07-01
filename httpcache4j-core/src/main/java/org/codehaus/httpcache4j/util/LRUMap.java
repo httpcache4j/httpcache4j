@@ -51,6 +51,7 @@ public class LRUMap<K, V> extends LinkedHashMap<K, V> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public V remove(Object key) {
         V remove = super.remove(key);
         if (remove != null) {

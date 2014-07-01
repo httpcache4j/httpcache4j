@@ -87,13 +87,6 @@
   </contributors>
 
   <build>
-    <extensions>
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-webdav</artifactId>
-        <version>1.0-beta-2</version>
-      </extension>
-    </extensions>
     <pluginManagement>
       <plugins>
         <plugin>
@@ -173,7 +166,12 @@
       <dependency>
         <groupId>org.codehaus.httpcache4j.uribuilder</groupId>
         <artifactId>uribuilder</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>net.hamnaberg</groupId>
+        <artifactId>funclite</artifactId>
+        <version>0.3.0</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.httpcache4j</groupId>
@@ -213,18 +211,8 @@
       </dependency>
       <dependency>
         <groupId>org.codehaus.httpcache4j.resolvers</groupId>
-        <artifactId>resolvers-net-urlconnection</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.httpcache4j.resolvers</groupId>
         <artifactId>resolvers-ning-async</artifactId>
         <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>16.0.1</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>

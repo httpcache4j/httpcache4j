@@ -18,15 +18,17 @@ package org.codehaus.httpcache4j;
 
 import static org.codehaus.httpcache4j.HeaderConstants.*;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
+import net.hamnaberg.funclite.CollectionOps;
+import net.hamnaberg.funclite.Preconditions;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * A collection header utilities.
@@ -35,7 +37,7 @@ public final class HeaderUtils {
     public static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss 'GMT'";
     private static final String NO_CACHE_HEADER_VALUE = "no-cache";
     private static final Header VARY_ALL = new Header(VARY, "*");
-    private static List<String> UNCACHEABLE_HEADERS = ImmutableList.of(
+    private static Set<String> UNCACHEABLE_HEADERS = CollectionOps.setOf(
             HeaderConstants.SET_COOKIE,
             HeaderConstants.PROXY_AUTHENTICATE,
             HeaderConstants.WWW_AUTHENTICATE
@@ -171,7 +173,7 @@ public final class HeaderUtils {
 
     public static List<LinkDirective> toLinkDirectives(Header header) {
         Preconditions.checkArgument(!LINK_HEADER.equals(header.getName()), "This must be a \"Link\" header");
-        ImmutableList.Builder<LinkDirective> links = ImmutableList.builder();
+        List<LinkDirective> links = CollectionOps.newArrayList();
         for (Directive directive : header.getDirectives()) {
             if (directive instanceof LinkDirective) {
                 links.add((LinkDirective) directive);
@@ -179,6 +181,6 @@ public final class HeaderUtils {
                 links.add(new LinkDirective(directive.getName(), directive.getParameters()));
             }
         }
-        return links.build();
+        return Collections.unmodifiableList(links);
     }
 }

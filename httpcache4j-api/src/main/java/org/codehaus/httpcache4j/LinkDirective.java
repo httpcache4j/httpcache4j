@@ -14,13 +14,11 @@
  */
 package org.codehaus.httpcache4j;
 
-import com.google.common.collect.Lists;
+
+import net.hamnaberg.funclite.CollectionOps;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * http://www.w3.org/Protocols/9707-link-header.html
@@ -40,7 +38,7 @@ public class LinkDirective extends Directive {
     }
 
     public LinkDirective(URI uri, Iterable<Parameter> parameters) {
-        super(uri.toString(), null, Lists.newArrayList(parameters));
+        super(uri.toString(), null, CollectionOps.newArrayList(parameters));
         this.uri = uri;
     }
 

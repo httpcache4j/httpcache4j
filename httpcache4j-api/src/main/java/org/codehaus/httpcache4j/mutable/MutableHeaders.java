@@ -15,7 +15,7 @@
 
 package org.codehaus.httpcache4j.mutable;
 
-import com.google.common.base.Preconditions;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.preference.Charset;
 import org.codehaus.httpcache4j.preference.Preference;

@@ -16,8 +16,6 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.annotations.Beta;
-import com.google.common.io.Files;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
@@ -37,7 +35,6 @@ import java.util.*;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-@Beta
 public class FilePersistentCacheStorage implements CacheStorage {
     private final FileManager fileManager;
 
@@ -222,8 +219,12 @@ public class FilePersistentCacheStorage implements CacheStorage {
 
         @Override
         public boolean accept(File pathname) {
-            String ext = Files.getFileExtension(pathname.getName());
-            return extension.equals(ext);
+            int dotIndex = pathname.getName().lastIndexOf('.');
+            if (dotIndex != -1) {
+                String ext = pathname.getName().substring(dotIndex + 1);
+                return extension.equalsIgnoreCase(ext);
+            }
+            return false;
         }
 
         @Override

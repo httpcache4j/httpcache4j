@@ -15,7 +15,6 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.io.CharStreams;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.util.IOUtils;
@@ -122,7 +121,7 @@ public abstract class ConcurrentCacheStorageAbstractTest {
         assertTrue("Payload was not available", response.getPayload().isAvailable());
         InputStream is = response.getPayload().getInputStream();
         try {
-            CharStreams.toString(new InputStreamReader(is));
+            IOUtils.toString(is);
         } catch (IOException e) {
             e.printStackTrace();
             fail("unable to create string from stream");

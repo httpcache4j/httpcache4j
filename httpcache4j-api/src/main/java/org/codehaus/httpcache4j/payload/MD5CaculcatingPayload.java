@@ -1,11 +1,9 @@
 package org.codehaus.httpcache4j.payload;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.security.DigestInputStream;
+import java.util.UUID;
 
-import com.google.common.io.ByteSource;
-import com.google.common.io.FileBackedOutputStream;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.util.Digester;
@@ -23,20 +21,26 @@ public class MD5CaculcatingPayload implements Payload {
     private final MIMEType mimeType;
     private final long length;
     private final String md5;
-    private final ByteSource byteSource;
+    private final File backupFile;
 
     private MD5CaculcatingPayload(final InputStream stream, MIMEType mimeType, long length) {
         this.mimeType = mimeType;
         this.length = length;
-        FileBackedOutputStream os = new FileBackedOutputStream(1024);
         try {
+            backupFile = File.createTempFile(UUID.randomUUID().toString(), "bak");
+            FileOutputStream os = new FileOutputStream(backupFile);
             DigestInputStream md5Stream = new DigestInputStream(stream, Digester.getDigest("MD5"));
-            IOUtils.copy(md5Stream, os);
-            this.md5 = Hex.encode(md5Stream.getMessageDigest().digest());
+            try {
+                IOUtils.copy(md5Stream, os);
+                this.md5 = Hex.encode(md5Stream.getMessageDigest().digest());
+            }
+            finally {
+                IOUtils.closeQuietly(md5Stream);
+                IOUtils.closeQuietly(os);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        byteSource = os.asByteSource();
     }
 
     public String getMD5() {
@@ -49,7 +53,7 @@ public class MD5CaculcatingPayload implements Payload {
 
     public InputStream getInputStream() {
         try {
-            return byteSource.openStream();
+            return new FileInputStream(backupFile);
         } catch (IOException e) {
             throw new HTTPException(e);
         }

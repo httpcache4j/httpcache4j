@@ -15,7 +15,6 @@
 
 package org.codehaus.httpcache4j.util;
 
-import com.google.common.base.Strings;
 import org.codehaus.httpcache4j.*;
 
 import java.util.ArrayList;

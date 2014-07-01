@@ -16,8 +16,8 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Preconditions;
 
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.joda.time.DateTime;
@@ -155,7 +155,7 @@ public final class HTTPRequest {
     }
 
     public CacheControl getCacheControl() {
-        if (headers.hasHeader(HeaderConstants.CACHE_CONTROL)) {
+        if (headers.contains(HeaderConstants.CACHE_CONTROL)) {
             return new CacheControl(headers.getFirstHeader(HeaderConstants.CACHE_CONTROL));
         }
         return null;
