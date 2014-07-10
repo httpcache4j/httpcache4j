@@ -36,28 +36,6 @@
       <url>http://apache.org/licenses/LICENSE-2.0</url>
     </license>
   </licenses>
-  <mailingLists>
-    <mailingList>
-      <name>Users</name>
-      <post>user@httpcache4j.codehaus.org</post>
-      <archive>http://archive.codehaus.org/lists/org.codehaus.httpcache4j.user</archive>
-      <subscribe>http://xircles.codehaus.org/lists/user@httpcache4j.codehaus.org/subscribe</subscribe>
-      <unsubscribe>http://xircles.codehaus.org/lists/user@httpcache4j.codehaus.org/unsubscribe</unsubscribe>
-    </mailingList>
-    <mailingList>
-      <name>Developers</name>
-      <post>dev@httpcache4j.codehaus.org</post>
-      <archive>http://archive.codehaus.org/lists/org.codehaus.httpcache4j.dev</archive>
-      <subscribe>http://xircles.codehaus.org/lists/dev@httpcache4j.codehaus.org/subscribe</subscribe>
-      <unsubscribe>http://xircles.codehaus.org/lists/dev@httpcache4j.codehaus.org/unsubscribe</unsubscribe>
-    </mailingList>
-    <mailingList>
-      <name>Announcements</name>
-      <archive>http://archive.codehaus.org/lists/org.codehaus.httpcache4j.announce</archive>
-      <subscribe>http://xircles.codehaus.org/lists/announce@httpcache4j.codehaus.org/subscribe</subscribe>
-      <unsubscribe>http://xircles.codehaus.org/lists/announce@httpcache4j.codehaus.org/unsubscribe</unsubscribe>
-    </mailingList>
-  </mailingLists>
 
   <developers>
     <developer>
@@ -113,7 +91,7 @@
         </plugin>
         <plugin>
 	        <artifactId>maven-jar-plugin</artifactId>
-          <version>2.4</version>
+          <version>2.5</version>
           <executions>
             <execution>
               <id>tests</id>
@@ -147,7 +125,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.4.2</version>
+        <version>2.5</version>
         <configuration>
           <pushChanges>false</pushChanges>
           <localCheckout>true</localCheckout>
@@ -155,13 +133,6 @@
           <preparationGoals>clean install</preparationGoals>
           <goals>deploy</goals>
         </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.maven.scm</groupId>
-            <artifactId>maven-scm-provider-gitexe</artifactId>
-            <version>1.8.1</version>
-          </dependency>
-       </dependencies>
       </plugin>
     </plugins>
   </build>
@@ -173,7 +144,7 @@
       <dependency>
         <groupId>org.codehaus.httpcache4j.uribuilder</groupId>
         <artifactId>uribuilder</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.httpcache4j</groupId>
@@ -213,18 +184,13 @@
       </dependency>
       <dependency>
         <groupId>org.codehaus.httpcache4j.resolvers</groupId>
-        <artifactId>resolvers-net-urlconnection</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.httpcache4j.resolvers</groupId>
         <artifactId>resolvers-ning-async</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>16.0.1</version>
+        <version>17.0</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
@@ -241,7 +207,7 @@
       <dependency>
         <groupId>joda-time</groupId>
         <artifactId>joda-time</artifactId>
-        <version>2.2</version>
+        <version>2.3</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -324,7 +290,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.4</version>
+            <version>1.5</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
