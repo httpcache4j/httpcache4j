@@ -116,6 +116,10 @@ public final class HTTPRequest {
         return addHeader(new Header(name, value));
     }
 
+    public HTTPRequest setHeader(String name, String value) {
+        return headers(headers.set(name, value));
+    }
+
     public HTTPMethod getMethod() {
         return method;
     }

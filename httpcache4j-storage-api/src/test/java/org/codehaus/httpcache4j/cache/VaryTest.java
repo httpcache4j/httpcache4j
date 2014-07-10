@@ -2,7 +2,6 @@ package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.MIMEType;
-import org.codehaus.httpcache4j.preference.Preference;
 import org.junit.Test;
 import org.junit.Assert;
 import org.codehaus.httpcache4j.HTTPRequest;
@@ -19,11 +18,11 @@ import java.io.File;
  * @version $Id $
  */
 public class VaryTest {
-    private Vary vary;
+
 
     @Test
     public void testIsEmpty() {
-        vary = new Vary();
+        Vary vary = new Vary();
         Assert.assertTrue("Header names added", vary.isEmpty());
         vary = new Vary(new HashMap<String, String>());
         Assert.assertTrue("Header names added", vary.isEmpty());
@@ -33,7 +32,7 @@ public class VaryTest {
     public void testHasOne() {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("Accept-Language", "en");
-        vary = new Vary(map);
+        Vary vary = new Vary(map);
         Assert.assertFalse("Header names added", vary.isEmpty());
         Assert.assertEquals("Header names added", 1, vary.size());
     }
@@ -44,7 +43,7 @@ public class VaryTest {
         map.put("Accept-Language", "en");
         map.put("Accept-Encoding", "gz");
         map.put("Accept-Charset", "UTF-8");
-        vary = new Vary(map);
+        Vary vary = new Vary(map);
         Assert.assertFalse("Header names added", vary.isEmpty());
         Assert.assertEquals("Header names added", 3, vary.size());
     }
@@ -55,7 +54,7 @@ public class VaryTest {
         map.put("Accept-Language", "en");
         map.put("Accept-Encoding", "gz");
         map.put("Accept-Charset", "UTF-8");
-        vary = new Vary(map);
+        Vary vary = new Vary(map);
         Assert.assertFalse("Header names added", vary.isEmpty());
         Assert.assertEquals("Header names added", 3, vary.size());
         HTTPRequest request = new HTTPRequest(URI.create("no.uri"));
@@ -68,7 +67,7 @@ public class VaryTest {
         map.put("Accept-Language", "en");
         map.put("Accept-Encoding", "gz");
         map.put("Accept-Charset", "UTF-8");
-        vary = new Vary(map);
+        Vary vary = new Vary(map);
         Assert.assertFalse("Header names added", vary.isEmpty());
         Assert.assertEquals("Header names added", 3, vary.size());
 
@@ -85,7 +84,7 @@ public class VaryTest {
         map.put("Accept-Language", "en");
         map.put("Accept-Encoding", "gz");
         map.put("Accept-Charset", "UTF-8");
-        vary = new Vary(map);
+        Vary vary = new Vary(map);
         Assert.assertFalse("Header names added", vary.isEmpty());
         Assert.assertEquals("Header names added", 3, vary.size());
         HTTPRequest request = new HTTPRequest(URI.create("no.uri"));
@@ -100,7 +99,7 @@ public class VaryTest {
     public void acceptShouldMatch() {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("Accept", "application/xml");
-        vary = new Vary(map);
+        Vary vary = new Vary(map);
         Assert.assertFalse("Header names added", vary.isEmpty());
         Assert.assertEquals("Header names added", 1, vary.size());
         HTTPRequest request = new HTTPRequest(URI.create("no.uri"));
@@ -113,13 +112,27 @@ public class VaryTest {
     public void acceptWithManyPreferencesShouldMatch() {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("Accept", "application/xml, application/json");
-        vary = new Vary(map);
+        Vary vary = new Vary(map);
         Assert.assertFalse("Header names added", vary.isEmpty());
         Assert.assertEquals("Header names added", 1, vary.size());
         HTTPRequest request = new HTTPRequest(URI.create("no.uri"));
         request = request.addHeader("Accept", "application/xml");
         request = request.headers(new Headers().addAccept(MIMEType.valueOf("application/xml"), MIMEType.valueOf("application/json")));
         Assert.assertTrue("request did not specify application/xml", vary.matches(request));
+    }
+
+    @Test
+    public void acceptWithUnsortedManyPreferencesShouldMatch() {
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("Accept", "application/xml; q=0.8, application/json");
+        Vary vary = new Vary(map);
+        Assert.assertFalse("Header names added", vary.isEmpty());
+        Assert.assertEquals("Header names added", 1, vary.size());
+        HTTPRequest request = new HTTPRequest(URI.create("no.uri"));
+        request = request.addHeader("Accept", "application/json, application/xml; q=0.8");
+        Assert.assertTrue("Wrong accept header", vary.matches(request));
+        request = request.setHeader("Accept", "application/xml; q=0.8, application/json");
+        Assert.assertTrue("Wrong accept header", vary.matches(request));
     }
 
     @Test
