@@ -123,20 +123,20 @@ public final class HeaderUtils {
         if (headers.contains(VARY_ALL)) {
             return false;
         }
-        if (headers.hasHeader(CACHE_CONTROL)) {
+        if (headers.contains(CACHE_CONTROL)) {
             final Header header = headers.getFirstHeader(CACHE_CONTROL);
             CacheControl cc = new CacheControl(header);
             if (cc.isNoCache() || cc.isNoStore()) {
                return false; 
             }
         }
-        if (headers.hasHeader(PRAGMA)) {
+        if (headers.contains(PRAGMA)) {
             final Header header = headers.getFirstHeader(PRAGMA);
             if (header.getValue().contains(NO_CACHE_HEADER_VALUE)) {
                 return false;
             }
         }
-        if (headers.hasHeader(EXPIRES)) {
+        if (headers.contains(EXPIRES)) {
             Header expires = headers.getFirstHeader(EXPIRES);
             DateTime expiresValue = HeaderUtils.fromHttpDate(expires);
             Header date = headers.getFirstHeader(DATE);

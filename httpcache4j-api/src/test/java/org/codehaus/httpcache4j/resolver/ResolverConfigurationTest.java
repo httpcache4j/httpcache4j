@@ -1,7 +1,7 @@
 package org.codehaus.httpcache4j.resolver;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
-import org.junit.matchers.JUnitMatchers;
 
 import static org.junit.Assert.*;
 
@@ -11,7 +11,7 @@ public class ResolverConfigurationTest {
     public void checkDefaultValues() {
         ResolverConfiguration config = new ResolverConfiguration();
         assertFalse(config.isUseChunked());
-        assertThat(config.getUserAgent(), JUnitMatchers.containsString("HTTPCache4j"));
+        assertThat(config.getUserAgent(), CoreMatchers.containsString("HTTPCache4j"));
     }
 
     @Test

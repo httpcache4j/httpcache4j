@@ -1,8 +1,5 @@
 package org.codehaus.httpcache4j.cache;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotSame;
-
 import java.net.URI;
 
 import org.codehaus.httpcache4j.HTTPRequest;
@@ -12,8 +9,7 @@ import org.codehaus.httpcache4j.Status;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
-import org.mockito.Mockito;
+import static org.junit.Assert.*;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public abstract class CacheStorageAbstractTest {

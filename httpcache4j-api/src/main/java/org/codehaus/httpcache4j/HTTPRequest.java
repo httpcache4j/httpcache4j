@@ -155,7 +155,7 @@ public final class HTTPRequest {
     }
 
     public CacheControl getCacheControl() {
-        if (headers.hasHeader(HeaderConstants.CACHE_CONTROL)) {
+        if (headers.contains(HeaderConstants.CACHE_CONTROL)) {
             return new CacheControl(headers.getFirstHeader(HeaderConstants.CACHE_CONTROL));
         }
         return null;

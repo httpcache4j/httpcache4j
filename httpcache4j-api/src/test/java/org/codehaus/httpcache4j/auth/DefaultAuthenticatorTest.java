@@ -43,7 +43,7 @@ public class DefaultAuthenticatorTest {
                                                                                  new HTTPResponse(null, Status.UNAUTHORIZED,
                                                                                                   new Headers().add(HeaderConstants.WWW_AUTHENTICATE, "Basic realm=\"foo\"")));
         Assert.assertNotSame(req, defaultRequest);
-        Assert.assertTrue("No auth header", req.getHeaders().hasHeader("Authorization"));        
+        Assert.assertTrue("No auth header", req.getHeaders().contains("Authorization"));
     }
 
     @Test
@@ -53,6 +53,6 @@ public class DefaultAuthenticatorTest {
                                                                                  new HTTPResponse(null, Status.UNAUTHORIZED,
                                                                                                   new Headers().add(HeaderConstants.WWW_AUTHENTICATE, "Basicssss raealm=\"foo\"")));
         Assert.assertSame(req, request);
-        Assert.assertFalse("Auth header was present", req.getHeaders().hasHeader("Authorization"));
+        Assert.assertFalse("Auth header was present", req.getHeaders().contains("Authorization"));
     }
 }
