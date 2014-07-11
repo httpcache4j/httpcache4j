@@ -27,10 +27,9 @@ import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.util.NumberUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
+//TODO: Fix this to not have a type constructor, this is pretty useless.
 public class Preference<T> {
     private final T preference;
     private final double quality;
@@ -113,8 +112,10 @@ public class Preference<T> {
     }
 
     public static <T> Header toHeader(String headerName, List<? extends Preference<T>> preferences, Function<T, String> f) {
+        ArrayList<Preference<T>> pref = new ArrayList<Preference<T>>(preferences);
+        Collections.sort(pref, new PreferenceComparator<T>());
         StringBuilder builder = new StringBuilder();
-        for (Preference<T> preference : preferences) {
+        for (Preference<T> preference : pref) {
             if (builder.length() > 0) {
                 builder.append(", ");
             }
@@ -127,7 +128,7 @@ public class Preference<T> {
     }
 
     public static <T> List<Preference<T>> parse(Header header, Function<String, T> f) {
-        ImmutableList.Builder<Preference<T>> accept = ImmutableList.builder();
+        ArrayList<Preference<T>> accept = new ArrayList<Preference<T>>();
         Directives directives = header.getDirectives();
         for (Directive directive : directives) {
             String loc = directive.getName();
@@ -138,7 +139,8 @@ public class Preference<T> {
             double quality = NumberUtils.toDouble(directive.getParameterValue("q"), 1.0);
             accept.add(new Preference<T>(value, quality));
         }
-        return accept.build();
+        Collections.sort(accept, new PreferenceComparator<T>());
+        return Collections.unmodifiableList(accept);
     }
 
     public static Function<Locale, String> LocaleToString = new Function<Locale, String>() {
@@ -181,4 +183,10 @@ public class Preference<T> {
         }
     };
 
+    public static class PreferenceComparator<T> implements Comparator<Preference<T>> {
+        @Override
+        public int compare(Preference<T> o1, Preference<T> o2) {
+            return Double.compare(o2.getQuality(), o1.getQuality());
+        }
+    }
 }

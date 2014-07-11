@@ -17,6 +17,7 @@
 package org.codehaus.httpcache4j;
 
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
@@ -92,13 +93,7 @@ public final class Headers implements Iterable<Header> {
     }
 
     public Headers add(Header header) {
-        HeaderHashMap headers = copyMap();
-        List<String> list = new ArrayList<String>(headers.get(header.getName()));
-        if (!list.contains(header.getValue())) {
-            list.add(header.getValue());
-        }
-        headers.put(header.getName(), list);
-        return new Headers(headers);
+       return add(Collections.singletonList(header));
     }
 
     public Headers add(String key, String value) {
@@ -109,8 +104,9 @@ public final class Headers implements Iterable<Header> {
         HeaderHashMap map = copyMap();
         for (Header header : headers) {
             List<String> list = new ArrayList<String>(map.get(header.getName()));
-            if (!list.contains(header.getValue())) {
-                list.add(header.getValue());
+            String value = normalizeValue(header.getName(), header.getValue());
+            if (!list.contains(value)) {
+                list.add(value);
             }
             map.put(header.getName(), list);
         }
@@ -118,16 +114,17 @@ public final class Headers implements Iterable<Header> {
     }
 
     public Headers add(String name, Iterable<String> values) {
-        HeaderHashMap heads = copyMap();
-        List<String> list = new ArrayList<String>(headers.get(name));
-        Iterables.addAll(list, values);
-        heads.put(name, list);
-        return new Headers(heads);
+        List<Header> list = new ArrayList<Header>();
+        for (String value : values) {
+            list.add(new Header(name, value));
+        }
+        return add(list);
     }
 
     public Headers set(Header header) {
         HeaderHashMap headers = copyMap();
-        headers.put(header.getName(), Lists.newArrayList(header.getValue()));
+        String normalized = normalizeValue(header.getName(), header.getValue());
+        headers.put(header.getName(), Lists.newArrayList(normalized));
         return new Headers(headers);
     }
 
@@ -384,6 +381,14 @@ public final class Headers implements Iterable<Header> {
 
     private HeaderHashMap copyMap() {
         return new HeaderHashMap(headers);
+    }
+
+    private String normalizeValue(String name, String value) {
+        if (name.toLowerCase().startsWith("accept")) {
+            List<Preference<String>> parse = Preference.parse(new Header(name, value), Functions.<String>identity());
+            value = Preference.toHeader(name, parse, Functions.<String>identity()).getValue();
+        }
+        return value;
     }
 
     public static Headers parse(String input) {

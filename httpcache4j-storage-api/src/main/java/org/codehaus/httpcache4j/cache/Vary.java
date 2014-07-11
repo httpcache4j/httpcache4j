@@ -26,11 +26,13 @@ import java.util.Map;
 import java.util.TreeMap;
 
 
+import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
+import org.codehaus.httpcache4j.preference.Preference;
 
 /**
  * Represents a HTTP Variation.
@@ -59,16 +61,28 @@ public final class Vary {
     public Vary(final Map<String, String> headers) {
         Preconditions.checkNotNull(headers, "Headers may not be null");
         Map<String, String> h = new TreeMap<String, String>(new VaryComparator());
-        h.putAll(headers);
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            String value = normalizeValue(entry.getKey(), entry.getValue());
+            h.put(entry.getKey(), value);
+        }
         varyHeaders = Collections.unmodifiableMap(h);
     }
 
     public Vary(Headers headers) {
         Map<String, String> h = new TreeMap<String, String>(new VaryComparator());
         for (Header header : headers) {
-            h.put(header.getName(), header.getValue());
+            String value = normalizeValue(header.getName(), header.getValue());
+            h.put(header.getName(), value);
         }
         varyHeaders = Collections.unmodifiableMap(h);
+    }
+
+    private String normalizeValue(String name, String value) {
+        if (name.toLowerCase().startsWith("accept")) {
+            List<Preference<String>> parse = Preference.parse(new Header(name, value), Functions.<String>identity());
+            value = Preference.toHeader(name, parse, Functions.<String>identity()).getValue();
+        }
+        return value;
     }
 
     public int size() {

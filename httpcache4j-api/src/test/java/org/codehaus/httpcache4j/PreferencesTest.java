@@ -29,6 +29,21 @@ public class PreferencesTest {
     }
 
     @Test
+    public void parseUnsortedLocales() throws Exception {
+        Header header = new Header(HeaderConstants.ACCEPT_LANGUAGE, "en-gb;q=0.8, da, en;q=0.7");
+        Headers headers = new Headers().add(header);
+        List<Preference<Locale>> acceptLanguage = headers.getAcceptLanguage();
+        Assert.assertEquals(
+                ImmutableList.of(
+                        new Preference<Locale>(new Locale("da")),
+                        new Preference<Locale>(new Locale("en", "GB"), 0.8),
+                        new Preference<Locale>(Locale.ENGLISH, 0.7)
+                )
+                , acceptLanguage
+        );
+    }
+
+    @Test
     public void parseCharsets() throws Exception {
         Header header = new Header(HeaderConstants.ACCEPT_CHARSET, "unicode, ISO-8859-1; q=0.9, US-ASCII; q=0.8");
         Headers headers = new Headers().add(header);
