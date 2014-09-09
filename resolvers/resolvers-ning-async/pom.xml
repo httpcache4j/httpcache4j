@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.codehaus.httpcache4j.resolvers</groupId>
     <artifactId>resolvers</artifactId>
-    <version>4.0-RC5-SNAPSHOT</version>
+    <version>4.0</version>
   </parent>
   <artifactId>resolvers-ning-async</artifactId>
   <packaging>jar</packaging>
