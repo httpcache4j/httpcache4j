@@ -78,6 +78,9 @@ public class HttpClientFactory {
         if (config.getTimeout().isPresent()) {
             requestConfig.setConnectTimeout(config.getTimeout().get());
         }
+        if (config.getConnectionRequestTimeout().isPresent()) {
+            requestConfig.setConnectionRequestTimeout(config.getConnectionRequestTimeout().get());
+        }
         requestConfig.setAuthenticationEnabled(false);
         requestConfig.setStaleConnectionCheckEnabled(false);
         if (proxyHost != null) {
