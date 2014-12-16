@@ -14,20 +14,22 @@ import java.util.Map;
 public class ConnectionConfiguration {
     private final Optional<Integer> timeout;
     private final Optional<Integer> socketTimeout;
+    private final Optional<Integer> connectionRequestTimeout;
     private final Optional<Integer> defaultConnectionsPerHost;
     private final Optional<Integer> maxConnections;
     private final Map<HTTPHost, Integer> connectionsPerHost = new HashMap<HTTPHost, Integer>();
 
-    public ConnectionConfiguration(Optional<Integer> timeout, Optional<Integer> socketTimeout, Optional<Integer> defaultConnectionsPerHost, Optional<Integer> maxConnections, Map<HTTPHost, Integer> connectionsPerHost) {
+    public ConnectionConfiguration(Optional<Integer> timeout, Optional<Integer> socketTimeout, Optional<Integer> connectionRequestTimeout, Optional<Integer> defaultConnectionsPerHost, Optional<Integer> maxConnections, Map<HTTPHost, Integer> connectionsPerHost) {
         this.timeout = timeout;
         this.socketTimeout = socketTimeout;
+        this.connectionRequestTimeout = connectionRequestTimeout;
         this.defaultConnectionsPerHost = defaultConnectionsPerHost;
         this.maxConnections = maxConnections;
         this.connectionsPerHost.putAll(connectionsPerHost);
     }
 
     public ConnectionConfiguration() {
-        this(Optional.<Integer>absent(), Optional.<Integer>absent(), Optional.<Integer>absent(), Optional.<Integer>absent(), Collections.<HTTPHost, Integer>emptyMap());
+        this(Optional.<Integer>absent(), Optional.<Integer>absent(), Optional.<Integer>absent(), Optional.<Integer>absent(), Optional.<Integer>absent(), Collections.<HTTPHost, Integer>emptyMap());
     }
 
     public Optional<Integer> getTimeout() {
@@ -37,6 +39,8 @@ public class ConnectionConfiguration {
     public Optional<Integer> getSocketTimeout() {
         return socketTimeout;
     }
+
+    public Optional<Integer> getConnectionRequestTimeout() { return connectionRequestTimeout; }
 
     public Optional<Integer> getDefaultConnectionsPerHost() {
         return defaultConnectionsPerHost;
@@ -56,6 +60,7 @@ public class ConnectionConfiguration {
     public static class Builder {
         private Optional<Integer> timeout = Optional.absent();
         private Optional<Integer> socketTimeout = Optional.absent();
+        private Optional<Integer> connectionRequestTimeout = Optional.absent();
         private Optional<Integer> defaultConnectionPerHost = Optional.absent();
         private Optional<Integer> maxConnections = Optional.absent();
         private final Map<HTTPHost, Integer> connectionsPerHost = new HashMap<HTTPHost, Integer>();
@@ -67,6 +72,11 @@ public class ConnectionConfiguration {
 
         public Builder setSocketTimeout(int socketTimeout) {
             this.socketTimeout = Optional.of(socketTimeout);
+            return this;
+        }
+
+        public Builder setConnectionRequestTimeout(int connectionRequestTimeout) {
+            this.connectionRequestTimeout = Optional.of(connectionRequestTimeout);
             return this;
         }
 
@@ -86,7 +96,7 @@ public class ConnectionConfiguration {
         }
 
         public ConnectionConfiguration build() {
-            return new ConnectionConfiguration(timeout, socketTimeout, defaultConnectionPerHost, maxConnections, connectionsPerHost);
+            return new ConnectionConfiguration(timeout, socketTimeout, connectionRequestTimeout, defaultConnectionPerHost, maxConnections, connectionsPerHost);
         }
     }
 }
