@@ -76,11 +76,11 @@ public class MemoryCacheStorage implements CacheStorage {
 
 
     public final HTTPResponse insert(final HTTPRequest request, final HTTPResponse response) {
-        write.lock();
         Key key = Key.create(request, response);
+        HTTPResponse cacheableResponse = rewriteResponse(key, response);
+        write.lock();
         try {
             invalidate(key);
-            HTTPResponse cacheableResponse = rewriteResponse(key, response);
             return putImpl(key, cacheableResponse);
         } finally {
             write.unlock();
