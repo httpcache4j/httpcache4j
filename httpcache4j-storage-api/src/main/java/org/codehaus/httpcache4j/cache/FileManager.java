@@ -23,6 +23,8 @@ import org.codehaus.httpcache4j.util.IOUtils;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -62,6 +64,23 @@ public final class FileManager implements Serializable {
         }
 
         return file;
+    }
+
+    public synchronized File moveFile(File fromFile, Key to) throws IOException {
+        File toFile = resolve(to);
+        if (!toFile.getParentFile().exists()) {
+            ensureDirectoryExists(toFile.getParentFile());
+        }
+        Files.move(fromFile.toPath(), toFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        if (toFile.length() == 0) {
+            toFile.delete();
+            toFile = null;
+        }
+        if (toFile != null && !toFile.exists()) {
+            throw new IOException(String.format("Failed to move File '%s' to File %s for Key: %s", fromFile.getName(), toFile.getName(), to));
+        }
+
+        return toFile;
     }
 
     public synchronized void clear() {
