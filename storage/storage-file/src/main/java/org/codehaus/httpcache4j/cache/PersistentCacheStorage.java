@@ -51,6 +51,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     private transient int modCount;
     private long lastSerialization = 0L;
     private SerializationPolicy serializationPolicy = new DefaultSerializationPolicy();
+    private Random rand = new Random();
 
     public PersistentCacheStorage(File storageDirectory) {
         this(1000, storageDirectory, "persistent.ser");
@@ -93,14 +94,14 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 
     @Override
     protected HTTPResponse putImpl(Key key, HTTPResponse response) {
-        HTTPResponse res = super.putImpl(key, response);
         if (response.hasPayload() && response.getPayload() instanceof FilePayload) {
             final FilePayload payload = (FilePayload)response.getPayload();
             try {
-                res = res.withPayload(createRealPayload(key, payload));
+                response = response.withPayload(createRealPayload(key, payload));
             } catch (IOException ignore) {
             }
         }
+        HTTPResponse res = super.putImpl(key, response);
         if (serializationPolicy.shouldWePersist(modCount++, lastSerialization)) {
             lastSerialization = System.currentTimeMillis();
             saveCacheToDisk();
@@ -123,7 +124,7 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     }
 
     private Key tmpKey(Key key) {
-        return new Key(URIBuilder.fromURI(key.getURI()).addPath((new Random()).nextInt()+"_httpCache4jTmp").toURI(), key.getVary());
+        return new Key(URIBuilder.fromURI(key.getURI()).addPath(rand.nextInt()+"_httpCache4jTmp").toURI(), key.getVary());
     }
 
     private Payload createRealPayload(Key key, FilePayload payload) throws IOException {
