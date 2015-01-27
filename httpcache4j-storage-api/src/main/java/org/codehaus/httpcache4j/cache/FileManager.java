@@ -15,14 +15,18 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.net.URI;
+
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.util.Digester;
 import org.codehaus.httpcache4j.util.IOUtils;
-
-import java.io.*;
-import java.net.URI;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -62,6 +66,23 @@ public final class FileManager implements Serializable {
         }
 
         return file;
+    }
+
+    public synchronized File moveFile(File fromFile, Key to) throws IOException {
+        File toFile = resolve(to);
+        if (!toFile.getParentFile().exists()) {
+            ensureDirectoryExists(toFile.getParentFile());
+        }
+        fromFile.renameTo(toFile);
+        if (toFile.length() == 0) {
+            toFile.delete();
+            toFile = null;
+        }
+        if (toFile != null && !toFile.exists()) {
+            throw new IOException(String.format("Failed to move File '%s' to File %s for Key: %s", fromFile.getName(), toFile.getName(), to));
+        }
+
+        return toFile;
     }
 
     public synchronized void clear() {

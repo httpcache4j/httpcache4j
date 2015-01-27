@@ -74,13 +74,12 @@ public class MemoryCacheStorage implements CacheStorage {
         throw new IllegalArgumentException("Unable to cache response");
     }
 
-
     public final HTTPResponse insert(final HTTPRequest request, final HTTPResponse response) {
-        write.lock();
         Key key = Key.create(request, response);
+        HTTPResponse cacheableResponse = rewriteResponse(key, response);
+        write.lock();
         try {
             invalidate(key);
-            HTTPResponse cacheableResponse = rewriteResponse(key, response);
             return putImpl(key, cacheableResponse);
         } finally {
             write.unlock();
