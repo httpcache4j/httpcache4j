@@ -15,6 +15,7 @@
 
 package org.codehaus.httpcache4j.payload;
 
+import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.util.IOUtils;
@@ -42,6 +43,12 @@ public class ByteArrayPayload implements Payload, Serializable {
         }
         length = bytes.length;
         this.type = type;
+    }
+
+    public ByteArrayPayload(byte[] bytes, MIMEType type) {
+        this.bytes = Preconditions.checkNotNull(bytes, "Byte array may not be null");
+        this.type = Preconditions.checkNotNull(type, "MIMEType may not be null");
+        this.length = bytes.length;
     }
 
     public MIMEType getMimeType() {

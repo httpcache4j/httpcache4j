@@ -1,10 +1,8 @@
 package org.codehaus.httpcache4j.payload;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.MIMEType;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
@@ -13,33 +11,33 @@ import java.nio.charset.Charset;
  * @version $Revision: $
  */
 public class StringPayload implements Payload {
-    private final String value;
-    private final MIMEType mimeType;
-    private Charset charset;
+    private ByteArrayPayload delegate;
 
     public StringPayload(String value, MIMEType mimeType) {
         this(value, mimeType, Charsets.UTF_8);
     }
 
     public StringPayload(String value, MIMEType mimeType, Charset charset) {
-        this.value = Preconditions.checkNotNull(value, "String value may not be null");
-        this.mimeType = Preconditions.checkNotNull(mimeType, "MIMEType may not be null");
-        this.charset = charset != null ? charset : Charsets.UTF_8;
+        delegate = new ByteArrayPayload(value.getBytes(charset), mimeType);
     }
 
+    @Override
     public MIMEType getMimeType() {
-        return mimeType;
+        return delegate.getMimeType();
     }
 
+    @Override
     public InputStream getInputStream() {
-        return new ByteArrayInputStream(value.getBytes(charset));
+        return delegate.getInputStream();
     }
 
-    public boolean isAvailable() {
-        return true;
-    }
-
+    @Override
     public long length() {
-        return value.length();
+        return delegate.length();
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return delegate.isAvailable();
     }
 }
