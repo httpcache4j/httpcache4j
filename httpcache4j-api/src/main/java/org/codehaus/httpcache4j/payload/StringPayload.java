@@ -10,8 +10,8 @@ import java.nio.charset.Charset;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class StringPayload implements Payload {
-    private ByteArrayPayload delegate;
+public final class StringPayload implements Payload {
+    private final ByteArrayPayload delegate;
 
     public StringPayload(String value, MIMEType mimeType) {
         this(value, mimeType, Charsets.UTF_8);
