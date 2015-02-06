@@ -6,9 +6,7 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.config.SearchAttribute;
-import net.sf.ehcache.config.Searchable;
+import net.sf.ehcache.config.*;
 import net.sf.ehcache.event.CacheEventListenerAdapter;
 import net.sf.ehcache.search.Attribute;
 import net.sf.ehcache.search.Query;
@@ -184,18 +182,22 @@ public class EhCacheStorage implements CacheStorage {
             config.addSearchable(new Searchable().searchAttribute(new SearchAttribute().name("uri").className(URIAttributeExtractor.class.getName())));
         }
         else {
-            config.setDiskStorePath(storageDir.getAbsolutePath());
-            config.setDiskPersistent(true);
             config.setMaxElementsOnDisk(100000);
-            config.setOverflowToDisk(true);
+            config.setCopyOnWrite(true);
+            PersistenceConfiguration pc = new PersistenceConfiguration();
+            pc.strategy(PersistenceConfiguration.Strategy.LOCALTEMPSWAP);
+            config.addPersistence(pc);
         }
-        config.setMaxElementsInMemory(size);
+        config.setMaxEntriesLocalHeap(size);
         config.setName("httpcache");
         Cache cache = new Cache(config);
-        CacheManager instance = CacheManager.getInstance();
+        Configuration c = new Configuration();
+        DiskStoreConfiguration dsc = new DiskStoreConfiguration();
+        dsc.setPath(storageDir.getAbsolutePath());
+        c.addDiskStore(dsc);
+        CacheManager instance = CacheManager.newInstance(c);
         instance.addCache(cache);
         cache.setCacheManager(instance);
-
         return cache;
     }
 }

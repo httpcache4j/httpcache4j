@@ -23,7 +23,6 @@
     <artifactId>httpcache4j</artifactId>
     <version>4.1-SNAPSHOT</version>
   </parent>
-  <groupId>org.codehaus.httpcache4j</groupId>
   <artifactId>httpcache4j-storage-api</artifactId>
   <packaging>jar</packaging>
   <name>Java HTTP cache :: Storage API</name>

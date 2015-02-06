@@ -38,8 +38,8 @@ public class NingResponseResolver extends AbstractResponseResolver {
         super(configuration);
         AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder(Preconditions.checkNotNull(asyncConfig, "Async config may not be null")).
                 setUserAgent(configuration.getUserAgent());
-        config.setAllowPoolingConnection(true);
-        config.setFollowRedirects(false);
+        config.setAllowPoolingConnections(true);
+        config.setFollowRedirect(false);
         ConnectionConfiguration connectionConfiguration = configureConnections(configuration, config);
         if (!connectionConfiguration.getConnectionsPerHost().isEmpty()) {
             throw new UnsupportedOperationException("This Resolver does not support connections per host");
@@ -50,16 +50,16 @@ public class NingResponseResolver extends AbstractResponseResolver {
     private ConnectionConfiguration configureConnections(ResolverConfiguration configuration, AsyncHttpClientConfig.Builder config) {
         ConnectionConfiguration connectionConfiguration = configuration.getConnectionConfiguration();
         if (connectionConfiguration.getMaxConnections().isPresent()) {
-            config.setMaximumConnectionsTotal(connectionConfiguration.getMaxConnections().get());
+            config.setMaxConnections(connectionConfiguration.getMaxConnections().get());
         }
         if (connectionConfiguration.getDefaultConnectionsPerHost().isPresent()) {
-            config.setMaximumConnectionsPerHost(connectionConfiguration.getDefaultConnectionsPerHost().get());
+            config.setMaxConnectionsPerHost(connectionConfiguration.getDefaultConnectionsPerHost().get());
         }
         if (connectionConfiguration.getTimeout().isPresent()) {
-            config.setConnectionTimeoutInMs(connectionConfiguration.getTimeout().get());
+            config.setReadTimeout(connectionConfiguration.getTimeout().get());
         }
         if (connectionConfiguration.getSocketTimeout().isPresent()) {
-            config.setWebSocketIdleTimeoutInMs(connectionConfiguration.getSocketTimeout().get());
+            config.setConnectTimeout(connectionConfiguration.getSocketTimeout().get());
         }
         return connectionConfiguration;
     }
