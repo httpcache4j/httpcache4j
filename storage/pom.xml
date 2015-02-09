@@ -30,6 +30,5 @@
 
   <modules>
     <module>storage-file</module>
-    <module>storage-ehcache</module>
   </modules>
 </project>
