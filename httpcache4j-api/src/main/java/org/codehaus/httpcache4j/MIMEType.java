@@ -19,6 +19,7 @@ package org.codehaus.httpcache4j;
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParameterList;
 import javax.activation.MimeTypeParseException;
+import javax.activation.MimetypesFileTypeMap;
 import java.util.*;
 
 /**
@@ -165,6 +166,10 @@ public final class MIMEType {
 
     public static MIMEType valueOf(final String MIMEType) {
         return new MIMEType(MIMEType);
+    }
+
+    public static MIMEType fromFileName(String filename) {
+        return valueOf(MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(filename));
     }
 
     public static MIMEType valueOf(final String primaryType, final String subType) {

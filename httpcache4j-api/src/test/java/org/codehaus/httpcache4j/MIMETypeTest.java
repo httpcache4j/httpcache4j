@@ -16,7 +16,13 @@
 
 package org.codehaus.httpcache4j;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+import org.junit.matchers.JUnitMatchers;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.Assert.*;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
@@ -79,11 +85,11 @@ public class MIMETypeTest {
     @Test
     public void testIncludes() {
         MIMEType type = MIMEType.valueOf("image/*");
-        MIMEType jpegType = MIMEType.valueOf("image/jpg");
+        MIMEType jpegType = MIMEType.valueOf("image/jpeg");
         assertTrue("Image type did not include jpeg type", type.includes(jpegType));
         type = MIMEType.ALL;
         assertTrue("All type did not include jpeg type", type.includes(jpegType));
-        type = MIMEType.valueOf("image", "jpg");
+        type = MIMEType.valueOf("image", "jpeg");
         assertTrue("Same type was not the same as jpeg type", type.includes(jpegType));
         assertTrue("type type did not include null type", type.includes((MIMEType)null));
     }
@@ -91,11 +97,27 @@ public class MIMETypeTest {
     @Test
     public void testNotIncludes() {
         MIMEType type = MIMEType.valueOf("image/*");
-        MIMEType jpegType = MIMEType.valueOf("image/jpg");
+        MIMEType jpegType = MIMEType.valueOf("image/jpeg");
         assertFalse("jpeg type did include ALL image type", jpegType.includes(type));
         type = MIMEType.ALL;
         assertFalse("jpeg type included ALL type ", jpegType.includes(type));
         type = MIMEType.valueOf("video/*");
         assertFalse("jpeg type included ALL video type ", jpegType.includes(type));
+    }
+
+    @Test
+    public void fromFileName() {
+        //System.setProperty("javax.activation.debug", "true");
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("file.png", "image/png");
+        map.put("file.jpg", "image/jpeg");
+        map.put("file.xml", "application/xml");
+        map.put("file.json", "application/json");
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            MIMEType first = MIMEType.fromFileName(entry.getKey());
+            MIMEType other = MIMEType.valueOf(entry.getValue());
+            assertThat("No match", first, CoreMatchers.equalTo(other));
+            assertThat("No inclusion of itself", true, CoreMatchers.is(first.includes(other)));
+        }
     }
 }
