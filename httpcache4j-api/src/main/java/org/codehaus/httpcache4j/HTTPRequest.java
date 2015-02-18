@@ -38,7 +38,7 @@ public final class HTTPRequest {
     private final Headers headers;
     private final Challenge challenge;
     private final Payload payload;
-    private URI normalizedURI;
+    private final URI normalizedURI;
 
     public HTTPRequest(URI requestURI,
                        HTTPMethod method,
@@ -187,5 +187,41 @@ public final class HTTPRequest {
 
     public boolean isSecure() {
         return "https".equalsIgnoreCase(requestURI.getScheme());
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        final HTTPRequest that = (HTTPRequest) o;
+
+        if (challenge != null ? !challenge.equals(that.challenge) : that.challenge != null) {
+            return false;
+        }
+        if (headers != null ? !headers.equals(that.headers) : that.headers != null) {
+            return false;
+        }
+        if (method != null ? !method.equals(that.method) : that.method != null) {
+            return false;
+        }
+        if (normalizedURI != null ? !normalizedURI.equals(that.normalizedURI) : that.normalizedURI != null) {
+            return false;
+        }
+        return !(payload != null ? !payload.equals(that.payload) : that.payload != null);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = method != null ? method.hashCode() : 0;
+        result = 31 * result + (headers != null ? headers.hashCode() : 0);
+        result = 31 * result + (challenge != null ? challenge.hashCode() : 0);
+        result = 31 * result + (payload != null ? payload.hashCode() : 0);
+        result = 31 * result + (normalizedURI != null ? normalizedURI.hashCode() : 0);
+        return result;
     }
 }
