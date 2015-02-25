@@ -16,7 +16,7 @@
 
 package org.codehaus.httpcache4j.payload;
 
-import com.google.common.base.Preconditions;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
 

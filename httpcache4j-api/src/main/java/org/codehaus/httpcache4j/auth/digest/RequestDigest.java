@@ -15,7 +15,6 @@
 
 package org.codehaus.httpcache4j.auth.digest;
 
-import com.google.common.base.Strings;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.util.Digester;
 
@@ -23,6 +22,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -56,13 +56,13 @@ public class RequestDigest {
         else {
             algorithm = Algorithm.MD5;
         }
-        if (!Strings.isNullOrEmpty(serverDigest.getQop())) {
+        if (!Objects.toString(serverDigest.getQop(), "").isEmpty()) {
             addDirective("qop", serverDigest.getQop(), false);
             addDirective("nc", CNONCE_COUNT, false);
             addDirective("cnonce", calculateCNonce(), true);
         }
         addDirective("response", calculateResponse(), true);
-        if (!Strings.isNullOrEmpty(serverDigest.getOpaque())) {
+        if (!Objects.toString(serverDigest.getOpaque(), "").isEmpty()) {
             addDirective("opaque", serverDigest.getOpaque(), true);
         }
     }

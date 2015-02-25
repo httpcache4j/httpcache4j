@@ -16,9 +16,8 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
+import net.hamnaberg.funclite.Optional;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.annotation.Internal;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
@@ -29,6 +28,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import static org.codehaus.httpcache4j.HeaderConstants.*;
 
@@ -159,7 +159,7 @@ public final class HTTPResponse {
                 IOUtils.closeQuietly(is);
             }
         }
-        return Optional.absent();
+        return Optional.none();
     }
 
     public void consume() {

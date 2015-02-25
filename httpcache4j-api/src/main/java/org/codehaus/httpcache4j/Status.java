@@ -16,12 +16,9 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * HTTP Status to return after handling a call.
@@ -99,52 +96,55 @@ public final class Status implements Comparable<Status> {
         }
     }
 
-    private static final Set<Status> STATUSES_WITHOUT_BODY = ImmutableSet.of(RESET_CONTENT, NO_CONTENT, NOT_MODIFIED);
+    private static final Set<Status> STATUSES_WITHOUT_BODY = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(RESET_CONTENT, NO_CONTENT, NOT_MODIFIED)));
     private static final Map<Integer, Status> STATUSES;
 
     static {
-        ImmutableMap.Builder<Integer, Status> builder = ImmutableMap.builder();
-        builder.put(CONTINUE.getCode(), CONTINUE);
-        builder.put(SWITCHING_PROTOCOLS.getCode(), SWITCHING_PROTOCOLS);
-        builder.put(OK.getCode(), OK);
-        builder.put(CREATED.getCode(), CREATED);
-        builder.put(ACCEPTED.getCode(), ACCEPTED);
-        builder.put(NON_AUTHORITATIVE_INFORMATION.getCode(), NON_AUTHORITATIVE_INFORMATION);
-        builder.put(NO_CONTENT.getCode(), NO_CONTENT);
-        builder.put(RESET_CONTENT.getCode(), RESET_CONTENT);
-        builder.put(PARTIAL_CONTENT.getCode(), PARTIAL_CONTENT);
-        builder.put(MULTIPLE_CHOICES.getCode(), MULTIPLE_CHOICES);
-        builder.put(MOVED_PERMANENTLY.getCode(), MOVED_PERMANENTLY);
-        builder.put(FOUND.getCode(), FOUND);
-        builder.put(SEE_OTHER.getCode(), SEE_OTHER);
-        builder.put(NOT_MODIFIED.getCode(), NOT_MODIFIED);
-        builder.put(USE_PROXY.getCode(), USE_PROXY);
-        builder.put(TEMPORARY_REDIRECT.getCode(), TEMPORARY_REDIRECT);
-        builder.put(BAD_REQUEST.getCode(), BAD_REQUEST);
-        builder.put(UNAUTHORIZED.getCode(), UNAUTHORIZED);
-        builder.put(PAYMENT_REQUIRED.getCode(), PAYMENT_REQUIRED);
-        builder.put(FORBIDDEN.getCode(), FORBIDDEN);
-        builder.put(NOT_FOUND.getCode(), NOT_FOUND);
-        builder.put(METHOD_NOT_ALLOWED.getCode(), METHOD_NOT_ALLOWED);
-        builder.put(NOT_ACCEPTABLE.getCode(), NOT_ACCEPTABLE);
-        builder.put(PROXY_AUTHENTICATION_REQUIRED.getCode(), PROXY_AUTHENTICATION_REQUIRED);
-        builder.put(REQUEST_TIMEOUT.getCode(), REQUEST_TIMEOUT);
-        builder.put(CONFLICT.getCode(), CONFLICT);
-        builder.put(GONE.getCode(), GONE);
-        builder.put(LENGTH_REQUIRED.getCode(), LENGTH_REQUIRED);
-        builder.put(PRECONDITION_FAILED.getCode(), PRECONDITION_FAILED);
-        builder.put(REQUEST_ENTITY_TOO_LARGE.getCode(), REQUEST_ENTITY_TOO_LARGE);
-        builder.put(REQUEST_URI_TOO_LONG.getCode(), REQUEST_URI_TOO_LONG);
-        builder.put(UNSUPPORTED_MEDIA_TYPE.getCode(), UNSUPPORTED_MEDIA_TYPE);
-        builder.put(REQUESTED_RANGE_NOT_SATISFIABLE.getCode(), REQUESTED_RANGE_NOT_SATISFIABLE);
-        builder.put(EXPECTATION_FAILED.getCode(), EXPECTATION_FAILED);
-        builder.put(INTERNAL_SERVER_ERROR.getCode(), INTERNAL_SERVER_ERROR);
-        builder.put(NOT_IMPLEMENTED.getCode(), NOT_IMPLEMENTED);
-        builder.put(BAD_GATEWAY.getCode(), BAD_GATEWAY);
-        builder.put(SERVICE_UNAVAILABLE.getCode(), SERVICE_UNAVAILABLE);
-        builder.put(GATEWAY_TIMEOUT.getCode(), GATEWAY_TIMEOUT);
-        builder.put(HTTP_VERSION_NOT_SUPPORTED.getCode(), HTTP_VERSION_NOT_SUPPORTED);
-        STATUSES = builder.build();
+        List<Status> statuses = Arrays.asList(
+                CONTINUE,
+                SWITCHING_PROTOCOLS,
+                OK,
+                CREATED,
+                ACCEPTED,
+                NON_AUTHORITATIVE_INFORMATION,
+                NO_CONTENT,
+                RESET_CONTENT,
+                PARTIAL_CONTENT,
+                MULTIPLE_CHOICES,
+                MOVED_PERMANENTLY,
+                FOUND,
+                SEE_OTHER,
+                NOT_MODIFIED,
+                USE_PROXY,
+                TEMPORARY_REDIRECT,
+                BAD_REQUEST,
+                UNAUTHORIZED,
+                PAYMENT_REQUIRED,
+                FORBIDDEN,
+                NOT_FOUND,
+                METHOD_NOT_ALLOWED,
+                NOT_ACCEPTABLE,
+                PROXY_AUTHENTICATION_REQUIRED,
+                REQUEST_TIMEOUT,
+                CONFLICT,
+                GONE,
+                LENGTH_REQUIRED,
+                PRECONDITION_FAILED,
+                REQUEST_ENTITY_TOO_LARGE,
+                REQUEST_URI_TOO_LONG,
+                UNSUPPORTED_MEDIA_TYPE,
+                REQUESTED_RANGE_NOT_SATISFIABLE,
+                EXPECTATION_FAILED,
+                INTERNAL_SERVER_ERROR,
+                NOT_IMPLEMENTED,
+                BAD_GATEWAY,
+                SERVICE_UNAVAILABLE,
+                GATEWAY_TIMEOUT,
+                HTTP_VERSION_NOT_SUPPORTED
+        );
+
+        Map<Integer, Status> collect = statuses.stream().collect(Collectors.toMap(Status::getCode, Function.<Status>identity()));
+        STATUSES = Collections.unmodifiableMap(collect);
     }
 
     private final int code;

@@ -27,7 +27,7 @@ public class HttpClientFactory {
 
         builder.setConnectionManager(configurationManager(config));
         SocketConfig.Builder socketConfig = SocketConfig.copy(SocketConfig.DEFAULT);
-        if (config.getSocketTimeout().isPresent()) {
+        if (config.getSocketTimeout().isSome()) {
             socketConfig.setSoTimeout(config.getSocketTimeout().get());
         }
         builder.setDefaultSocketConfig(socketConfig.build());
@@ -60,10 +60,10 @@ public class HttpClientFactory {
 
     protected HttpClientConnectionManager configurationManager(ConnectionConfiguration config) {
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        if (config.getDefaultConnectionsPerHost().isPresent()) {
+        if (config.getDefaultConnectionsPerHost().isSome()) {
             connectionManager.setDefaultMaxPerRoute(config.getDefaultConnectionsPerHost().get());
         }
-        if (config.getMaxConnections().isPresent()) {
+        if (config.getMaxConnections().isSome()) {
             connectionManager.setMaxTotal(config.getMaxConnections().get());
         }
         for (Map.Entry<HTTPHost, Integer> entry : config.getConnectionsPerHost().entrySet()) {
@@ -75,17 +75,16 @@ public class HttpClientFactory {
 
     protected RequestConfig requestConfig(HTTPHost proxyHost, ConnectionConfiguration config) {
         RequestConfig.Builder requestConfig = RequestConfig.copy(RequestConfig.DEFAULT);
-        if (config.getTimeout().isPresent()) {
+        if (config.getTimeout().isSome()) {
             requestConfig.setConnectTimeout(config.getTimeout().get());
         }
-        if (config.getConnectionRequestTimeout().isPresent()) {
+        if (config.getConnectionRequestTimeout().isSome()) {
             requestConfig.setConnectionRequestTimeout(config.getConnectionRequestTimeout().get());
         }
-        if (config.getSocketTimeout().isPresent()) {
+        if (config.getSocketTimeout().isSome()) {
             requestConfig.setSocketTimeout(config.getSocketTimeout().get());
         }
         requestConfig.setAuthenticationEnabled(false);
-        requestConfig.setStaleConnectionCheckEnabled(false);
         if (proxyHost != null) {
             requestConfig.setProxy(new HttpHost(proxyHost.getHost(), proxyHost.getPort(), proxyHost.getScheme()));
         }

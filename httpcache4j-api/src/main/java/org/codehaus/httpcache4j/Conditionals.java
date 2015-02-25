@@ -16,19 +16,12 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
+import net.hamnaberg.funclite.Preconditions;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Represents the different conditional types that an HTTP request may have.
@@ -96,7 +89,7 @@ public final class Conditionals {
     public Conditionals addIfMatch(Tag tag) {
         Preconditions.checkArgument(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_MODIFIED_SINCE));
         Preconditions.checkArgument(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_NONE_MATCH));
-        List<Tag> match = new ArrayList<Tag>(this.match);
+        List<Tag> match = new ArrayList<>(this.match);
 
         if (tag == null) {
             tag = Tag.ALL;
@@ -234,33 +227,24 @@ public final class Conditionals {
     }
 
     public static Conditionals valueOf(Headers headers) {
-        ImmutableList<Tag> ifMatch = makeTags(headers.getFirstHeaderValue(HeaderConstants.IF_MATCH));
-        ImmutableList<Tag> ifNoneMatch = makeTags(headers.getFirstHeaderValue(HeaderConstants.IF_NONE_MATCH));
+        List<Tag> ifMatch = makeTags(headers.getFirstHeaderValue(HeaderConstants.IF_MATCH));
+        List<Tag> ifNoneMatch = makeTags(headers.getFirstHeaderValue(HeaderConstants.IF_NONE_MATCH));
         DateTime modifiedSince = HeaderUtils.fromHttpDate(headers.getFirstHeader(HeaderConstants.IF_MODIFIED_SINCE));
         DateTime unModifiedSince = HeaderUtils.fromHttpDate(headers.getFirstHeader(HeaderConstants.IF_UNMODIFIED_SINCE));
         return new Conditionals(ifMatch, ifNoneMatch, modifiedSince, unModifiedSince);
     }
 
-    private static ImmutableList<Tag> makeTags(String ifMatch) {
+    private static List<Tag> makeTags(String ifMatch) {
         if (ifMatch == null) {
-            return ImmutableList.of();
+            return Arrays.asList();
         }
-        return ImmutableList.copyOf(Iterables.transform(Splitter.on(",").omitEmptyStrings().trimResults().split(ifMatch), tagFunction));
+        return Collections.unmodifiableList(Arrays.asList(ifMatch.split(",")).stream().
+                filter(m -> !Objects.toString(m, "").isEmpty()).
+                map(String::trim).
+                map(Tag::parse).collect(Collectors.toList()));
     }
 
     private String buildTagHeaderValue(List<Tag> match) {
-        return Joiner.on(",").join(Collections2.transform(match, new Function<Tag, String>() {
-            @Override
-            public String apply(Tag input) {
-                return input.format();
-            }
-        }));
+        return match.stream().map(Tag::format).collect(Collectors.joining(","));
     }
-
-    public static Function<String, Tag> tagFunction = new Function<String, Tag>() {
-        @Override
-        public Tag apply(String input) {
-            return Tag.parse(input);
-        }
-    };
 }

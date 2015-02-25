@@ -15,15 +15,14 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import org.codehaus.httpcache4j.util.NumberUtils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -40,8 +39,7 @@ public class Directive extends NameValue {
 
     public Directive(final String name, String value, List<Parameter> parameters) {
         super(name, HeaderUtils.removeQuotes(value));
-        Preconditions.checkNotNull(parameters, "Parameters may not be null");
-        this.parameters = ImmutableList.copyOf(parameters);
+        this.parameters = Objects.requireNonNull(parameters);
     }
 
     public List<Parameter> getParameters() {
@@ -56,11 +54,7 @@ public class Directive extends NameValue {
         if (parameterMap == null) {
             synchronized (this) {
                 if (parameterMap == null) {
-                    ImmutableMap.Builder<String, Parameter> builder = ImmutableMap.builder();
-                    for (Parameter parameter : parameters) {
-                        builder.put(parameter.getName(), parameter);
-                    }
-                    parameterMap = builder.build();
+                    parameterMap = parameters.stream().collect(Collectors.toMap(NameValue::getName, Function.<Parameter>identity()));
                 }
             }
         }
@@ -78,11 +72,11 @@ public class Directive extends NameValue {
     @Override
     public String toString() {
         String output = name;
-        if (value != null && !value.isEmpty()) {
+        if (!value.isEmpty()) {
             output += "=" + value;
         }
         if (!parameters.isEmpty()) {
-            output = output + "; " + Joiner.on("; ").join(parameters);
+            output = output + "; " + parameters.stream().map(Parameter::toString).collect(Collectors.joining("; "));
         }
         return output;
     }

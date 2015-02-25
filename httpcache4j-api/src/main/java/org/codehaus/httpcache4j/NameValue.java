@@ -1,9 +1,8 @@
 package org.codehaus.httpcache4j;
 
 
-import com.google.common.base.Preconditions;
-
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Represents a name/value pair.
@@ -15,7 +14,7 @@ public abstract class NameValue {
     protected final String value;
 
     protected NameValue(final String name, String value) {
-        Preconditions.checkArgument(name != null, "You may not have an null name in a name value combination");
+        Objects.requireNonNull(name != null, "You may not have an null name in a name value combination");
         if (value == null || value.trim().isEmpty()) {
             value = "";
         }

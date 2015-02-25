@@ -1,17 +1,14 @@
 package org.codehaus.httpcache4j.resolver.ning;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 import com.ning.http.client.Response;
 import com.ning.http.client.generators.InputStreamBodyGenerator;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.Authenticator;
 import org.codehaus.httpcache4j.auth.ProxyAuthenticator;
-import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
 import org.codehaus.httpcache4j.resolver.ConnectionConfiguration;
 import org.codehaus.httpcache4j.resolver.ResolverConfiguration;
@@ -20,8 +17,6 @@ import org.codehaus.httpcache4j.resolver.ResponseCreator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -49,16 +44,16 @@ public class NingResponseResolver extends AbstractResponseResolver {
 
     private ConnectionConfiguration configureConnections(ResolverConfiguration configuration, AsyncHttpClientConfig.Builder config) {
         ConnectionConfiguration connectionConfiguration = configuration.getConnectionConfiguration();
-        if (connectionConfiguration.getMaxConnections().isPresent()) {
+        if (connectionConfiguration.getMaxConnections().isSome()) {
             config.setMaxConnections(connectionConfiguration.getMaxConnections().get());
         }
-        if (connectionConfiguration.getDefaultConnectionsPerHost().isPresent()) {
+        if (connectionConfiguration.getDefaultConnectionsPerHost().isSome()) {
             config.setMaxConnectionsPerHost(connectionConfiguration.getDefaultConnectionsPerHost().get());
         }
-        if (connectionConfiguration.getTimeout().isPresent()) {
+        if (connectionConfiguration.getTimeout().isSome()) {
             config.setReadTimeout(connectionConfiguration.getTimeout().get());
         }
-        if (connectionConfiguration.getSocketTimeout().isPresent()) {
+        if (connectionConfiguration.getSocketTimeout().isSome()) {
             config.setConnectTimeout(connectionConfiguration.getSocketTimeout().get());
         }
         return connectionConfiguration;
@@ -99,14 +94,8 @@ public class NingResponseResolver extends AbstractResponseResolver {
             Response response = responseFuture.get();
             StatusLine line = new StatusLine(Status.valueOf(response.getStatusCode()), response.getStatusText());
             FluentCaseInsensitiveStringsMap headers = response.getHeaders();
-            MutableHeaders convertedHeaders = new MutableHeaders();
-            for (Map.Entry<String, List<String>> entry : headers) {
-                final String key = entry.getKey();
-                List<String> values = entry.getValue();
-                convertedHeaders.add(Lists.transform(values, stringToHeader(key)));
-            }
             InputStream stream = response.getResponseBodyAsStream();
-            return ResponseCreator.createResponse(line, convertedHeaders.toHeaders(), stream);
+            return ResponseCreator.createResponse(line, new Headers(headers), stream);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
@@ -152,13 +141,5 @@ public class NingResponseResolver extends AbstractResponseResolver {
             return client.preparePut(uri.toString());
         }
         throw new IllegalArgumentException("Unable to create request for method " + method);
-    }
-
-    private Function<String, Header> stringToHeader(final String key) {
-        return new Function<String, Header>() {
-            public Header apply(String from) {
-                return new Header(key, from);
-            }
-        };
     }
 }

@@ -15,12 +15,12 @@
 
 package org.codehaus.httpcache4j.auth;
 
-import com.google.common.collect.Lists;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.digest.Digest;
 import org.codehaus.httpcache4j.auth.digest.RequestDigest;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -77,12 +77,9 @@ public class DigestAuthenticatorStrategy implements AuthenticatorStrategy {
         if (header != null) {
             String nextNonce = header.getDirectives().get("nextnonce");
             if (nextNonce != null) {
-                List<Parameter> params = Lists.newArrayList(scheme.getDirective().getParameters());
-                for (Parameter parameter : scheme.getDirective().getParameters()) {
-                    if ("nonce".equals(parameter.getName())) {
-                        params.remove(parameter);
-                    }
-                }
+                List<Parameter> params = scheme.getDirective().getParameters().stream().
+                        filter(p -> !"nonce".equals(p.getName())).
+                        collect(Collectors.toList());
                 params.add(new QuotedParameter("nonce", nextNonce));
                 return new AuthScheme(new AuthDirective("Digest", null, params));
             }

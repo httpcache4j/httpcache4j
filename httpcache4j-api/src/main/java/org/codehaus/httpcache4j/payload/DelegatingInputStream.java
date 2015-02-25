@@ -16,7 +16,8 @@
 package org.codehaus.httpcache4j.payload;
 
 
-import com.google.common.base.Preconditions;
+
+import net.hamnaberg.funclite.Preconditions;
 
 import java.io.InputStream;
 import java.io.IOException;

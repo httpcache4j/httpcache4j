@@ -28,10 +28,10 @@
   <name>Java HTTP cache :: API</name>
 
   <dependencies>
-    <dependency>
+    <!--<dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-    </dependency>
+    </dependency>-->
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>

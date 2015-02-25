@@ -18,16 +18,17 @@ package org.codehaus.httpcache4j;
 
 import static org.junit.Assert.*;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.util.AuthDirectivesParser;
 import org.codehaus.httpcache4j.util.DirectivesParser;
+import org.codehaus.httpcache4j.util.IOUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
@@ -133,11 +134,13 @@ public class HeadersTest {
          field is provided, since the contents of a challenge may itself
          contain a comma-separated list of authentication parameters.
          */
-        String value = Resources.toString(getClass().getResource("/multiple-auth.txt"), Charsets.ISO_8859_1);
-        Iterable<Directive> parsed = AuthDirectivesParser.parse(value);
-        Directives directives = new Directives(parsed);
-        assertNotNull(directives.getAsDirective("Basic"));
-        assertNotNull(directives.getAsDirective("Digest"));
+        try (InputStream is = getClass().getResourceAsStream("/multiple-auth.txt")){
+            String value = new String(IOUtils.toByteArray(is), StandardCharsets.ISO_8859_1);
+            Iterable<Directive> parsed = AuthDirectivesParser.parse(value);
+            Directives directives = new Directives(parsed);
+            assertNotNull(directives.getAsDirective("Basic"));
+            assertNotNull(directives.getAsDirective("Digest"));
+        }
     }
 
 }

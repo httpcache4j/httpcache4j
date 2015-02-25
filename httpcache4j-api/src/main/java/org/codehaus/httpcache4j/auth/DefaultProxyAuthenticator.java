@@ -15,14 +15,12 @@
 
 package org.codehaus.httpcache4j.auth;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.*;
 
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.common.collect.Lists;
 import org.codehaus.httpcache4j.util.Pair;
 
 /**
@@ -54,7 +52,7 @@ public class DefaultProxyAuthenticator extends AuthenticatorBase implements Prox
             if (response == null && registry.matches(configuration.getHost())) {
                 //preemptive auth.
                 AuthScheme authScheme = registry.get(configuration.getHost());
-                return doAuth(request, ImmutableList.of(authScheme));
+                return doAuth(request, Arrays.asList(authScheme));
             }
             if (response != null && response.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) {
                 if (proxyChallenge == null) {
@@ -96,7 +94,7 @@ public class DefaultProxyAuthenticator extends AuthenticatorBase implements Prox
     public void afterSuccessfulAuthentication(Headers responseHeaders) {
         if (registry.matches(configuration.getHost())) {
             AuthScheme scheme = registry.get(configuration.getHost());
-            select(ImmutableList.of(scheme)).getKey().afterSuccessfulProxyAuthentication(scheme, responseHeaders);
+            select( Arrays.asList(scheme) ).getKey().afterSuccessfulProxyAuthentication(scheme, responseHeaders);
         }
     }
 

@@ -16,13 +16,12 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Preconditions;
-
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 import org.joda.time.DateTime;
 
 import java.net.URI;
+import java.util.Objects;
 
 /**
  * Represents a HTTP request. You can use this in a couple of ways: <br/>
@@ -46,7 +45,7 @@ public final class HTTPRequest {
                        Challenge challenge,
                        Payload payload) {
 
-        this.requestURI = Preconditions.checkNotNull(requestURI, "You MUST have a URI");
+        this.requestURI = Objects.requireNonNull(requestURI, "You MUST have a URI");
         this.normalizedURI = URIBuilder.fromURI(requestURI).toNormalizedURI();
         this.method = method == null ? HTTPMethod.GET : method;
         this.headers = headers == null ? new Headers() : headers;
@@ -125,7 +124,7 @@ public final class HTTPRequest {
     }
 
     public HTTPRequest method(HTTPMethod method) {
-        Preconditions.checkNotNull(method, "You may not set null method");
+        Objects.requireNonNull(method, "You may not set null method");
         if (method == this.method) return this;
         return new HTTPRequest(requestURI, method, headers, challenge, payload);
     }
@@ -150,7 +149,7 @@ public final class HTTPRequest {
     }
 
     public HTTPRequest headers(final Headers headers) {
-        Preconditions.checkNotNull(headers, "You may not set null headers");
+        Objects.requireNonNull(headers, "You may not set null headers");
         return new HTTPRequest(requestURI, method, headers, challenge, payload);
     }
 

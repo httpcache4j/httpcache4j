@@ -16,22 +16,16 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
-import org.codehaus.httpcache4j.preference.Charset;
 import org.codehaus.httpcache4j.preference.Preference;
 import org.codehaus.httpcache4j.util.CaseInsensitiveKey;
 import org.joda.time.DateTime;
 
 import java.net.URI;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -50,9 +44,12 @@ public final class Headers implements Iterable<Header> {
         this(headers.copyMap());
     }
 
+    public Headers(final Map<String, List<String>> headers) {
+        this(new HeaderHashMap(headers));
+    }
+
     private Headers(final HeaderHashMap headers) {
-        Preconditions.checkNotNull(headers, "The header map may not be null");
-        this.headers.putAll(headers);
+        this.headers.putAll(Objects.requireNonNull(headers, "The header map may not be null"));
     }
 
     public List<Header> getHeaders(String name) {
@@ -60,14 +57,10 @@ public final class Headers implements Iterable<Header> {
     }
 
     public List<Directives> getDirectives(String name) {
-        return Lists.transform(getHeaders(name), new Function<Header, Directives>() {
-            @Override
-            public Directives apply(Header input) {
-                return input.getDirectives();
-            }
-        });
+        return getHeaders(name).stream().map(Header::getDirectives).collect(Collectors.toList());
     }
 
+    //TODO: Eliminate null
     public Header getFirstHeader(String headerKey) {
         List<Header> headerList = getHeaders(headerKey);
         if (!headerList.isEmpty()) {
@@ -76,6 +69,7 @@ public final class Headers implements Iterable<Header> {
         return null;
     }
 
+    //TODO: Eliminate null
     public String getFirstHeaderValue(String headerKey) {
         Header header = getFirstHeader(headerKey);
         if (header != null) {
@@ -84,6 +78,7 @@ public final class Headers implements Iterable<Header> {
         return null;
     }
 
+    //TODO: Eliminate null
     public Directives getFirstHeaderValueAsDirectives(String headerKey) {
         Header header = getFirstHeader(headerKey);
         if (header != null) {
@@ -103,7 +98,7 @@ public final class Headers implements Iterable<Header> {
     public Headers add(Iterable<Header> headers) {
         HeaderHashMap map = copyMap();
         for (Header header : headers) {
-            List<String> list = new ArrayList<String>(map.get(header.getName()));
+            List<String> list = new ArrayList<>(map.get(header.getName()));
             String value = normalizeValue(header.getName(), header.getValue());
             if (!list.contains(value)) {
                 list.add(value);
@@ -114,7 +109,7 @@ public final class Headers implements Iterable<Header> {
     }
 
     public Headers add(String name, Iterable<String> values) {
-        List<Header> list = new ArrayList<Header>();
+        List<Header> list = new ArrayList<>();
         for (String value : values) {
             list.add(new Header(name, value));
         }
@@ -124,7 +119,7 @@ public final class Headers implements Iterable<Header> {
     public Headers set(Header header) {
         HeaderHashMap headers = copyMap();
         String normalized = normalizeValue(header.getName(), header.getValue());
-        headers.put(header.getName(), Lists.newArrayList(normalized));
+        headers.put(header.getName(), new ArrayList<>(Arrays.asList(normalized)));
         return new Headers(headers);
     }
 
@@ -189,76 +184,68 @@ public final class Headers implements Iterable<Header> {
         return HeaderUtils.hasCacheableHeaders(this);
     }
 
-    public List<Preference<Locale>> getAcceptLanguage() {
-        return Preference.parse(getFirstHeader(HeaderConstants.ACCEPT_LANGUAGE), Preference.LocaleParse);
+    public List<Preference> getAcceptLanguage() {
+        return Preference.parse(getFirstHeader(HeaderConstants.ACCEPT_LANGUAGE));
     }
 
-    public Headers withAcceptLanguage(List<Preference<Locale>> acceptLanguage) {
-        return set(Preference.toHeader(HeaderConstants.ACCEPT_LANGUAGE, acceptLanguage, Preference.LocaleToString));
+    public Headers withAcceptLanguage(List<Preference> acceptLanguage) {
+        return set(Preference.toHeader(HeaderConstants.ACCEPT_LANGUAGE, acceptLanguage));
     }
 
-    public List<Preference<Charset>> getAcceptCharset() {
-        return Preference.parse(getFirstHeader(HeaderConstants.ACCEPT_CHARSET), Preference.CharsetParse);
+    public List<Preference> getAcceptCharset() {
+        return Preference.parse(getFirstHeader(HeaderConstants.ACCEPT_CHARSET));
     }
 
-    public Headers withAcceptCharset(List<Preference<Charset>> charsets) {
-        return set(Preference.toHeader(HeaderConstants.ACCEPT_CHARSET, charsets, Preference.CharsetToString));
+    public Headers withAcceptCharset(List<Preference> charsets) {
+        return set(Preference.toHeader(HeaderConstants.ACCEPT_CHARSET, charsets));
     }
 
-    public List<Preference<MIMEType>> getAccept() {
-        return Preference.parse(getFirstHeader(HeaderConstants.ACCEPT), Preference.MIMEParse);
+    public List<Preference> getAccept() {
+        return Preference.parse(getFirstHeader(HeaderConstants.ACCEPT));
     }
 
-    public Headers withAccept(List<Preference<MIMEType>> charsets) {
-        return set(Preference.toHeader(HeaderConstants.ACCEPT, charsets, Preference.<MIMEType>toStringF()));
+    public Headers withAccept(List<Preference> charsets) {
+        return set(Preference.toHeader(HeaderConstants.ACCEPT, charsets));
     }
 
-    public Headers addAccept(Preference<MIMEType>... accept) {
-        List<Preference<MIMEType>> preferences = Arrays.asList(accept);
-        return add(Preference.toHeader(HeaderConstants.ACCEPT, preferences, Preference.<MIMEType>toStringF()));
+    public Headers addAccept(Preference... accept) {
+        List<Preference> preferences = Arrays.asList(accept);
+        return add(Preference.toHeader(HeaderConstants.ACCEPT, preferences));
     }
 
     public Headers addAccept(MIMEType... accept) {
-        List<Preference<MIMEType>> preferences = Preference.wrap(accept);
-        return add(Preference.toHeader(HeaderConstants.ACCEPT, preferences, Preference.<MIMEType>toStringF()));
+        List<Preference> preferences = Arrays.asList(accept).stream().map(MIMEType::toString).map(Preference::new).collect(Collectors.toList());
+        return add(Preference.toHeader(HeaderConstants.ACCEPT, preferences));
     }
 
     public Headers addAcceptLanguage(Locale... accept) {
-        List<Preference<Locale>> preferences = Preference.wrap(accept);
-        return add(Preference.toHeader(HeaderConstants.ACCEPT_LANGUAGE, preferences, Preference.LocaleToString));
+        Function<Locale, String> f = a -> a.getLanguage() + "-" + a.getCountry().toLowerCase(Locale.ENGLISH);
+        List<Preference> preferences = Arrays.asList(accept).stream().map(f).map(Preference::new).collect(Collectors.toList());
+        return add(Preference.toHeader(HeaderConstants.ACCEPT_LANGUAGE, preferences));
     }
 
-    public Headers addAcceptLanguage(Preference<Locale>... accept) {
-        List<Preference<Locale>> preferences = Arrays.asList(accept);
-        return add(Preference.toHeader(HeaderConstants.ACCEPT_LANGUAGE, preferences, Preference.LocaleToString));
+    public Headers addAcceptLanguage(Preference... accept) {
+        List<Preference> preferences = Arrays.asList(accept);
+        return add(Preference.toHeader(HeaderConstants.ACCEPT_LANGUAGE, preferences));
     }
 
-    public Headers addAcceptCharset(Charset... accept) {
-        List<Preference<Charset>> preferences = Preference.wrap(accept);
-        return add(Preference.toHeader(HeaderConstants.ACCEPT_LANGUAGE, preferences, Preference.CharsetToString));
-    }
-
-    public Headers addAcceptCharset(Preference<Charset>... accept) {
-        List<Preference<Charset>> preferences = Arrays.asList(accept);
-        return add(Preference.toHeader(HeaderConstants.ACCEPT_LANGUAGE, preferences, Preference.CharsetToString));
+    public Headers addAcceptCharset(Preference... accept) {
+        List<Preference> preferences = Arrays.asList(accept);
+        return add(Preference.toHeader(HeaderConstants.ACCEPT_LANGUAGE, preferences));
     }
 
     public Set<HTTPMethod> getAllow() {
         Header header = getFirstHeader(HeaderConstants.ALLOW);
         if (header != null) {
-            ImmutableSet.Builder<HTTPMethod> builder = ImmutableSet.builder();
-            for (Directive directive : header.getDirectives()) {
-                builder.add(HTTPMethod.valueOf(directive.getName().toUpperCase(Locale.ENGLISH)));
-            }
-            return builder.build();
+            return header.getDirectives().stream().map(d -> HTTPMethod.valueOf(d.getName().toUpperCase(Locale.ENGLISH))).collect(Collectors.toSet());
         }
         return Collections.emptySet();
     }
 
     public Headers withAllow(Set<HTTPMethod> allow) {
         if (!allow.isEmpty()) {
-            String allowValue = Joiner.on(",").skipNulls().join(allow);
-            return set(HeaderConstants.ALLOW, allowValue);
+            String value = allow.stream().map(HTTPMethod::getMethod).collect(Collectors.joining(","));
+            return set(HeaderConstants.ALLOW, value);
         }
         return remove(HeaderConstants.ALLOW);
     }
@@ -312,6 +299,8 @@ public final class Headers implements Iterable<Header> {
         return add(conditionals.toHeaders());
     }
 
+
+    //TODO: Eliminate null
     public Tag getETag() {
         Header tag = getFirstHeader(HeaderConstants.ETAG);
         if (tag != null) {
@@ -324,6 +313,7 @@ public final class Headers implements Iterable<Header> {
         return set(HeaderConstants.ETAG, tag.format());
     }
 
+    //TODO: Eliminate null
     public URI getLocation() {
         String location = getFirstHeaderValue(HeaderConstants.LOCATION);
         if (location != null) {
@@ -336,6 +326,7 @@ public final class Headers implements Iterable<Header> {
         return set(HeaderConstants.LOCATION, href.toString());
     }
 
+    //TODO: Eliminate null
     public URI getContentLocation() {
         String location = getFirstHeaderValue(HeaderConstants.CONTENT_LOCATION);
         if (location != null) {
@@ -385,8 +376,8 @@ public final class Headers implements Iterable<Header> {
 
     private String normalizeValue(String name, String value) {
         if (name.toLowerCase().startsWith("accept")) {
-            List<Preference<String>> parse = Preference.parse(new Header(name, value), Functions.<String>identity());
-            value = Preference.toHeader(name, parse, Functions.<String>identity()).getValue();
+            List<Preference> parse = Preference.parse(new Header(name, value));
+            value = Preference.toHeader(name, parse).getValue();
         }
         return value;
     }
@@ -407,17 +398,18 @@ public final class Headers implements Iterable<Header> {
     private static class HeaderHashMap extends LinkedHashMap<CaseInsensitiveKey, List<String>> {
         private static final long serialVersionUID = 2714358409043444835L;
 
-        private static final Function<Header,String> headerToString = new Function<Header, String>() {
-            public String apply(Header from) {
-                return from.getValue();
-            }
-        };
-
         public HeaderHashMap() {
         }
 
         public HeaderHashMap(HeaderHashMap headerHashMap) {
             super(headerHashMap);
+        }
+        public HeaderHashMap(Map<String, List<String>> headerHashMap) {
+            super(headerHashMap.entrySet().
+                            stream().
+                            map(k -> new SimpleImmutableEntry<>(new CaseInsensitiveKey(k.getKey()), k.getValue()))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+            );
         }
 
         public List<String> get(String key) {
@@ -439,18 +431,9 @@ public final class Headers implements Iterable<Header> {
         }
 
         List<Header> getAsHeaders(final String key) {
-            List<Header> headers = new ArrayList<Header>();
             CaseInsensitiveKey name = new CaseInsensitiveKey(key);
-            headers.addAll(Lists.transform(get(name), nameToHeader(name)));
+            List<Header> headers = get(name).stream().map(v -> new Header(name.getDelegate(), v)).collect(Collectors.toList());
             return Collections.unmodifiableList(headers);
-        }
-
-        private Function<String, Header> nameToHeader(final CaseInsensitiveKey key) {
-            return new Function<String, Header>() {
-                    public Header apply(String from) {
-                        return new Header(key.getDelegate(), from);
-                    }
-                };
         }
 
         public List<String> put(String key, List<String> value) {
@@ -462,10 +445,8 @@ public final class Headers implements Iterable<Header> {
         }
 
         Iterator<Header> headerIterator() {
-            List<Header> headers = new ArrayList<Header>();
-            for (Map.Entry<CaseInsensitiveKey, List<String>> entry : this.entrySet()) {
-                headers.addAll(Lists.transform(entry.getValue(), nameToHeader(entry.getKey())));
-            }
+            List<Header> headers = entrySet().stream().flatMap(e -> e.getValue().stream().map(v -> new Header(e.getKey().getDelegate(), v)))
+                    .collect(Collectors.toList());
             return headers.iterator();
         }
     }

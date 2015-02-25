@@ -15,7 +15,6 @@
 
 package org.codehaus.httpcache4j.util;
 
-import com.google.common.base.Strings;
 import org.codehaus.httpcache4j.*;
 
 import java.util.ArrayList;
@@ -61,7 +60,7 @@ public final class DirectivesParser {
     }
 
     private List<Directive> parseDirectives(final StringBuilder buffer, final ParserCursor cursor) {
-        List<Directive> elements = new ArrayList<Directive>();
+        List<Directive> elements = new ArrayList<>();
         while (!cursor.atEnd()) {
             Directive element = parseDirective(buffer, cursor);
             if (!(element.getName().length() == 0 && element.getValue() == null)) {
@@ -132,7 +131,7 @@ public final class DirectivesParser {
             return Collections.emptyList();
         }
 
-        List<Parameter> params = new ArrayList<Parameter>();
+        List<Parameter> params = new ArrayList<>();
         while (!cursor.atEnd()) {
             params.add(parseParameter(buffer, cursor, ALL_DELIMITERS));
             char ch = buffer.charAt(cursor.getPos() - 1);
@@ -144,10 +143,10 @@ public final class DirectivesParser {
         return params;
     }
 
-    private static boolean isOneOf(final char ch, final char[] chs) {
-        if (chs != null) {
-            for (int i = 0; i < chs.length; i++) {
-                if (ch == chs[i]) {
+    private static boolean isOneOf(final char ch, final char[] chars) {
+        if (chars != null) {
+            for (char chr : chars) {
+                if (ch == chr) {
                     return true;
                 }
             }
@@ -173,7 +172,7 @@ public final class DirectivesParser {
         int indexTo = cursor.getUpperBound();
 
         // Find name
-        String name = null;
+        String name;
         while (pos < indexTo) {
             char ch = buffer.charAt(pos);
             if (ch == '=') {
@@ -207,7 +206,7 @@ public final class DirectivesParser {
         }
 
         // Find value
-        String value = null;
+        String value;
         int i1 = pos;
 
         boolean qouted = false;

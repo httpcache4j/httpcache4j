@@ -15,12 +15,13 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
-import org.codehaus.httpcache4j.util.DirectivesParser;
+import net.hamnaberg.funclite.CollectionOps;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -61,22 +62,21 @@ public final class Directives implements Iterable<Directive>, Serializable {
         return directives.size();
     }
 
-    /**
-     * @return a new Immutable iterator
-     */
     public Iterator<Directive> iterator() {
-        return ImmutableList.copyOf(directives.values()).iterator();
+        return new ArrayList<>(directives.values()).iterator();
     }
+
+    public Stream<Directive> stream() { return StreamSupport.stream(spliterator(), false); }
     
     @Override
     public String toString() {
-        return Joiner.on(", ").join(directives.values());
+        return stream().map(Directive::toString).collect(Collectors.joining(", "));
     }
 
     public Directives add(Directive directive) {
-        ImmutableList.Builder<Directive> dirs = ImmutableList.builder();
-        dirs.addAll(this);
+        ArrayList<Directive> dirs = new ArrayList<>();
+        CollectionOps.addAll(dirs, this);
         dirs.add(directive);
-        return new Directives(dirs.build());
+        return new Directives(dirs);
     }
 }

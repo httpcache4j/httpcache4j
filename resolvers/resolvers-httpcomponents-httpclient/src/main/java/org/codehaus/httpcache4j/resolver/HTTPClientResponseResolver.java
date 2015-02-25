@@ -89,11 +89,6 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         return convertResponse(realRequest, response);
     }
 
-    @Deprecated
-    public void setRedirecting(boolean redirect) {
-        throw new UnsupportedOperationException("You need to set this when creating the HttpClient, sorry!");
-    }
-
     public void shutdown() {
         if (httpClient != null) {
             try {
@@ -151,10 +146,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         }
         try {
             return new HttpEntityInputStream(entity);
-        } catch (IOException e) {
-            realRequest.abort();
-            throw e;
-        } catch (RuntimeException e) {
+        } catch (IOException | RuntimeException e) {
             realRequest.abort();
             throw e;
         }

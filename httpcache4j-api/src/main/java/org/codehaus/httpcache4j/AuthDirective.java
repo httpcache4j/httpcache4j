@@ -1,8 +1,7 @@
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Joiner;
-
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -19,11 +18,11 @@ public class AuthDirective extends Directive {
     @Override
     public String toString() {
         String output = name;
-        if (value != null && !value.isEmpty()) {
+        if (!value.isEmpty()) {
             output += " " + value;
         }
         if (!getParameters().isEmpty()) {
-            output = output + " " + Joiner.on(", ").join(getParameters());
+            output = output + " " + getParameters().stream().map(Parameter::toString).collect(Collectors.joining(", "));
         }
         return output;
     }

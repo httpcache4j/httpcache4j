@@ -15,18 +15,15 @@
 
 package org.codehaus.httpcache4j.payload;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.Parameter;
-import org.codehaus.httpcache4j.uri.URIEncoder;
+import org.codehaus.httpcache4j.uri.QueryParam;
+import org.codehaus.httpcache4j.uri.QueryParams;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -39,28 +36,15 @@ public class FormDataPayload implements Payload {
     private final String value;
 
     public FormDataPayload(Map<String, List<String>> parameters) {
-        this(toIterable(parameters));
+        this(new QueryParams(parameters).toQuery(false));
     }
 
-    private static Iterable<FormParameter> toIterable(Map<String, List<String>> parameters) {
-        Preconditions.checkNotNull(parameters, "Parameters map may not be null");
-        List<FormParameter> params = new ArrayList<FormParameter>();
-        for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
-            params.addAll(convert(entry.getKey(), entry.getValue()));
-        }
-        return params;
+    public FormDataPayload(List<QueryParam> parameters) {
+        this(new QueryParams(parameters).toQuery(false));
     }
 
-    private static List<FormParameter> convert(final String key, List<String> values) {
-        return Lists.transform(values, new Function<String, FormParameter>() {
-            public FormParameter apply(String from) {
-                return new FormParameter(key, from);
-            }
-        });
-    }
-
-    public FormDataPayload(Iterable<FormParameter> parameters) {
-        value = Joiner.on("&").skipNulls().join(parameters);
+    public FormDataPayload(String formatted) {
+        this.value = Preconditions.checkNotNull(formatted, "form data may not be null");
     }
 
     public MIMEType getMimeType() {
@@ -68,7 +52,7 @@ public class FormDataPayload implements Payload {
     }
 
     public InputStream getInputStream() {
-        return new ByteArrayInputStream(value.getBytes(Charsets.UTF_8));
+        return new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8));
     }
 
     @Deprecated
@@ -86,28 +70,5 @@ public class FormDataPayload implements Payload {
 
     public long length() {
         return value.length();
-    }
-
-    /**
-     * Represents a Form Url-encoded data parameter.
-     * http://www.w3.org/TR/html401/interact/forms.html#h-17.13.3.4
-     *
-     * new line character MUST be {@code \r\n}.
-     */
-    public static class FormParameter extends Parameter {
-        private static final long serialVersionUID = -174492565886663398L;
-
-        public FormParameter(String key, String value) {
-            super(key, value);
-        }
-
-        private String encode(String value) {
-            return URIEncoder.encodeUTF8(value);
-        }
-        
-        @Override
-        public String toString() {
-            return encode(name) + "=" + encode(value);
-        }
     }
 }

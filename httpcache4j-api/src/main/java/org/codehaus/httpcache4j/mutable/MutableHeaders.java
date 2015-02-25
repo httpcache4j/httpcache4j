@@ -15,15 +15,13 @@
 
 package org.codehaus.httpcache4j.mutable;
 
-import com.google.common.base.Preconditions;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.*;
-import org.codehaus.httpcache4j.preference.Charset;
 import org.codehaus.httpcache4j.preference.Preference;
 import org.joda.time.DateTime;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -81,19 +79,19 @@ public class MutableHeaders implements Iterable<Header> {
         return headers.getFirstHeaderValue(headerKey);
     }
 
-    public void addAcceptLanguage(Preference<Locale>... accept) {
+    public void addAcceptLanguage(Preference... accept) {
         headers = headers.addAcceptLanguage(accept);
     }
 
-    public List<Preference<Locale>> getAcceptLanguage() {
+    public List<Preference> getAcceptLanguage() {
         return headers.getAcceptLanguage();
     }
 
-    public void setAcceptCharset(List<Preference<Charset>> charsets) {
+    public void setAcceptCharset(List<Preference> charsets) {
         headers = headers.withAcceptCharset(charsets);
     }
 
-    public List<Preference<Charset>> getAcceptCharset() {
+    public List<Preference> getAcceptCharset() {
         return headers.getAcceptCharset();
     }
 
@@ -101,7 +99,7 @@ public class MutableHeaders implements Iterable<Header> {
         headers = headers.withExpires(expires);
     }
 
-    public void addAccept(Preference<MIMEType>... accept) {
+    public void addAccept(Preference... accept) {
         headers = headers.addAccept(accept);
     }
 
@@ -109,19 +107,19 @@ public class MutableHeaders implements Iterable<Header> {
         return headers.getLastModified();
     }
 
-    public void addAcceptCharset(Preference<Charset>... accept) {
+    public void addAcceptCharset(Preference... accept) {
         headers = headers.addAcceptCharset(accept);
     }
 
-    public void setAccept(List<Preference<MIMEType>> charsets) {
+    public void setAccept(List<Preference> charsets) {
         headers = headers.withAccept(charsets);
     }
 
-    public List<Preference<MIMEType>> getAccept() {
+    public List<Preference> getAccept() {
         return headers.getAccept();
     }
 
-    public void setAcceptLanguage(List<Preference<Locale>> acceptLanguage) {
+    public void setAcceptLanguage(List<Preference> acceptLanguage) {
         headers = headers.withAcceptLanguage(acceptLanguage);
     }
 

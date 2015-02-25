@@ -7,10 +7,10 @@ import org.codehaus.httpcache4j.Parameter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Copied from Abdera 2, and then adapted to use.
@@ -31,15 +31,14 @@ public final class AuthDirectivesParser {
 
 
     public static Directives parse(String challenge) {
-        checkNotNull(challenge);
-        List<Directive> challenges = new ArrayList<Directive>();
-        Matcher matcher = pattern.matcher(challenge);
+        Matcher matcher = pattern.matcher(Objects.requireNonNull(challenge));
+        List<Directive> challenges = new ArrayList<>();
         while (matcher.find()) {
             String scheme = matcher.group(1);
             String params = matcher.group(2);
             params = params != null ? params.replaceAll(",\\s*,", ",").replaceAll(",\\s*,", ",") : null;
             String b64token = matcher.group(3);
-            List<Parameter> parameters = new ArrayList<Parameter>();
+            List<Parameter> parameters = new ArrayList<>();
             if (params != null) {
                 Matcher mparams = param.matcher(params);
                 while(mparams.find()) {

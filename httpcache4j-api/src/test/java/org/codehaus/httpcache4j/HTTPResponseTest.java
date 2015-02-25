@@ -16,15 +16,14 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.io.CharStreams;
-import org.codehaus.httpcache4j.payload.Payload;
+import net.hamnaberg.funclite.Optional;
 import org.codehaus.httpcache4j.payload.StringPayload;
 import org.junit.Test;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -85,20 +84,19 @@ public class HTTPResponseTest {
     @Test
     public void transformShouldGiveUseSomethingUseful() {
         HTTPResponse response = new HTTPResponse(new StringPayload("Hello", MIMEType.valueOf("text/plain")), Status.OK, new Headers());
-        Optional<String> result = response.transform(new Function<Payload, String>() {
-            @Override
-            public String apply(Payload input) {
-                assertEquals(MIMEType.valueOf("text/plain"), input.getMimeType());
-                try {
-                    return CharStreams.toString(new InputStreamReader(input.getInputStream()));
-                } catch (IOException e) {
-                    fail("Exception raised when parsing string");
-                    throw new RuntimeException(e);
-                }
+        Optional<String> result = response.transform(payload -> {
+            assertEquals(MIMEType.valueOf("text/plain"), payload.getMimeType());
+            try(BufferedReader reader = new BufferedReader(new InputStreamReader(payload.getInputStream()))) {
+                return reader.lines().collect(Collectors.joining("\n"));
+
+            }
+            catch (IOException e) {
+                fail("Exception raised when parsing string");
+                throw new RuntimeException(e);
             }
         });
 
-        assertTrue(result.isPresent());
+        assertTrue(result.isSome());
         assertEquals("Hello", result.get());
     }
 }

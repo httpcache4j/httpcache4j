@@ -1,10 +1,10 @@
 package org.codehaus.httpcache4j.payload;
 
-import com.google.common.base.Charsets;
 import org.codehaus.httpcache4j.MIMEType;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -14,7 +14,7 @@ public final class StringPayload implements Payload {
     private final ByteArrayPayload delegate;
 
     public StringPayload(String value, MIMEType mimeType) {
-        this(value, mimeType, Charsets.UTF_8);
+        this(value, mimeType, StandardCharsets.UTF_8);
     }
 
     public StringPayload(String value, MIMEType mimeType, Charset charset) {

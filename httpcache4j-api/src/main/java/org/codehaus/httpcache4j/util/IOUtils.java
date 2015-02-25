@@ -1,9 +1,6 @@
 package org.codehaus.httpcache4j.util;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 public final class IOUtils {
     private static final int BUF_SIZE = 0x1000; // 4K
@@ -28,6 +25,12 @@ public final class IOUtils {
             total += r;
         }
         return total;
+    }
+
+    public static byte[] toByteArray(InputStream is) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        copy(is, bos);
+        return bos.toByteArray();
     }
 
     public static void closeQuietly(Closeable closeable) {

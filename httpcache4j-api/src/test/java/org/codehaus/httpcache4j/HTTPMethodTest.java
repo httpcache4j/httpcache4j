@@ -1,12 +1,9 @@
 package org.codehaus.httpcache4j;
 
-import com.google.common.collect.ImmutableSet;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.codehaus.httpcache4j.HTTPMethod.*;
 
@@ -15,22 +12,10 @@ import static org.codehaus.httpcache4j.HTTPMethod.*;
  * @version $Revision: $
  */
 public class HTTPMethodTest {
-       static Set<HTTPMethod> defaultMethods =  ImmutableSet.of(
-            CONNECT,
-            DELETE,
-            GET,
-            HEAD,
-            OPTIONS,
-            PATCH,
-            POST,
-            PURGE,
-            PUT,
-            TRACE
-    );
 
     @Test
     public void testDefaultMethods() {
-        ImmutableSet<String> methods = ImmutableSet.of(
+        List<String> methods = Arrays.asList(
                 "connect",
                 "DELEte",
                 "geT",
@@ -47,8 +32,9 @@ public class HTTPMethodTest {
             actual.add(HTTPMethod.valueOf(method));
         }
         Assert.assertEquals(defaultMethods.size(), actual.size());
-        Assert.assertEquals(defaultMethods, actual);
-        Iterator<HTTPMethod> defaultIterator = defaultMethods.iterator();
+        ArrayList<HTTPMethod> expected = new ArrayList<>(defaultMethods.values());
+        Collections.sort(expected);
+        Iterator<HTTPMethod> defaultIterator = expected.iterator();
         Iterator<HTTPMethod> actualIterator = actual.iterator();
         while(actualIterator.hasNext()) {
             HTTPMethod m = defaultIterator.next();
@@ -59,7 +45,7 @@ public class HTTPMethodTest {
 
     @Test
     public void testUnknown() {
-        Assert.assertFalse(defaultMethods.contains(HTTPMethod.valueOf("UNKNOWN")));
+        Assert.assertFalse(defaultMethods.containsValue(HTTPMethod.valueOf("UNKNOWN")));
     }
 
     @Test(expected = IllegalArgumentException.class)

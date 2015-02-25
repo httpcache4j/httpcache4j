@@ -16,19 +16,16 @@
 
 package org.codehaus.httpcache4j;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * An enum that defines the different HTTP methods.
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public final class HTTPMethod {
+public final class HTTPMethod implements Comparable<HTTPMethod> {
     public static final HTTPMethod CONNECT = new HTTPMethod("CONNECT");
     public static final HTTPMethod DELETE = new HTTPMethod("DELETE", Idempotency.IDEMPOTENT, Safety.UNSAFE);
     public static final HTTPMethod GET = new HTTPMethod("GET", Idempotency.IDEMPOTENT, Safety.SAFE);
@@ -40,18 +37,24 @@ public final class HTTPMethod {
     public static final HTTPMethod PUT = new HTTPMethod("PUT", Idempotency.IDEMPOTENT, Safety.UNSAFE);
     public static final HTTPMethod TRACE = new HTTPMethod("TRACE", Idempotency.IDEMPOTENT, Safety.SAFE);
 
-    private static Map<String, HTTPMethod> defaultMethods = ImmutableMap.<String, HTTPMethod>builder()
-            .put(CONNECT.getMethod().toUpperCase(Locale.ENGLISH), CONNECT)
-            .put(DELETE.getMethod().toUpperCase(Locale.ENGLISH), DELETE)
-            .put(GET.getMethod().toUpperCase(Locale.ENGLISH), GET)
-            .put(HEAD.getMethod().toUpperCase(Locale.ENGLISH), HEAD)
-            .put(OPTIONS.getMethod().toUpperCase(Locale.ENGLISH), OPTIONS)
-            .put(PATCH.getMethod().toUpperCase(Locale.ENGLISH), PATCH)
-            .put(POST.getMethod().toUpperCase(Locale.ENGLISH), POST)
-            .put(PURGE.getMethod().toUpperCase(Locale.ENGLISH), PURGE)
-            .put(PUT.getMethod().toUpperCase(Locale.ENGLISH), PUT)
-            .put(TRACE.getMethod().toUpperCase(Locale.ENGLISH), TRACE)
-            .build();
+    public static final Map<String, HTTPMethod> defaultMethods;
+    static {
+        List<HTTPMethod> defaultMethodList = Arrays.asList(
+                CONNECT,
+                DELETE,
+                GET,
+                HEAD,
+                OPTIONS,
+                PATCH,
+                POST,
+                PURGE,
+                PUT,
+                TRACE
+        );
+        defaultMethods = Collections.unmodifiableMap(defaultMethodList.stream().collect(Collectors.toMap(
+                m -> m.getMethod().toUpperCase(Locale.ENGLISH), Function.<HTTPMethod>identity()
+        )));
+    }
 
     private final String method;
     private final Idempotency idempotency;
@@ -96,7 +99,9 @@ public final class HTTPMethod {
     }
 
     public static HTTPMethod valueOf(String method) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(method), "Method name may not be null or empty");
+        if (method == null || method.isEmpty()) {
+            throw new IllegalArgumentException("method may not be null or empty");
+        }
         String uppercaseMethod = method.toUpperCase(Locale.ENGLISH);
         if (defaultMethods.containsKey(uppercaseMethod)) {
             return defaultMethods.get(uppercaseMethod);
@@ -120,6 +125,11 @@ public final class HTTPMethod {
         }
 
         return true;
+    }
+
+    @Override
+    public int compareTo(HTTPMethod other) {
+        return getMethod().compareToIgnoreCase(other.getMethod());
     }
 
     @Override

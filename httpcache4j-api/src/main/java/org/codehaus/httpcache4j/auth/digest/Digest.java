@@ -15,16 +15,17 @@
 
 package org.codehaus.httpcache4j.auth.digest;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import org.codehaus.httpcache4j.Directive;
-import org.codehaus.httpcache4j.Directives;
 import org.codehaus.httpcache4j.HTTPHost;
 import org.codehaus.httpcache4j.auth.AuthScheme;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -56,24 +57,23 @@ public class Digest {
     }
 
     private List<URI> parseDomain(String domain) {
-        if (!Strings.isNullOrEmpty(domain) && !"*".equals(domain)) {
+        if (!Objects.toString(domain, "").isEmpty() && !"*".equals(domain)) {
             String[] strings = domain.split(" ");
-            if (strings.length > 0) {
-                ImmutableList.Builder<URI> builder = ImmutableList.builder();
-                for (String string : strings) {
-                    if (string.startsWith("/")) {
-                        string = host.toURI().resolve(string).toString();
-                    }
-                    URI uri = URI.create(string);
-                    if (!uri.isAbsolute() && uri.getHost() == null) {
-                        uri = host.toURI().resolve(uri);
-                    }
-                    builder.add(uri);
-                }
-                return builder.build();
-            }            
+            List<URI> uris = Arrays.asList(strings).stream().map(this::parseURI).collect(Collectors.toList());
+            return Collections.unmodifiableList(uris);
         }
         return Collections.emptyList();
+    }
+
+    private URI parseURI(String string) {
+        if (string.startsWith("/")) {
+            string = host.toURI().resolve(string).toString();
+        }
+        URI uri = URI.create(string);
+        if (!uri.isAbsolute() && uri.getHost() == null) {
+            uri = host.toURI().resolve(uri);
+        }
+        return uri;
     }
 
     public String getNonce() {

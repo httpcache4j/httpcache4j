@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 
-import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.Header;
@@ -80,8 +79,8 @@ public final class Vary {
 
     private String normalizeValue(String name, String value) {
         if (name.toLowerCase().startsWith("accept")) {
-            List<Preference<String>> parse = Preference.parse(new Header(name, value), Functions.<String>identity());
-            value = Preference.toHeader(name, parse, Functions.<String>identity()).getValue();
+            List<Preference> parse = Preference.parse(new Header(name, value));
+            value = Preference.toHeader(name, parse).getValue();
         }
         return value;
     }

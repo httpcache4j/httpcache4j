@@ -1,7 +1,9 @@
 package org.codehaus.httpcache4j.auth.bearer;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+
+import net.hamnaberg.funclite.Preconditions;
+
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -10,7 +12,7 @@ public final class BearerToken {
     private String token;
 
     public BearerToken(String token) {
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(token), "Token was null or empty");
+        Preconditions.checkArgument(!Objects.toString(token, "").isEmpty(), "Token was null or empty");
         this.token = token;
     }
 

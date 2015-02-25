@@ -15,9 +15,9 @@
 
 package org.codehaus.httpcache4j.auth;
 
-import com.google.common.collect.ImmutableList;
 import org.codehaus.httpcache4j.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.codehaus.httpcache4j.util.Pair;
@@ -42,7 +42,7 @@ public class DefaultAuthenticator extends AuthenticatorBase implements Authentic
         if (response == null && registry.matches(host)) {
             //preemptive auth.
             AuthScheme authScheme = registry.get(host);
-            Pair<AuthenticatorStrategy, AuthScheme> selected = select(ImmutableList.of(authScheme));
+            Pair<AuthenticatorStrategy, AuthScheme> selected = select(Arrays.asList(authScheme));
             return selected.getKey().prepare(request, authScheme);
 
         }
@@ -73,7 +73,7 @@ public class DefaultAuthenticator extends AuthenticatorBase implements Authentic
         HTTPHost host = new HTTPHost(request.getRequestURI());
         if (registry.matches(host)) {
             AuthScheme scheme = registry.get(host);
-            Pair<AuthenticatorStrategy, AuthScheme> select = select(ImmutableList.of(scheme));
+            Pair<AuthenticatorStrategy, AuthScheme> select = select(Arrays.asList(scheme));
             AuthScheme updatedScheme = select.getKey().afterSuccessfulAuthentication(scheme, responseHeaders);
             if (updatedScheme != scheme) {
                 registry.register(host, updatedScheme);                
