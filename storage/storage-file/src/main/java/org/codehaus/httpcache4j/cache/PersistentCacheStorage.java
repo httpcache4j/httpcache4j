@@ -131,13 +131,10 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     }
 
     private void getCacheFromDisk() {
-        write.lock();
-        cache.setKeyListener(null);
-        try {
+        withVoidWriteLock(() -> {
+            cache.setKeyListener(null);
             if (serializationFile.exists()) {
-                FileInputStream inputStream = null;
-                try {
-                    inputStream = new FileInputStream(serializationFile);
+                try( FileInputStream inputStream = new FileInputStream(serializationFile)) {
                     cache = (MemoryCache) SerializationUtils.deserialize(inputStream);
                 }
                 catch (Exception e) {
@@ -145,33 +142,23 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
                     //Ignored, we create a new one.
                     cache = new MemoryCache(capacity);
                 }
-                finally {
-                    IOUtils.closeQuietly(inputStream);
-                }
             }
             else {
                 cache = new MemoryCache(capacity);
             }
-        } finally {
             cache.setKeyListener(this);
-            write.unlock();
-        }
+        });
     }
 
     private void saveCacheToDisk() {
-        read.lock();
-
-        FileOutputStream outputStream = null;
-        try {
-            outputStream = new FileOutputStream(serializationFile);
-            SerializationUtils.serialize(cache, outputStream);
-        }
-        catch (Exception e) {
-            //Ignored, we create a new one.
-        }
-        finally {
-            IOUtils.closeQuietly(outputStream);
-            read.unlock();
-        }
+        withReadLock(() -> {
+            try(FileOutputStream outputStream = new FileOutputStream(serializationFile)) {
+                SerializationUtils.serialize(cache, outputStream);
+            }
+            catch (Exception e) {
+                //Ignored, we create a new one.
+            }
+            return null;
+        });
     }
 }

@@ -30,6 +30,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.Lock;
 import java.io.InputStream;
 import java.io.IOException;
+import java.util.function.Supplier;
 
 /**
  * In Memory implementation of a cache storage.
@@ -41,8 +42,8 @@ public class MemoryCacheStorage implements CacheStorage {
     protected final int capacity;
     protected MemoryCache cache;
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    protected final Lock read = lock.readLock();
-    protected final Lock write = lock.writeLock();
+    private final Lock read = lock.readLock();
+    private final Lock write = lock.writeLock();
     private int varyCapacity;
 
     public MemoryCacheStorage() {
@@ -77,20 +78,17 @@ public class MemoryCacheStorage implements CacheStorage {
     public final HTTPResponse insert(final HTTPRequest request, final HTTPResponse response) {
         Key key = Key.create(request, response);
         HTTPResponse cacheableResponse = rewriteResponse(key, response);
-        write.lock();
-        try {
+        return withWriteLock(() -> {
             invalidate(key);
             return putImpl(key, cacheableResponse);
-        } finally {
-            write.unlock();
-        }
+        });
     }
 
     protected HTTPResponse putImpl(final Key pKey, final HTTPResponse pCacheableResponse) {
         CacheItem item = createCacheItem(pCacheableResponse);
         LRUMap<Vary, CacheItem> varyCacheItemMap = cache.get(pKey.getURI());
         if (varyCacheItemMap == null) {
-            varyCacheItemMap = new LRUMap<Vary, CacheItem>(varyCapacity);
+            varyCacheItemMap = new LRUMap<>(varyCapacity);
             cache.put(pKey.getURI(), varyCacheItemMap);
         }
         varyCacheItemMap.put(pKey.getVary(), item);
@@ -102,13 +100,10 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     public final HTTPResponse update(final HTTPRequest request, final HTTPResponse response) {
-        write.lock();
-        Key key = Key.create(request, response);
-        try {
+        return withWriteLock(() -> {
+            Key key = Key.create(request, response);
             return putImpl(key, response);
-        } finally {
-            write.unlock();
-        }
+        });
     }
 
     protected Payload createPayload(Key key, Payload payload, InputStream stream) throws IOException {
@@ -120,9 +115,7 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     public final CacheItem get(HTTPRequest request) {
-        read.lock();
-
-        try {
+        return withReadLock(() -> {
             Map<Vary, CacheItem> varyCacheItemMap = cache.get(request.getNormalizedURI());
             if (varyCacheItemMap == null) {
                 return null;
@@ -135,15 +128,11 @@ public class MemoryCacheStorage implements CacheStorage {
                 }
             }
             return null;
-        } finally {
-            read.unlock();
-        }
+        });
     }
 
     public final void invalidate(URI uri) {
-        write.lock();
-
-        try {
+        withVoidWriteLock(() -> {
             Map<Vary, CacheItem> varyCacheItemMap = cache.get(uri);
             if (varyCacheItemMap != null) {
                 Set<Vary> vary = new HashSet<Vary>(varyCacheItemMap.keySet());
@@ -152,23 +141,17 @@ public class MemoryCacheStorage implements CacheStorage {
                     cache.remove(key);
                 }
             }
-        } finally {
-            write.unlock();
-        }
+        });
     }
 
     public final CacheItem get(Key key) {
-        read.lock();
-
-        try {
+        return withReadLock(() -> {
             Map<Vary, CacheItem> varyCacheItemMap = cache.get(key.getURI());
             if (varyCacheItemMap != null) {
                 return varyCacheItemMap.get(key.getVary());
             }
             return null;
-        } finally {
-            read.unlock();
-        }
+        });
     }
 
     private void invalidate(Key key) {
@@ -176,17 +159,13 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     public final void clear() {
-        write.lock();
-
-        try {
+        withVoidWriteLock(() -> {
             Set<URI> uris = new HashSet<URI>(cache.keySet());
             for (URI uri : uris) {
                 cache.remove(uri);
             }
             afterClear();
-        } finally {
-            write.unlock();
-        }
+        });
     }
 
 
@@ -194,21 +173,17 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     public final int size() {
-        read.lock();
-        try {
+        return withReadLock(() -> {
             int size = 0;
             for (Map<Vary, CacheItem> map : cache.values()) {
                 size += map.size();
             }
             return size;
-        } finally {
-            read.unlock();
-        }
+        });
     }
 
     public final Iterator<Key> iterator() {
-        read.lock();
-        try {
+        return withReadLock(() -> {
             HashSet<Key> keys = new HashSet<Key>();
             for (Map.Entry<URI, LRUMap<Vary, CacheItem>> entry : cache.entrySet()) {
                 for (Vary vary : entry.getValue().keySet()) {
@@ -216,6 +191,30 @@ public class MemoryCacheStorage implements CacheStorage {
                 }
             }
             return Collections.unmodifiableSet(keys).iterator();
+        });
+    }
+
+    protected <A> A withReadLock(Supplier<A> block) {
+        read.lock();
+        try {
+            return block.get();
+        } finally {
+            read.unlock();
+        }
+    }
+
+    protected <A> A withWriteLock(Supplier<A> block) {
+        write.lock();
+        try {
+            return block.get();
+        } finally {
+            write.unlock();
+        }
+    }
+    protected void withVoidWriteLock(Runnable block) {
+        read.lock();
+        try {
+            block.run();
         } finally {
             read.unlock();
         }
