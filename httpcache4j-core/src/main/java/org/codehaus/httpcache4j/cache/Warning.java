@@ -15,7 +15,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.base.Preconditions;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.HeaderConstants;
 

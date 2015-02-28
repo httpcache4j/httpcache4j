@@ -15,7 +15,6 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.collect.ImmutableSet;
 import org.codehaus.httpcache4j.*;
 import org.joda.time.DateTime;
 
@@ -51,12 +50,12 @@ class HTTPCacheHelper {
         /**
          * 200, 203, 206, 300, 301 or 410
          */
-        cacheableStatuses = ImmutableSet.of(Status.OK,
+        cacheableStatuses = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(Status.OK,
                                        Status.NON_AUTHORITATIVE_INFORMATION,
                                        Status.MULTIPLE_CHOICES,
                                        Status.MOVED_PERMANENTLY,
                                        Status.GONE
-        );
+        )));
     }
 
     private CacheHeaderBuilder cacheHeaderBuilder;

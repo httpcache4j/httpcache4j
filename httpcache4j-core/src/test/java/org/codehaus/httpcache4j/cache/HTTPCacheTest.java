@@ -56,7 +56,7 @@ public class HTTPCacheTest {
         testCacheResponse();
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testRequestWithInvalidConfiguredCache() {
         this.cache = new HTTPCache(cacheStorage, null);
     }

@@ -15,7 +15,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.base.Preconditions;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.HeaderConstants;
@@ -44,9 +44,10 @@ public final class Key implements Serializable {
     private Vary vary;
 
     public static Key create(URI uri, Vary vary) {
-        Preconditions.checkNotNull(uri, "URI may not be null");
-        Preconditions.checkNotNull(vary, "vary may not be null");
-        return new Key(URIBuilder.fromURI(uri).toNormalizedURI(), vary);
+        return new Key(
+                URIBuilder.fromURI(Preconditions.checkNotNull(uri, "URI may not be null")).toNormalizedURI(),
+                Preconditions.checkNotNull(vary, "vary may not be null")
+        );
     }
 
     public static Key create(HTTPRequest request, HTTPResponse response) {

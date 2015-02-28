@@ -84,7 +84,7 @@ public class SerializableCacheItem implements Serializable, CacheItem {
     }
 
     private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
-        Properties jsonValue = (Properties) in.readObject();
-        item = parse(jsonValue);
+        Properties propValue = (Properties) in.readObject();
+        item = parse(propValue);
     }
 }

@@ -15,7 +15,6 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.io.CharStreams;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.util.IOUtils;
@@ -26,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
@@ -121,14 +122,12 @@ public abstract class ConcurrentCacheStorageAbstractTest {
         assertTrue("Payload was not here", response.hasPayload());
         assertTrue("Payload was not available", response.getPayload().isAvailable());
         InputStream is = response.getPayload().getInputStream();
-        try {
-            CharStreams.toString(new InputStreamReader(is));
+        try(BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+            String lines = reader.lines().collect(Collectors.joining("\n"));
+            assertNotNull(lines);
         } catch (IOException e) {
             e.printStackTrace();
             fail("unable to create string from stream");
-        }
-        finally {
-            IOUtils.closeQuietly(is);
         }
     }
 

@@ -22,10 +22,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Random;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.Payload;
@@ -60,18 +60,13 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     public PersistentCacheStorage(final int capacity, final File storageDirectory, final String name) {
         super(capacity, 10);
         Preconditions.checkArgument(capacity > 0, "You may not have a empty persistent cache");
-        Preconditions.checkNotNull(storageDirectory, "You may not have a null storageDirectory");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(name), "You may not have a empty file name");
-        fileManager = new FileManager(storageDirectory);
+        Preconditions.checkArgument(!Objects.toString(name, "").isEmpty(), "You may not have a empty file name");
+        fileManager = new FileManager(Preconditions.checkNotNull(storageDirectory, "You may not have a null storageDirectory"));
 
         serializationFile = new File(storageDirectory, name);
         getCacheFromDisk();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            public void run() {
-                saveCacheToDisk();
-            }
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(this::saveCacheToDisk));
     }
 
     public void onRemove(Key key) {

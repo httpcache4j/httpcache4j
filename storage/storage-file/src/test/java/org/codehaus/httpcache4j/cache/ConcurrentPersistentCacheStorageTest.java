@@ -17,7 +17,6 @@ package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.util.TestUtil;
-import org.codehaus.httpcache4j.util.DeletingFileFilter;
 import org.codehaus.httpcache4j.HTTPResponse;
 
 import static org.junit.Assert.assertEquals;
@@ -26,8 +25,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>

@@ -21,10 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
-import org.codehaus.httpcache4j.util.DeletingFileFilter;
+import net.hamnaberg.funclite.Preconditions;
+import org.codehaus.httpcache4j.util.DeletingFileVisitor;
 import org.codehaus.httpcache4j.util.Digester;
 import org.codehaus.httpcache4j.util.IOUtils;
 
@@ -50,12 +51,8 @@ public final class FileManager implements Serializable {
         if (!file.getParentFile().exists()) {
             ensureDirectoryExists(file.getParentFile());
         }
-        FileOutputStream to = new FileOutputStream(file);
-        try {
-            IOUtils.copy(stream, to);
-        } finally {
-            IOUtils.closeQuietly(stream);
-            to.close();
+        try (InputStream is = stream; FileOutputStream to = new FileOutputStream(file)) {
+            IOUtils.copy(is, to);
         }
         if (file.length() == 0) {
             file.delete();
@@ -73,7 +70,7 @@ public final class FileManager implements Serializable {
         if (!toFile.getParentFile().exists()) {
             ensureDirectoryExists(toFile.getParentFile());
         }
-        fromFile.renameTo(toFile);
+        Files.move(fromFile.toPath(), toFile.toPath());
         if (toFile.length() == 0) {
             toFile.delete();
             toFile = null;
@@ -86,7 +83,7 @@ public final class FileManager implements Serializable {
     }
 
     public synchronized void clear() {
-        baseDirectory.listFiles(new DeletingFileFilter());
+        deleteDirectory(baseDirectory);
     }
 
     public synchronized void remove(Key key) {
@@ -98,15 +95,25 @@ public final class FileManager implements Serializable {
 
     public synchronized void clear(URI uri) {
         File resolved = resolve(uri);
-        resolved.listFiles(new DeletingFileFilter());
-        if (resolved.delete() && directoryIsEmpty(resolved.getParentFile())) {
+        deleteDirectory(resolved);
+        if (directoryIsEmpty(resolved.getParentFile())) {
             resolved.getParentFile().delete();
         }
     }
 
+    private void deleteDirectory(File resolved) {
+        try {
+            Files.walkFileTree(resolved.toPath(), new DeletingFileVisitor());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public synchronized void ensureDirectoryExists(File directory) {
-        if (!directory.exists() && !directory.mkdirs()) {
-            throw new IllegalArgumentException(String.format("Directory %s did not exist, and could not be created", directory));
+        try {
+            Files.createDirectories(directory.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -117,25 +124,23 @@ public final class FileManager implements Serializable {
             vary = "default";
         }
         else {
-            vary = Digester.md5(key.getVary().toString(), Charsets.UTF_8);
+            vary = Digester.md5(key.getVary().toString(), StandardCharsets.UTF_8);
         }
         return new File(uriFolder, vary);
     }
 
     public synchronized File resolve(URI uri) {
-        String uriHex = Digester.md5(uri.toString(), Charsets.UTF_8);
+        String uriHex = Digester.md5(uri.toString(), StandardCharsets.UTF_8);
         String distribution = uriHex.substring(0, 2);
         return new File(new File(baseDirectory, distribution), uriHex);
     }
 
     private boolean directoryIsEmpty(File directory) {
-        if (directory.isDirectory()) {
-            String[] list = directory.list();
-            if (list == null || list.length == 0) {
-                return true;
-            }
+        try {
+            return !Files.list(directory.toPath()).findAny().isPresent();
+        } catch (IOException e) {
+            return false;
         }
-        return false;
     }
 
     private File createFilesDirectory(File baseDirectory) {

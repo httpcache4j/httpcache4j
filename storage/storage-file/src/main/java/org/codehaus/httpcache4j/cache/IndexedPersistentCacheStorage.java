@@ -1,17 +1,18 @@
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.annotations.Beta;
-import com.google.common.base.Predicate;
 import com.google.common.cache.*;
-import com.google.common.collect.Sets;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.annotation.Beta;
 import org.codehaus.httpcache4j.util.Pair;
 
 import java.io.File;
 import java.net.URI;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -28,13 +29,17 @@ public class IndexedPersistentCacheStorage implements CacheStorage, RemovalListe
 
     public IndexedPersistentCacheStorage(File storageDir, int maxSize) {
         backing = new FilePersistentCacheStorage(storageDir);
-        loader = new CacheLoader<Key, CacheItem>() {
+        loader = mkLoader(backing::get);
+        index = CacheBuilder.newBuilder().removalListener(this).maximumSize(maxSize).build(loader);
+    }
+
+    private static <K,V> CacheLoader<K, V> mkLoader(Function<K, V> f) {
+        return new CacheLoader<K, V>() {
             @Override
-            public CacheItem load(Key key) throws Exception {
-                return backing.get(key);
+            public V load(K key) throws Exception {
+                return f.apply(key);
             }
         };
-        index = CacheBuilder.newBuilder().removalListener(this).maximumSize(maxSize).build(loader);
     }
 
     @Override
@@ -65,20 +70,12 @@ public class IndexedPersistentCacheStorage implements CacheStorage, RemovalListe
     @Override
     public CacheItem get(final HTTPRequest request) {
         Set<Key> keys = index.asMap().keySet();
-        Set<Key> filtered = Sets.filter(keys, new Predicate<Key>() {
-            @Override
-            public boolean apply(Key input) {
-                if (input.getURI().equals(request.getNormalizedURI())) {
-                    return input.getVary().matches(request);
-                }
-                return false;
-            }
-        });
-        if (filtered.isEmpty()) {
-            Pair<Key, CacheItem> keyAndItem = backing.getItem(request);
-            if (keyAndItem != null) {
-                index.put(keyAndItem.getKey(), keyAndItem.getValue());
-            }
+        Stream<Key> stream = keys.stream().filter(k -> k.getURI().equals(request.getNormalizedURI()) && k.getVary().matches(request));
+        Optional<Key> first = stream.findFirst();
+        Optional<Pair<Key, CacheItem>> head = first.flatMap(t -> backing.getItem(request));
+        if (head.isPresent()) {
+            Pair<Key, CacheItem> pair = head.get();
+            index.put(pair.getKey(), pair.getValue());
         }
         return null;
     }
@@ -86,13 +83,9 @@ public class IndexedPersistentCacheStorage implements CacheStorage, RemovalListe
     @Override
     public void invalidate(final URI uri) {
         Set<Key> keys = index.asMap().keySet();
-        Set<Key> filtered = Sets.filter(keys, new Predicate<Key>() {
-            @Override
-            public boolean apply(Key input) {
-                return input.getURI().equals(uri);
-            }
-        });
-        index.invalidateAll(filtered);
+        Stream<Key> filtered = keys.stream().filter(p -> p.getURI().equals(uri));
+
+        index.invalidateAll((Iterable<Key>) filtered::iterator);
         backing.invalidate(uri);
     }
 

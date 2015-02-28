@@ -15,17 +15,17 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import org.codehaus.httpcache4j.util.DeletingFileVisitor;
 import org.codehaus.httpcache4j.util.NullInputStream;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Assert;
 import org.junit.After;
 import org.codehaus.httpcache4j.util.TestUtil;
-import org.codehaus.httpcache4j.util.DeletingFileFilter;
 
 import java.net.URI;
 import java.io.IOException;
 import java.io.File;
+import java.nio.file.Files;
 
 import static org.junit.Assert.*;
 
@@ -65,7 +65,7 @@ public class FileManagerTest {
 
 
     @After
-    public void tearDown() {
-        testFile.listFiles(new DeletingFileFilter());
+    public void tearDown() throws IOException {
+        Files.walkFileTree(testFile.toPath(), new DeletingFileVisitor());
     }
 }

@@ -16,11 +16,10 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import com.google.common.annotations.Beta;
-import com.google.common.io.Files;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
+import org.codehaus.httpcache4j.annotation.Beta;
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.util.Pair;
@@ -28,7 +27,12 @@ import org.codehaus.httpcache4j.util.PropertiesLoader;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Completely file-persistent storage, also for metadata.
@@ -129,23 +133,18 @@ public class FilePersistentCacheStorage implements CacheStorage {
 
     @Override
     public synchronized CacheItem get(HTTPRequest request) {
-        Pair<Key, CacheItem> item = getItem(request);
-        if (item != null) {
-            return item.getValue();
+        Optional<Pair<Key, CacheItem>> item = getItem(request);
+        if (item.isPresent()) {
+            return item.get().getValue();
         }
         return null;
     }
 
-    synchronized Pair<Key, CacheItem> getItem(HTTPRequest request) {
+    synchronized Optional<Pair<Key, CacheItem>> getItem(HTTPRequest request) {
         File uri = fileManager.resolve(request.getNormalizedURI());
-        File[] files = uri.listFiles((FileFilter) new SuffixFileFilter("metadata"));
-        for (File file : new FilesIterable(files)) {
-            Pair<Key, CacheItem> pair = readItem(file);
-            if (pair != null && pair.getKey().getVary().matches(request)) {
-                return pair;
-            }
-        }
-        return null;
+        DirectoryStream<Path> paths = getMetadata(uri);
+        Stream<Path> stream = StreamSupport.stream(paths.spliterator(), false);
+        return stream.map(f -> readItem(f.toFile())).filter(p -> p != null && p.getKey().getVary().matches(request)).findFirst();
     }
 
     @Override
@@ -164,71 +163,66 @@ public class FilePersistentCacheStorage implements CacheStorage {
 
     @Override
     public synchronized int size() {
-        int count = 0;
+        final AtomicInteger count = new AtomicInteger();
         File base = fileManager.getBaseDirectory();
-        for (File hash : new FilesIterable(base.listFiles())) {
-            for (File uriHash : new FilesIterable(hash.listFiles())) {
-                String[] metadata = uriHash.list(new SuffixFileFilter("metadata"));
-                count += metadata.length;
-            }
+        try {
+            Files.walkFileTree(base.toPath(), new SimpleFileVisitor<Path>(){
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    if (isMetdata(file)) {
+                        count.incrementAndGet();
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return count;
+        return count.get();
+    }
+
+    private boolean isMetdata(Path file) {
+        return file.toFile().getName().endsWith(".metadata");
     }
 
     @Override
     public synchronized Iterator<Key> iterator() {
-        //TODO: Consider making this lazy if possible.
-        List<Key> keys = new ArrayList<Key>();
         File base = fileManager.getBaseDirectory();
-        for (File hash : new FilesIterable(base.listFiles())) {
-            for (File uriHash : new FilesIterable(hash.listFiles())) {
-                File[] metadata = uriHash.listFiles((FileFilter) new SuffixFileFilter("metadata"));
-                for (File m : new FilesIterable(metadata)) {
-                    Pair<Key, CacheItem> item = readItem(m);
-                    if (item != null) {
-                        keys.add(item.getKey());
-                    }
-                }
+        Stream<Path> stream = list(base.toPath()).flatMap(this::list).flatMap(p -> list(p, Optional.of(this::isMetdata)));
+        Stream<Key> keyStream = stream.map(p -> readItem(p.toFile())).map(Pair::getKey);
+        return keyStream.iterator();
+    }
+
+    private Stream<Path> list(Path d)  {
+        try {
+            return Files.list(d);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    private Stream<Path> list(Path d, Optional<DirectoryStream.Filter<Path>> ff)  {
+        if (ff.isPresent()) {
+            try {
+                return StreamSupport.stream(Files.newDirectoryStream(d, ff.get()).spliterator(), false);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
-        return Collections.unmodifiableList(keys).iterator();
+        return list(d);
     }
 
     @Override
     public void shutdown() {
     }
 
-    private static class FilesIterable implements Iterable<File> {
-        private File[] files;
-
-        public FilesIterable(File[] files) {
-            this.files = files;
+    private DirectoryStream<Path> getMetadata(File uri) {
+        DirectoryStream<Path> paths;
+        try {
+            paths = Files.newDirectoryStream(uri.toPath(), this::isMetdata);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-
-        @Override
-        public Iterator<File> iterator() {
-            if (files == null) {
-                return Collections.<File>emptyList().iterator();
-            }
-            return Arrays.asList(files).iterator();
-        }
-    }
-
-    private static class SuffixFileFilter implements FileFilter, FilenameFilter {
-        private String extension;
-        public SuffixFileFilter(String extension) {
-            this.extension = extension;
-        }
-
-        @Override
-        public boolean accept(File pathname) {
-            String ext = Files.getFileExtension(pathname.getName());
-            return extension.equals(ext);
-        }
-
-        @Override
-        public boolean accept(File dir, String name) {
-            return accept(new File(dir, name));
-        }
+        return paths;
     }
 }
