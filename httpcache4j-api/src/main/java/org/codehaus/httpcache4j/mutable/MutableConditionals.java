@@ -18,8 +18,8 @@ package org.codehaus.httpcache4j.mutable;
 import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.Conditionals;
 import org.codehaus.httpcache4j.Tag;
-import org.joda.time.DateTime;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -45,11 +45,11 @@ public class MutableConditionals {
         conditionals = conditionals.addIfNoneMatch(tag);
     }
 
-    public void ifModifiedSince(DateTime time) {
+    public void ifModifiedSince(LocalDateTime time) {
         conditionals = conditionals.ifModifiedSince(time);
     }
 
-    public void ifUnModifiedSince(DateTime time) {
+    public void ifUnModifiedSince(LocalDateTime time) {
         conditionals = conditionals.ifUnModifiedSince(time);
     }
 
@@ -61,12 +61,12 @@ public class MutableConditionals {
         return conditionals.getNoneMatch();
     }
 
-    public DateTime getModifiedSince() {
-        return conditionals.getModifiedSince();
+    public LocalDateTime getModifiedSince() {
+        return conditionals.getModifiedSince().orNull();
     }
 
-    public DateTime getUnModifiedSince() {
-        return conditionals.getUnModifiedSince();
+    public LocalDateTime getUnModifiedSince() {
+        return conditionals.getUnModifiedSince().orNull();
     }
 
     public boolean isUnconditional() {

@@ -17,12 +17,14 @@
 package org.codehaus.httpcache4j;
 
 
+import net.hamnaberg.funclite.CollectionOps;
+import net.hamnaberg.funclite.Optional;
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.preference.Preference;
 import org.codehaus.httpcache4j.util.CaseInsensitiveKey;
-import org.joda.time.DateTime;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -60,31 +62,20 @@ public final class Headers implements Iterable<Header> {
         return getHeaders(name).stream().map(Header::getDirectives).collect(Collectors.toList());
     }
 
-    //TODO: Eliminate null
-    public Header getFirstHeader(String headerKey) {
+    public Optional<Header> getFirstHeader(String headerKey) {
         List<Header> headerList = getHeaders(headerKey);
-        if (!headerList.isEmpty()) {
-            return headerList.get(0);
-        }
-        return null;
+        return CollectionOps.headOption(headerList);
+    }
+
+    public Optional<String> getFirstHeaderValue(String headerKey) {
+        Optional<Header> header = getFirstHeader(headerKey);
+        return header.map(Header::getValue);
     }
 
     //TODO: Eliminate null
-    public String getFirstHeaderValue(String headerKey) {
-        Header header = getFirstHeader(headerKey);
-        if (header != null) {
-            return header.getValue();
-        }
-        return null;
-    }
-
-    //TODO: Eliminate null
-    public Directives getFirstHeaderValueAsDirectives(String headerKey) {
-        Header header = getFirstHeader(headerKey);
-        if (header != null) {
-            return header.getDirectives();
-        }
-        return null;
+    public Optional<Directives> getFirstHeaderValueAsDirectives(String headerKey) {
+        Optional<Header> header = getFirstHeader(headerKey);
+        return header.map(Header::getDirectives);
     }
 
     public Headers add(Header header) {
@@ -235,9 +226,9 @@ public final class Headers implements Iterable<Header> {
     }
 
     public Set<HTTPMethod> getAllow() {
-        Header header = getFirstHeader(HeaderConstants.ALLOW);
-        if (header != null) {
-            return header.getDirectives().stream().map(d -> HTTPMethod.valueOf(d.getName().toUpperCase(Locale.ENGLISH))).collect(Collectors.toSet());
+        Optional<Header> header = getFirstHeader(HeaderConstants.ALLOW);
+        if (header.isSome()) {
+            return header.get().getDirectives().stream().map(d -> HTTPMethod.valueOf(d.getName().toUpperCase(Locale.ENGLISH))).collect(Collectors.toSet());
         }
         return Collections.emptySet();
     }
@@ -250,44 +241,44 @@ public final class Headers implements Iterable<Header> {
         return remove(HeaderConstants.ALLOW);
     }
 
-    public CacheControl getCacheControl() {
-        return new CacheControl(getFirstHeader(HeaderConstants.CACHE_CONTROL));
+    public Optional<CacheControl> getCacheControl() {
+        return getFirstHeader(HeaderConstants.CACHE_CONTROL).map(CacheControl::new);
     }
 
     public Headers withCacheControl(CacheControl cc) {
         return set(cc.toHeader());
     }
 
-    public DateTime getDate() {
-        return HeaderUtils.fromHttpDate(getFirstHeader(HeaderConstants.DATE));
+    public Optional<LocalDateTime> getDate() {
+        return getFirstHeader(HeaderConstants.DATE).flatMap(HeaderUtils::fromHttpDate);
     }
 
-    public Headers withDate(DateTime dt) {
+    public Headers withDate(LocalDateTime dt) {
         return set(HeaderUtils.toHttpDate(HeaderConstants.DATE, dt));
     }
 
-    public MIMEType getContentType() {
-        String ct = getFirstHeaderValue(HeaderConstants.CONTENT_TYPE);
-        return ct == null ? null : MIMEType.valueOf(ct);
+    public Optional<MIMEType> getContentType() {
+        Optional<String> ct = getFirstHeaderValue(HeaderConstants.CONTENT_TYPE);
+        return ct.map(MIMEType::valueOf);
     }
 
     public Headers withContentType(MIMEType ct) {
         return set(HeaderConstants.CONTENT_TYPE, ct.toString());
     }
 
-    public DateTime getExpires() {
-        return HeaderUtils.fromHttpDate(getFirstHeader(HeaderConstants.EXPIRES));
+    public Optional<LocalDateTime> getExpires() {
+        return getFirstHeader(HeaderConstants.EXPIRES).flatMap(HeaderUtils::fromHttpDate);
     }
 
-    public Headers withExpires(DateTime expires) {
+    public Headers withExpires(LocalDateTime expires) {
         return set(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, expires));
     }
 
-    public DateTime getLastModified() {
-        return HeaderUtils.fromHttpDate(getFirstHeader(HeaderConstants.LAST_MODIFIED));
+    public Optional<LocalDateTime> getLastModified() {
+        return getFirstHeader(HeaderConstants.LAST_MODIFIED).flatMap(HeaderUtils::fromHttpDate);
     }
 
-    public Headers withLastModified(DateTime lm) {
+    public Headers withLastModified(LocalDateTime lm) {
         return set(HeaderUtils.toHttpDate(HeaderConstants.LAST_MODIFIED, lm));
     }
 
@@ -300,39 +291,25 @@ public final class Headers implements Iterable<Header> {
     }
 
 
-    //TODO: Eliminate null
-    public Tag getETag() {
-        Header tag = getFirstHeader(HeaderConstants.ETAG);
-        if (tag != null) {
-            return Tag.parse(tag.getValue());
-        }
-        return null;
+    public Optional<Tag> getETag() {
+        Optional<String> tag = getFirstHeaderValue(HeaderConstants.ETAG);
+        return tag.flatMap(Tag::parse);
     }
 
     public Headers withETag(Tag tag) {
         return set(HeaderConstants.ETAG, tag.format());
     }
 
-    //TODO: Eliminate null
-    public URI getLocation() {
-        String location = getFirstHeaderValue(HeaderConstants.LOCATION);
-        if (location != null) {
-            return URI.create(location);
-        }
-        return null;
+    public Optional<URI> getLocation() {
+        return getFirstHeaderValue(HeaderConstants.LOCATION).map(URI::create);
     }
 
     public Headers withLocation(URI href) {
         return set(HeaderConstants.LOCATION, href.toString());
     }
 
-    //TODO: Eliminate null
-    public URI getContentLocation() {
-        String location = getFirstHeaderValue(HeaderConstants.CONTENT_LOCATION);
-        if (location != null) {
-            return URI.create(location);
-        }
-        return null;
+    public Optional<URI> getContentLocation() {
+        return getFirstHeaderValue(HeaderConstants.CONTENT_LOCATION).map(URI::create);
     }
 
     public Headers withContentLocation(URI href) {

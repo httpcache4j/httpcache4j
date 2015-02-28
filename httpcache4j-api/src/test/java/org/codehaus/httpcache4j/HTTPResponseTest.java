@@ -30,48 +30,33 @@ import static org.junit.Assert.*;
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class HTTPResponseTest {
     @Test
-    public void testNoHeaders() {
+    public void noHeaders() {
         Headers headers = new Headers();
         HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
-        assertEquals(0, response.getAllowedMethods().size());
-        assertNull(response.getETag());
-        assertNull(response.getLastModified());
+        assertEquals(0, response.getHeaders().getAllow().size());
+        assertTrue(response.getHeaders().getETag().isNone());
+        assertTrue(response.getHeaders().getLastModified().isNone());
         assertNull(response.getPayload());
         assertFalse(response.hasPayload());
     }
 
     @Test
-    public void testparseETagHeader() {
+    public void eTagHeader() {
         Headers headers = new Headers().add(new Header("ETag", "\"abba\""));
         HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
-        assertEquals(0, response.getAllowedMethods().size());
-        assertNotNull(response.getETag());
-        assertEquals(response.getETag().format(), "\"abba\"");
-        assertNull(response.getLastModified());
+        assertEquals(0, response.getHeaders().getAllow().size());
+        assertTrue(response.getHeaders().getETag().isSome());
+        assertEquals(response.getHeaders().getETag().get().format(), "\"abba\"");
+        assertTrue(response.getHeaders().getLastModified().isNone());
         assertNull(response.getPayload());
         assertFalse(response.hasPayload());
     }
 
     @Test
-    public void testETagHeader() {
-        Headers headers = new Headers().add(new Header("ETag", "\"abba\""));
-        HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
-        assertEquals(0, response.getAllowedMethods().size());
-        assertNotNull(response.getETag());
-        assertEquals(response.getETag().format(), "\"abba\"");
-        assertNull(response.getLastModified());
-        assertNull(response.getPayload());
-        assertFalse(response.hasPayload());
-    }
-
-    @Test
-    public void testAllowHeaders() {
+    public void allowHeader() {
         Headers headers = new Headers().add(HeaderConstants.ALLOW, "GET, POST, OPTIONS");
         HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
-        assertEquals(3, response.getAllowedMethods().size());
-        assertNull(response.getLastModified());
-        assertNull(response.getPayload());
-        assertFalse(response.hasPayload());
+        assertEquals(3, response.getHeaders().getAllow().size());
     }
 
     @Test

@@ -15,6 +15,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import net.hamnaberg.funclite.Optional;
 import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
@@ -57,14 +58,14 @@ public final class Key implements Serializable {
 
     private static Vary determineVariation(Headers responseHeaders, HTTPRequest request) {
         Headers requestHeaders = request.getAllHeaders();
-        String varyHeader = responseHeaders.getFirstHeaderValue(VARY);
+        Optional<String> varyHeader = responseHeaders.getFirstHeaderValue(VARY);
         Map<String, String> resolvedVaryHeaders = new HashMap<String, String>();
-        if (varyHeader != null) {
-            String[] varies = varyHeader.split(",");
+        if (varyHeader.isSome()) {
+            String[] varies = varyHeader.get().split(",");
             for (String vary : varies) {
-                String value = requestHeaders.getFirstHeaderValue(vary);
-                if (value != null) {
-                    resolvedVaryHeaders.put(vary, value);
+                Optional<String> value = requestHeaders.getFirstHeaderValue(vary);
+                if (value.isSome()) {
+                    resolvedVaryHeaders.put(vary, value.get());
                 }
             }
         }

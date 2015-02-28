@@ -20,6 +20,7 @@ import org.codehaus.httpcache4j.auth.digest.Digest;
 import org.codehaus.httpcache4j.auth.digest.RequestDigest;
 
 import java.util.*;
+import net.hamnaberg.funclite.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -67,15 +68,15 @@ public class DigestAuthenticatorStrategy implements AuthenticatorStrategy {
     }
 
     public AuthScheme afterSuccessfulAuthentication(AuthScheme scheme, Headers headers, boolean proxy) {
-        Header header;
+        Optional<Header> header;
         if (proxy) {
             header = headers.getFirstHeader(HeaderConstants.PROXY_AUTHENTICATION_INFO);
         }
         else {
             header = headers.getFirstHeader(HeaderConstants.AUTHENTICATION_INFO);
         }
-        if (header != null) {
-            String nextNonce = header.getDirectives().get("nextnonce");
+        if (header.isSome()) {
+            String nextNonce = header.get().getDirectives().get("nextnonce");
             if (nextNonce != null) {
                 List<Parameter> params = scheme.getDirective().getParameters().stream().
                         filter(p -> !"nonce".equals(p.getName())).

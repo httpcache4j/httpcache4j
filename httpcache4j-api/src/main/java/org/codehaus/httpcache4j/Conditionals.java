@@ -17,9 +17,9 @@
 package org.codehaus.httpcache4j;
 
 import net.hamnaberg.funclite.Preconditions;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
+import net.hamnaberg.funclite.Optional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -60,19 +60,19 @@ import java.util.stream.Collectors;
 public final class Conditionals {
     private final List<Tag> match;
     private final List<Tag> noneMatch;
-    private final DateTime modifiedSince;
-    private final DateTime unModifiedSince;
+    private final Optional<LocalDateTime> modifiedSince;
+    private final Optional<LocalDateTime> unModifiedSince;
     private static final String ERROR_MESSAGE = "The combination of %s and %s is undefined by the HTTP specification";
 
     public Conditionals() {
-        this(empty(), empty(), null, null);
+        this(empty(), empty(), Optional.none(), Optional.none());
     }
 
     private static List<Tag> empty() {
         return Collections.emptyList();
     }
 
-    public Conditionals(List<Tag> match, List<Tag> noneMatch, DateTime modifiedSince, DateTime unModifiedSince) {
+    public Conditionals(List<Tag> match, List<Tag> noneMatch, Optional<LocalDateTime> modifiedSince, Optional<LocalDateTime> unModifiedSince) {
         this.match = match;
         this.noneMatch = noneMatch;
         this.modifiedSince = modifiedSince;
@@ -87,7 +87,7 @@ public final class Conditionals {
      * @return a new Conditionals object with the If-Match tag added.
      */
     public Conditionals addIfMatch(Tag tag) {
-        Preconditions.checkArgument(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_MODIFIED_SINCE));
+        Preconditions.checkArgument(modifiedSince.isNone(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_MODIFIED_SINCE));
         Preconditions.checkArgument(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MATCH, HeaderConstants.IF_NONE_MATCH));
         List<Tag> match = new ArrayList<>(this.match);
 
@@ -105,7 +105,7 @@ public final class Conditionals {
         else {
             throw new IllegalArgumentException("Tag ALL already in the list");
         }
-        return new Conditionals(Collections.unmodifiableList(match), empty(), null, unModifiedSince);
+        return new Conditionals(Collections.unmodifiableList(match), empty(), Optional.none(), unModifiedSince);
     }
 
     /**
@@ -121,9 +121,9 @@ public final class Conditionals {
      * @return a new Conditionals object with the If-None-Match tag added.
      */
     public Conditionals addIfNoneMatch(Tag tag) {
-        Preconditions.checkArgument(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_NONE_MATCH, HeaderConstants.IF_UNMODIFIED_SINCE));
+        Preconditions.checkArgument(unModifiedSince.isNone(), String.format(ERROR_MESSAGE, HeaderConstants.IF_NONE_MATCH, HeaderConstants.IF_UNMODIFIED_SINCE));
         Preconditions.checkArgument(match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_NONE_MATCH, HeaderConstants.IF_MATCH));
-        List<Tag> noneMatch = new ArrayList<Tag>(this.noneMatch);
+        List<Tag> noneMatch = new ArrayList<>(this.noneMatch);
         if (tag == null) {
             tag = Tag.ALL;
         }
@@ -138,7 +138,7 @@ public final class Conditionals {
         else {
             throw new IllegalArgumentException("Tag ALL already in the list");
         }
-        return new Conditionals(empty(), Collections.unmodifiableList(noneMatch), modifiedSince, null);
+        return new Conditionals(empty(), Collections.unmodifiableList(noneMatch), modifiedSince, Optional.none());
     }
 
     /**
@@ -153,12 +153,11 @@ public final class Conditionals {
      * @param time the time to check.
      * @return the conditionals with the If-Modified-Since date set.
      */
-    public Conditionals ifModifiedSince(DateTime time) {
+    public Conditionals ifModifiedSince(LocalDateTime time) {
         Preconditions.checkArgument(match.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_MATCH));
-        Preconditions.checkArgument(unModifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_UNMODIFIED_SINCE));
-        time = time.toDateTime(DateTimeZone.forID("UTC"));
-        time = time.withMillisOfSecond(0);
-        return new Conditionals(empty(), noneMatch, time, null);        
+        Preconditions.checkArgument(unModifiedSince.isNone(), String.format(ERROR_MESSAGE, HeaderConstants.IF_MODIFIED_SINCE, HeaderConstants.IF_UNMODIFIED_SINCE));
+        time = time.withNano(0);
+        return new Conditionals(empty(), noneMatch, Optional.some(time), Optional.none());
     }
 
     /**
@@ -173,12 +172,11 @@ public final class Conditionals {
      * @param time the time to check.
      * @return the conditionals with the If-Unmodified-Since date set.
      */
-    public Conditionals ifUnModifiedSince(DateTime time) {
+    public Conditionals ifUnModifiedSince(LocalDateTime time) {
         Preconditions.checkArgument(noneMatch.isEmpty(), String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_NONE_MATCH));
-        Preconditions.checkArgument(modifiedSince == null, String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_MODIFIED_SINCE));
-        time = time.toDateTime(DateTimeZone.forID("UTC"));
-        time = time.withMillisOfSecond(0);
-        return new Conditionals(match, empty(), null, time);
+        Preconditions.checkArgument(modifiedSince.isNone(), String.format(ERROR_MESSAGE, HeaderConstants.IF_UNMODIFIED_SINCE, HeaderConstants.IF_MODIFIED_SINCE));
+        time = time.withNano(0);
+        return new Conditionals(match, empty(), Optional.none(), Optional.some(time));
     }
 
     public List<Tag> getMatch() {
@@ -189,11 +187,11 @@ public final class Conditionals {
         return Collections.unmodifiableList(noneMatch);
     }
 
-    public DateTime getModifiedSince() {
+    public Optional<LocalDateTime> getModifiedSince() {
         return modifiedSince;
     }
 
-    public DateTime getUnModifiedSince() {
+    public Optional<LocalDateTime> getUnModifiedSince() {
         return unModifiedSince;
     }
 
@@ -202,7 +200,7 @@ public final class Conditionals {
      * @return {@code true} if the Conditionals represents a unconditional request. 
      */
     public boolean isUnconditional() {
-      return noneMatch.contains(Tag.ALL) || match.contains(Tag.ALL) || (match.isEmpty() && unModifiedSince == null) || (noneMatch.isEmpty() && modifiedSince == null) ;
+      return noneMatch.contains(Tag.ALL) || match.contains(Tag.ALL) || (match.isEmpty() && unModifiedSince.isNone()) || (noneMatch.isEmpty() && modifiedSince.isNone()) ;
     }
 
     /**
@@ -216,21 +214,21 @@ public final class Conditionals {
         if (!getNoneMatch().isEmpty()) {
             headers = headers.add(new Header(HeaderConstants.IF_NONE_MATCH, buildTagHeaderValue(getNoneMatch())));
         }
-        if (modifiedSince != null) {
-            headers = headers.set(HeaderUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, modifiedSince));
+        if (modifiedSince.isSome()) {
+            headers = headers.set(HeaderUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, modifiedSince.get()));
         }
-        if (unModifiedSince != null) {
-            headers = headers.set(HeaderUtils.toHttpDate(HeaderConstants.IF_UNMODIFIED_SINCE, unModifiedSince));
+        if (unModifiedSince.isSome()) {
+            headers = headers.set(HeaderUtils.toHttpDate(HeaderConstants.IF_UNMODIFIED_SINCE, unModifiedSince.get()));
         }
 
         return headers;
     }
 
     public static Conditionals valueOf(Headers headers) {
-        List<Tag> ifMatch = makeTags(headers.getFirstHeaderValue(HeaderConstants.IF_MATCH));
-        List<Tag> ifNoneMatch = makeTags(headers.getFirstHeaderValue(HeaderConstants.IF_NONE_MATCH));
-        DateTime modifiedSince = HeaderUtils.fromHttpDate(headers.getFirstHeader(HeaderConstants.IF_MODIFIED_SINCE));
-        DateTime unModifiedSince = HeaderUtils.fromHttpDate(headers.getFirstHeader(HeaderConstants.IF_UNMODIFIED_SINCE));
+        List<Tag> ifMatch = makeTags(headers.getFirstHeaderValue(HeaderConstants.IF_MATCH).orNull());
+        List<Tag> ifNoneMatch = makeTags(headers.getFirstHeaderValue(HeaderConstants.IF_NONE_MATCH).orNull());
+        Optional<LocalDateTime> modifiedSince = headers.getFirstHeader(HeaderConstants.IF_MODIFIED_SINCE).flatMap(HeaderUtils::fromHttpDate);
+        Optional<LocalDateTime> unModifiedSince = headers.getFirstHeader(HeaderConstants.IF_UNMODIFIED_SINCE).flatMap(HeaderUtils::fromHttpDate);
         return new Conditionals(ifMatch, ifNoneMatch, modifiedSince, unModifiedSince);
     }
 
@@ -241,7 +239,7 @@ public final class Conditionals {
         return Collections.unmodifiableList(Arrays.asList(ifMatch.split(",")).stream().
                 filter(m -> !Objects.toString(m, "").isEmpty()).
                 map(String::trim).
-                map(Tag::parse).collect(Collectors.toList()));
+                flatMap(t -> Tag.parse(t).stream()).collect(Collectors.toList()));
     }
 
     private String buildTagHeaderValue(List<Tag> match) {

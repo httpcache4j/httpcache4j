@@ -16,35 +16,36 @@
 
 package org.codehaus.httpcache4j;
 
-import org.joda.time.DateTime;
 import static org.junit.Assert.*;
 import org.junit.Test;
+
+import java.time.LocalDateTime;
 
 public class ConditionalsTest {
     @Test
     public void testIfMatch() {
         Conditionals conditionals = new Conditionals();
-        conditionals = conditionals.addIfMatch(Tag.parse("\"foo\""));
+        conditionals = conditionals.addIfMatch(Tag.parse("\"foo\"").get());
         assertEquals(1, conditionals.getMatch().size());
-        conditionals = conditionals.addIfMatch(Tag.parse("\"bar\""));
+        conditionals = conditionals.addIfMatch(Tag.parse("\"bar\"").get());
         assertEquals(2, conditionals.getMatch().size());
         Header header = new Header(HeaderConstants.IF_MATCH, "\"foo\",\"bar\"");
-        assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_MATCH));
+        assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_MATCH).get());
     }
 
     @Test
     public void testIfMatchDuplicate() {
         Conditionals conditionals = new Conditionals();
-        conditionals = conditionals.addIfMatch(Tag.parse("\"foo\""));
-        conditionals = conditionals.addIfMatch(Tag.parse("\"foo\""));
+        conditionals = conditionals.addIfMatch(Tag.parse("\"foo\"").get());
+        conditionals = conditionals.addIfMatch(Tag.parse("\"foo\"").get());
         assertEquals(1, conditionals.getMatch().size());
     }
 
     @Test
     public void testIfNoneMatchDuplicate() {
         Conditionals conditionals = new Conditionals();
-        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
-        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"foo\"").get());
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"foo\"").get());
         assertEquals(1, conditionals.getNoneMatch().size());
     }
 
@@ -55,7 +56,7 @@ public class ConditionalsTest {
         assertEquals(1, conditionals.getMatch().size());
 
         try {
-            conditionals.addIfMatch(Tag.parse("\"bar\""));
+            conditionals.addIfMatch(Tag.parse("\"bar\"").get());
             fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException e) {
@@ -70,7 +71,7 @@ public class ConditionalsTest {
         conditionals = conditionals.addIfNoneMatch(null);
         assertEquals(1, conditionals.getNoneMatch().size());
         try {
-            conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
+            conditionals.addIfNoneMatch(Tag.parse("\"bar\"").get());
             fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException e) {
@@ -82,10 +83,10 @@ public class ConditionalsTest {
     @Test
     public void testIfMatchStar() {
         Conditionals conditionals = new Conditionals();
-        conditionals = conditionals.addIfMatch(Tag.parse("*"));
+        conditionals = conditionals.addIfMatch(Tag.parse("*").get());
         assertEquals(1, conditionals.getMatch().size());
         try {
-            conditionals.addIfMatch(Tag.parse("\"bar\""));
+            conditionals.addIfMatch(Tag.parse("\"bar\"").get());
             fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException expected) {
@@ -95,10 +96,10 @@ public class ConditionalsTest {
     @Test
     public void testIfNoneMatchStar() {
         Conditionals conditionals = new Conditionals();
-        conditionals = conditionals.addIfNoneMatch(Tag.parse("*"));
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("*").get());
         assertEquals(1, conditionals.getNoneMatch().size());
         try {
-            conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
+            conditionals.addIfNoneMatch(Tag.parse("\"bar\"").get());
             fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException expected) {
@@ -108,21 +109,21 @@ public class ConditionalsTest {
     @Test
     public void testIfNoneMatch() {
         Conditionals conditionals = new Conditionals();
-        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"foo\"").get());
         assertEquals(1, conditionals.getNoneMatch().size());
-        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"bar\"").get());
         assertEquals(2, conditionals.getNoneMatch().size());
         Header header = new Header(HeaderConstants.IF_NONE_MATCH, "\"foo\",\"bar\"");
-        assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_NONE_MATCH));
+        assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_NONE_MATCH).get());
     }
 
     @Test
     public void testIfNoneMatchAndIfMatch() {
         Conditionals conditionals = new Conditionals();
-        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"foo\""));
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"foo\"").get());
         assertEquals(1, conditionals.getNoneMatch().size());
         try {
-            conditionals.addIfMatch(Tag.parse("\"bar\""));
+            conditionals.addIfMatch(Tag.parse("\"bar\"").get());
             fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException expected) {
@@ -132,75 +133,75 @@ public class ConditionalsTest {
     @Test
     public void testIfModifiedSince() {
         Conditionals conditionals = new Conditionals();
-        DateTime dateTime = new DateTime();
+        LocalDateTime dateTime = LocalDateTime.now();
         conditionals = conditionals.ifModifiedSince(dateTime);
         Header header = HeaderUtils.toHttpDate(HeaderConstants.IF_MODIFIED_SINCE, dateTime);
-        assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_MODIFIED_SINCE));
+        assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_MODIFIED_SINCE).get());
     }
 
     @Test
     public void testIfUnmodifiedSince() {
         Conditionals conditionals = new Conditionals();
-        DateTime dateTime = new DateTime();
+        LocalDateTime dateTime = LocalDateTime.now();
         conditionals = conditionals.ifUnModifiedSince(dateTime);
         Header header = HeaderUtils.toHttpDate(HeaderConstants.IF_UNMODIFIED_SINCE, dateTime);
-        assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_UNMODIFIED_SINCE));
+        assertEquals(header, conditionals.toHeaders().getFirstHeader(HeaderConstants.IF_UNMODIFIED_SINCE).get());
     }
 
     @Test
     public void testIfModifiedSinceAndIfMatch() {
         Conditionals conditionals = new Conditionals();
-        conditionals = conditionals.addIfMatch(Tag.parse("\"bar\""));
+        conditionals = conditionals.addIfMatch(Tag.parse("\"bar\"").get());
         assertEquals(1, conditionals.getMatch().size());
-        DateTime dateTime = new DateTime();
+        LocalDateTime dateTime = LocalDateTime.now();
         try {
             conditionals.ifModifiedSince(dateTime);
             fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException expected) {
         }
-        assertNull(conditionals.getModifiedSince());
+        assertTrue(conditionals.getModifiedSince().isNone());
     }
 
     @Test
     public void testIfModifiedSinceAndIfNoneMatch() {
         Conditionals conditionals = new Conditionals();
-        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"bar\"").get());
         assertEquals(1, conditionals.getNoneMatch().size());
-        DateTime dateTime = new DateTime();
+        LocalDateTime dateTime = LocalDateTime.now();
         conditionals = conditionals.ifModifiedSince(dateTime);
-        assertNotNull(conditionals.getModifiedSince());
+        assertTrue(conditionals.getModifiedSince().isSome());
     }
 
     @Test
     public void testIfUnModifiedSinceAndIfMatch() {
         Conditionals conditionals = new Conditionals();
-        conditionals = conditionals.addIfMatch(Tag.parse("\"bar\""));
+        conditionals = conditionals.addIfMatch(Tag.parse("\"bar\"").get());
         assertEquals(1, conditionals.getMatch().size());
-        DateTime dateTime = new DateTime();
+        LocalDateTime dateTime = LocalDateTime.now();
         conditionals = conditionals.ifUnModifiedSince(dateTime);
-        assertNotNull(conditionals.getUnModifiedSince());
+        assertTrue(conditionals.getUnModifiedSince().isSome());
     }
 
     @Test
     public void testIfUnModifiedSinceAndIfNoneMatch() {
         Conditionals conditionals = new Conditionals();
-        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"bar\""));
+        conditionals = conditionals.addIfNoneMatch(Tag.parse("\"bar\"").get());
         assertEquals(1, conditionals.getNoneMatch().size());
-        DateTime dateTime = new DateTime();
+        LocalDateTime dateTime = LocalDateTime.now();
         try {
             conditionals.ifUnModifiedSince(dateTime);
             fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException expected) {
         }
-        assertNull(conditionals.getUnModifiedSince());
+        assertTrue(conditionals.getUnModifiedSince().isNone());
     }
 
     @Test
     public void testIfModifiedSinceAndIfUnmodifiedSince() {
         Conditionals conditionals = new Conditionals();
-        DateTime dateTime = new DateTime();
+        LocalDateTime dateTime = LocalDateTime.now();
         conditionals = conditionals.ifUnModifiedSince(dateTime);
         assertNotNull(conditionals.getUnModifiedSince());
         try {
@@ -214,18 +215,18 @@ public class ConditionalsTest {
     @Test
     public void testImmutability() {
         Conditionals conditionals = new Conditionals();
-        DateTime dateTime = new DateTime();
+        LocalDateTime dateTime = LocalDateTime.now();
         Conditionals conditionals2 = conditionals.ifUnModifiedSince(dateTime);
         assertNotSame(conditionals, conditionals2);
         assertEquals(0, conditionals.getNoneMatch().size());
         assertEquals(0, conditionals.getMatch().size());
-        assertNull(conditionals.getModifiedSince());
-        assertNull(conditionals.getUnModifiedSince());
+        assertTrue(conditionals.getModifiedSince().isNone());
+        assertTrue(conditionals.getUnModifiedSince().isNone());
 
         assertEquals(0, conditionals2.getNoneMatch().size());
         assertEquals(0, conditionals2.getMatch().size());
-        assertNull(conditionals2.getModifiedSince());
-        assertNotNull(conditionals2.getUnModifiedSince());
+        assertTrue(conditionals2.getModifiedSince().isNone());
+        assertTrue(conditionals2.getUnModifiedSince().isSome());
 
     }
 }

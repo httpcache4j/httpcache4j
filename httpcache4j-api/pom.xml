@@ -28,14 +28,6 @@
   <name>Java HTTP cache :: API</name>
 
   <dependencies>
-    <!--<dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>-->
-    <dependency>
-      <groupId>joda-time</groupId>
-      <artifactId>joda-time</artifactId>
-    </dependency>
     <dependency>
       <groupId>org.codehaus.httpcache4j.uribuilder</groupId>
       <artifactId>uribuilder</artifactId>

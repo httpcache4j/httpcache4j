@@ -16,14 +16,15 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import net.hamnaberg.funclite.Optional;
 import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDateTime;
 
 /**
  * The main HTTPCache class.
@@ -83,7 +84,7 @@ public class HTTPCache {
             try {
                 force = force || request.getMethod() == HTTPMethod.OPTIONS || request.getMethod() == HTTPMethod.TRACE;
                 if (mutex.acquire(request.getRequestURI())) {
-                    response = doRequest(request, force || (request.getHeaders().getCacheControl() != null && request.getHeaders().getCacheControl().isNoStore()));
+                    response = doRequest(request, force || (request.getHeaders().getCacheControl().exists(CacheControl::isNoStore)));
                 } else {
                     response = new HTTPResponse(null, Status.BAD_GATEWAY, new Headers());
                     shouldUnlock = false;
@@ -114,7 +115,7 @@ public class HTTPCache {
     }
 
     private HTTPResponse getFromStorage(HTTPRequest request) {
-        final DateTime requestTime = DateTime.now();
+        final LocalDateTime requestTime = LocalDateTime.now();
         HTTPResponse response;
         final CacheItem item = storage.get(request);
         if (item != null) {
@@ -135,8 +136,8 @@ public class HTTPCache {
         return response;
     }
 
-    private HTTPResponse handleStaleResponse(HTTPRequest conditionalRequest, HTTPRequest originalRequest, CacheItem item, DateTime requestTime) {
-        int age = item.getAge(DateTime.now());
+    private HTTPResponse handleStaleResponse(HTTPRequest conditionalRequest, HTTPRequest originalRequest, CacheItem item, LocalDateTime requestTime) {
+        long age = item.getAge(LocalDateTime.now());
         if (!helper.allowStale(item, originalRequest, requestTime)) {
             HTTPResponse response = excuteImpl(conditionalRequest, item);
             return helper.rewriteResponse(originalRequest, response, age);
@@ -180,8 +181,8 @@ public class HTTPCache {
 
                 if (!request.getMethod().isSafe()) {
                     // http://tools.ietf.org/html/rfc2616#section-13.10
-                    invalidateIfSameHostAsRequest(resolvedResponse.getLocation(), requestUri);
-                    invalidateIfSameHostAsRequest(resolvedResponse.getContentLocation(), requestUri);
+                    invalidateIfSameHostAsRequest(resolvedResponse.getHeaders().getLocation(), requestUri);
+                    invalidateIfSameHostAsRequest(resolvedResponse.getHeaders().getContentLocation(), requestUri);
                 }
             }
             else if (helper.isCacheableResponse(resolvedResponse) && helper.shouldBeStored(resolvedResponse)) {
@@ -239,9 +240,9 @@ public class HTTPCache {
         this.translateHEADToGET = translateHEADToGET;
     }
 
-    private void invalidateIfSameHostAsRequest(URI uri, URI requestUri) {
-        if (uri != null && uri.getHost() != null && uri.getHost().equals(requestUri.getHost())) {
-            storage.invalidate(URIBuilder.fromURI(uri).toNormalizedURI());
+    private void invalidateIfSameHostAsRequest(Optional<URI> uri, URI requestUri) {
+        if (uri.isSome() && uri.get().getHost() != null && uri.get().getHost().equals(requestUri.getHost())) {
+            storage.invalidate(URIBuilder.fromURI(uri.get()).toNormalizedURI());
         }
     }
 }

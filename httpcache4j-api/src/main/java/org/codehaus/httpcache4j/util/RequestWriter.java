@@ -18,10 +18,9 @@ package org.codehaus.httpcache4j.util;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HeaderUtils;
 import org.codehaus.httpcache4j.Headers;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 import java.io.PrintStream;
+import java.time.LocalDateTime;
 
 /**
  * Experimental for debugging: do not use.
@@ -39,7 +38,7 @@ public class RequestWriter extends AbstractHTTPWriter {
         writeRequestLine(stream, request);
 
         Headers all = request.getAllHeaders();
-        all = all.add(HeaderUtils.toHttpDate("Date", new DateTime(DateTimeZone.forID("UTC"))));
+        all = all.add(HeaderUtils.toHttpDate("Date", LocalDateTime.now()));
         all = all.add("Connection", "close");
         writeHeaders(stream, all);
         if (request.hasPayload()) {

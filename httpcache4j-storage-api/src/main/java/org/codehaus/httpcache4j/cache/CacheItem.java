@@ -1,16 +1,17 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.HTTPResponse;
-import org.joda.time.DateTime;
+
+import java.time.LocalDateTime;
 
 public interface CacheItem {
-    int getTTL();
+    long getTTL();
 
-    boolean isStale(DateTime requestTime);
+    boolean isStale(LocalDateTime requestTime);
 
-    int getAge(DateTime dateTime);
+    long getAge(LocalDateTime dateTime);
 
-    DateTime getCachedTime();
+    LocalDateTime getCachedTime();
 
     HTTPResponse getResponse();
 }

@@ -19,9 +19,11 @@ import org.junit.Test;
 import org.junit.Assert;
 import org.junit.Before;
 import org.codehaus.httpcache4j.*;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeUtils;
-import org.joda.time.Years;
+
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -29,13 +31,17 @@ import org.joda.time.Years;
  */
 public class TTLTest {
     private int DEFAULT_TTL = 10; //seconds
-    private DateTime storageTime = new DateTime(2008, 10, 12, 15, 0, 0, 0);
-    private DateTime dateTime = storageTime;
-    private DateTime now = new DateTime(2008, 10, 12, 15, 10, 0, 0);
+    private LocalDateTime storageTime = LocalDateTime.of(2008, 10, 12, 15, 0, 0, 0);
+    private LocalDateTime dateTime = storageTime;
+    private LocalDateTime now = LocalDateTime.of(2008, 10, 12, 15, 10, 0, 0);
 
     @Before
     public void before() {
-        DateTimeUtils.setCurrentMillisFixed(now.getMillis());
+        setClock(now);
+    }
+
+    private Clock setClock(LocalDateTime dt) {
+        return Clock.fixed(dt.toInstant(ZoneOffset.UTC), ZoneId.of("UTC"));
     }
 
     @Test
@@ -58,7 +64,7 @@ public class TTLTest {
 
     @Test
     public void testDefaultTTLWith10MaxAgeAndExpires() {
-        final DateTime expires = now.plus(Years.years(1));
+        final LocalDateTime expires = now.plusYears(1);
         final Headers headers = createDefaultHeaders().add(HeaderConstants.CACHE_CONTROL, "max-age=10").add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, expires));
         long ttl = DefaultCacheItem.getTTL(new HTTPResponse(null, Status.OK, headers), DEFAULT_TTL);
         Assert.assertEquals(DEFAULT_TTL, ttl);
@@ -66,7 +72,7 @@ public class TTLTest {
 
     @Test
     public void testDefaultTTLExpires() {
-        final DateTime expires = now.plus(Years.years(1));
+        final LocalDateTime expires = now.plusYears(1);
         final Headers headers = createDefaultHeaders().add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, expires));
         long ttl = DefaultCacheItem.getTTL(new HTTPResponse(null, Status.OK, headers), DEFAULT_TTL);
         Assert.assertEquals(31536600, ttl);

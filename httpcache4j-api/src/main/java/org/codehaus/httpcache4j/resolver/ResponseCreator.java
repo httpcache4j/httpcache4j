@@ -15,6 +15,7 @@
 
 package org.codehaus.httpcache4j.resolver;
 
+import net.hamnaberg.funclite.Optional;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
@@ -29,10 +30,10 @@ import java.io.InputStream;
 public final class ResponseCreator {
 
     public static HTTPResponse createResponse(final StatusLine line, final Headers responseHeaders, final InputStream stream) {
-        Header contentTypeHeader = responseHeaders.getFirstHeader(HeaderConstants.CONTENT_TYPE);
-        Header contentLengthHeader = responseHeaders.getFirstHeader(HeaderConstants.CONTENT_LENGTH);
-        MIMEType type = contentTypeHeader != null ? MIMEType.valueOf(contentTypeHeader.getValue()) : MIMEType.APPLICATION_OCTET_STREAM;
-        long length = contentLengthHeader != null ? NumberUtils.toLong(contentLengthHeader.getValue(), -1L) : -1L;
+        Optional<String> contentLengthHeader = responseHeaders.getFirstHeaderValue(HeaderConstants.CONTENT_LENGTH);
+
+        MIMEType type = responseHeaders.getContentType().getOrElse(MIMEType.APPLICATION_OCTET_STREAM);
+        long length = contentLengthHeader.isSome() ? NumberUtils.toLong(contentLengthHeader.get(), -1L) : -1L;
         Payload payload = null;
         if (line.getStatus().isBodyContentAllowed()) {
             if (stream != null) {

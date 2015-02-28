@@ -99,6 +99,7 @@ public final class Vary {
      * @param request the request to analyse
      * @return {@code true} if the request matches the variance. {@code false} if not.
      */
+    //todo: cleanup this
     public boolean matches(final HTTPRequest request) {
         Headers headers = request.getAllHeaders();
 
@@ -110,7 +111,7 @@ public final class Vary {
             }
             else {
                 List<Header> requestHeaderValue = headers.getHeaders(varyEntry.getKey());
-                boolean valid = requestHeaderValue.isEmpty() ? varyEntry.getValue() == null : headers.getFirstHeader(varyEntry.getKey()).getValue().equals(varyEntry.getValue());
+                boolean valid = requestHeaderValue.isEmpty() ? varyEntry.getValue() == null : headers.getFirstHeader(varyEntry.getKey()).get().getValue().equals(varyEntry.getValue());
                 if (!valid) {
                     return false;
                 }

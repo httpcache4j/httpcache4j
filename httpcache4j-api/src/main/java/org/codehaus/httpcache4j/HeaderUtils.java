@@ -19,14 +19,14 @@ package org.codehaus.httpcache4j;
 import static org.codehaus.httpcache4j.HeaderConstants.*;
 
 import net.hamnaberg.funclite.Preconditions;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import net.hamnaberg.funclite.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -45,48 +45,47 @@ public final class HeaderUtils {
     private HeaderUtils() {
     }
 
-    public static DateTime fromHttpDate(Header header) {
+    public static Optional<LocalDateTime> fromHttpDate(Header header) {
         if (header == null) {
             return null;
         }
         if ("0".equals(header.getValue().trim())) {
-            return new DateTime(1970, 1, 1, 0, 0, 0, 0).withZone(DateTimeZone.forID("UTC"));
+            return Optional.some(LocalDateTime.of(LocalDate.of(1970, 1, 1), LocalTime.of(0, 0, 0, 0)));
         }
         return parseGMTString(header.getValue());
     }
 
-    public static DateTime parseGMTString(String value) {
+    public static Optional<LocalDateTime> parseGMTString(String value) {
         DateTimeFormatter formatter = getFormatter();
-        DateTime formattedDate = null;
         try {
-            formattedDate = formatter.parseDateTime(value);
-        } catch (IllegalArgumentException ignore) {
+            return Optional.some(LocalDateTime.from(formatter.parse(value)));
+        } catch (DateTimeParseException ignore) {
         }
 
-        return formattedDate;
+        return Optional.none();
     }
 
 
-    public static Header toHttpDate(String headerName, DateTime time) {
+    public static Header toHttpDate(String headerName, LocalDateTime time) {
         return new Header(headerName, toGMTString(time));
     }
 
-    public static String toGMTString(DateTime time) {
+    public static String toGMTString(LocalDateTime time) {
         DateTimeFormatter formatter = getFormatter();
-        return formatter.print(time);
+        return formatter.format(time);
     }
 
     private static DateTimeFormatter getFormatter() {
-        return DateTimeFormat.forPattern(PATTERN_RFC1123).
-                withZone(DateTimeZone.forID("UTC")).
+        return DateTimeFormatter.ofPattern(PATTERN_RFC1123).
+                withZone(ZoneId.of("UTC")).
                 withLocale(Locale.US);
     }
 
     public static long getHeaderAsDate(Header header) {
         try {
-            DateTime dateTime = fromHttpDate(header);
-            if (dateTime != null) {
-                return dateTime.getMillis();
+            Optional<LocalDateTime> dateTime = fromHttpDate(header);
+            if (dateTime.isSome()) {
+                return dateTime.get().toInstant(ZoneOffset.UTC).toEpochMilli();
             }
         }
         catch (Exception e) {
@@ -125,27 +124,24 @@ public final class HeaderUtils {
             return false;
         }
         if (headers.contains(CACHE_CONTROL)) {
-            final Header header = headers.getFirstHeader(CACHE_CONTROL);
-            CacheControl cc = new CacheControl(header);
-            if (cc.isNoCache() || cc.isNoStore()) {
+            Optional<CacheControl> cc = headers.getCacheControl();
+            if (cc.exists(cc2 -> cc2.isNoCache() || cc2.isNoStore())) {
                return false; 
             }
         }
         if (headers.contains(PRAGMA)) {
-            final Header header = headers.getFirstHeader(PRAGMA);
-            if (header.getValue().contains(NO_CACHE_HEADER_VALUE)) {
+            Optional<String> header = headers.getFirstHeaderValue(PRAGMA);
+            if (header.exists(s -> s.contains(NO_CACHE_HEADER_VALUE))) {
                 return false;
             }
         }
         if (headers.contains(EXPIRES)) {
-            Header expires = headers.getFirstHeader(EXPIRES);
-            DateTime expiresValue = HeaderUtils.fromHttpDate(expires);
-            Header date = headers.getFirstHeader(DATE);
-            if (expiresValue == null || date == null) {
+            Optional<LocalDateTime> expires = headers.getExpires();
+            Optional<LocalDateTime> date = headers.getDate();
+            if (expires.isNone() || date.isNone()) {
                 return false;
             }
-            DateTime dateValue = HeaderUtils.fromHttpDate(date);
-            if (expiresValue.isBefore(dateValue) || expiresValue.equals(dateValue)) {
+            if (expires.exists(e -> e.isBefore(date.get())) || expires.exists(e -> e.isEqual(date.get()))) {
                 return false;
             }
         }

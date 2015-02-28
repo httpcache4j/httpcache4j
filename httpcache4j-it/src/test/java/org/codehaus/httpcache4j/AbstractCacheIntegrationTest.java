@@ -17,26 +17,25 @@ package org.codehaus.httpcache4j;
 
 import java.io.File;
 
-import org.apache.http.protocol.HTTP;
 import org.codehaus.httpcache4j.payload.StringPayload;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 import org.codehaus.httpcache4j.util.TestUtil;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.joda.time.DateTime;
 import org.junit.AfterClass;
 import org.codehaus.httpcache4j.cache.CacheStorage;
 import org.codehaus.httpcache4j.cache.HTTPCache;
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.ByteArrayPayload;
-import org.codehaus.httpcache4j.client.HTTPClientResponseResolver;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.FileInputStream;
 import java.net.URI;
+import java.time.LocalDateTime;
+
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
@@ -106,18 +105,18 @@ public abstract class AbstractCacheIntegrationTest {
     @Test
     public void GETNotCacheableResponse() {
         HTTPResponse response = get(baseRequestURI.resolve(TEST_FILE));
-        assertNull(response.getETag());
-        assertNull(response.getLastModified());
+        assertNull(response.getHeaders().getETag().orNull());
+        assertNull(response.getHeaders().getLastModified().orNull());
         assertEquals(Status.OK, response.getStatus());
         assertEquals(0, storage.size());
-        assertEquals(CacheHeaderBuilder.getBuilder().createMISSXCacheHeader(), response.getHeaders().getFirstHeader(HeaderConstants.X_CACHE));
+        assertEquals(CacheHeaderBuilder.getBuilder().createMISSXCacheHeader(), response.getHeaders().getFirstHeader(HeaderConstants.X_CACHE).get());
     }
 
     @Test
     public void GETWithETagResponse() {
         HTTPResponse response = get(baseRequestURI.resolve(String.format("etag/%s", TEST_FILE)));
-        assertNotNull(response.getETag());
-        assertNull(response.getLastModified());
+        assertNotNull(response.getHeaders().getETag().orNull());
+        assertNull(response.getHeaders().getLastModified().orNull());
         assertEquals(Status.OK, response.getStatus());
         assertEquals(1, storage.size());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
@@ -127,19 +126,19 @@ public abstract class AbstractCacheIntegrationTest {
     public void GETWithETagThenPUTAndReGETResponse() {
         URI uri = baseRequestURI.resolve(String.format("etag/%s", TEST_FILE));
         HTTPResponse response = get(uri);
-        assertNotNull(response.getETag());
-        assertNull(response.getLastModified());
+        assertNotNull(response.getHeaders().getETag().orNull());
+        assertNull(response.getHeaders().getLastModified().orNull());
         assertEquals(Status.OK, response.getStatus());
-        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).orNull());
 
         assertEquals(1, storage.size());
         response = cache.execute(new HTTPRequest(uri, HTTPMethod.PUT));
         assertEquals(0, storage.size());
         assertEquals(Status.NO_CONTENT, response.getStatus());
-        assertNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
+        assertNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).orNull());
         response = get(uri);
-        assertNotNull(response.getETag());
-        assertNull(response.getLastModified());
+        assertNotNull(response.getHeaders().getETag().orNull());
+        assertNull(response.getHeaders().getLastModified().orNull());
         assertEquals(Status.OK, response.getStatus());
         assertEquals(1, storage.size());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
@@ -258,22 +257,21 @@ public abstract class AbstractCacheIntegrationTest {
 
         assertEquals(Status.OK, response.getStatus());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
-        DateTime originalDate = response.getDate();
-        assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).contains("MISS"));
+        LocalDateTime originalDate = response.getHeaders().getDate().orNull();
+        assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).get().contains("MISS"));
         assertFalse(response.isCached());
         response.consume();
         try {
         	Thread.sleep(5000);
         } catch (Exception e) {}
         response = get(uri);
-//        System.out.println(response.getHeaders());
-        DateTime cacheDate = response.getDate();
+        LocalDateTime cacheDate = response.getHeaders().getDate().orNull();
         assertEquals(Status.OK, response.getStatus());
         assertTrue(originalDate.equals(cacheDate));
 
         assertTrue(response.isCached());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
-        assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).contains("HIT"));
+        assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).get().contains("HIT"));
         response.consume();
         
         // sleep here.  The response should come from the server
@@ -281,28 +279,26 @@ public abstract class AbstractCacheIntegrationTest {
         	Thread.sleep(12000);
         } catch (Exception e) {}
         response = get(uri);
-//        System.out.println(response.getHeaders());
-        DateTime nonCacheDate = response.getDate();
+        LocalDateTime nonCacheDate = response.getHeaders().getDate().orNull();
         
         assertEquals(Status.OK, response.getStatus());
         assertFalse(originalDate.equals(nonCacheDate));
         assertFalse(response.isCached());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
-        assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).contains("MISS"));
+        assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).get().contains("MISS"));
         response.consume();
         
         try {
         	Thread.sleep(2000);
         } catch (Exception e) {}
         response = get(uri);
-//        System.out.println(response.getHeaders());
-        DateTime shouldBeAboveNonCacheDate = response.getDate();
+        LocalDateTime shouldBeAboveNonCacheDate = response.getHeaders().getDate().orNull();
         
         assertEquals(Status.OK, response.getStatus());
         assertTrue(nonCacheDate.equals(shouldBeAboveNonCacheDate));
         assertTrue(response.isCached());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
-        assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).contains("HIT"));
+        assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).get().contains("HIT"));
         response.consume();
     }
 

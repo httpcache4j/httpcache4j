@@ -6,10 +6,10 @@ import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.cache.CacheItem;
 import org.codehaus.httpcache4j.cache.Key;
 import org.codehaus.httpcache4j.cache.Vary;
-import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -66,22 +66,22 @@ public class MemoryCacheTest {
 
     private class TestCacheItem implements CacheItem {
         @Override
-        public int getTTL() {
+        public long getTTL() {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public boolean isStale(DateTime requestTime) {
+        public boolean isStale(LocalDateTime requestTime) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public int getAge(DateTime dateTime) {
+        public long getAge(LocalDateTime dateTime) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public DateTime getCachedTime() {
+        public LocalDateTime getCachedTime() {
             throw new UnsupportedOperationException();
         }
 

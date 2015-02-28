@@ -18,8 +18,8 @@ package org.codehaus.httpcache4j.mutable;
 import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.preference.Preference;
-import org.joda.time.DateTime;
 
+import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -72,11 +72,11 @@ public class MutableHeaders implements Iterable<Header> {
     }
 
     public Header getFirstHeader(String headerKey) {
-        return headers.getFirstHeader(headerKey);
+        return headers.getFirstHeader(headerKey).orNull();
     }
 
     public String getFirstHeaderValue(String headerKey) {
-        return headers.getFirstHeaderValue(headerKey);
+        return headers.getFirstHeaderValue(headerKey).orNull();
     }
 
     public void addAcceptLanguage(Preference... accept) {
@@ -95,7 +95,7 @@ public class MutableHeaders implements Iterable<Header> {
         return headers.getAcceptCharset();
     }
 
-    public void setExpires(DateTime expires) {
+    public void setExpires(LocalDateTime expires) {
         headers = headers.withExpires(expires);
     }
 
@@ -103,8 +103,8 @@ public class MutableHeaders implements Iterable<Header> {
         headers = headers.addAccept(accept);
     }
 
-    public DateTime getLastModified() {
-        return headers.getLastModified();
+    public LocalDateTime getLastModified() {
+        return headers.getLastModified().orNull();
     }
 
     public void addAcceptCharset(Preference... accept) {
@@ -123,19 +123,19 @@ public class MutableHeaders implements Iterable<Header> {
         headers = headers.withAcceptLanguage(acceptLanguage);
     }
 
-    public void setLastModified(DateTime lm) {
+    public void setLastModified(LocalDateTime lm) {
         headers = headers.withLastModified(lm);
     }
 
-    public DateTime getExpires() {
-        return headers.getExpires();
+    public LocalDateTime getExpires() {
+        return headers.getExpires().orNull();
     }
 
-    public DateTime getDate() {
-        return headers.getDate();
+    public LocalDateTime getDate() {
+        return headers.getDate().orNull();
     }
 
-    public void setDate(DateTime dt) {
+    public void setDate(LocalDateTime dt) {
         headers = headers.withDate(dt);
     }
 
@@ -148,7 +148,7 @@ public class MutableHeaders implements Iterable<Header> {
     }
 
     public CacheControl getCacheControl() {
-        return headers.getCacheControl();
+        return headers.getCacheControl().orNull();
     }
 
     public void setCacheControl(CacheControl cc) {
@@ -156,7 +156,7 @@ public class MutableHeaders implements Iterable<Header> {
     }
 
     public Tag getETag() {
-        return headers.getETag();
+        return headers.getETag().orNull();
     }
 
     public void setETag(Tag tag) {

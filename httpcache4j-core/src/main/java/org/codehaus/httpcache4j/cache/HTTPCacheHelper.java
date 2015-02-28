@@ -16,13 +16,11 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
-import org.joda.time.DateTime;
-
+import net.hamnaberg.funclite.Optional;
 import java.io.IOException;
 import java.net.SocketException;
+import java.time.LocalDateTime;
 import java.util.*;
-
-import static org.codehaus.httpcache4j.HeaderConstants.CACHE_CONTROL;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -36,7 +34,7 @@ class HTTPCacheHelper {
         // ref http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.1 and
         // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.3
         // We are a transparent cache
-        Set<String> headers = new HashSet<String>();
+        Set<String> headers = new HashSet<>();
         headers.add("Connection");
         headers.add("Keep-Alive");
         headers.add("Proxy-Authenticate");
@@ -105,11 +103,11 @@ class HTTPCacheHelper {
     HTTPRequest prepareConditionalGETRequest(HTTPRequest request, HTTPResponse staleResponse) {
         Conditionals conditionals = request.getHeaders().getConditionals();
         if (request.getMethod() == HTTPMethod.GET && conditionals.toHeaders().isEmpty()) {
-            if (staleResponse.getETag() != null) {
-                conditionals = new Conditionals().addIfNoneMatch(staleResponse.getETag());
+            if (staleResponse.getHeaders().getETag().isSome()) {
+                conditionals = new Conditionals().addIfNoneMatch(staleResponse.getHeaders().getETag().get());
             }
-            else if (staleResponse.getLastModified() != null) {
-                conditionals = conditionals.ifModifiedSince(staleResponse.getLastModified());
+            else if (staleResponse.getHeaders().getLastModified().isSome()) {
+                conditionals = conditionals.ifModifiedSince(staleResponse.getHeaders().getLastModified().get());
             }
             return request.headers(request.getHeaders().withConditionals(conditionals));
         }
@@ -121,46 +119,40 @@ class HTTPCacheHelper {
     }
 
     boolean isEndToEndReloadRequest(HTTPRequest request) {
-        CacheControl cacheControl = request.getCacheControl();
-        return request.getMethod().isCacheable() && cacheControl != null && cacheControl.isNoCache();
+        Optional<CacheControl> cacheControl = request.getCacheControl();
+        return request.getMethod().isCacheable() && cacheControl.exists(CacheControl::isNoCache);
     }
 
     boolean isCacheableRequest(HTTPRequest request) {
         if (request.getMethod().isCacheable()) {
-            if (request.getHeaders().contains(CACHE_CONTROL)) {
-                CacheControl cc = request.getCacheControl();
-                //If the request tells us that we shouldn't cache the response, then we don't.
-                return !cc.isNoCache() || !cc.isNoStore();
+            Optional<CacheControl> cc = request.getCacheControl();
+            return cc.forall(c -> c.isNoCache() || !c.isNoStore());
+        }
+        return false;
+    }
+
+    boolean allowStale(CacheItem item, HTTPRequest req, LocalDateTime requestTime) {
+        Optional<CacheControl> control = req.getCacheControl();
+        return control.exists(cc -> {
+            int maxStale = cc.getMaxStale();
+            if (maxStale > -1) {
+                long ttl = item.getTTL();
+                long age = item.getAge(requestTime);
+                return (ttl - maxStale - age) < 0;
             }
             return true;
-        }
-        return false;
+        });
     }
 
-    boolean allowStale(CacheItem item, HTTPRequest req, DateTime requestTime) {
-        if (req.getHeaders().contains(CACHE_CONTROL)) {
-            CacheControl control = req.getCacheControl();
-            int maxStale = control.getMaxStale();
-            if (maxStale > -1) {
-                int ttl = item.getTTL();
-                int age = item.getAge(requestTime);
-                if ((ttl - maxStale - age) < 0) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    HTTPResponse rewriteStaleResponse(HTTPRequest request, HTTPResponse cachedResponse, int age) {
+    HTTPResponse rewriteStaleResponse(HTTPRequest request, HTTPResponse cachedResponse, long age) {
         return rewriteResponse(request, cachedResponse, true, age, age < 0);
     }
 
-    HTTPResponse rewriteResponse(HTTPRequest request, HTTPResponse cachedResponse, int age) {
+    HTTPResponse rewriteResponse(HTTPRequest request, HTTPResponse cachedResponse, long age) {
         return rewriteResponse(request, cachedResponse, false, age, age < 0);
     }
 
-    private HTTPResponse rewriteResponse(HTTPRequest request, HTTPResponse cachedResponse, boolean stale, int age, boolean hasBeenCached) {
+    private HTTPResponse rewriteResponse(HTTPRequest request, HTTPResponse cachedResponse, boolean stale, long age, boolean hasBeenCached) {
         HTTPResponse response = cachedResponse;
         Headers headers = cachedResponse.getHeaders();
         if (request.getMethod().isSafe()) {
@@ -183,15 +175,15 @@ class HTTPCacheHelper {
         }
         if (request.getMethod() == HTTPMethod.GET) {
             List<Tag> noneMatch = request.getHeaders().getConditionals().getNoneMatch();
-            Tag eTag = response.getETag();
-            if (eTag != null && !noneMatch.isEmpty() && !hasBeenCached) {
-                if (noneMatch.contains(eTag) || noneMatch.contains(Tag.ALL)) {
+            Optional<Tag> eTag = response.getHeaders().getETag();
+            if (eTag.isSome() && !noneMatch.isEmpty() && !hasBeenCached) {
+                if (noneMatch.contains(eTag.get()) || noneMatch.contains(Tag.ALL)) {
                     response = new HTTPResponse(null, Status.NOT_MODIFIED, headers);
                 }
             }
-            DateTime lastModified = response.getLastModified();
-            DateTime modifiedSince = request.getHeaders().getConditionals().getModifiedSince();
-            if (lastModified != null && modifiedSince != null && !hasBeenCached) {
+            Optional<LocalDateTime> lastModified = response.getHeaders().getLastModified();
+            Optional<LocalDateTime> modifiedSince = request.getHeaders().getConditionals().getModifiedSince();
+            if (lastModified.isSome() && modifiedSince != null && !hasBeenCached) {
                 if (lastModified.equals(modifiedSince)) {
                     response = new HTTPResponse(null, Status.NOT_MODIFIED, headers);
                 }
@@ -208,8 +200,8 @@ class HTTPCacheHelper {
 
 
     boolean shouldBeStored(HTTPResponse response) {
-        boolean hasValidator = response.getLastModified() != null || response.getETag() != null;
-        boolean hasExpiry = response.getExpires() != null || (response.getCacheControl() != null && response.getCacheControl().getMaxAge() > 0);
+        boolean hasValidator = response.getHeaders().getLastModified().isSome() || response.getHeaders().getETag().isSome();
+        boolean hasExpiry = response.getHeaders().getExpires().isSome() || (response.getHeaders().getCacheControl().exists(cc -> cc.getMaxAge() > 0));
         return hasExpiry || hasValidator;
     }
 }

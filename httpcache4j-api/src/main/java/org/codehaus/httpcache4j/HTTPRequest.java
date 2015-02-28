@@ -16,11 +16,12 @@
 
 package org.codehaus.httpcache4j;
 
+import net.hamnaberg.funclite.Optional;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.uri.URIBuilder;
-import org.joda.time.DateTime;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -157,11 +158,8 @@ public final class HTTPRequest {
         return payload != null;
     }
 
-    public CacheControl getCacheControl() {
-        if (headers.contains(HeaderConstants.CACHE_CONTROL)) {
-            return new CacheControl(headers.getFirstHeader(HeaderConstants.CACHE_CONTROL));
-        }
-        return null;
+    public Optional<CacheControl> getCacheControl() {
+        return headers.getCacheControl();
     }
 
     public HTTPRequest cacheControl(CacheControl cc) {
@@ -176,11 +174,11 @@ public final class HTTPRequest {
         return headers(headers.withConditionals(headers.getConditionals().addIfMatch(tag)));
     }
 
-    public HTTPRequest withIfUnModifiedSince(DateTime dt) {
+    public HTTPRequest withIfUnModifiedSince(LocalDateTime dt) {
         return headers(headers.withConditionals(headers.getConditionals().ifUnModifiedSince(dt)));
     }
 
-    public HTTPRequest withIfModifiedSince(DateTime dt) {
+    public HTTPRequest withIfModifiedSince(LocalDateTime dt) {
         return headers(headers.withConditionals(headers.getConditionals().ifModifiedSince(dt)));
     }
 

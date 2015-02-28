@@ -1,18 +1,12 @@
 package org.codehaus.httpcache4j;
 
-import org.joda.time.DateTime;
 import org.junit.Test;
+
+import java.time.LocalDateTime;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-/**
- * Created by IntelliJ IDEA.
- * User: maedhros
- * Date: Nov 24, 2010
- * Time: 2:03:19 PM
- * To change this template use File | Settings | File Templates.
- */
 public class CacheableHeadersTest {
 
     @Test
@@ -23,14 +17,22 @@ public class CacheableHeadersTest {
 
     @Test
     public void expiresAndDateSetToTheSameInstantIsNotCacheable() {
-        Headers headers = new Headers().add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
-        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, new DateTime()));
+        Headers headers = new Headers().add(HeaderUtils.toHttpDate(HeaderConstants.DATE, LocalDateTime.now()));
+        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, LocalDateTime.now()));
         assertFalse("There was cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
     }
 
     @Test
+    public void expiresAndDateIsCacheable() {
+        LocalDateTime now = LocalDateTime.now();
+        Headers headers = new Headers().add(HeaderUtils.toHttpDate(HeaderConstants.DATE, now));
+        headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, now.plusHours(10)));
+        assertTrue("There was uncacheable headers", HeaderUtils.hasCacheableHeaders(headers));
+    }
+
+    @Test
     public void expiresSetTo0isNotCacheable() {
-        Headers headers = new Headers().add(HeaderUtils.toHttpDate(HeaderConstants.DATE, new DateTime()));
+        Headers headers = new Headers().add(HeaderUtils.toHttpDate(HeaderConstants.DATE, LocalDateTime.now()));
         headers = headers.add(HeaderConstants.EXPIRES, "0");
         assertFalse("There was cacheable headers", HeaderUtils.hasCacheableHeaders(headers));
     }

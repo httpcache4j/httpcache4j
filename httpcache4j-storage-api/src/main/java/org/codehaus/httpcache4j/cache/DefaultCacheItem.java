@@ -16,11 +16,12 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import net.hamnaberg.funclite.Optional;
 import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.*;
 
-import org.joda.time.DateTime;
-import org.joda.time.Seconds;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 /**
  * This is an internal class, and should not be used by clients.
@@ -29,39 +30,40 @@ import org.joda.time.Seconds;
  */
 public class DefaultCacheItem implements CacheItem {
 
-    protected DateTime cachedTime;
+    protected LocalDateTime cachedTime;
     protected HTTPResponse response;
-    protected int ttl;
+    protected long ttl;
 
     public DefaultCacheItem(HTTPResponse response) {
-        this(response, new DateTime());
+        this(response, LocalDateTime.now());
     }
 
-    public DefaultCacheItem(HTTPResponse response, DateTime cachedTime) {
+    public DefaultCacheItem(HTTPResponse response, LocalDateTime cachedTime) {
         this.response = Preconditions.checkNotNull(response, "Response may not be null");
         this.cachedTime = Preconditions.checkNotNull(cachedTime, "CacheTime may not be null");
         this.ttl = getTTL(response, 0);
     }
 
-    public int getTTL() {
+    public long getTTL() {
         return ttl;
     }
 
-    public boolean isStale(DateTime requestTime) {
+    public boolean isStale(LocalDateTime requestTime) {
         if (response.hasPayload() && !response.getPayload().isAvailable()) {
             return true;
         }
         return ttl - getAge(requestTime) <= 0;
     }
 
-    public int getAge(DateTime requestTime) {
-        return Seconds.secondsBetween(cachedTime, requestTime).getSeconds();
+    public long getAge(LocalDateTime requestTime) {
+        return Duration.between(cachedTime, requestTime).getSeconds();
     }
 
-    public static int getTTL(HTTPResponse response, int defaultTTLinSeconds) {
-        final CacheControl cc = response.getCacheControl();
-        if (cc != null) {
-            int maxAge = cc.getMaxAge();
+    public static long getTTL(HTTPResponse response, int defaultTTLinSeconds) {
+        final Optional<CacheControl> cc = response.getHeaders().getCacheControl();
+
+        if (cc.isSome()) {
+            int maxAge = cc.get().getMaxAge();
             if (maxAge > 0) {
                 return maxAge;
             }
@@ -73,21 +75,19 @@ public class DefaultCacheItem implements CacheItem {
          * To mark a response as "never expires," an origin server sends an Expires date approximately one year from the time the response is sent.
          * HTTP/1.1 servers SHOULD NOT send Expires dates more than one year in the future.
          */
-        if (response.getExpires() != null) {
-            DateTime expiryDate = response.getExpires();
-            if (expiryDate != null) {
-                DateTime date = response.getDate();
-                if (date != null && date.isBefore(expiryDate)) {
-                    return Seconds.secondsBetween(date, expiryDate).getSeconds();
-                }
+        Optional<LocalDateTime> expires = response.getHeaders().getExpires();
+        if (expires.isSome()) {
+            LocalDateTime expiryDate = expires.get();
+            Optional<LocalDateTime> date = response.getHeaders().getDate();
+            if (date.exists(dt -> dt.isBefore(expiryDate))) {
+                return Duration.between(date.get(), expiryDate).getSeconds();
             }
-
         }
 
         return defaultTTLinSeconds;
     }
 
-    public DateTime getCachedTime() {
+    public LocalDateTime getCachedTime() {
         return cachedTime;
     }
 

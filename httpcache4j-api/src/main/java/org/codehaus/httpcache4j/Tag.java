@@ -16,6 +16,8 @@
 
 package org.codehaus.httpcache4j;
 
+import net.hamnaberg.funclite.Optional;
+
 /**
  * Validation tag equivalent to the HTTP entity tag. "A strong entity tag may be
  * shared by two entities of a resource only if they are equivalent by octet
@@ -32,7 +34,7 @@ package org.codehaus.httpcache4j;
  */
 public final class Tag {
     /** Tag matching any other tag, used in call's condition data. */
-    public static final Tag ALL = Tag.parse("*");
+    public static final Tag ALL = Tag.parse("*").get();
     /** The tag weakness. */
     private boolean weak;
     private String opaqueTag;
@@ -51,7 +53,7 @@ public final class Tag {
      *      href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.11">HTTP
      *      Entity Tags</a>
      */
-    public static Tag parse(final String httpTag) {
+    public static Optional<Tag> parse(final String httpTag) {
         Tag result = null;
         boolean weak = false;
         String internal = httpTag;
@@ -69,7 +71,7 @@ public final class Tag {
             result = new Tag("*", weak);
         }
 
-        return result;
+        return Optional.fromNullable(result);
     }
 
     /**

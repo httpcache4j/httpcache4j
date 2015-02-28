@@ -16,6 +16,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import net.hamnaberg.funclite.OptionalOps;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
@@ -24,6 +25,7 @@ import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.util.Pair;
 import org.codehaus.httpcache4j.util.PropertiesLoader;
+import net.hamnaberg.funclite.Optional;
 
 import java.io.*;
 import java.net.URI;
@@ -134,7 +136,7 @@ public class FilePersistentCacheStorage implements CacheStorage {
     @Override
     public synchronized CacheItem get(HTTPRequest request) {
         Optional<Pair<Key, CacheItem>> item = getItem(request);
-        if (item.isPresent()) {
+        if (item.isSome()) {
             return item.get().getValue();
         }
         return null;
@@ -144,7 +146,7 @@ public class FilePersistentCacheStorage implements CacheStorage {
         File uri = fileManager.resolve(request.getNormalizedURI());
         DirectoryStream<Path> paths = getMetadata(uri);
         Stream<Path> stream = StreamSupport.stream(paths.spliterator(), false);
-        return stream.map(f -> readItem(f.toFile())).filter(p -> p != null && p.getKey().getVary().matches(request)).findFirst();
+        return OptionalOps.fromJavaOptional(stream.map(f -> readItem(f.toFile())).filter(p -> p != null && p.getKey().getVary().matches(request)).findFirst());
     }
 
     @Override
@@ -189,7 +191,7 @@ public class FilePersistentCacheStorage implements CacheStorage {
     @Override
     public synchronized Iterator<Key> iterator() {
         File base = fileManager.getBaseDirectory();
-        Stream<Path> stream = list(base.toPath()).flatMap(this::list).flatMap(p -> list(p, Optional.of(this::isMetdata)));
+        Stream<Path> stream = list(base.toPath()).flatMap(this::list).flatMap(p -> list(p, Optional.some(this::isMetdata)));
         Stream<Key> keyStream = stream.map(p -> readItem(p.toFile())).map(Pair::getKey);
         return keyStream.iterator();
     }
@@ -202,7 +204,7 @@ public class FilePersistentCacheStorage implements CacheStorage {
         }
     }
     private Stream<Path> list(Path d, Optional<DirectoryStream.Filter<Path>> ff)  {
-        if (ff.isPresent()) {
+        if (ff.isSome()) {
             try {
                 return StreamSupport.stream(Files.newDirectoryStream(d, ff.get()).spliterator(), false);
             } catch (IOException e) {

@@ -22,15 +22,12 @@ import org.codehaus.httpcache4j.annotation.Internal;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.util.IOUtils;
-import org.joda.time.DateTime;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 
-import static org.codehaus.httpcache4j.HeaderConstants.*;
+import static org.codehaus.httpcache4j.HeaderConstants.X_CACHE;
 
 /**
  * Represents a HTTP response delivered by the cache.
@@ -44,19 +41,7 @@ public final class HTTPResponse {
     private final StatusLine statusLine;
     private final Payload payload;
     private final Headers headers;
-
-    /**
-     * Consider removing the cached values from here...
-     */
-    private final DateTime date;
-    private final DateTime expires;
-    private final DateTime lastModified;
-    private final Tag etag;
-    private final Set<HTTPMethod> allowedMethods;
-    private final CacheControl cacheControl;
     private final boolean cached;
-    private final URI location;
-    private final URI contentLocation;
 
     public HTTPResponse(Payload payload, Status status, Headers headers) {
         this(payload, new StatusLine(status), headers);
@@ -66,15 +51,6 @@ public final class HTTPResponse {
         this.statusLine = Preconditions.checkNotNull(statusLine, "You must supply a Status");
         this.payload = payload;
         this.headers = Preconditions.checkNotNull(headers, "You must supply some Headers");
-
-        etag = headers.getETag();
-        lastModified = headers.getLastModified();
-        allowedMethods = headers.getAllow();
-        cacheControl = headers.getCacheControl();
-        date = headers.getDate();
-        expires = headers.getExpires();
-        location = headers.getLocation();
-        contentLocation = headers.getContentLocation();
 
         if (headers.contains(X_CACHE)) {
             Header cacheHeader = CacheHeaderBuilder.getBuilder().createHITXCacheHeader();
@@ -115,39 +91,9 @@ public final class HTTPResponse {
         return headers;
     }
 
-    public Tag getETag() {
-        return etag;
-    }
-
-    public DateTime getDate() {
-        return date;
-    }
-
-    public DateTime getExpires() {
-        return expires;
-    }
-
-    public DateTime getLastModified() {
-        return lastModified;
-    }
-
-    public CacheControl getCacheControl() {
-        return cacheControl;
-    }
-
-    public URI getLocation() {
-        return location;
-    }
-
-    public URI getContentLocation() {
-        return contentLocation;
-    }
-
     public boolean isCached() {
         return cached;
     }
-
-    public Set<HTTPMethod> getAllowedMethods() { return allowedMethods; }
 
     public <A> Optional<A> transform(final Function<Payload, A> f) {
         if (hasPayload()) {

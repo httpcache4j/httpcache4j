@@ -18,10 +18,8 @@ package org.codehaus.httpcache4j.cache;
 import org.junit.Test;
 import org.junit.Assert;
 import org.codehaus.httpcache4j.*;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeUtils;
 
-import java.net.URI;
+import java.time.LocalDateTime;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -120,7 +118,7 @@ public class HTTPCacheHelperTest {
         Assert.assertFalse(helper.shouldBeStored(new HTTPResponse(null, Status.OK, headers)));
     }
 
-    private DateTime createDateTime(int seconds) {
-        return new DateTime(2009, 4, 22, 10, 10, seconds, 0);
+    private LocalDateTime createDateTime(int seconds) {
+        return LocalDateTime.of(2009, 4, 22, 10, 10, seconds, 0);
     }
 }

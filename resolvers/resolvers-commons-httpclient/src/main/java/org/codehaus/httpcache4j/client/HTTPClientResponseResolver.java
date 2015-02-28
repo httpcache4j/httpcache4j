@@ -38,8 +38,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 
-import static org.codehaus.httpcache4j.HTTPMethod.*;
-
 /**
  * An implementation of the ResponseResolver using the Commons HTTPClient (http://hc.apache.org/httpclient-3.x/)
  * <p/>

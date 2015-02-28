@@ -15,12 +15,13 @@
 
 package org.codehaus.httpcache4j.cache;
 
+import net.hamnaberg.funclite.Optional;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.util.NumberUtils;
-import org.joda.time.DateTime;
 
 import java.io.*;
+import java.time.LocalDateTime;
 import java.util.Properties;
 
 /**
@@ -35,19 +36,19 @@ public class SerializableCacheItem implements Serializable, CacheItem {
         this.item = item;
     }
 
-    public int getTTL() {
+    public long getTTL() {
         return item.getTTL();
     }
 
-    public boolean isStale(DateTime requestTime) {
+    public boolean isStale(LocalDateTime requestTime) {
         return item.isStale(requestTime);
     }
 
-    public int getAge(DateTime dateTime) {
+    public long getAge(LocalDateTime dateTime) {
         return item.getAge(dateTime);
     }
 
-    public DateTime getCachedTime() {
+    public LocalDateTime getCachedTime() {
         return item.getCachedTime();
     }
 
@@ -69,14 +70,14 @@ public class SerializableCacheItem implements Serializable, CacheItem {
     }
 
     public static CacheItem parse(Properties object) {
-        DateTime time = HeaderUtils.fromHttpDate(new Header("cache-time", object.getProperty("cache-time")));
+        Optional<LocalDateTime> time = HeaderUtils.fromHttpDate(new Header("cache-time", object.getProperty("cache-time")));
         Status status = Status.valueOf(NumberUtils.toInt(object.getProperty("status"), 200));
         Headers headers = Headers.parse(object.getProperty("headers"));
         FilePayload p = null;
         if (object.containsKey("file")) {
-            p = new FilePayload(new File(object.getProperty("file")), MIMEType.valueOf(headers.getFirstHeaderValue("Content-Type")));
+            p = new FilePayload(new File(object.getProperty("file")), headers.getContentType().get());
         }
-        return new DefaultCacheItem(new HTTPResponse(p, status, headers), time);
+        return new DefaultCacheItem(new HTTPResponse(p, status, headers), time.get());
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {

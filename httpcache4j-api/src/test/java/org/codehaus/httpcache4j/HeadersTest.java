@@ -18,18 +18,17 @@ package org.codehaus.httpcache4j;
 
 import static org.junit.Assert.*;
 
+import net.hamnaberg.funclite.Optional;
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.util.AuthDirectivesParser;
-import org.codehaus.httpcache4j.util.DirectivesParser;
 import org.codehaus.httpcache4j.util.IOUtils;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class HeadersTest {
@@ -52,30 +51,30 @@ public class HeadersTest {
         Headers headers = new Headers().add(new Header("foo", "bar"));
         assertNotNull("Header list was null", headers.getHeaders("foo"));
         assertEquals("Header list was null", 1, headers.getHeaders("foo").size());
-        assertEquals("Header was not equal", new Header("foo", "bar"), headers.getFirstHeader("foo"));
+        assertEquals("Header was not equal", new Header("foo", "bar"), headers.getFirstHeader("foo").get());
     }
 
     @Test
     public void testDateHeader() {
-        DateTime now = new DateTime(2008, 10, 12, 15, 0, 0, 0, DateTimeZone.forID("UTC"));
+        LocalDateTime now = LocalDateTime.of(2008, 10, 12, 15, 0, 0, 0);
         Header header = HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, now);
         assertNotNull("Header was null", header);
         assertEquals("Sun, 12 Oct 2008 15:00:00 GMT", header.getValue());
-        assertEquals(now.getMillis(), HeaderUtils.getHeaderAsDate(header));
+        assertEquals(now.atOffset(ZoneOffset.UTC).toInstant().toEpochMilli(), HeaderUtils.getHeaderAsDate(header));
     }
 
     @Test
     public void testWronglyformattedDateHeader() {
-        DateTime header = HeaderUtils.fromHttpDate(new Header(HeaderConstants.EXPIRES, "-1"));
-        assertNull("Header value was not null", header);
+        Optional<LocalDateTime> header = HeaderUtils.fromHttpDate(new Header(HeaderConstants.EXPIRES, "-1"));
+        assertFalse("Header value was here", header.isSome());
     }
 
     @Test
     public void testParseDateHeader() {
         String value = "Fri, 20 Feb 2009 12:26:45 GMT";
-        DateTime dateTime = HeaderUtils.fromHttpDate(new Header(HeaderConstants.DATE, value));
-        assertNotNull(dateTime);
-        assertEquals(value, HeaderUtils.toHttpDate(HeaderConstants.DATE, dateTime).getValue());
+        Optional<LocalDateTime> dateTime = HeaderUtils.fromHttpDate(new Header(HeaderConstants.DATE, value));
+        assertTrue("Incorrect formatted date", dateTime.isSome());
+        assertEquals(value, HeaderUtils.toHttpDate(HeaderConstants.DATE, dateTime.get()).getValue());
     }
 
     @Test

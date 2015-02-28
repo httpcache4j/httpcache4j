@@ -17,7 +17,6 @@ package org.codehaus.httpcache4j.resolver;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.InputStreamEntity;
@@ -29,7 +28,6 @@ import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.HeaderUtils;
 import org.codehaus.httpcache4j.util.NullInputStream;
-import org.joda.time.DateTime;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +37,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDateTime;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -71,7 +70,7 @@ public class HTTPClientResponseResolverTest {
     public void testNotSoSimpleGET() throws IOException {
         HTTPClientResponseResolver resolver = new TestableResolver();
         CloseableHttpResponse mockedResponse = mock(CloseableHttpResponse.class);
-        when(mockedResponse.getAllHeaders()).thenReturn(new org.apache.http.Header[] {new BasicHeader("Date", HeaderUtils.toHttpDate("Date", new DateTime()).getValue())});
+        when(mockedResponse.getAllHeaders()).thenReturn(new org.apache.http.Header[]{new BasicHeader("Date", HeaderUtils.toHttpDate("Date", LocalDateTime.now()).getValue())});
         when(mockedResponse.getStatusLine()).thenReturn(new BasicStatusLine(new HttpVersion(1, 1),200, "OK"));
         when(mockedResponse.getEntity()).thenReturn(new InputStreamEntity(new NullInputStream(1), 1));
         when(client.execute(Mockito.<HttpUriRequest>anyObject())).thenReturn(mockedResponse);
@@ -85,7 +84,7 @@ public class HTTPClientResponseResolverTest {
     public void testPUT() throws IOException {
         HTTPClientResponseResolver resolver = new TestableResolver();
         CloseableHttpResponse mockedResponse = mock(CloseableHttpResponse.class);
-        when(mockedResponse.getAllHeaders()).thenReturn(new org.apache.http.Header[] {new BasicHeader("Date", HeaderUtils.toHttpDate("Date", new DateTime()).getValue())});
+        when(mockedResponse.getAllHeaders()).thenReturn(new org.apache.http.Header[] {new BasicHeader("Date", HeaderUtils.toHttpDate("Date", LocalDateTime.now()).getValue())});
         when(mockedResponse.getStatusLine()).thenReturn(new BasicStatusLine(new HttpVersion(1, 1), 200, "OK"));
         when(mockedResponse.getEntity()).thenReturn(null);
         when(client.execute(Mockito.<HttpUriRequest>anyObject())).thenReturn(mockedResponse);
