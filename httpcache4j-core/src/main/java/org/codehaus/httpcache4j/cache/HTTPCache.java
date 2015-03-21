@@ -36,7 +36,7 @@ public class HTTPCache {
     private final CacheStatistics statistics = new CacheStatistics();
     private final CacheStorage storage;
     private final ResponseResolver resolver;
-    private final Mutex<URI> mutex = new Mutex<URI>();
+    private final Mutex<URI> mutex = new Mutex<>();
     private boolean translateHEADToGET = false;
 
     public HTTPCache(CacheStorage storage, ResponseResolver resolver) {
@@ -139,7 +139,7 @@ public class HTTPCache {
     private HTTPResponse handleStaleResponse(HTTPRequest conditionalRequest, HTTPRequest originalRequest, CacheItem item, LocalDateTime requestTime) {
         long age = item.getAge(LocalDateTime.now());
         if (!helper.allowStale(item, originalRequest, requestTime)) {
-            HTTPResponse response = excuteImpl(conditionalRequest, item);
+            HTTPResponse response = executeImpl(conditionalRequest, item);
             return helper.rewriteResponse(originalRequest, response, age);
         }
         return helper.rewriteStaleResponse(originalRequest, item.getResponse(), age);
@@ -153,10 +153,10 @@ public class HTTPCache {
     }
 
     private HTTPResponse unconditionalResolve(final HTTPRequest request) {
-        return helper.rewriteResponse(request, excuteImpl(request, null), -1);
+        return helper.rewriteResponse(request, executeImpl(request, null), -1);
     }
 
-    private HTTPResponse excuteImpl(final HTTPRequest request, final CacheItem item) {
+    private HTTPResponse executeImpl(final HTTPRequest request, final CacheItem item) {
         HTTPResponse response = null;
         HTTPResponse resolvedResponse = null;
         try {
