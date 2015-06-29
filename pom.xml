@@ -22,7 +22,7 @@
   <packaging>pom</packaging>
   <version>5.0-SNAPSHOT</version>
   <name>Java HTTP cache</name>
-  <url>http://httpcache4j.codehaus.org</url>
+  <url>https://github.com/httpcache4j/httpcache4j/</url>
   <description>HttpCache4j is a library for caching HTTP requests from a client.</description>
   <inceptionYear>2008</inceptionYear>
 
@@ -237,40 +237,24 @@
 
 
   <scm>
-    <connection>scm:git:git://git.codehaus.org/httpcache4j.git</connection>
-    <developerConnection>scm:git:ssh://git@git.codehaus.org/httpcache4j.git</developerConnection>
-    <url>http://fisheye.codehaus.org/browse/httpcache4j</url>
+    <connection>scm:git:ssh://git@github.com:httpcache4j/httpcache4j.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com:httpcache4j/httpcache4j.git</developerConnection>
+    <url>https://github.com/httpcache4j/httpcache4j/</url>
     <tag>HEAD</tag>
   </scm>
 
   <distributionManagement>
     <repository>
-      <id>codehaus-staging</id>
-      <name>Codehaus staging repo</name>
-      <url>https://nexus.codehaus.org/service/local/staging/deploy/maven2</url>
+      <id>sonatype-staging</id>
+      <name>Sonatype staging repo</name>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
     </repository>
     <snapshotRepository>
-      <id>codehaus-snapshots</id>
-      <name>Codehaus maven repo</name>
-      <url>https://nexus.codehaus.org/content/repositories/snapshots</url>
+      <id>sonatype-snapshots</id>
+      <name>Sonatype snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
-  <repositories>
-    <repository>
-      <id>codehaus-snapshots</id>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <url>https://nexus.codehaus.org/content/repositories/snapshots</url>
-    </repository>
-    <repository>
-      <id>sonatype-snapshots</id>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </repository>
-  </repositories>
 
   <profiles>
     <profile>
@@ -285,7 +269,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-enforcer-plugin</artifactId>
-            <version>1.3.1</version>
+            <version>1.4</version>
             <executions>
               <execution>
                 <goals>
