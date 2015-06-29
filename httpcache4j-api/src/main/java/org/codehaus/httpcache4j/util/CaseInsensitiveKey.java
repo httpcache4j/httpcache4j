@@ -17,6 +17,7 @@ package org.codehaus.httpcache4j.util;
 
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  *
@@ -33,7 +34,7 @@ public final class CaseInsensitiveKey implements Serializable {
     private final String delegate;
 
     public CaseInsensitiveKey(final String string) {
-        this.delegate = string;
+        this.delegate = Objects.requireNonNull(string, "string may not be null");
     }
 
     public String getDelegate() {

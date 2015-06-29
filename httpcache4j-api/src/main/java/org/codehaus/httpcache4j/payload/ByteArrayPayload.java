@@ -28,7 +28,7 @@ import java.util.Objects;
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
 * @version $Revision: $
 */
-public class ByteArrayPayload implements Payload, Serializable {
+public final class ByteArrayPayload implements Payload, Serializable {
     private static final long serialVersionUID = -4845254892809632007L;
     private final byte[] bytes;
     private final MIMEType type;

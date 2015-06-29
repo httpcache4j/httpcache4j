@@ -9,27 +9,22 @@ public final class PropertiesLoader {
 
     public static Properties get(Reader reader) {
         Properties properties = new Properties();
-        try {
-            properties.load(reader);
+        try(Reader r = reader) {
+            properties.load(r);
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-        finally {
-            IOUtils.closeQuietly(reader);
         }
         return properties;
     }
 
     public static Properties get(InputStream stream) {
         Properties properties = new Properties();
-        try {
-            properties.load(stream);
+        try(InputStream is = stream) {
+            properties.load(is);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        finally {
-            IOUtils.closeQuietly(stream);
-        }
+
         return properties;
     }
 

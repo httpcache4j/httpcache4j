@@ -29,7 +29,7 @@ import java.util.Objects;
  * reading from the stream, the available flag will be set to false, and the
  * next invocation of  
  */
-public class InputStreamPayload implements Payload {
+public final class InputStreamPayload implements Payload {
     private final AvailableInputStream stream;
     private final MIMEType mimeType;
     private final long length;

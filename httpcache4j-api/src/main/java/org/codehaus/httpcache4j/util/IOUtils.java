@@ -1,6 +1,7 @@
 package org.codehaus.httpcache4j.util;
 
 import java.io.*;
+import java.util.function.Function;
 
 public final class IOUtils {
     private static final int BUF_SIZE = 0x1000; // 4K
@@ -33,12 +34,11 @@ public final class IOUtils {
         return bos.toByteArray();
     }
 
-    public static void closeQuietly(Closeable closeable) {
-        try {
-            if (closeable != null) {
-                closeable.close();
-            }
-        } catch (IOException ignore) {
+    public static <A extends Closeable, B> B borrow(A is, Function<A, B> f) {
+        try(A p = is) {
+            return f.apply(p);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

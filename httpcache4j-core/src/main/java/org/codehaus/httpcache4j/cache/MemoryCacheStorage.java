@@ -59,14 +59,9 @@ public class MemoryCacheStorage implements CacheStorage {
     private HTTPResponse rewriteResponse(Key key, HTTPResponse response) {
         if (response.hasPayload()) {
             Payload payload = response.getPayload();
-            InputStream stream = null;
-            try {
-                stream = payload.getInputStream();
+            try(InputStream stream = payload.getInputStream()) {
                 return response.withPayload(createPayload(key, payload, stream));
             } catch (IOException ignore) {
-            }
-            finally {
-                IOUtils.closeQuietly(stream);
             }
         }
         else {
@@ -194,7 +189,7 @@ public class MemoryCacheStorage implements CacheStorage {
         });
     }
 
-    protected <A> A withReadLock(Supplier<A> block) {
+    protected final <A> A withReadLock(Supplier<A> block) {
         read.lock();
         try {
             return block.get();
@@ -203,7 +198,7 @@ public class MemoryCacheStorage implements CacheStorage {
         }
     }
 
-    protected <A> A withWriteLock(Supplier<A> block) {
+    protected final <A> A withWriteLock(Supplier<A> block) {
         write.lock();
         try {
             return block.get();
@@ -211,7 +206,7 @@ public class MemoryCacheStorage implements CacheStorage {
             write.unlock();
         }
     }
-    protected void withVoidWriteLock(Runnable block) {
+    protected final void withVoidWriteLock(Runnable block) {
         read.lock();
         try {
             block.run();

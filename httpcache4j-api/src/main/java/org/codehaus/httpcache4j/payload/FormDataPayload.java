@@ -30,7 +30,7 @@ import java.util.Objects;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public class FormDataPayload implements Payload {
+public final class FormDataPayload implements Payload {
     private final MIMEType mimeType = new MIMEType("application/x-www-form-urlencoded");
     private final String value;
 

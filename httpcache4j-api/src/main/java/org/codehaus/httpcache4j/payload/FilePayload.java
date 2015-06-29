@@ -19,10 +19,7 @@ package org.codehaus.httpcache4j.payload;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Objects;
 
 /**
@@ -30,7 +27,7 @@ import java.util.Objects;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public class FilePayload implements Payload {
+public class FilePayload implements Payload, Serializable {
     private final File file;
     private final MIMEType mimeType;
 

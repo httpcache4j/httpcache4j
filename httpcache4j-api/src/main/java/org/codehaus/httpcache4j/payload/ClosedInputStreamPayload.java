@@ -28,7 +28,7 @@ import java.util.Objects;
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
-public class ClosedInputStreamPayload implements Payload, Serializable{
+public final class ClosedInputStreamPayload implements Payload, Serializable{
     private static final long serialVersionUID = 191318577797232567L;
 
     private MIMEType mimeType;

@@ -109,16 +109,12 @@ public class JavaNetResponseResolver extends AbstractResponseResolver {
 
     private void writeRequest(HTTPRequest request, HttpURLConnection connection) throws IOException {
         if (request.hasPayload()) {
-            InputStream requestStream = request.getPayload().getInputStream();
-            OutputStream connectionStream;
-            try {
+            try(InputStream requestStream = request.getPayload().getInputStream()) {
                 if (getConfiguration().isUseChunked()) {
                     connection.setChunkedStreamingMode(2048);
                 }
-                connectionStream = connection.getOutputStream();
+                OutputStream connectionStream = connection.getOutputStream();
                 IOUtils.copy(requestStream, connectionStream);
-            } finally {
-                IOUtils.closeQuietly(requestStream);
             }
         }
     }

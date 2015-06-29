@@ -16,9 +16,13 @@
 
 package org.codehaus.httpcache4j.payload;
 
+import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Represents a HTTP payload. may be either a {@link org.codehaus.httpcache4j.HTTPRequest request} payload
@@ -59,4 +63,12 @@ public interface Payload {
      * @return {@code true} if the payload is available. {@code false} if not.
      */
     public boolean isAvailable();
+
+    public default <A> Optional<A> transform(final Function<InputStream, A> f) {
+        try(InputStream is = getInputStream()) {
+            return Optional.ofNullable(f.apply(is));
+        } catch (IOException e) {
+            throw new HTTPException(e);
+        }
+    }
 }

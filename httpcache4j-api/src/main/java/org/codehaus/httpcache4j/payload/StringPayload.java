@@ -3,6 +3,7 @@ package org.codehaus.httpcache4j.payload;
 import org.codehaus.httpcache4j.MIMEType;
 
 import java.io.InputStream;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -10,15 +11,27 @@ import java.nio.charset.StandardCharsets;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public final class StringPayload implements Payload {
+public final class StringPayload implements Payload, Serializable {
     private final ByteArrayPayload delegate;
+    private final String value;
+    private final Charset charset;
 
     public StringPayload(String value, MIMEType mimeType) {
         this(value, mimeType, StandardCharsets.UTF_8);
     }
 
     public StringPayload(String value, MIMEType mimeType, Charset charset) {
-        delegate = new ByteArrayPayload(value.getBytes(charset), mimeType);
+        this.delegate = new ByteArrayPayload(value.getBytes(charset), mimeType);
+        this.value = value;
+        this.charset = charset;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public Charset getCharset() {
+        return charset;
     }
 
     @Override

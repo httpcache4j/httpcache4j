@@ -96,11 +96,12 @@ public final class HTTPResponse {
         return cached;
     }
 
+    //TODO: consider removing this
     public <A> Optional<A> transform(final Function<Payload, A> f) {
         if (hasPayload()) {
             try(InputStream is = payload.getInputStream()) {
                 InputStreamPayload isp = new InputStreamPayload(is, payload.getMimeType(), payload.length());
-                return Optional.of(f.apply(isp));
+                return Optional.ofNullable(f.apply(isp));
             } catch (IOException e) {
                 throw new HTTPException(e);
             }
@@ -110,7 +111,9 @@ public final class HTTPResponse {
 
     public void consume() {
         if (hasPayload()) {
-            IOUtils.closeQuietly(payload.getInputStream());
+            try(InputStream is = payload.getInputStream()) {
+               is.close();
+            } catch (IOException ignored){}
         }
     }
 

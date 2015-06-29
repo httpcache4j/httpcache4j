@@ -32,16 +32,12 @@ public abstract class AbstractHTTPWriter {
 
     protected void writeBody(PrintStream writer, Payload payload) {
         writer.print("\r\n");
-        InputStream stream = payload.getInputStream();
-        try {
+        try(InputStream stream = payload.getInputStream()) {
             IOUtils.copy(stream, writer);
             writer.print("\r\n");
         }
         catch (IOException e) {
             throw new HTTPException("Unable to write the body of the response", e);
-        }
-        finally {
-            IOUtils.closeQuietly(stream);
         }
     }
 
