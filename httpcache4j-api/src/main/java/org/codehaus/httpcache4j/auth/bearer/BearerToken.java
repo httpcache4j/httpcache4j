@@ -1,7 +1,7 @@
 package org.codehaus.httpcache4j.auth.bearer;
 
 
-import net.hamnaberg.funclite.Preconditions;
+import org.codehaus.httpcache4j.util.Preconditions;
 
 import java.util.Objects;
 

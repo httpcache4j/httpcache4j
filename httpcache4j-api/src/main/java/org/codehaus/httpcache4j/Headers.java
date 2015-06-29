@@ -17,11 +17,10 @@
 package org.codehaus.httpcache4j;
 
 
-import net.hamnaberg.funclite.CollectionOps;
-import net.hamnaberg.funclite.Optional;
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.preference.Preference;
 import org.codehaus.httpcache4j.util.CaseInsensitiveKey;
+import org.codehaus.httpcache4j.util.Streamable;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -36,7 +35,7 @@ import java.util.stream.Collectors;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public final class Headers implements Iterable<Header> {
+public final class Headers implements Streamable<Header> {
     private final HeaderHashMap headers = new HeaderHashMap();
 
     public Headers() {
@@ -64,7 +63,7 @@ public final class Headers implements Iterable<Header> {
 
     public Optional<Header> getFirstHeader(String headerKey) {
         List<Header> headerList = getHeaders(headerKey);
-        return CollectionOps.headOption(headerList);
+        return headerList.stream().findFirst();
     }
 
     public Optional<String> getFirstHeaderValue(String headerKey) {
@@ -227,7 +226,7 @@ public final class Headers implements Iterable<Header> {
 
     public Set<HTTPMethod> getAllow() {
         Optional<Header> header = getFirstHeader(HeaderConstants.ALLOW);
-        if (header.isSome()) {
+        if (header.isPresent()) {
             return header.get().getDirectives().stream().map(d -> HTTPMethod.valueOf(d.getName().toUpperCase(Locale.ENGLISH))).collect(Collectors.toSet());
         }
         return Collections.emptySet();

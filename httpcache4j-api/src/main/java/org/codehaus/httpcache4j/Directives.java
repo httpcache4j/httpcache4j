@@ -15,10 +15,12 @@
 
 package org.codehaus.httpcache4j;
 
-import net.hamnaberg.funclite.CollectionOps;
+import org.codehaus.httpcache4j.util.Streamable;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -27,15 +29,13 @@ import java.util.stream.StreamSupport;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: $
  */
-public final class Directives implements Iterable<Directive>, Serializable {
+public final class Directives implements Streamable<Directive>, Serializable {
     private final Map<String, Directive> directives;
 
     public Directives(Iterable<Directive> directives) {
-        Map<String, Directive> directivesMap = new LinkedHashMap<String, Directive>();
-        for (Directive directive : directives) {
-            directivesMap.put(directive.getName(), directive);
-        }
-        this.directives = Collections.unmodifiableMap(directivesMap);
+        Map<String, Directive> m = StreamSupport.stream(directives.spliterator(), false).
+                collect(Collectors.toMap(Directive::getName, Function.<Directive>identity(), throwingMerger(), LinkedHashMap::new));
+        this.directives = Collections.unmodifiableMap(m);
     }
 
     public Directives() {
@@ -65,8 +65,6 @@ public final class Directives implements Iterable<Directive>, Serializable {
     public Iterator<Directive> iterator() {
         return new ArrayList<>(directives.values()).iterator();
     }
-
-    public Stream<Directive> stream() { return StreamSupport.stream(spliterator(), false); }
     
     @Override
     public String toString() {
@@ -74,9 +72,11 @@ public final class Directives implements Iterable<Directive>, Serializable {
     }
 
     public Directives add(Directive directive) {
-        ArrayList<Directive> dirs = new ArrayList<>();
-        CollectionOps.addAll(dirs, this);
-        dirs.add(directive);
-        return new Directives(dirs);
+        List<Directive> list = Stream.concat(stream(), Arrays.asList(directive).stream()).collect(Collectors.toList());
+        return new Directives(list);
+    }
+
+    private static <T> BinaryOperator<T> throwingMerger() {
+        return (u,v) -> { throw new IllegalStateException(String.format("Duplicate key %s", u)); };
     }
 }

@@ -18,15 +18,8 @@ package org.codehaus.httpcache4j.cache;
 
 import java.io.Serializable;
 import java.text.Collator;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
-
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.HeaderConstants;
@@ -59,7 +52,7 @@ public final class Vary {
      * @param headers the vary headers as keys from the response, with request headers as values.
      */
     public Vary(final Map<String, String> headers) {
-        Preconditions.checkNotNull(headers, "Headers may not be null");
+        Objects.requireNonNull(headers, "Headers may not be null");
         Map<String, String> h = new TreeMap<String, String>(new VaryComparator());
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             String value = normalizeValue(entry.getKey(), entry.getValue());

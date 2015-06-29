@@ -16,11 +16,9 @@
 package org.codehaus.httpcache4j.payload;
 
 
-
-import net.hamnaberg.funclite.Preconditions;
-
 import java.io.InputStream;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
@@ -31,7 +29,7 @@ public class DelegatingInputStream extends InputStream {
 
 
     public DelegatingInputStream(InputStream delegate) {
-        this.delegate = Preconditions.checkNotNull(delegate, "Delegate may not be null");
+        this.delegate = Objects.requireNonNull(delegate, "Delegate may not be null");
     }
 
     public int read() throws IOException {

@@ -16,13 +16,13 @@
 
 package org.codehaus.httpcache4j;
 
-import net.hamnaberg.funclite.Optional;
 import org.codehaus.httpcache4j.payload.StringPayload;
 import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -34,8 +34,8 @@ public class HTTPResponseTest {
         Headers headers = new Headers();
         HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
         assertEquals(0, response.getHeaders().getAllow().size());
-        assertTrue(response.getHeaders().getETag().isNone());
-        assertTrue(response.getHeaders().getLastModified().isNone());
+        assertFalse(response.getHeaders().getETag().isPresent());
+        assertFalse(response.getHeaders().getLastModified().isPresent());
         assertNull(response.getPayload());
         assertFalse(response.hasPayload());
     }
@@ -45,9 +45,9 @@ public class HTTPResponseTest {
         Headers headers = new Headers().add(new Header("ETag", "\"abba\""));
         HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
         assertEquals(0, response.getHeaders().getAllow().size());
-        assertTrue(response.getHeaders().getETag().isSome());
+        assertTrue(response.getHeaders().getETag().isPresent());
         assertEquals(response.getHeaders().getETag().get().format(), "\"abba\"");
-        assertTrue(response.getHeaders().getLastModified().isNone());
+        assertFalse(response.getHeaders().getLastModified().isPresent());
         assertNull(response.getPayload());
         assertFalse(response.hasPayload());
     }
@@ -81,7 +81,7 @@ public class HTTPResponseTest {
             }
         });
 
-        assertTrue(result.isSome());
+        assertTrue(result.isPresent());
         assertEquals("Hello", result.get());
     }
 }

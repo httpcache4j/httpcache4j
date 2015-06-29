@@ -15,13 +15,13 @@
 
 package org.codehaus.httpcache4j.mutable;
 
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.preference.Preference;
 
 import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -36,7 +36,7 @@ public class MutableHeaders implements Iterable<Header> {
     }
 
     MutableHeaders(Headers headers) {
-        this.headers = Preconditions.checkNotNull(headers, "Headers may not be null");
+        this.headers = Objects.requireNonNull(headers, "Headers may not be null");
     }
 
     public void add(Header header) {
@@ -72,11 +72,11 @@ public class MutableHeaders implements Iterable<Header> {
     }
 
     public Header getFirstHeader(String headerKey) {
-        return headers.getFirstHeader(headerKey).orNull();
+        return headers.getFirstHeader(headerKey).orElse(null);
     }
 
     public String getFirstHeaderValue(String headerKey) {
-        return headers.getFirstHeaderValue(headerKey).orNull();
+        return headers.getFirstHeaderValue(headerKey).orElse(null);
     }
 
     public void addAcceptLanguage(Preference... accept) {
@@ -104,7 +104,7 @@ public class MutableHeaders implements Iterable<Header> {
     }
 
     public LocalDateTime getLastModified() {
-        return headers.getLastModified().orNull();
+        return headers.getLastModified().orElse(null);
     }
 
     public void addAcceptCharset(Preference... accept) {
@@ -128,11 +128,11 @@ public class MutableHeaders implements Iterable<Header> {
     }
 
     public LocalDateTime getExpires() {
-        return headers.getExpires().orNull();
+        return headers.getExpires().orElse(null);
     }
 
     public LocalDateTime getDate() {
-        return headers.getDate().orNull();
+        return headers.getDate().orElse(null);
     }
 
     public void setDate(LocalDateTime dt) {
@@ -148,7 +148,7 @@ public class MutableHeaders implements Iterable<Header> {
     }
 
     public CacheControl getCacheControl() {
-        return headers.getCacheControl().orNull();
+        return headers.getCacheControl().orElse(null);
     }
 
     public void setCacheControl(CacheControl cc) {
@@ -156,7 +156,7 @@ public class MutableHeaders implements Iterable<Header> {
     }
 
     public Tag getETag() {
-        return headers.getETag().orNull();
+        return headers.getETag().orElse(null);
     }
 
     public void setETag(Tag tag) {

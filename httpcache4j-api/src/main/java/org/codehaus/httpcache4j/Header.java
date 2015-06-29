@@ -16,9 +16,9 @@
 
 package org.codehaus.httpcache4j;
 
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.util.AuthDirectivesParser;
 import org.codehaus.httpcache4j.util.DirectivesParser;
+import org.codehaus.httpcache4j.util.Preconditions;
 
 import java.util.Locale;
 

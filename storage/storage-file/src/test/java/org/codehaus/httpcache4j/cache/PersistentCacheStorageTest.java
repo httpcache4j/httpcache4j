@@ -68,22 +68,18 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
 
     @Test
     public void testInsertFromMultipleThreads() throws Exception {
-        Runnable insertRunnable = new Runnable() {
-            public void run() {
-                for (int i = 0; i < 1000; i++) {
-                    HTTPResponse response = createRealResponse();
-                    HTTPRequest request = new HTTPRequest(URI.create("foo" + (int) Math.floor((Math.random() * 100) + 1)));
-                    storage.insert(request, response);
-                }
+        Runnable insertRunnable = () -> {
+            for (int i = 0; i < 100; i++) {
+                HTTPResponse response = createRealResponse();
+                HTTPRequest request = new HTTPRequest(URI.create("foo" + (int) Math.floor((Math.random() * 100) + 1)));
+                storage.insert(request, response);
             }
         };
-        Runnable updateRunnable = new Runnable() {
-            public void run() {
-                while (true) {
-                    HTTPResponse response = createRealResponse();
-                    HTTPRequest request = new HTTPRequest(URI.create("foo" + (int) Math.floor((Math.random() * 100) + 1)));
-                    storage.update(request, response);
-                }
+        Runnable updateRunnable = () -> {
+            while (true) {
+                HTTPResponse response = createRealResponse();
+                HTTPRequest request = new HTTPRequest(URI.create("foo" + (int) Math.floor((Math.random() * 100) + 1)));
+                storage.update(request, response);
             }
         };
         Thread t1 = new Thread(insertRunnable, "t1");

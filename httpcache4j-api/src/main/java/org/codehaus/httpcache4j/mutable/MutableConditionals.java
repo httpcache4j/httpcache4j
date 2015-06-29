@@ -15,12 +15,12 @@
 
 package org.codehaus.httpcache4j.mutable;
 
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.Conditionals;
 import org.codehaus.httpcache4j.Tag;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -34,7 +34,7 @@ public class MutableConditionals {
     }
 
     MutableConditionals(Conditionals conditionals) {
-        this.conditionals = Preconditions.checkNotNull(conditionals, "Conditionals may not be null");
+        this.conditionals = Objects.requireNonNull(conditionals, "Conditionals may not be null");
     }
 
     public void addIfMatch(Tag tag) {
@@ -62,11 +62,11 @@ public class MutableConditionals {
     }
 
     public LocalDateTime getModifiedSince() {
-        return conditionals.getModifiedSince().orNull();
+        return conditionals.getModifiedSince().orElse(null);
     }
 
     public LocalDateTime getUnModifiedSince() {
-        return conditionals.getUnModifiedSince().orNull();
+        return conditionals.getUnModifiedSince().orElse(null);
     }
 
     public boolean isUnconditional() {

@@ -160,7 +160,7 @@ public class ConditionalsTest {
         }
         catch (IllegalArgumentException expected) {
         }
-        assertTrue(conditionals.getModifiedSince().isNone());
+        assertFalse(conditionals.getModifiedSince().isPresent());
     }
 
     @Test
@@ -170,7 +170,7 @@ public class ConditionalsTest {
         assertEquals(1, conditionals.getNoneMatch().size());
         LocalDateTime dateTime = LocalDateTime.now();
         conditionals = conditionals.ifModifiedSince(dateTime);
-        assertTrue(conditionals.getModifiedSince().isSome());
+        assertTrue(conditionals.getModifiedSince().isPresent());
     }
 
     @Test
@@ -180,7 +180,7 @@ public class ConditionalsTest {
         assertEquals(1, conditionals.getMatch().size());
         LocalDateTime dateTime = LocalDateTime.now();
         conditionals = conditionals.ifUnModifiedSince(dateTime);
-        assertTrue(conditionals.getUnModifiedSince().isSome());
+        assertTrue(conditionals.getUnModifiedSince().isPresent());
     }
 
     @Test
@@ -195,7 +195,7 @@ public class ConditionalsTest {
         }
         catch (IllegalArgumentException expected) {
         }
-        assertTrue(conditionals.getUnModifiedSince().isNone());
+        assertFalse(conditionals.getUnModifiedSince().isPresent());
     }
 
     @Test
@@ -220,13 +220,13 @@ public class ConditionalsTest {
         assertNotSame(conditionals, conditionals2);
         assertEquals(0, conditionals.getNoneMatch().size());
         assertEquals(0, conditionals.getMatch().size());
-        assertTrue(conditionals.getModifiedSince().isNone());
-        assertTrue(conditionals.getUnModifiedSince().isNone());
+        assertFalse(conditionals.getModifiedSince().isPresent());
+        assertFalse(conditionals.getUnModifiedSince().isPresent());
 
         assertEquals(0, conditionals2.getNoneMatch().size());
         assertEquals(0, conditionals2.getMatch().size());
-        assertTrue(conditionals2.getModifiedSince().isNone());
-        assertTrue(conditionals2.getUnModifiedSince().isSome());
+        assertFalse(conditionals2.getModifiedSince().isPresent());
+        assertTrue(conditionals2.getUnModifiedSince().isPresent());
 
     }
 }

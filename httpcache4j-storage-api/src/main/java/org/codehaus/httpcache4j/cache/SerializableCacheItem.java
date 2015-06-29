@@ -15,13 +15,13 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import net.hamnaberg.funclite.Optional;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.FilePayload;
 import org.codehaus.httpcache4j.util.NumberUtils;
 
 import java.io.*;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Properties;
 
 /**

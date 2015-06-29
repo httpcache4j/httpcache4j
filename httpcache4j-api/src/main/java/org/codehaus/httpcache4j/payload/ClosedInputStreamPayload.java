@@ -15,12 +15,12 @@
 
 package org.codehaus.httpcache4j.payload;
 
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.MIMEType;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * This MUST ONLY be used for testing purposes.
@@ -34,7 +34,7 @@ public class ClosedInputStreamPayload implements Payload, Serializable{
     private MIMEType mimeType;
 
     public ClosedInputStreamPayload(final MIMEType mimeType) {
-        this.mimeType = Preconditions.checkNotNull(mimeType, "MIMEType may not be null");
+        this.mimeType = Objects.requireNonNull(mimeType, "MIMEType may not be null");
     }
 
     public MIMEType getMimeType() {

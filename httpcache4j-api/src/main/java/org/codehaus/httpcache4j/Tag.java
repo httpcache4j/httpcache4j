@@ -16,7 +16,7 @@
 
 package org.codehaus.httpcache4j;
 
-import net.hamnaberg.funclite.Optional;
+import java.util.Optional;
 
 /**
  * Validation tag equivalent to the HTTP entity tag. "A strong entity tag may be
@@ -71,7 +71,7 @@ public final class Tag {
             result = new Tag("*", weak);
         }
 
-        return Optional.fromNullable(result);
+        return Optional.ofNullable(result);
     }
 
     /**

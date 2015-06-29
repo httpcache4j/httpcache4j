@@ -16,17 +16,18 @@
 
 package org.codehaus.httpcache4j;
 
-import static org.codehaus.httpcache4j.HeaderConstants.*;
+import org.codehaus.httpcache4j.util.OptionalUtils;
+import org.codehaus.httpcache4j.util.Preconditions;
 
-import net.hamnaberg.funclite.Preconditions;
+import static org.codehaus.httpcache4j.HeaderConstants.*;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Locale;
-import net.hamnaberg.funclite.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -50,7 +51,7 @@ public final class HeaderUtils {
             return null;
         }
         if ("0".equals(header.getValue().trim())) {
-            return Optional.some(LocalDateTime.of(LocalDate.of(1970, 1, 1), LocalTime.of(0, 0, 0, 0)));
+            return Optional.of(LocalDateTime.of(LocalDate.of(1970, 1, 1), LocalTime.of(0, 0, 0, 0)));
         }
         return parseGMTString(header.getValue());
     }
@@ -58,11 +59,11 @@ public final class HeaderUtils {
     public static Optional<LocalDateTime> parseGMTString(String value) {
         DateTimeFormatter formatter = getFormatter();
         try {
-            return Optional.some(LocalDateTime.from(formatter.parse(value)));
+            return Optional.of(LocalDateTime.from(formatter.parse(value)));
         } catch (DateTimeParseException ignore) {
         }
 
-        return Optional.none();
+        return Optional.empty();
     }
 
 
@@ -84,7 +85,7 @@ public final class HeaderUtils {
     public static long getHeaderAsDate(Header header) {
         try {
             Optional<LocalDateTime> dateTime = fromHttpDate(header);
-            if (dateTime.isSome()) {
+            if (dateTime.isPresent()) {
                 return dateTime.get().toInstant(ZoneOffset.UTC).toEpochMilli();
             }
         }
@@ -125,23 +126,23 @@ public final class HeaderUtils {
         }
         if (headers.contains(CACHE_CONTROL)) {
             Optional<CacheControl> cc = headers.getCacheControl();
-            if (cc.exists(cc2 -> cc2.isNoCache() || cc2.isNoStore())) {
+            if (OptionalUtils.exists(cc, (cc2 -> cc2.isNoCache() || cc2.isNoStore()))) {
                return false; 
             }
         }
         if (headers.contains(PRAGMA)) {
             Optional<String> header = headers.getFirstHeaderValue(PRAGMA);
-            if (header.exists(s -> s.contains(NO_CACHE_HEADER_VALUE))) {
+            if (OptionalUtils.exists(header, s -> s.contains(NO_CACHE_HEADER_VALUE))) {
                 return false;
             }
         }
         if (headers.contains(EXPIRES)) {
             Optional<LocalDateTime> expires = headers.getExpires();
             Optional<LocalDateTime> date = headers.getDate();
-            if (expires.isNone() || date.isNone()) {
+            if (!expires.isPresent() || !date.isPresent()) {
                 return false;
             }
-            if (expires.exists(e -> e.isBefore(date.get())) || expires.exists(e -> e.isEqual(date.get()))) {
+            if (OptionalUtils.exists(expires, e -> e.isBefore(date.get())) || OptionalUtils.exists(expires, e -> e.isEqual(date.get()))) {
                 return false;
             }
         }

@@ -16,15 +16,16 @@
 
 package org.codehaus.httpcache4j;
 
-import net.hamnaberg.funclite.Optional;
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.annotation.Internal;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.util.IOUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static org.codehaus.httpcache4j.HeaderConstants.X_CACHE;
@@ -48,9 +49,9 @@ public final class HTTPResponse {
     }
 
     public HTTPResponse(Payload payload, StatusLine statusLine, Headers headers) {
-        this.statusLine = Preconditions.checkNotNull(statusLine, "You must supply a Status");
+        this.statusLine = Objects.requireNonNull(statusLine, "You must supply a Status");
         this.payload = payload;
-        this.headers = Preconditions.checkNotNull(headers, "You must supply some Headers");
+        this.headers = Objects.requireNonNull(headers, "You must supply some Headers");
 
         if (headers.contains(X_CACHE)) {
             Header cacheHeader = CacheHeaderBuilder.getBuilder().createHITXCacheHeader();
@@ -97,15 +98,14 @@ public final class HTTPResponse {
 
     public <A> Optional<A> transform(final Function<Payload, A> f) {
         if (hasPayload()) {
-            InputStream is = payload.getInputStream();
-            try {
+            try(InputStream is = payload.getInputStream()) {
                 InputStreamPayload isp = new InputStreamPayload(is, payload.getMimeType(), payload.length());
-                return Optional.fromNullable(f.apply(isp));
-            } finally {
-                IOUtils.closeQuietly(is);
+                return Optional.of(f.apply(isp));
+            } catch (IOException e) {
+                throw new HTTPException(e);
             }
         }
-        return Optional.none();
+        return Optional.empty();
     }
 
     public void consume() {

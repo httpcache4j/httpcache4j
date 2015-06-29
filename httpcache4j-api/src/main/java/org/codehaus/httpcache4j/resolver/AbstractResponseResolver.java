@@ -16,13 +16,13 @@
 
 package org.codehaus.httpcache4j.resolver;
 
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Status;
 import org.codehaus.httpcache4j.auth.*;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * Implementors should implement this instead of using the ResponseResolver interface directly.
@@ -33,7 +33,7 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
     private final ResolverConfiguration configuration;
 
     protected AbstractResponseResolver(ResolverConfiguration configuration) {
-        this.configuration = Preconditions.checkNotNull(configuration, "Configuration may not be null");
+        this.configuration = Objects.requireNonNull(configuration, "Configuration may not be null");
     }
 
     protected final ProxyAuthenticator getProxyAuthenticator() {

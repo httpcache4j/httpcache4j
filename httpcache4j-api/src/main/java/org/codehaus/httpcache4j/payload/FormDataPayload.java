@@ -15,9 +15,7 @@
 
 package org.codehaus.httpcache4j.payload;
 
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.MIMEType;
-import org.codehaus.httpcache4j.Parameter;
 import org.codehaus.httpcache4j.uri.QueryParam;
 import org.codehaus.httpcache4j.uri.QueryParams;
 
@@ -26,6 +24,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -44,7 +43,7 @@ public class FormDataPayload implements Payload {
     }
 
     public FormDataPayload(String formatted) {
-        this.value = Preconditions.checkNotNull(formatted, "form data may not be null");
+        this.value = Objects.requireNonNull(formatted, "form data may not be null");
     }
 
     public MIMEType getMimeType() {

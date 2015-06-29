@@ -16,7 +16,8 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
-import net.hamnaberg.funclite.Optional;
+import org.codehaus.httpcache4j.util.OptionalUtils;
+
 import java.io.IOException;
 import java.net.SocketException;
 import java.time.LocalDateTime;
@@ -72,7 +73,7 @@ class HTTPCacheHelper {
 
     Headers removeUnmodifiableHeaders(Headers headers) {
         Headers washedHeaders = new Headers();
-        Set<String> usableHeaders = new HashSet<String>(headers.keySet());
+        Set<String> usableHeaders = new HashSet<>(headers.keySet());
         usableHeaders.removeAll(unmodifiableHeaders);
         for (String headerName : usableHeaders) {
             if (headers.contains(headerName)) {
@@ -103,10 +104,10 @@ class HTTPCacheHelper {
     HTTPRequest prepareConditionalGETRequest(HTTPRequest request, HTTPResponse staleResponse) {
         Conditionals conditionals = request.getHeaders().getConditionals();
         if (request.getMethod() == HTTPMethod.GET && conditionals.toHeaders().isEmpty()) {
-            if (staleResponse.getHeaders().getETag().isSome()) {
+            if (staleResponse.getHeaders().getETag().isPresent()) {
                 conditionals = new Conditionals().addIfNoneMatch(staleResponse.getHeaders().getETag().get());
             }
-            else if (staleResponse.getHeaders().getLastModified().isSome()) {
+            else if (staleResponse.getHeaders().getLastModified().isPresent()) {
                 conditionals = conditionals.ifModifiedSince(staleResponse.getHeaders().getLastModified().get());
             }
             return request.headers(request.getHeaders().withConditionals(conditionals));
@@ -120,20 +121,20 @@ class HTTPCacheHelper {
 
     boolean isEndToEndReloadRequest(HTTPRequest request) {
         Optional<CacheControl> cacheControl = request.getCacheControl();
-        return request.getMethod().isCacheable() && cacheControl.exists(CacheControl::isNoCache);
+        return request.getMethod().isCacheable() && OptionalUtils.exists(cacheControl, CacheControl::isNoCache);
     }
 
     boolean isCacheableRequest(HTTPRequest request) {
         if (request.getMethod().isCacheable()) {
             Optional<CacheControl> cc = request.getCacheControl();
-            return cc.forall(c -> c.isNoCache() || !c.isNoStore());
+            return OptionalUtils.forall(cc, c -> c.isNoCache() || !c.isNoStore());
         }
         return false;
     }
 
     boolean allowStale(CacheItem item, HTTPRequest req, LocalDateTime requestTime) {
         Optional<CacheControl> control = req.getCacheControl();
-        return control.exists(cc -> {
+        return OptionalUtils.exists(control, cc -> {
             int maxStale = cc.getMaxStale();
             if (maxStale > -1) {
                 long ttl = item.getTTL();
@@ -176,14 +177,14 @@ class HTTPCacheHelper {
         if (request.getMethod() == HTTPMethod.GET) {
             List<Tag> noneMatch = request.getHeaders().getConditionals().getNoneMatch();
             Optional<Tag> eTag = response.getHeaders().getETag();
-            if (eTag.isSome() && !noneMatch.isEmpty() && !hasBeenCached) {
+            if (eTag.isPresent() && !noneMatch.isEmpty() && !hasBeenCached) {
                 if (noneMatch.contains(eTag.get()) || noneMatch.contains(Tag.ALL)) {
                     response = new HTTPResponse(null, Status.NOT_MODIFIED, headers);
                 }
             }
             Optional<LocalDateTime> lastModified = response.getHeaders().getLastModified();
             Optional<LocalDateTime> modifiedSince = request.getHeaders().getConditionals().getModifiedSince();
-            if (lastModified.isSome() && modifiedSince != null && !hasBeenCached) {
+            if (lastModified.isPresent() && modifiedSince != null && !hasBeenCached) {
                 if (lastModified.equals(modifiedSince)) {
                     response = new HTTPResponse(null, Status.NOT_MODIFIED, headers);
                 }
@@ -200,8 +201,8 @@ class HTTPCacheHelper {
 
 
     boolean shouldBeStored(HTTPResponse response) {
-        boolean hasValidator = response.getHeaders().getLastModified().isSome() || response.getHeaders().getETag().isSome();
-        boolean hasExpiry = response.getHeaders().getExpires().isSome() || (response.getHeaders().getCacheControl().exists(cc -> cc.getMaxAge() > 0));
+        boolean hasValidator = response.getHeaders().getLastModified().isPresent() || response.getHeaders().getETag().isPresent();
+        boolean hasExpiry = response.getHeaders().getExpires().isPresent() || (OptionalUtils.exists(response.getHeaders().getCacheControl(), cc -> cc.getMaxAge() > 0));
         return hasExpiry || hasValidator;
     }
 }

@@ -1,6 +1,5 @@
 package org.codehaus.httpcache4j.resolver;
 
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.util.PropertiesLoader;
 
@@ -31,10 +30,10 @@ public final class ResolverConfiguration {
 
     public ResolverConfiguration(String userAgent, boolean useChunked, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator, ConnectionConfiguration connectionConfiguration) {
         this.connectionConfiguration = connectionConfiguration;
-        this.userAgent = Preconditions.checkNotNull(userAgent, "User Agent may not be null");
+        this.userAgent = Objects.requireNonNull(userAgent, "User Agent may not be null");
         this.useChunked = useChunked;
-        this.proxyAuthenticator = Preconditions.checkNotNull(proxyAuthenticator, "Proxy Authenticator may not be null");
-        this.authenticator = Preconditions.checkNotNull(authenticator, "Authenticator may not be null");
+        this.proxyAuthenticator = Objects.requireNonNull(proxyAuthenticator, "Proxy Authenticator may not be null");
+        this.authenticator = Objects.requireNonNull(authenticator, "Authenticator may not be null");
     }
 
     public ResolverConfiguration(ProxyAuthenticator proxyAuthenticator, Authenticator authenticator, ConnectionConfiguration connectionConfiguration) {

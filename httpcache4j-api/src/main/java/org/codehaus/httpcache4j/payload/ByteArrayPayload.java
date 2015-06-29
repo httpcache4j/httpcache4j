@@ -15,7 +15,6 @@
 
 package org.codehaus.httpcache4j.payload;
 
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.MIMEType;
 import org.codehaus.httpcache4j.util.IOUtils;
 
@@ -23,6 +22,7 @@ import java.io.Serializable;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
@@ -43,8 +43,8 @@ public class ByteArrayPayload implements Payload, Serializable {
     }
 
     public ByteArrayPayload(byte[] bytes, MIMEType type) {
-        this.bytes = Preconditions.checkNotNull(bytes, "Byte array may not be null");
-        this.type = Preconditions.checkNotNull(type, "MIMEType may not be null");
+        this.bytes = Objects.requireNonNull(bytes, "Byte array may not be null");
+        this.type = Objects.requireNonNull(type, "MIMEType may not be null");
         this.length = bytes.length;
     }
 

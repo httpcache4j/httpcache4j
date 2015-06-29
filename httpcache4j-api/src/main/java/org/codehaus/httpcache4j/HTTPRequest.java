@@ -16,13 +16,13 @@
 
 package org.codehaus.httpcache4j;
 
-import net.hamnaberg.funclite.Optional;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.uri.URIBuilder;
 
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Represents a HTTP request. You can use this in a couple of ways: <br/>

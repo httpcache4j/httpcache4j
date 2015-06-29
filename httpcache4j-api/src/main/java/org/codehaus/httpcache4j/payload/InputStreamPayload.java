@@ -16,12 +16,12 @@
 
 package org.codehaus.httpcache4j.payload;
 
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.MIMEType;
 
 import org.codehaus.httpcache4j.util.AvailableInputStream;
 
 import java.io.InputStream;
+import java.util.Objects;
 
 /**
  * Represents a payload that is backed by a one-shot inputstream.
@@ -53,7 +53,7 @@ public class InputStreamPayload implements Payload {
         else {
             this.mimeType = MIMEType.APPLICATION_OCTET_STREAM;
         }
-        this.stream = new AvailableInputStream(Preconditions.checkNotNull(stream, "Inputstream may not be null"));
+        this.stream = new AvailableInputStream(Objects.requireNonNull(stream, "Inputstream may not be null"));
         this.length = length;
     }
 

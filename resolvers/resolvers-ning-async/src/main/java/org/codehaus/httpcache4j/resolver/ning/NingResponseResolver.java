@@ -5,7 +5,6 @@ import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.FluentCaseInsensitiveStringsMap;
 import com.ning.http.client.Response;
 import com.ning.http.client.generators.InputStreamBodyGenerator;
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.Authenticator;
 import org.codehaus.httpcache4j.auth.ProxyAuthenticator;
@@ -17,6 +16,7 @@ import org.codehaus.httpcache4j.resolver.ResponseCreator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -31,7 +31,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
 
     protected NingResponseResolver(ResolverConfiguration configuration, AsyncHttpClientConfig asyncConfig) {
         super(configuration);
-        AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder(Preconditions.checkNotNull(asyncConfig, "Async config may not be null")).
+        AsyncHttpClientConfig.Builder config = new AsyncHttpClientConfig.Builder(Objects.requireNonNull(asyncConfig, "Async config may not be null")).
                 setUserAgent(configuration.getUserAgent());
         config.setAllowPoolingConnections(true);
         config.setFollowRedirect(false);
@@ -44,16 +44,16 @@ public class NingResponseResolver extends AbstractResponseResolver {
 
     private ConnectionConfiguration configureConnections(ResolverConfiguration configuration, AsyncHttpClientConfig.Builder config) {
         ConnectionConfiguration connectionConfiguration = configuration.getConnectionConfiguration();
-        if (connectionConfiguration.getMaxConnections().isSome()) {
+        if (connectionConfiguration.getMaxConnections().isPresent()) {
             config.setMaxConnections(connectionConfiguration.getMaxConnections().get());
         }
-        if (connectionConfiguration.getDefaultConnectionsPerHost().isSome()) {
+        if (connectionConfiguration.getDefaultConnectionsPerHost().isPresent()) {
             config.setMaxConnectionsPerHost(connectionConfiguration.getDefaultConnectionsPerHost().get());
         }
-        if (connectionConfiguration.getTimeout().isSome()) {
+        if (connectionConfiguration.getTimeout().isPresent()) {
             config.setReadTimeout(connectionConfiguration.getTimeout().get());
         }
-        if (connectionConfiguration.getSocketTimeout().isSome()) {
+        if (connectionConfiguration.getSocketTimeout().isPresent()) {
             config.setConnectTimeout(connectionConfiguration.getSocketTimeout().get());
         }
         return connectionConfiguration;

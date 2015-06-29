@@ -18,7 +18,6 @@ package org.codehaus.httpcache4j;
 
 import static org.junit.Assert.*;
 
-import net.hamnaberg.funclite.Optional;
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.util.AuthDirectivesParser;
 import org.codehaus.httpcache4j.util.IOUtils;
@@ -29,6 +28,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Optional;
 
 /** @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a> */
 public class HeadersTest {
@@ -66,14 +66,14 @@ public class HeadersTest {
     @Test
     public void testWronglyformattedDateHeader() {
         Optional<LocalDateTime> header = HeaderUtils.fromHttpDate(new Header(HeaderConstants.EXPIRES, "-1"));
-        assertFalse("Header value was here", header.isSome());
+        assertFalse("Header value was here", header.isPresent());
     }
 
     @Test
     public void testParseDateHeader() {
         String value = "Fri, 20 Feb 2009 12:26:45 GMT";
         Optional<LocalDateTime> dateTime = HeaderUtils.fromHttpDate(new Header(HeaderConstants.DATE, value));
-        assertTrue("Incorrect formatted date", dateTime.isSome());
+        assertTrue("Incorrect formatted date", dateTime.isPresent());
         assertEquals(value, HeaderUtils.toHttpDate(HeaderConstants.DATE, dateTime.get()).getValue());
     }
 

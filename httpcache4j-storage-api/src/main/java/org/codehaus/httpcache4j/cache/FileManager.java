@@ -23,8 +23,8 @@ import java.io.Serializable;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.util.Objects;
 
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.util.DeletingFileVisitor;
 import org.codehaus.httpcache4j.util.Digester;
 import org.codehaus.httpcache4j.util.IOUtils;
@@ -38,7 +38,7 @@ public final class FileManager implements Serializable {
     private final File baseDirectory;
 
     public FileManager(final File baseDirectory) {
-        Preconditions.checkNotNull(baseDirectory, "Base directory may not be null");
+        Objects.requireNonNull(baseDirectory, "Base directory may not be null");
         this.baseDirectory = createFilesDirectory(baseDirectory);
     }
 
@@ -102,10 +102,13 @@ public final class FileManager implements Serializable {
     }
 
     private void deleteDirectory(File resolved) {
-        try {
-            Files.walkFileTree(resolved.toPath(), new DeletingFileVisitor());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (Files.isDirectory(resolved.toPath())) {
+            try {
+                Files.walkFileTree(resolved.toPath(), new DeletingFileVisitor());
+                Files.deleteIfExists(resolved.toPath());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

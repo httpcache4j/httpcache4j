@@ -1,7 +1,6 @@
 package org.codehaus.httpcache4j.cache;
 
 import com.google.common.cache.*;
-import net.hamnaberg.funclite.OptionalOps;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.annotation.Beta;
@@ -10,7 +9,7 @@ import org.codehaus.httpcache4j.util.Pair;
 import java.io.File;
 import java.net.URI;
 import java.util.Iterator;
-import net.hamnaberg.funclite.Optional;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -72,9 +71,9 @@ public class IndexedPersistentCacheStorage implements CacheStorage, RemovalListe
     public CacheItem get(final HTTPRequest request) {
         Set<Key> keys = index.asMap().keySet();
         Stream<Key> stream = keys.stream().filter(k -> k.getURI().equals(request.getNormalizedURI()) && k.getVary().matches(request));
-        Optional<Key> first = OptionalOps.fromJavaOptional(stream.findFirst());
+        Optional<Key> first = stream.findFirst();
         Optional<Pair<Key, CacheItem>> head = first.flatMap(t -> backing.getItem(request));
-        if (head.isSome()) {
+        if (head.isPresent()) {
             Pair<Key, CacheItem> pair = head.get();
             index.put(pair.getKey(), pair.getValue());
         }

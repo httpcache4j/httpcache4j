@@ -15,8 +15,6 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import net.hamnaberg.funclite.Optional;
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.HeaderConstants;
@@ -28,9 +26,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static org.codehaus.httpcache4j.HeaderConstants.VARY;
 
@@ -46,8 +42,8 @@ public final class Key implements Serializable {
 
     public static Key create(URI uri, Vary vary) {
         return new Key(
-                URIBuilder.fromURI(Preconditions.checkNotNull(uri, "URI may not be null")).toNormalizedURI(),
-                Preconditions.checkNotNull(vary, "vary may not be null")
+                URIBuilder.fromURI(Objects.requireNonNull(uri, "URI may not be null")).toNormalizedURI(),
+                Objects.requireNonNull(vary, "vary may not be null")
         );
     }
 
@@ -60,11 +56,11 @@ public final class Key implements Serializable {
         Headers requestHeaders = request.getAllHeaders();
         Optional<String> varyHeader = responseHeaders.getFirstHeaderValue(VARY);
         Map<String, String> resolvedVaryHeaders = new HashMap<String, String>();
-        if (varyHeader.isSome()) {
+        if (varyHeader.isPresent()) {
             String[] varies = varyHeader.get().split(",");
             for (String vary : varies) {
                 Optional<String> value = requestHeaders.getFirstHeaderValue(vary);
-                if (value.isSome()) {
+                if (value.isPresent()) {
                     resolvedVaryHeaders.put(vary, value.get());
                 }
             }
@@ -77,8 +73,8 @@ public final class Key implements Serializable {
 
 
     Key(URI uri, Vary vary) {
-        Preconditions.checkNotNull(uri, "URI may not be null");
-        Preconditions.checkNotNull(vary, "Vary may not be null");
+        Objects.requireNonNull(uri, "URI may not be null");
+        Objects.requireNonNull(vary, "Vary may not be null");
         this.uri = uri;
         this.vary = vary;
     }

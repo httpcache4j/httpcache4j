@@ -16,12 +16,13 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import net.hamnaberg.funclite.Optional;
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.*;
+import org.codehaus.httpcache4j.util.OptionalUtils;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * This is an internal class, and should not be used by clients.
@@ -39,8 +40,8 @@ public class DefaultCacheItem implements CacheItem {
     }
 
     public DefaultCacheItem(HTTPResponse response, LocalDateTime cachedTime) {
-        this.response = Preconditions.checkNotNull(response, "Response may not be null");
-        this.cachedTime = Preconditions.checkNotNull(cachedTime, "CacheTime may not be null");
+        this.response = Objects.requireNonNull(response, "Response may not be null");
+        this.cachedTime = Objects.requireNonNull(cachedTime, "CacheTime may not be null");
         this.ttl = getTTL(response, 0);
     }
 
@@ -62,7 +63,7 @@ public class DefaultCacheItem implements CacheItem {
     public static long getTTL(HTTPResponse response, int defaultTTLinSeconds) {
         final Optional<CacheControl> cc = response.getHeaders().getCacheControl();
 
-        if (cc.isSome()) {
+        if (cc.isPresent()) {
             int maxAge = cc.get().getMaxAge();
             if (maxAge > 0) {
                 return maxAge;
@@ -76,10 +77,10 @@ public class DefaultCacheItem implements CacheItem {
          * HTTP/1.1 servers SHOULD NOT send Expires dates more than one year in the future.
          */
         Optional<LocalDateTime> expires = response.getHeaders().getExpires();
-        if (expires.isSome()) {
+        if (expires.isPresent()) {
             LocalDateTime expiryDate = expires.get();
             Optional<LocalDateTime> date = response.getHeaders().getDate();
-            if (date.exists(dt -> dt.isBefore(expiryDate))) {
+            if (OptionalUtils.exists(date, dt -> dt.isBefore(expiryDate))) {
                 return Duration.between(date.get(), expiryDate).getSeconds();
             }
         }

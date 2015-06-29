@@ -16,7 +16,6 @@
 
 package org.codehaus.httpcache4j.client;
 
-import net.hamnaberg.funclite.Preconditions;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.methods.*;
@@ -37,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * An implementation of the ResponseResolver using the Commons HTTPClient (http://hc.apache.org/httpclient-3.x/)
@@ -52,7 +52,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
     protected HTTPClientResponseResolver(HttpClient client, ResolverConfiguration configuration) {
         super(configuration);
-        this.client = Preconditions.checkNotNull(client, "You may not create with a null HttpClient");
+        this.client = Objects.requireNonNull(client, "You may not create with a null HttpClient");
         HTTPHost proxyHost = getProxyAuthenticator().getConfiguration().getHost();
         if (proxyHost != null) {
             this.client.getHostConfiguration().setProxy(proxyHost.getHost(), proxyHost.getPort());
@@ -75,16 +75,16 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             connectionsParams = new HttpConnectionManagerParams();
             client.getHttpConnectionManager().setParams(connectionsParams);
         }
-        if (connectionConfiguration.getDefaultConnectionsPerHost().isSome()) {
+        if (connectionConfiguration.getDefaultConnectionsPerHost().isPresent()) {
             connectionsParams.setDefaultMaxConnectionsPerHost(connectionConfiguration.getDefaultConnectionsPerHost().get());
         }
-        if (connectionConfiguration.getMaxConnections().isSome()) {
+        if (connectionConfiguration.getMaxConnections().isPresent()) {
             connectionsParams.setMaxTotalConnections(connectionConfiguration.getMaxConnections().get());
         }
-        if (connectionConfiguration.getSocketTimeout().isSome()) {
+        if (connectionConfiguration.getSocketTimeout().isPresent()) {
             connectionsParams.setSoTimeout(connectionConfiguration.getSocketTimeout().get());
         }
-        if (connectionConfiguration.getTimeout().isSome()) {
+        if (connectionConfiguration.getTimeout().isPresent()) {
             connectionsParams.setConnectionTimeout(connectionConfiguration.getTimeout().get());
         }
         for (Map.Entry<HTTPHost, Integer> entry : connectionConfiguration.getConnectionsPerHost().entrySet()) {

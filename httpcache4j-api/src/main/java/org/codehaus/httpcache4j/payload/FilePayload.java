@@ -16,7 +16,6 @@
 
 package org.codehaus.httpcache4j.payload;
 
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
 
@@ -24,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Objects;
 
 /**
  * Payload that accepts a file with mimetype.
@@ -41,8 +41,8 @@ public class FilePayload implements Payload {
      * @param mimeType the mime type of the file, may not be {@code null}. 
      */
     public FilePayload(final File file, final MIMEType mimeType) {
-        this.file = Preconditions.checkNotNull(file, "File may not be null");
-        this.mimeType = Preconditions.checkNotNull(mimeType, "Mime type may not be null");
+        this.file = Objects.requireNonNull(file, "File may not be null");
+        this.mimeType = Objects.requireNonNull(mimeType, "Mime type may not be null");
     }
 
     public MIMEType getMimeType() {

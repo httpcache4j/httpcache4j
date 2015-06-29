@@ -19,6 +19,7 @@ import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
 import org.codehaus.httpcache4j.auth.DefaultProxyAuthenticator;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
+import org.codehaus.httpcache4j.util.Base64;
 import org.codehaus.httpcache4j.util.IOUtils;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -28,6 +29,7 @@ import java.io.OutputStream;
 import java.net.*;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
@@ -37,10 +39,10 @@ public class JavaNetResponseResolver extends AbstractResponseResolver {
 
     public JavaNetResponseResolver(ResolverConfiguration configuration) {
         super(configuration);
-        if (configuration.getConnectionConfiguration().getMaxConnections().isSome()) {
+        if (configuration.getConnectionConfiguration().getMaxConnections().isPresent()) {
             throw new UnsupportedOperationException("Single Connection only resolver");
         }
-        if (configuration.getConnectionConfiguration().getDefaultConnectionsPerHost().isSome()) {
+        if (configuration.getConnectionConfiguration().getDefaultConnectionsPerHost().isPresent()) {
             throw new UnsupportedOperationException("Single Connection only resolver");
         }
         if (!configuration.getConnectionConfiguration().getConnectionsPerHost().isEmpty()) {
@@ -76,6 +78,7 @@ public class JavaNetResponseResolver extends AbstractResponseResolver {
     private void doRequest(HTTPRequest request, HttpURLConnection connection) throws IOException {
         configureConnection(connection);
         connection.setRequestMethod(request.getMethod().getMethod());
+        connection.setDoOutput(request.getMethod().canHavePayload());
         Headers requestHeaders = request.getAllHeaders();
         connection.addRequestProperty(HeaderConstants.USER_AGENT, getConfiguration().getUserAgent());
 
@@ -91,12 +94,13 @@ public class JavaNetResponseResolver extends AbstractResponseResolver {
         Status status = Status.valueOf(connection.getResponseCode());
         String message = connection.getResponseMessage();
         Headers responseHeaders = getResponseHeaders(connection);
-        return ResponseCreator.createResponse(new StatusLine(status, message), responseHeaders, wrapResponseStream(connection, status));
+        return ResponseCreator.createResponse(new StatusLine(status, message), responseHeaders, wrapResponseStream(connection, status).orElse(null));
     }
 
-    private InputStream wrapResponseStream(HttpURLConnection connection, Status status) {
+    private Optional<InputStream> wrapResponseStream(HttpURLConnection connection, Status status) {
         try {
-            return new HttpURLConnectionStream(connection, status);
+            Optional<InputStream> stream = Optional.ofNullable(status.isClientError() || status.isServerError() ? connection.getErrorStream() : connection.getInputStream());
+            return stream.map(is -> new HttpURLConnectionStream(connection, is));
         } catch (IOException e) {
             connection.disconnect();
             throw new HTTPException(e);
@@ -134,10 +138,10 @@ public class JavaNetResponseResolver extends AbstractResponseResolver {
 
     private void configureConnection(HttpURLConnection connection) {
         ConnectionConfiguration configuration = getConfiguration().getConnectionConfiguration();
-        if (configuration.getSocketTimeout().isSome()) {
+        if (configuration.getSocketTimeout().isPresent()) {
             connection.setConnectTimeout(configuration.getSocketTimeout().get());
         }
-        if (configuration.getTimeout().isSome()) {
+        if (configuration.getTimeout().isPresent()) {
             connection.setReadTimeout(configuration.getTimeout().get());
         }
         connection.setAllowUserInteraction(false);
@@ -146,8 +150,8 @@ public class JavaNetResponseResolver extends AbstractResponseResolver {
     private static class HttpURLConnectionStream extends DelegatingInputStream {
         private final HttpURLConnection connection;
 
-        public HttpURLConnectionStream(final HttpURLConnection connection, Status status) throws IOException {
-            super(status.isClientError() || status.isServerError() ? connection.getErrorStream() : connection.getInputStream());
+        public HttpURLConnectionStream(final HttpURLConnection connection, InputStream is) {
+            super(is);
             this.connection = connection;
         }
 

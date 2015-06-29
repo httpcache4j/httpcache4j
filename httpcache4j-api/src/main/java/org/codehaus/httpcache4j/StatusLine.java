@@ -1,6 +1,6 @@
 package org.codehaus.httpcache4j;
 
-import net.hamnaberg.funclite.Preconditions;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -20,8 +20,8 @@ public final class StatusLine {
     }
 
     public StatusLine(HTTPVersion version, Status status, String message) {
-        this.version = Preconditions.checkNotNull(version, "Version may not be null");
-        this.status = Preconditions.checkNotNull(status, "Status may not be null");
+        this.version = Objects.requireNonNull(version, "Version may not be null");
+        this.status = Objects.requireNonNull(status, "Status may not be null");
         this.message = message == null ? status.getName() : message;
     }
 

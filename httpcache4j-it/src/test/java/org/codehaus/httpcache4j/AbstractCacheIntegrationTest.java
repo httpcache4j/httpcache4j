@@ -105,8 +105,8 @@ public abstract class AbstractCacheIntegrationTest {
     @Test
     public void GETNotCacheableResponse() {
         HTTPResponse response = get(baseRequestURI.resolve(TEST_FILE));
-        assertNull(response.getHeaders().getETag().orNull());
-        assertNull(response.getHeaders().getLastModified().orNull());
+        assertNull(response.getHeaders().getETag().orElse(null));
+        assertNull(response.getHeaders().getLastModified().orElse(null));
         assertEquals(Status.OK, response.getStatus());
         assertEquals(0, storage.size());
         assertEquals(CacheHeaderBuilder.getBuilder().createMISSXCacheHeader(), response.getHeaders().getFirstHeader(HeaderConstants.X_CACHE).get());
@@ -115,8 +115,8 @@ public abstract class AbstractCacheIntegrationTest {
     @Test
     public void GETWithETagResponse() {
         HTTPResponse response = get(baseRequestURI.resolve(String.format("etag/%s", TEST_FILE)));
-        assertNotNull(response.getHeaders().getETag().orNull());
-        assertNull(response.getHeaders().getLastModified().orNull());
+        assertNotNull(response.getHeaders().getETag().orElse(null));
+        assertNull(response.getHeaders().getLastModified().orElse(null));
         assertEquals(Status.OK, response.getStatus());
         assertEquals(1, storage.size());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
@@ -126,19 +126,19 @@ public abstract class AbstractCacheIntegrationTest {
     public void GETWithETagThenPUTAndReGETResponse() {
         URI uri = baseRequestURI.resolve(String.format("etag/%s", TEST_FILE));
         HTTPResponse response = get(uri);
-        assertNotNull(response.getHeaders().getETag().orNull());
-        assertNull(response.getHeaders().getLastModified().orNull());
+        assertNotNull(response.getHeaders().getETag().orElse(null));
+        assertNull(response.getHeaders().getLastModified().orElse(null));
         assertEquals(Status.OK, response.getStatus());
-        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).orNull());
+        assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).orElse(null));
 
         assertEquals(1, storage.size());
         response = cache.execute(new HTTPRequest(uri, HTTPMethod.PUT));
         assertEquals(0, storage.size());
         assertEquals(Status.NO_CONTENT, response.getStatus());
-        assertNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).orNull());
+        assertNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).orElse(null));
         response = get(uri);
-        assertNotNull(response.getHeaders().getETag().orNull());
-        assertNull(response.getHeaders().getLastModified().orNull());
+        assertNotNull(response.getHeaders().getETag().orElse(null));
+        assertNull(response.getHeaders().getLastModified().orElse(null));
         assertEquals(Status.OK, response.getStatus());
         assertEquals(1, storage.size());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
@@ -257,7 +257,7 @@ public abstract class AbstractCacheIntegrationTest {
 
         assertEquals(Status.OK, response.getStatus());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
-        LocalDateTime originalDate = response.getHeaders().getDate().orNull();
+        LocalDateTime originalDate = response.getHeaders().getDate().orElse(null);
         assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).get().contains("MISS"));
         assertFalse(response.isCached());
         response.consume();
@@ -265,7 +265,7 @@ public abstract class AbstractCacheIntegrationTest {
         	Thread.sleep(5000);
         } catch (Exception e) {}
         response = get(uri);
-        LocalDateTime cacheDate = response.getHeaders().getDate().orNull();
+        LocalDateTime cacheDate = response.getHeaders().getDate().orElse(null);
         assertEquals(Status.OK, response.getStatus());
         assertTrue(originalDate.equals(cacheDate));
 
@@ -279,7 +279,7 @@ public abstract class AbstractCacheIntegrationTest {
         	Thread.sleep(12000);
         } catch (Exception e) {}
         response = get(uri);
-        LocalDateTime nonCacheDate = response.getHeaders().getDate().orNull();
+        LocalDateTime nonCacheDate = response.getHeaders().getDate().orElse(null);
         
         assertEquals(Status.OK, response.getStatus());
         assertFalse(originalDate.equals(nonCacheDate));
@@ -292,7 +292,7 @@ public abstract class AbstractCacheIntegrationTest {
         	Thread.sleep(2000);
         } catch (Exception e) {}
         response = get(uri);
-        LocalDateTime shouldBeAboveNonCacheDate = response.getHeaders().getDate().orNull();
+        LocalDateTime shouldBeAboveNonCacheDate = response.getHeaders().getDate().orElse(null);
         
         assertEquals(Status.OK, response.getStatus());
         assertTrue(nonCacheDate.equals(shouldBeAboveNonCacheDate));

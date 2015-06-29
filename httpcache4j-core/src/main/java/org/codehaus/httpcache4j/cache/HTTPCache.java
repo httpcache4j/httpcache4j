@@ -16,15 +16,16 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import net.hamnaberg.funclite.Optional;
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 import org.codehaus.httpcache4j.uri.URIBuilder;
+import org.codehaus.httpcache4j.util.OptionalUtils;
 
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The main HTTPCache class.
@@ -40,8 +41,8 @@ public class HTTPCache {
     private boolean translateHEADToGET = false;
 
     public HTTPCache(CacheStorage storage, ResponseResolver resolver) {
-        this.storage = Preconditions.checkNotNull(storage, "Cache storage may not be null");
-        this.resolver = Preconditions.checkNotNull(resolver, "Resolver may not be null");
+        this.storage = Objects.requireNonNull(storage, "Cache storage may not be null");
+        this.resolver = Objects.requireNonNull(resolver, "Resolver may not be null");
         helper = new HTTPCacheHelper(CacheHeaderBuilder.getBuilder());
     }
 
@@ -83,15 +84,15 @@ public class HTTPCache {
             boolean shouldUnlock = true;
             try {
                 force = force || request.getMethod() == HTTPMethod.OPTIONS || request.getMethod() == HTTPMethod.TRACE;
-                if (mutex.acquire(request.getRequestURI())) {
-                    response = doRequest(request, force || (request.getHeaders().getCacheControl().exists(CacheControl::isNoStore)));
+                if (mutex.acquire(request.getNormalizedURI())) {
+                    response = doRequest(request, force || (OptionalUtils.exists(request.getHeaders().getCacheControl(), CacheControl::isNoStore)));
                 } else {
                     response = new HTTPResponse(null, Status.BAD_GATEWAY, new Headers());
                     shouldUnlock = false;
                 }
             } finally {
                 if (shouldUnlock) {
-                    mutex.release(request.getRequestURI());
+                    mutex.release(request.getNormalizedURI());
                 }
             }
         }
@@ -241,7 +242,7 @@ public class HTTPCache {
     }
 
     private void invalidateIfSameHostAsRequest(Optional<URI> uri, URI requestUri) {
-        if (uri.isSome() && uri.get().getHost() != null && uri.get().getHost().equals(requestUri.getHost())) {
+        if (uri.isPresent() && uri.get().getHost() != null && uri.get().getHost().equals(requestUri.getHost())) {
             storage.invalidate(URIBuilder.fromURI(uri.get()).toNormalizedURI());
         }
     }

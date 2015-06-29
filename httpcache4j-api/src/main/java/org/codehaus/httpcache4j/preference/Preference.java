@@ -17,12 +17,11 @@
 package org.codehaus.httpcache4j.preference;
 
 
-import net.hamnaberg.funclite.Preconditions;
-import net.hamnaberg.funclite.Optional;
 import org.codehaus.httpcache4j.Directive;
 import org.codehaus.httpcache4j.Directives;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.util.NumberUtils;
+import org.codehaus.httpcache4j.util.Preconditions;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -107,13 +106,13 @@ public final class Preference {
     }
 
     public static List<Preference> parse(Header header) {
-        return parse(Optional.fromNullable(header));
+        return parse(Optional.ofNullable(header));
     }
 
     public static List<Preference> parse(Optional<Header> header) {
         ArrayList<Preference> accept = new ArrayList<>();
         Optional<Directives> dir = header.map(Header::getDirectives);
-        Directives directives = dir.getOrElse(new Directives());
+        Directives directives = dir.orElse(new Directives());
 
         for (Directive directive : directives) {
             String value = directive.getName();

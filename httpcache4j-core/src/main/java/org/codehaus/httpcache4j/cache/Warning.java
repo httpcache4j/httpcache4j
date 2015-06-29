@@ -15,9 +15,11 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import net.hamnaberg.funclite.Preconditions;
 import org.codehaus.httpcache4j.Header;
 import org.codehaus.httpcache4j.HeaderConstants;
+import org.codehaus.httpcache4j.util.Preconditions;
+
+import java.util.Objects;
 
 /**
  * The warning header:
@@ -74,7 +76,7 @@ class Warning {
     public Warning(int code, String description) {
         Preconditions.checkArgument(code >= 110 && code < 300, "The code must be between 110 and 300");
         this.code = code;
-        this.description = Preconditions.checkNotNull(description, "Description may not be empty");
+        this.description = Objects.requireNonNull(description, "Description may not be empty");
     }
 
     public Header toHeader() {
