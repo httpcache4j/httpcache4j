@@ -6,7 +6,7 @@ import java.io.InputStream;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 
 /**
-* @author Erlend Hamnaberg<erlend@hamnaberg.net>
+* @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
 */
 public final class AvailableInputStream extends DelegatingInputStream {
     private boolean available = true;

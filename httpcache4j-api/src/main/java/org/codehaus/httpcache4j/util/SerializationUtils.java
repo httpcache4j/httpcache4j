@@ -30,7 +30,7 @@ import java.io.Serializable;
  *
  * <p>Assists with the serialization process and performs additional functionality based
  * on serialization.</p>
- * <p>
+ * <p></p>
  * <ul>
  * <li>Deep clone using serialization
  * <li>Serialize managing finally and IOException

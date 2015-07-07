@@ -106,7 +106,7 @@ public final class HeaderUtils {
 
     /**
      * From http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.4.
-     * <p/>
+     * <p></p>
      * Unless specifically constrained by a cache-control (section 14.9) directive,
      * a caching system MAY always store a successful response (see section 13.8)
      * as a cache entry, MAY return it without validation if it is fresh, and MAY return it

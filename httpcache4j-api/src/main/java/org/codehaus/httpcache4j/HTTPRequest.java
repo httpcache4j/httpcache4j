@@ -25,8 +25,10 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Represents a HTTP request. You can use this in a couple of ways: <br/>
- * either manipulating the headers directly, or by using the convenience objects.
+ * Represents a HTTP request. You can use this in a couple of ways:
+ *
+ * Manipulating the headers directly, or by using the convenience objects.
+ *
  * If you manipulate the headers, and use the convenience objects afterwards, the
  * headers produced by the convenience objects takes precedence.
  *

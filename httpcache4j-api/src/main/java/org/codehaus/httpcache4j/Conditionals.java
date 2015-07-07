@@ -34,24 +34,24 @@ import java.util.stream.Collectors;
  *   <li>If-Modified-Since</li>
  * </ul>
  *
- * Combinations of these conditionals are possible with the following exceptions<br/>
+ * <p> Combinations of these conditionals are possible with the following exceptions </p>
  * 
- * <table>
+ * <table summary="Usage">
  *   <thead>
- *    <th>Conditional</th><th>Can be combined with</th><th>Unspecified</th>
+ *       <tr><th>Conditional</th><th>Can be combined with</th><th>Unspecified</th></tr>
  *   </thead>
  *   <tbody>
  *   <tr>
- *     <th>If-Match</th><td>If-Unmodified-Since</td><td>If-None-Match, If-Modified-Since</td>
+ *     <td>If-Match</td><td>If-Unmodified-Since</td><td>If-None-Match, If-Modified-Since</td>
  *   </tr>
  *   <tr>
- *     <th>If-None-Match</th><td>If-Modified-Since</td><td>If-Match, If-Unmodified-Since</td>
+ *     <td>If-None-Match</td><td>If-Modified-Since</td><td>If-Match, If-Unmodified-Since</td>
  *   </tr>
  *   <tr>
- *     <th>If-Unmodified-Since</th><td>If-Match</td><td>If-None-Match, If-Modified-Since</td>
+ *     <td>If-Unmodified-Since</td><td>If-Match</td><td>If-None-Match, If-Modified-Since</td>
  *   </tr>
  *   <tr>
- *     <th>If-Modified-Since</th><td>If-None-Match</td><td>If-Match, If-Unmodified-Since</td>
+ *     <td>If-Modified-Since</td><td>If-None-Match</td><td>If-Match, If-Unmodified-Since</td>
  *   </tr>
  *   </tbody>
  * </table>
@@ -144,7 +144,10 @@ public final class Conditionals {
 
     /**
      * You should use the server's time here. Otherwise you might get unexpected results.
-     * The typical use case is: <br/>
+     *
+     * The typical use case is:
+     *
+     *
      * <pre>
      *   HTTPResponse response = ....
      *   HTTPRequest request = createRequest();
@@ -163,7 +166,9 @@ public final class Conditionals {
 
     /**
      * You should use the server's time here. Otherwise you might get unexpected results.
-     * The typical use case is: <br/>
+     * The typical use case is:
+     *
+     *
      * <pre>
      *   HTTPResponse response = ....
      *   HTTPRequest request = createRequest();
@@ -206,6 +211,7 @@ public final class Conditionals {
 
     /**
      * Converts the Conditionals into real headers.
+     * @return real headers.
      */
     public Headers toHeaders() {
         Headers headers = new Headers();

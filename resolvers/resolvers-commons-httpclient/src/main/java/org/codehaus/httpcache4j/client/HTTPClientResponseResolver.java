@@ -42,7 +42,8 @@ import java.util.Optional;
 
 /**
  * An implementation of the ResponseResolver using the Commons HTTPClient (http://hc.apache.org/httpclient-3.x/)
- * <p/>
+ *
+ *
  * If you need to use SSL, please follow the guide here.
  * http://hc.apache.org/httpclient-3.x/sslguide.html
  * Note that his disables the built in authentication mechanism.
@@ -107,7 +108,9 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
     /**
      * If you use this the cache from multiple threads you need to create a multithreaded HttpClient.
-     * example: <br/>
+     * example:
+     *
+     *
      * {@code
      * HttpClient client = new HttpClient(new MultiThreadedConnectionManager());
      * ResponseResolver resolver = HTTPClientResponseResolver(client);

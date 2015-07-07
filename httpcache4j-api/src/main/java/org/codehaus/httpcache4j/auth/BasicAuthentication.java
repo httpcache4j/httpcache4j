@@ -6,7 +6,7 @@ import org.codehaus.httpcache4j.UsernamePasswordChallenge;
 import org.codehaus.httpcache4j.util.Base64;
 
 /**
- * @author Erlend Hamnaberg<erlend@hamnaberg.net>
+ * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public class BasicAuthentication {
     private static final Charset UTF_8 = Charset.forName("UTF-8");
