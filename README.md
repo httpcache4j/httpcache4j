@@ -22,7 +22,7 @@ Add this to your POM
     <dependency>
       <groupId>org.codehaus.httpcache4j</groupId>
       <artifactId>httpcache4j-core</artifactId>
-      <version>4.0</version>
+      <version>5.0.0-M1</version>
     </dependency>
 
 Now choose your resolver.
@@ -30,19 +30,19 @@ Now choose your resolver.
     <dependency>
       <groupId>org.codehaus.httpcache4j.resolvers</groupId>
       <artifactId>resolvers-commons-httpclient</artifactId>
-      <version>4.0</version>
+      <version>5.0.0-M1</version>
     </dependency>
 
     <dependency>
       <groupId>org.codehaus.httpcache4j.resolvers</groupId>
       <artifactId>resolvers-httpcomponents-httpclient</artifactId>
-      <version>4.0</version>
+      <version>5.0.0-M1</version>
     </dependency>
 
     <dependency>
       <groupId>org.codehaus.httpcache4j.resolvers</groupId>
       <artifactId>resolvers-ning-async</artifactId>
-      <version>4.0</version>
+      <version>5.0.0-M1</version>
     </dependency>
 
 Then choose your storage mechanism.
@@ -55,14 +55,8 @@ If this is not enough, there are a number of persistent storages to choose from
       <dependency>
         <groupId>org.codehaus.httpcache4j.storage</groupId>
         <artifactId>storage-file</artifactId>
-        <version>4.0</version>
+        <version>5.0.0-M1</version>
       </dependency>
-      <dependency>
-        <groupId>org.codehaus.httpcache4j.storage</groupId>
-        <artifactId>storage-ehcache</artifactId>
-        <version>4.0</version>
-      </dependency>
-
 
 There are also a few jdbc storages which are independently developed from the core.
 
@@ -73,8 +67,8 @@ Snapshots are available from
 ### Maven
 
     <repository>
-      <id>codehaus-snapshots</id>
-      <url>https://nexus.codehaus.org/content/repositories/snapshots</url>
+      <id>sonatype-snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </repository>
 
 
@@ -82,4 +76,4 @@ Snapshots are available from
 ## HTTP Library
 
 If you want to use HTTPCache4j as a normal HTTP library without the caching functions, you can.
-Just add the appropriate resolver and use it as normal.
+Either just use a resolver, or use a NullStorage with the HTTPCache class.
