@@ -28,7 +28,7 @@ public class BasicAuthenticatorStrategy implements AuthenticatorStrategy {
     }
 
     public HTTPRequest prepare(HTTPRequest request, AuthScheme scheme) {
-        return prepare(request, request.getChallenge(), false);
+        return prepare(request, request.getChallenge().orElse(null), false);
     }
 
     public HTTPRequest prepareWithProxy(HTTPRequest request, Challenge challenge, AuthScheme scheme) {
@@ -36,7 +36,7 @@ public class BasicAuthenticatorStrategy implements AuthenticatorStrategy {
     }
 
     private HTTPRequest prepare(final HTTPRequest request, Challenge challenge, boolean proxy) {
-        HTTPRequest req = request;        
+        HTTPRequest req = request;
         if (challenge instanceof UsernamePasswordChallenge) {
             UsernamePasswordChallenge upc = (UsernamePasswordChallenge) challenge;
             String authValue = BasicAuthentication.getHeaderValue(upc);

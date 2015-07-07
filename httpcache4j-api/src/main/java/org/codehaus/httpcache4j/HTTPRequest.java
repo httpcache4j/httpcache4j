@@ -36,21 +36,21 @@ public final class HTTPRequest {
     private final URI requestURI;
     private final HTTPMethod method;
     private final Headers headers;
-    private final Challenge challenge;
+    private final Optional<Challenge> challenge;
     private final Optional<Payload> payload;
     private final URI normalizedURI;
 
     public HTTPRequest(URI requestURI,
                        HTTPMethod method,
                        Headers headers,
-                       Challenge challenge,
+                       Optional<Challenge> challenge,
                        Optional<Payload> payload) {
 
         this.requestURI = Objects.requireNonNull(requestURI, "You MUST have a URI");
         this.normalizedURI = URIBuilder.fromURI(requestURI).toNormalizedURI();
         this.method = method == null ? HTTPMethod.GET : method;
         this.headers = headers == null ? new Headers() : headers;
-        this.challenge = challenge;
+        this.challenge = Objects.requireNonNull(challenge, "Challenge may not be null");
         this.payload = Objects.requireNonNull(payload, "Payload may not be null");
     }
 
@@ -77,7 +77,7 @@ public final class HTTPRequest {
     }
 
     public HTTPRequest(URI requestURI, HTTPMethod method) {
-        this(requestURI, method, new Headers(), null, Optional.<Payload>empty());
+        this(requestURI, method, new Headers(), Optional.<Challenge>empty(), Optional.<Payload>empty());
     }
 
     public URI getRequestURI() {
@@ -135,7 +135,7 @@ public final class HTTPRequest {
         return new HTTPRequest(requestURI, method, headers, challenge, payload);
     }
 
-    public Challenge getChallenge() {
+    public Optional<Challenge> getChallenge() {
         return challenge;
     }
 
@@ -148,7 +148,7 @@ public final class HTTPRequest {
     }
 
     public HTTPRequest withChallenge(Challenge challenge) {
-        return new HTTPRequest(requestURI, method, headers, challenge, payload);
+        return new HTTPRequest(requestURI, method, headers, Optional.ofNullable(challenge), payload);
     }
 
     public Optional<Payload> getPayload() {

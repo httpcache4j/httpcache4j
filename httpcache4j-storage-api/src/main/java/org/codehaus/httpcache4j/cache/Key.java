@@ -65,8 +65,8 @@ public final class Key implements Serializable {
                 }
             }
         }
-        if (request.getChallenge() != null && Boolean.getBoolean("Vary.authorization")) {
-            resolvedVaryHeaders.put(HeaderConstants.AUTHORIZATION, request.getChallenge().getIdentifier());
+        if (request.getChallenge().isPresent() && Boolean.getBoolean("Vary.authorization")) {
+            resolvedVaryHeaders.put(HeaderConstants.AUTHORIZATION, request.getChallenge().get().getIdentifier());
         }
         return new Vary(resolvedVaryHeaders);
     }

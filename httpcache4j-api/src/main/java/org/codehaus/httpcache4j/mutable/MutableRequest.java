@@ -101,7 +101,7 @@ public class MutableRequest {
                 uri,
                 method,
                 heads,
-                challenge,
+                Optional.ofNullable(challenge),
                 Optional.ofNullable(payload)
         );
     }
@@ -113,7 +113,7 @@ public class MutableRequest {
                 new MutableHeaders(request.getHeaders()),
                 new MutableConditionals(request.getHeaders().getConditionals())
         );
-        mutableRequest.setChallenge(request.getChallenge());
+        mutableRequest.setChallenge(request.getChallenge().orElse(null));
         if (request.getMethod().canHavePayload()) {
             mutableRequest.setPayload(request.getPayload().orElse(null));
         }

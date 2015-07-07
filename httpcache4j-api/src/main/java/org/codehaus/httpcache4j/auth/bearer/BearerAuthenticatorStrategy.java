@@ -23,7 +23,7 @@ public final class BearerAuthenticatorStrategy implements AuthenticatorStrategy 
             throw new IllegalStateException("Bearer token MUST be sent over a secure connection. the URIs scheme was " + uriScheme);
         }
         HTTPRequest req = request;
-        Challenge challenge = request.getChallenge();
+        Challenge challenge = request.getChallenge().orElse(null);
         if (challenge instanceof BearerTokenChallenge) {
             BearerTokenChallenge token = (BearerTokenChallenge) challenge;
             req = req.addHeader(HeaderConstants.AUTHORIZATION, token.getToken().toHeaderValue());

@@ -97,8 +97,8 @@ public final class Vary {
         Headers headers = request.getAllHeaders();
 
         for (Map.Entry<String, String> varyEntry : varyHeaders.entrySet()) {
-            if (request.getChallenge() != null && varyEntry.getKey().equals(HeaderConstants.AUTHORIZATION)) {
-                if (!request.getChallenge().getIdentifier().equals(varyEntry.getValue())) {
+            if (request.getChallenge().isPresent() && varyEntry.getKey().equals(HeaderConstants.AUTHORIZATION)) {
+                if (!request.getChallenge().get().getIdentifier().equals(varyEntry.getValue())) {
                     return false;
                 }
             }

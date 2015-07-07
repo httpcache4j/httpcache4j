@@ -33,7 +33,7 @@ public class DigestAuthenticatorStrategy implements AuthenticatorStrategy {
     }
 
     public HTTPRequest prepare(HTTPRequest request, AuthScheme scheme) {
-        return prepare(request, request.getChallenge(), scheme, false);
+        return prepare(request, request.getChallenge().orElse(null), scheme, false);
     }
 
     public HTTPRequest prepareWithProxy(HTTPRequest request, Challenge challenge, AuthScheme scheme) {
