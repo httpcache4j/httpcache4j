@@ -183,7 +183,12 @@ public final class HTTPRequest {
         return headers.getCacheControl();
     }
 
+    @Deprecated
     public HTTPRequest cacheControl(CacheControl cc) {
+        return withCacheControl(cc);
+    }
+
+    public HTTPRequest withCacheControl(CacheControl cc) {
         return addHeader(cc.toHeader());
     }
 
