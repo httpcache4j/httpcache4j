@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,18 +61,16 @@ public abstract class ConcurrentCacheStorageAbstractTest {
         for (int i = 1; i <= numberOfIterations; i++) {
             final URI uri = URI.create(String.valueOf(i));
             final HTTPRequest request = new HTTPRequest(uri);
-            Callable<HTTPResponse> call = new Callable<HTTPResponse>() {
-                public HTTPResponse call() throws Exception {
-                    HTTPResponse cached = cacheStorage.insert(request, createCacheResponse());
-                    assertResponse(cached);                    
-                    CacheItem cacheItem = cacheStorage.get(request);
-                    HTTPResponse response = cacheItem.getResponse();
-                    assertResponse(response);
-                    cached = cacheStorage.update(request, createCacheResponse());
-                    assertNotSame(cached, cacheItem.getResponse());
-                    assertResponse(cached);
-                    return cached;
-                }
+            Callable<HTTPResponse> call = () -> {
+                HTTPResponse cached = cacheStorage.insert(request, createCacheResponse());
+                assertResponse(cached);
+                CacheItem cacheItem = cacheStorage.get(request);
+                HTTPResponse response = cacheItem.getResponse();
+                assertResponse(response);
+                cached = cacheStorage.update(request, createCacheResponse());
+                assertNotSame(cached, cacheItem.getResponse());
+                assertResponse(cached);
+                return cached;
             };
             calls.add(call);
         }
@@ -92,11 +91,7 @@ public abstract class ConcurrentCacheStorageAbstractTest {
         final HTTPRequest request = new HTTPRequest(URI.create("GET"));
         List<Callable<HTTPResponse>> calls = new ArrayList<Callable<HTTPResponse>>();
         for (int i = 0; i < 1000; i++) {
-            calls.add(new Callable<HTTPResponse>() {
-                public HTTPResponse call() throws Exception {
-                    return cacheStorage.insert(request, createCacheResponse());
-                }
-            });
+            calls.add(() -> cacheStorage.insert(request, createCacheResponse()));
         }
 
         List<Future<HTTPResponse>> responses = service.invokeAll(calls);
@@ -114,21 +109,22 @@ public abstract class ConcurrentCacheStorageAbstractTest {
 
 
     private HTTPResponse createCacheResponse() {
-        return new HTTPResponse(new InputStreamPayload(new NullInputStream(40), MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers().add("Foo", "Bar"));
+        return new HTTPResponse(Optional.of(new InputStreamPayload(new NullInputStream(40), MIMEType.APPLICATION_OCTET_STREAM)), Status.OK, new Headers().add("Foo", "Bar"));
     }
 
     protected void assertResponse(final HTTPResponse response) {
         assertNotNull("Response was null", response);
         assertTrue("Payload was not here", response.hasPayload());
-        assertTrue("Payload was not available", response.getPayload().isAvailable());
-        InputStream is = response.getPayload().getInputStream();
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
-            String lines = reader.lines().collect(Collectors.joining("\n"));
-            assertNotNull(lines);
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail("unable to create string from stream");
-        }
+        assertTrue("Payload was not available", response.getPayload().get().isAvailable());
+        response.getPayload().ifPresent(p -> {
+            try(BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+                String lines = reader.lines().collect(Collectors.joining("\n"));
+                assertNotNull(lines);
+            } catch (IOException e) {
+                e.printStackTrace();
+                fail("unable to create string from stream");
+            }
+        });
     }
 
     @After

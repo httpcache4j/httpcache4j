@@ -17,6 +17,7 @@ package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.FilePayload;
+import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.util.NumberUtils;
 
 import java.io.*;
@@ -62,7 +63,7 @@ public class SerializableCacheItem implements Serializable, CacheItem {
         HTTPResponse response = item.getResponse();
         object.setProperty("status", String.valueOf(response.getStatus().getCode()));
         if (response.hasPayload()) {
-            FilePayload payload = (FilePayload) response.getPayload();
+            FilePayload payload = (FilePayload) response.getPayload().get();
             object.setProperty("file", payload.getFile().getAbsolutePath());
         }
         object.setProperty("headers", response.getHeaders().toString());
@@ -73,9 +74,9 @@ public class SerializableCacheItem implements Serializable, CacheItem {
         Optional<LocalDateTime> time = HeaderUtils.fromHttpDate(new Header("cache-time", object.getProperty("cache-time")));
         Status status = Status.valueOf(NumberUtils.toInt(object.getProperty("status"), 200));
         Headers headers = Headers.parse(object.getProperty("headers"));
-        FilePayload p = null;
+        Optional<Payload> p = Optional.empty();
         if (object.containsKey("file")) {
-            p = new FilePayload(new File(object.getProperty("file")), headers.getContentType().get());
+            p = Optional.of(new FilePayload(new File(object.getProperty("file")), headers.getContentType().get()));
         }
         return new DefaultCacheItem(new HTTPResponse(p, status, headers), time.get());
     }

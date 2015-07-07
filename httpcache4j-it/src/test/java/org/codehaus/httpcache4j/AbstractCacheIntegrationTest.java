@@ -165,7 +165,7 @@ public abstract class AbstractCacheIntegrationTest {
         assertEquals(Status.UNAUTHORIZED, response.getStatus());
         response.consume();
         HTTPRequest request = new HTTPRequest(uri, HTTPMethod.PUT).challenge(new UsernamePasswordChallenge("u", "p"))
-                .payload(new ByteArrayPayload(new FileInputStream(new File("pom.xml")), MIMEType.valueOf("application/xml")));
+                .withPayload(new ByteArrayPayload(new FileInputStream(new File("pom.xml")), MIMEType.valueOf("application/xml")));
         response = cache.execute(request);
         assertEquals(Status.NO_CONTENT, response.getStatus());
         response.consume();
@@ -221,11 +221,11 @@ public abstract class AbstractCacheIntegrationTest {
         HTTPResponse response = cache.execute(request);
         System.out.println("request.getRequestURI() = " + request.getRequestURI());
         assertEquals(Status.OK, response.getStatus());
-        assertTrue(MIMEType.valueOf("text/plain").includes(response.getPayload().getMimeType()));
+        assertTrue(MIMEType.valueOf("text/plain").includes(response.getPayload().get().getMimeType()));
         assertFalse(response.isCached());
         response.consume();
         response = cache.execute(request);
-        assertTrue(MIMEType.valueOf("text/plain").includes(response.getPayload().getMimeType()));
+        assertTrue(MIMEType.valueOf("text/plain").includes(response.getPayload().get().getMimeType()));
         assertTrue(response.isCached());
         response.consume();
         request = new HTTPRequest(baseCustomRequestURI, HTTPMethod.GET).addHeader(HeaderConstants.ACCEPT, "text/xml");
@@ -234,13 +234,13 @@ public abstract class AbstractCacheIntegrationTest {
         assertEquals(Status.OK, response.getStatus());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
         assertFalse(response.isCached());
-        assertTrue(MIMEType.valueOf("text/xml").includes(response.getPayload().getMimeType()));
+        assertTrue(MIMEType.valueOf("text/xml").includes(response.getPayload().get().getMimeType()));
         response = cache.execute(request);
         response.consume();
         assertEquals(Status.OK, response.getStatus());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
         assertTrue(response.isCached());
-        assertTrue(MIMEType.valueOf("text/xml").includes(response.getPayload().getMimeType()));
+        assertTrue(MIMEType.valueOf("text/xml").includes(response.getPayload().get().getMimeType()));
         assertEquals(2, storage.size());
     }
 

@@ -20,6 +20,7 @@ package org.codehaus.httpcache4j;
 import org.codehaus.httpcache4j.mutable.MutableHeaders;
 import org.codehaus.httpcache4j.preference.Preference;
 import org.codehaus.httpcache4j.util.CaseInsensitiveKey;
+import org.codehaus.httpcache4j.util.NumberUtils;
 import org.codehaus.httpcache4j.util.Streamable;
 
 import java.net.URI;
@@ -305,6 +306,15 @@ public final class Headers implements Streamable<Header> {
 
     public Headers withLocation(URI href) {
         return set(HeaderConstants.LOCATION, href.toString());
+    }
+
+
+    public Optional<Long> getContentLength() {
+        return getFirstHeaderValue(HeaderConstants.CONTENT_LENGTH).flatMap(NumberUtils::optToLong);
+    }
+
+    public Headers withContentLength(long length) {
+        return set(HeaderConstants.CONTENT_LENGTH, String.valueOf(length));
     }
 
     public Optional<URI> getContentLocation() {

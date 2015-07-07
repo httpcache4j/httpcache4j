@@ -88,8 +88,8 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 
     @Override
     protected HTTPResponse putImpl(Key key, HTTPResponse response) {
-        if (response.hasPayload() && response.getPayload() instanceof FilePayload) {
-            final FilePayload payload = (FilePayload)response.getPayload();
+        if (response.hasPayload() && response.getPayload().get() instanceof FilePayload) {
+            final FilePayload payload = (FilePayload)response.getPayload().get();
             try {
                 response = response.withPayload(createRealPayload(key, payload));
             } catch (IOException ignore) {

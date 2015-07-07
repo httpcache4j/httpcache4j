@@ -19,6 +19,7 @@ import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
 import org.codehaus.httpcache4j.auth.DefaultProxyAuthenticator;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
+import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.util.Base64;
 import org.codehaus.httpcache4j.util.IOUtils;
 
@@ -94,7 +95,7 @@ public class JavaNetResponseResolver extends AbstractResponseResolver {
         Status status = Status.valueOf(connection.getResponseCode());
         String message = connection.getResponseMessage();
         Headers responseHeaders = getResponseHeaders(connection);
-        return ResponseCreator.createResponse(new StatusLine(status, message), responseHeaders, wrapResponseStream(connection, status).orElse(null));
+        return ResponseCreator.createResponse(new StatusLine(status, message), responseHeaders, wrapResponseStream(connection, status));
     }
 
     private Optional<InputStream> wrapResponseStream(HttpURLConnection connection, Status status) {
@@ -109,7 +110,8 @@ public class JavaNetResponseResolver extends AbstractResponseResolver {
 
     private void writeRequest(HTTPRequest request, HttpURLConnection connection) throws IOException {
         if (request.hasPayload()) {
-            try(InputStream requestStream = request.getPayload().getInputStream()) {
+            Optional<Payload> payload = request.getPayload();
+            try(InputStream requestStream = payload.get().getInputStream()) {
                 if (getConfiguration().isUseChunked()) {
                     connection.setChunkedStreamingMode(2048);
                 }

@@ -19,7 +19,6 @@ package org.codehaus.httpcache4j;
 import org.codehaus.httpcache4j.annotation.Internal;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,17 +39,21 @@ import static org.codehaus.httpcache4j.HeaderConstants.X_CACHE;
 public final class HTTPResponse {
     
     private final StatusLine statusLine;
-    private final Payload payload;
+    private final Optional<Payload> payload;
     private final Headers headers;
     private final boolean cached;
 
-    public HTTPResponse(Payload payload, Status status, Headers headers) {
+    public HTTPResponse(Status status, Headers headers) {
+        this(Optional.<Payload>empty(), new StatusLine(status), headers);
+    }
+
+    public HTTPResponse(Optional<Payload> payload, Status status, Headers headers) {
         this(payload, new StatusLine(status), headers);
     }
 
-    public HTTPResponse(Payload payload, StatusLine statusLine, Headers headers) {
+    public HTTPResponse(Optional<Payload> payload, StatusLine statusLine, Headers headers) {
         this.statusLine = Objects.requireNonNull(statusLine, "You must supply a Status");
-        this.payload = payload;
+        this.payload = Objects.requireNonNull(payload, "We need an optional payload, not null");
         this.headers = Objects.requireNonNull(headers, "You must supply some Headers");
 
         if (headers.contains(X_CACHE)) {
@@ -69,11 +72,11 @@ public final class HTTPResponse {
 
     @Internal
     public HTTPResponse withPayload(Payload payload) {
-        return new HTTPResponse(payload, statusLine, headers);
+        return new HTTPResponse(Optional.ofNullable(payload), statusLine, headers);
     }
 
     public boolean hasPayload() {
-        return payload != null;
+        return payload.isPresent();
     }
 
     public Status getStatus() {
@@ -84,7 +87,7 @@ public final class HTTPResponse {
         return statusLine;
     }
 
-    public Payload getPayload() {
+    public Optional<Payload> getPayload() {
         return payload;
     }
 
@@ -99,22 +102,26 @@ public final class HTTPResponse {
     //TODO: consider removing this
     public <A> Optional<A> transform(final Function<Payload, A> f) {
         if (hasPayload()) {
-            try(InputStream is = payload.getInputStream()) {
-                InputStreamPayload isp = new InputStreamPayload(is, payload.getMimeType(), payload.length());
-                return Optional.ofNullable(f.apply(isp));
-            } catch (IOException e) {
-                throw new HTTPException(e);
-            }
+            return payload.flatMap(p -> lift(p, f));
         }
         return Optional.empty();
     }
 
-    public void consume() {
-        if (hasPayload()) {
-            try(InputStream is = payload.getInputStream()) {
-               is.close();
-            } catch (IOException ignored){}
+    private <A> Optional<A> lift(Payload p, Function<Payload, A> f) {
+        try(InputStream is = p.getInputStream()) {
+            InputStreamPayload isp = new InputStreamPayload(is, p.getMimeType(), p.length());
+            return Optional.ofNullable(f.apply(isp));
+        } catch (IOException e) {
+            throw new HTTPException(e);
         }
+    }
+
+    public void consume() {
+        payload.ifPresent(p -> {
+            try(InputStream is = p.getInputStream()) {
+                is.close();
+            } catch (IOException ignored){}
+        });
     }
 
     @Override

@@ -46,19 +46,19 @@ public class TTLTest {
 
     @Test
     public void testDefaultTTL() {
-        long ttl = DefaultCacheItem.getTTL(new HTTPResponse(null, Status.OK, createDefaultHeaders()), DEFAULT_TTL);
+        long ttl = DefaultCacheItem.getTTL(new HTTPResponse(Status.OK, createDefaultHeaders()), DEFAULT_TTL);
         Assert.assertEquals(DEFAULT_TTL, ttl);
     }
 
     @Test
     public void testDefaultTTLWith0MaxAge() {
-        long ttl = DefaultCacheItem.getTTL(new HTTPResponse(null, Status.OK, createDefaultHeaders().add(HeaderConstants.CACHE_CONTROL, "max-age=0")), DEFAULT_TTL);
+        long ttl = DefaultCacheItem.getTTL(new HTTPResponse(Status.OK, createDefaultHeaders().add(HeaderConstants.CACHE_CONTROL, "max-age=0")), DEFAULT_TTL);
         Assert.assertEquals(DEFAULT_TTL, ttl);
     }
 
     @Test
     public void test100MaxAge() {
-        long ttl = DefaultCacheItem.getTTL(new HTTPResponse(null, Status.OK, createDefaultHeaders().add(HeaderConstants.CACHE_CONTROL, "max-age=100")), DEFAULT_TTL);
+        long ttl = DefaultCacheItem.getTTL(new HTTPResponse(Status.OK, createDefaultHeaders().add(HeaderConstants.CACHE_CONTROL, "max-age=100")), DEFAULT_TTL);
         Assert.assertEquals(100, ttl);
     }
 
@@ -66,7 +66,7 @@ public class TTLTest {
     public void testDefaultTTLWith10MaxAgeAndExpires() {
         final LocalDateTime expires = now.plusYears(1);
         final Headers headers = createDefaultHeaders().add(HeaderConstants.CACHE_CONTROL, "max-age=10").add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, expires));
-        long ttl = DefaultCacheItem.getTTL(new HTTPResponse(null, Status.OK, headers), DEFAULT_TTL);
+        long ttl = DefaultCacheItem.getTTL(new HTTPResponse(Status.OK, headers), DEFAULT_TTL);
         Assert.assertEquals(DEFAULT_TTL, ttl);
     }
 
@@ -74,7 +74,7 @@ public class TTLTest {
     public void testDefaultTTLExpires() {
         final LocalDateTime expires = now.plusYears(1);
         final Headers headers = createDefaultHeaders().add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, expires));
-        long ttl = DefaultCacheItem.getTTL(new HTTPResponse(null, Status.OK, headers), DEFAULT_TTL);
+        long ttl = DefaultCacheItem.getTTL(new HTTPResponse(Status.OK, headers), DEFAULT_TTL);
         Assert.assertEquals(31536600, ttl);
     }
 

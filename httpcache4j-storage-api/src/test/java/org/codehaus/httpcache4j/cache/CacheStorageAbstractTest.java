@@ -34,7 +34,7 @@ public abstract class CacheStorageAbstractTest {
 
     @Test
     public void testPutCacheItem() {
-        HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
+        HTTPResponse response = new HTTPResponse(Status.OK, new Headers());
         response = storage.insert(REQUEST, response);
         response.consume();
         assertEquals(1, storage.size());
@@ -49,7 +49,7 @@ public abstract class CacheStorageAbstractTest {
     }
 
     private CacheItem putAndGet(HTTPRequest request) {
-        HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
+        HTTPResponse response = new HTTPResponse(Status.OK, new Headers());
         response = storage.insert(REQUEST, response);
         response.consume();
         assertEquals(1, storage.size());
@@ -60,7 +60,7 @@ public abstract class CacheStorageAbstractTest {
     public void testPutUpdatedCacheItem() {
         CacheItem item = putAndGet(REQUEST);
         item.getResponse().consume();
-        HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
+        HTTPResponse response = new HTTPResponse(Status.OK, new Headers());
         HTTPResponse res = storage.update(REQUEST, response);
         res.consume();
         final CacheItem cacheItem = storage.get(REQUEST);
@@ -70,7 +70,7 @@ public abstract class CacheStorageAbstractTest {
 
     @Test
     public void testInvalidate() {
-        HTTPResponse response = new HTTPResponse(null, Status.OK, new Headers());
+        HTTPResponse response = new HTTPResponse(Status.OK, new Headers());
         URI requestURI = URI.create("foo");
         HTTPResponse res = storage.insert(REQUEST, response);
         res.consume();

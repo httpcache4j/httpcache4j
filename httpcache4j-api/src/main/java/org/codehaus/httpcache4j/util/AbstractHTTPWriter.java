@@ -8,6 +8,7 @@ import org.codehaus.httpcache4j.payload.Payload;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -30,15 +31,15 @@ public abstract class AbstractHTTPWriter {
         writer.printf("%s\r\n", value);
     }
 
-    protected void writeBody(PrintStream writer, Payload payload) {
-        writer.print("\r\n");
-        try(InputStream stream = payload.getInputStream()) {
-            IOUtils.copy(stream, writer);
+    protected void writeBody(PrintStream writer, Optional<Payload> payload) {
+        payload.ifPresent(p -> {
             writer.print("\r\n");
-        }
-        catch (IOException e) {
-            throw new HTTPException("Unable to write the body of the response", e);
-        }
+            try (InputStream stream = p.getInputStream()) {
+                IOUtils.copy(stream, writer);
+                writer.print("\r\n");
+            } catch (IOException e) {
+                throw new HTTPException("Unable to write the body of the response", e);
+            }
+        });
     }
-
 }

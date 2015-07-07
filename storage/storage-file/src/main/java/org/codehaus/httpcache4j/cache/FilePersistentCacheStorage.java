@@ -58,11 +58,12 @@ public class FilePersistentCacheStorage implements CacheStorage {
     }
 
     private HTTPResponse createCacheableResponse(Key key, HTTPResponse response) throws IOException {
-        Payload payload = null;
+        Optional<Payload> payload = Optional.empty();
         if (response.hasPayload()) {
-            File file = fileManager.createFile(key, response.getPayload().getInputStream());
+            Payload p = response.getPayload().get();
+            File file = fileManager.createFile(key, p.getInputStream());
             if (file != null && file.exists()) {
-                payload = new FilePayload(file, response.getPayload().getMimeType());
+                payload = Optional.of(new FilePayload(file, p.getMimeType()));
             }
         }
         return new HTTPResponse(payload, response.getStatusLine(), response.getHeaders());

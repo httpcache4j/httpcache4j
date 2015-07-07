@@ -179,19 +179,19 @@ class HTTPCacheHelper {
             Optional<Tag> eTag = response.getHeaders().getETag();
             if (eTag.isPresent() && !noneMatch.isEmpty() && !hasBeenCached) {
                 if (noneMatch.contains(eTag.get()) || noneMatch.contains(Tag.ALL)) {
-                    response = new HTTPResponse(null, Status.NOT_MODIFIED, headers);
+                    response = new HTTPResponse(Status.NOT_MODIFIED, headers);
                 }
             }
             Optional<LocalDateTime> lastModified = response.getHeaders().getLastModified();
             Optional<LocalDateTime> modifiedSince = request.getHeaders().getConditionals().getModifiedSince();
             if (lastModified.isPresent() && modifiedSince != null && !hasBeenCached) {
                 if (lastModified.equals(modifiedSince)) {
-                    response = new HTTPResponse(null, Status.NOT_MODIFIED, headers);
+                    response = new HTTPResponse(Status.NOT_MODIFIED, headers);
                 }
             }
         }
         else if (request.getMethod() == HTTPMethod.HEAD) {
-            response = new HTTPResponse(null, response.getStatus(), headers);
+            response = new HTTPResponse(response.getStatus(), headers);
         }
         if (stale) {
             headers = warnStale(headers);

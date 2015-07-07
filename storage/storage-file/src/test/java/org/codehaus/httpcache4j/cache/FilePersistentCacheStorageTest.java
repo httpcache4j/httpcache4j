@@ -18,6 +18,7 @@ package org.codehaus.httpcache4j.cache;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Optional;
 
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
@@ -58,7 +59,7 @@ public class FilePersistentCacheStorageTest extends CacheStorageAbstractTest {
         assertNotNull("Result may not be null", res);
         if (res.hasPayload()) {
             FilePersistentCacheStorage cacheStorage = (FilePersistentCacheStorage) storage;
-            FilePayload payload = (FilePayload) res.getPayload();
+            FilePayload payload = (FilePayload) res.getPayload().get();
             final File parent = payload.getFile().getParentFile();
             final File file = cacheStorage.getFileManager().resolve(key);
             assertEquals(file.toString(), payload.getFile().toString());
@@ -78,7 +79,7 @@ public class FilePersistentCacheStorageTest extends CacheStorageAbstractTest {
     }
 
     private HTTPResponse createRealResponse() {
-        return new HTTPResponse(new InputStreamPayload(new NullInputStream(10), MIMEType.APPLICATION_OCTET_STREAM), Status.OK, new Headers());
+        return new HTTPResponse(Optional.of(new InputStreamPayload(new NullInputStream(10), MIMEType.APPLICATION_OCTET_STREAM)), Status.OK, new Headers());
     }
 
     @Override

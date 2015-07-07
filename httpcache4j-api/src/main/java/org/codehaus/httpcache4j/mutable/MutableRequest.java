@@ -19,6 +19,7 @@ import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.payload.Payload;
 
 import java.net.URI;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -101,7 +102,7 @@ public class MutableRequest {
                 method,
                 heads,
                 challenge,
-                payload
+                Optional.ofNullable(payload)
         );
     }
 
@@ -114,7 +115,7 @@ public class MutableRequest {
         );
         mutableRequest.setChallenge(request.getChallenge());
         if (request.getMethod().canHavePayload()) {
-            mutableRequest.setPayload(request.getPayload());
+            mutableRequest.setPayload(request.getPayload().orElse(null));
         }
         return mutableRequest;
     }

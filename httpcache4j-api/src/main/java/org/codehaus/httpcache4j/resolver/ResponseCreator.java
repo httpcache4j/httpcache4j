@@ -29,17 +29,16 @@ import java.util.Optional;
  */
 public final class ResponseCreator {
 
-    public static HTTPResponse createResponse(final StatusLine line, final Headers responseHeaders, final InputStream stream) {
+    public static HTTPResponse createResponse(final StatusLine line, final Headers responseHeaders, final Optional<InputStream> stream) {
         Optional<String> contentLengthHeader = responseHeaders.getFirstHeaderValue(HeaderConstants.CONTENT_LENGTH);
 
         MIMEType type = responseHeaders.getContentType().orElse(MIMEType.APPLICATION_OCTET_STREAM);
-        long length = contentLengthHeader.isPresent() ? NumberUtils.toLong(contentLengthHeader.get(), -1L) : -1L;
-        Payload payload = null;
-        if (line.getStatus().isBodyContentAllowed()) {
-            if (stream != null) {
-                payload = new InputStreamPayload(stream, type, length);
-            }
-        }
+        Optional<Long> length = responseHeaders.getContentLength();
+
+        Optional<Payload> payload = stream.
+                filter(is -> line.getStatus().isBodyContentAllowed()).
+                map(is -> new InputStreamPayload(is, type, length.orElse(-1L)));
+
         return new HTTPResponse(payload, line, responseHeaders);
     }    
 }

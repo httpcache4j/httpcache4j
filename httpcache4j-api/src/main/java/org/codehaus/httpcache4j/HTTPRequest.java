@@ -37,21 +37,21 @@ public final class HTTPRequest {
     private final HTTPMethod method;
     private final Headers headers;
     private final Challenge challenge;
-    private final Payload payload;
+    private final Optional<Payload> payload;
     private final URI normalizedURI;
 
     public HTTPRequest(URI requestURI,
                        HTTPMethod method,
                        Headers headers,
                        Challenge challenge,
-                       Payload payload) {
+                       Optional<Payload> payload) {
 
         this.requestURI = Objects.requireNonNull(requestURI, "You MUST have a URI");
         this.normalizedURI = URIBuilder.fromURI(requestURI).toNormalizedURI();
         this.method = method == null ? HTTPMethod.GET : method;
         this.headers = headers == null ? new Headers() : headers;
         this.challenge = challenge;
-        this.payload = payload;
+        this.payload = Objects.requireNonNull(payload, "Payload may not be null");
     }
 
     public HTTPRequest copy() {
@@ -77,7 +77,7 @@ public final class HTTPRequest {
     }
 
     public HTTPRequest(URI requestURI, HTTPMethod method) {
-        this(requestURI, method, new Headers(), null, null);
+        this(requestURI, method, new Headers(), null, Optional.<Payload>empty());
     }
 
     public URI getRequestURI() {
@@ -99,10 +99,7 @@ public final class HTTPRequest {
      */
     public Headers getAllHeaders() {
         Headers requestHeaders = getHeaders();
-        if (hasPayload()) {
-            requestHeaders = requestHeaders.set(HeaderConstants.CONTENT_TYPE, getPayload().getMimeType().toString());
-        }
-
+        requestHeaders = hasPayload() ? requestHeaders.withContentType(getPayload().get().getMimeType()) : requestHeaders;
         //We don't want to add headers more than once.
         return requestHeaders;
     }
@@ -124,7 +121,15 @@ public final class HTTPRequest {
         return method;
     }
 
+    /**
+     * @deprecated Use {@link #withMethod(HTTPMethod)} instead
+     */
+    @Deprecated
     public HTTPRequest method(HTTPMethod method) {
+        return withMethod(method);
+    }
+
+    public HTTPRequest withMethod(HTTPMethod method) {
         Objects.requireNonNull(method, "You may not set null method");
         if (method == this.method) return this;
         return new HTTPRequest(requestURI, method, headers, challenge, payload);
@@ -134,19 +139,35 @@ public final class HTTPRequest {
         return challenge;
     }
 
+    /**
+     * @deprecated Use {@link #withChallenge(Challenge)} instead
+     */
+    @Deprecated
     public HTTPRequest challenge(Challenge challenge) {
+        return withChallenge(challenge);
+    }
+
+    public HTTPRequest withChallenge(Challenge challenge) {
         return new HTTPRequest(requestURI, method, headers, challenge, payload);
     }
 
-    public Payload getPayload() {
+    public Optional<Payload> getPayload() {
         return payload;
     }
 
+    /**
+     * @deprecated Use {@link #withPayload(Payload)} instead
+     */
+    @Deprecated
     public HTTPRequest payload(Payload payload) {
+        return withPayload(payload);
+    }
+
+    public HTTPRequest withPayload(Payload payload) {
         if (!method.canHavePayload()) {
             throw new IllegalStateException(String.format("Unable to add payload to a %s request", method));
-        }        
-        return new HTTPRequest(requestURI, method, headers, challenge, payload);
+        }
+        return new HTTPRequest(requestURI, method, headers, challenge, Optional.ofNullable(payload));
     }
 
     public HTTPRequest headers(final Headers headers) {
@@ -155,7 +176,7 @@ public final class HTTPRequest {
     }
 
     public boolean hasPayload() {
-        return payload != null;
+        return payload.isPresent();
     }
 
     public Optional<CacheControl> getCacheControl() {

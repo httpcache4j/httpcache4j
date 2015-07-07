@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -94,7 +95,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
             Response response = responseFuture.get();
             StatusLine line = new StatusLine(Status.valueOf(response.getStatusCode()), response.getStatusText());
             FluentCaseInsensitiveStringsMap headers = response.getHeaders();
-            InputStream stream = response.getResponseBodyAsStream();
+            Optional<InputStream> stream = Optional.ofNullable(response.getResponseBodyAsStream());
             return ResponseCreator.createResponse(line, new Headers(headers), stream);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -107,13 +108,15 @@ public class NingResponseResolver extends AbstractResponseResolver {
 
     private Future<Response> execute(final HTTPRequest request) throws IOException {
         AsyncHttpClient.BoundRequestBuilder builder = builder(request.getNormalizedURI(), request.getMethod());
-        if (request.getMethod().canHavePayload() && request.hasPayload()) {
-            if (getConfiguration().isUseChunked()) {
-                builder.setBody(new InputStreamBodyGenerator(request.getPayload().getInputStream()));
-            }
-            else {
-                builder.setBody(request.getPayload().getInputStream());
-            }
+        if (request.getMethod().canHavePayload()) {
+            request.getPayload().ifPresent(p -> {
+                if (getConfiguration().isUseChunked()) {
+                    builder.setBody(new InputStreamBodyGenerator(p.getInputStream()));
+                }
+                else {
+                    builder.setBody(p.getInputStream());
+                }
+            });
         }
         for (Header header : request.getAllHeaders()) {
             builder.addHeader(header.getName(), header.getValue());

@@ -27,6 +27,7 @@ import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.StatusLine;
 import org.codehaus.httpcache4j.auth.*;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
+import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.resolver.AbstractResponseResolver;
 import org.codehaus.httpcache4j.resolver.ConnectionConfiguration;
 import org.codehaus.httpcache4j.resolver.ResolverConfiguration;
@@ -37,6 +38,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * An implementation of the ResponseResolver using the Commons HTTPClient (http://hc.apache.org/httpclient-3.x/)
@@ -149,13 +151,14 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         HttpMethod method = getMethod(request.getMethod(), requestURI);
         Headers requestHeaders = request.getAllHeaders();
         addHeaders(requestHeaders, method);
-        if (method instanceof EntityEnclosingMethod && request.hasPayload()) {
-            InputStream payload = request.getPayload().getInputStream();
-            EntityEnclosingMethod carrier = (EntityEnclosingMethod) method;
-            if (payload != null) {
+        if (method instanceof EntityEnclosingMethod) {
+            request.getPayload().ifPresent(p -> {
+                InputStream payload = p.getInputStream();
+                EntityEnclosingMethod carrier = (EntityEnclosingMethod) method;
                 carrier.setContentChunked(getConfiguration().isUseChunked());
-                carrier.setRequestEntity(new InputStreamRequestEntity(payload, request.getPayload().length()));
-            }
+                carrier.setRequestEntity(new InputStreamRequestEntity(payload, p.length()));
+            });
+
         }
 
         return method;
@@ -174,7 +177,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         for (Header header : method.getResponseHeaders()) {
             headers = headers.add(header.getName(), header.getValue());
         }
-        InputStream stream = null;
+        Optional<InputStream> stream = Optional.empty();
         HTTPResponse response;
         try {
             stream = getInputStream(method);
@@ -192,9 +195,9 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         return response;
     }
 
-    private InputStream getInputStream(HttpMethod method) {
+    private Optional<InputStream> getInputStream(HttpMethod method) {
         try {
-            return method.getResponseBodyAsStream() != null ? new HttpMethodStream(method) : null;
+            return Optional.ofNullable(method.getResponseBodyAsStream() != null ? new HttpMethodStream(method) : null);
         } catch (IOException e) {
             method.releaseConnection();
             throw new HTTPException("Unable to get InputStream from HttpClient", e);

@@ -32,6 +32,7 @@ import org.codehaus.httpcache4j.payload.Payload;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -107,9 +108,11 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             realRequest.addHeader(header.getName(), header.getValue());
         }
 
-        if (request.hasPayload() && realRequest instanceof HttpEntityEnclosingRequest) {
+        if (realRequest instanceof HttpEntityEnclosingRequest) {
             HttpEntityEnclosingRequest req = (HttpEntityEnclosingRequest) realRequest;
-            req.setEntity(new PayloadEntity(request.getPayload(), getConfiguration().isUseChunked()));
+            request.getPayload().ifPresent(p -> {
+                req.setEntity(new PayloadEntity(p, getConfiguration().isUseChunked()));
+            });
         }
         return realRequest;
     }
@@ -130,7 +133,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             headers = headers.add(header.getName(), header.getValue());
         }
 
-        InputStream stream = getStream(request, response);
+        Optional<InputStream> stream = getStream(request, response);
         ProtocolVersion protocolversion = response.getStatusLine().getProtocolVersion();
         StatusLine line = new StatusLine(
                 HTTPVersion.get(protocolversion.getMajor() + "." + protocolversion.getMinor()),
@@ -139,14 +142,11 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         return ResponseCreator.createResponse(line, headers, stream);
     }
 
-    private InputStream getStream(HttpUriRequest realRequest, HttpResponse response) throws IOException {
-        HttpEntity entity = response.getEntity();
-        if (entity == null) {
-            return null;
-        }
+    private Optional<InputStream> getStream(HttpUriRequest realRequest, HttpResponse response) throws IOException {
+        Optional<HttpEntity> entity = Optional.ofNullable(response.getEntity());
         try {
-            return new HttpEntityInputStream(entity);
-        } catch (IOException | RuntimeException e) {
+            return entity.map(HttpEntityInputStream::new);
+        } catch (RuntimeException e) {
             realRequest.abort();
             throw e;
         }
@@ -155,9 +155,17 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private static class HttpEntityInputStream extends DelegatingInputStream {
         private final HttpEntity entity;
 
-        public HttpEntityInputStream(HttpEntity entity) throws IOException {
-            super(entity.getContent());
+        public HttpEntityInputStream(HttpEntity entity) {
+            super(getStream(entity));
             this.entity = entity;
+        }
+
+        private static InputStream getStream(HttpEntity entity) {
+            try {
+                return entity.getContent();
+            } catch (IOException e) {
+                throw new HTTPException(e);
+            }
         }
 
         @Override

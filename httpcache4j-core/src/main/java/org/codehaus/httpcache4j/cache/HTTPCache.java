@@ -147,7 +147,7 @@ public class HTTPCache {
     }
 
     private HTTPRequest maybePrepareConditionalResponse(HTTPRequest request, HTTPResponse staleResponse) {
-        if (!staleResponse.hasPayload() || staleResponse.getPayload().isAvailable()) {
+        if (!staleResponse.hasPayload() || staleResponse.getPayload().get().isAvailable()) {
             return helper.prepareConditionalGETRequest(request, staleResponse);
         }
         return request.headers(request.getHeaders().withConditionals(new Conditionals()));

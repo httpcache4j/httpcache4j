@@ -30,21 +30,17 @@ public class ProxyAuthenticatorTest {
 
     @Test
     public void testNoAuthExpectTheSameRequest() {
-        final HTTPRequest req = new DefaultProxyAuthenticator(new ProxyConfiguration()).prepareAuthentication(defaultRequest, new HTTPResponse(null, Status.CREATED, new Headers()));
+        final HTTPRequest req = new DefaultProxyAuthenticator(new ProxyConfiguration()).prepareAuthentication(defaultRequest, new HTTPResponse(Status.CREATED, new Headers()));
         Assert.assertSame(req, defaultRequest);
     }
 
     @Test
     public void testAuthBasic() {
         final HTTPRequest request = defaultRequest.challenge(new UsernamePasswordChallenge("foo", "bar"));
-        final HTTPRequest req = new DefaultProxyAuthenticator(new ProxyConfiguration(new HTTPHost("http", "foo", -1), null, new ChallengeProvider() {
-            public Challenge getChallenge() {
-                return new UsernamePasswordChallenge("foo", "bar");
-            }
-        })).prepareAuthentication(request,
-                                 new HTTPResponse(null, Status.PROXY_AUTHENTICATION_REQUIRED,
+        final HTTPRequest req = new DefaultProxyAuthenticator(new ProxyConfiguration(new HTTPHost("http", "foo", -1), null, () -> new UsernamePasswordChallenge("foo", "bar"))).prepareAuthentication(request,
+                                 new HTTPResponse(Status.PROXY_AUTHENTICATION_REQUIRED,
                                                   new Headers().add(HeaderConstants.PROXY_AUTHENTICATE, "Basic realm=\"foo\"")));
         Assert.assertNotSame(req, defaultRequest);
-        Assert.assertTrue("No proxy auth header", req.getHeaders().hasHeader("Proxy-Authorization"));
+        Assert.assertTrue("No proxy auth header", req.getHeaders().contains("Proxy-Authorization"));
     }
 }

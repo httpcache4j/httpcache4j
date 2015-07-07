@@ -50,7 +50,7 @@ public class DefaultCacheItem implements CacheItem {
     }
 
     public boolean isStale(LocalDateTime requestTime) {
-        if (response.hasPayload() && !response.getPayload().isAvailable()) {
+        if (response.hasPayload() && !response.getPayload().get().isAvailable()) {
             return true;
         }
         return ttl - getAge(requestTime) <= 0;

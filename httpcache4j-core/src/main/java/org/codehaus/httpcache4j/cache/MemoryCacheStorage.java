@@ -58,7 +58,7 @@ public class MemoryCacheStorage implements CacheStorage {
 
     private HTTPResponse rewriteResponse(Key key, HTTPResponse response) {
         if (response.hasPayload()) {
-            Payload payload = response.getPayload();
+            Payload payload = response.getPayload().get();
             try(InputStream stream = payload.getInputStream()) {
                 return response.withPayload(createPayload(key, payload, stream));
             } catch (IOException ignore) {
@@ -130,7 +130,7 @@ public class MemoryCacheStorage implements CacheStorage {
         withVoidWriteLock(() -> {
             Map<Vary, CacheItem> varyCacheItemMap = cache.get(uri);
             if (varyCacheItemMap != null) {
-                Set<Vary> vary = new HashSet<Vary>(varyCacheItemMap.keySet());
+                Set<Vary> vary = new HashSet<>(varyCacheItemMap.keySet());
                 for (Vary v : vary) {
                     Key key = new Key(uri, v);
                     cache.remove(key);

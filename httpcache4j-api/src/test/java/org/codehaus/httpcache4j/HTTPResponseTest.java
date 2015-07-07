@@ -32,43 +32,41 @@ public class HTTPResponseTest {
     @Test
     public void noHeaders() {
         Headers headers = new Headers();
-        HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
+        HTTPResponse response = new HTTPResponse(Status.OK, headers);
         assertEquals(0, response.getHeaders().getAllow().size());
         assertFalse(response.getHeaders().getETag().isPresent());
         assertFalse(response.getHeaders().getLastModified().isPresent());
-        assertNull(response.getPayload());
         assertFalse(response.hasPayload());
     }
 
     @Test
     public void eTagHeader() {
         Headers headers = new Headers().add(new Header("ETag", "\"abba\""));
-        HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
+        HTTPResponse response = new HTTPResponse(Status.OK, headers);
         assertEquals(0, response.getHeaders().getAllow().size());
         assertTrue(response.getHeaders().getETag().isPresent());
         assertEquals(response.getHeaders().getETag().get().format(), "\"abba\"");
         assertFalse(response.getHeaders().getLastModified().isPresent());
-        assertNull(response.getPayload());
         assertFalse(response.hasPayload());
     }
 
     @Test
     public void allowHeader() {
         Headers headers = new Headers().add(HeaderConstants.ALLOW, "GET, POST, OPTIONS");
-        HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
+        HTTPResponse response = new HTTPResponse(Status.OK, headers);
         assertEquals(3, response.getHeaders().getAllow().size());
     }
 
     @Test
     public void responseShouldHaveCachedValueSet() {
         Headers headers = new Headers().add(CacheHeaderBuilder.getBuilder().createHITXCacheHeader());
-        HTTPResponse response = new HTTPResponse(null, Status.OK, headers);
+        HTTPResponse response = new HTTPResponse(Status.OK, headers);
         assertTrue(response.isCached());
     }
 
     @Test
     public void transformShouldGiveUseSomethingUseful() {
-        HTTPResponse response = new HTTPResponse(new StringPayload("Hello", MIMEType.valueOf("text/plain")), Status.OK, new Headers());
+        HTTPResponse response = new HTTPResponse(Optional.of(new StringPayload("Hello", MIMEType.valueOf("text/plain"))), Status.OK, new Headers());
         Optional<String> result = response.transform(payload -> {
             assertEquals(MIMEType.valueOf("text/plain"), payload.getMimeType());
             try(BufferedReader reader = new BufferedReader(new InputStreamReader(payload.getInputStream()))) {

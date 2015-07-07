@@ -28,6 +28,7 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.codehaus.httpcache4j.*;
+import org.codehaus.httpcache4j.payload.ClosedInputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
 import org.junit.After;
 import org.junit.Before;
@@ -75,9 +76,7 @@ public class HTTPClientResponseResolverTest {
     @Test
     public void testResolvePOSTWithNoHeaders() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.POST);
-        final Payload payload = mock(Payload.class);
-        request = request.payload(payload);
-        when(payload.getMimeType()).thenReturn(new MIMEType("text/plain"));
+        request = request.withPayload(new ClosedInputStreamPayload(new MIMEType("text/plain")));
         final HttpMethod method = mock(PostMethod.class);
         HTTPClientResponseResolver resolver = createResponseResolver(method, Status.valueOf(201), new Header[0]);
 
@@ -90,9 +89,7 @@ public class HTTPClientResponseResolverTest {
     @Test
     public void testResolvePUTWithNoHeaders() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.PUT);
-        final Payload payload = mock(Payload.class);
-        request = request.payload(payload);
-        when(payload.getMimeType()).thenReturn(new MIMEType("text/plain"));
+        request = request.withPayload(new ClosedInputStreamPayload(new MIMEType("text/plain")));
         final HttpMethod method = mock(PostMethod.class);
         HTTPClientResponseResolver resolver = createResponseResolver(method, Status.valueOf(200), new Header[0]);
 

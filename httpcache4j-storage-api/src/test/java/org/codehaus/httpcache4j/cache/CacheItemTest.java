@@ -44,7 +44,7 @@ public class CacheItemTest {
     }
 
     public void setupItem(Headers headers) {
-        item = new DefaultCacheItem(new HTTPResponse(null, Status.OK, headers), storageTime);
+        item = new DefaultCacheItem(new HTTPResponse(Status.OK, headers), storageTime);
     }
 
     @Test
@@ -121,7 +121,7 @@ public class CacheItemTest {
         Headers headers = new Headers().add(HeaderUtils.toHttpDate("Date", now));
         LocalDateTime dateTime = createDateTime(10);
         setClock(dateTime);
-        HTTPResponse cachedResponse = new HTTPResponse(null, Status.OK, headers);
+        HTTPResponse cachedResponse = new HTTPResponse(Status.OK, headers);
         LocalDateTime requestTime = newDate();
         long age = new DefaultCacheItem(cachedResponse, now).getAge(requestTime);
         Assert.assertEquals(10, age);

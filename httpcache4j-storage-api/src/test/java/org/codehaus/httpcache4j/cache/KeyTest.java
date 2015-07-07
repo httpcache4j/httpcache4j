@@ -47,14 +47,14 @@ public class KeyTest {
 
     @Test
     public void keyHasVariation() {
-        Key key1 = Key.create(new HTTPRequest(URI.create("foo")).addHeader("Accept-Language", "en"), new HTTPResponse(null, Status.OK, new Headers().add("Vary", "Accept-Language")));
+        Key key1 = Key.create(new HTTPRequest(URI.create("foo")).addHeader("Accept-Language", "en"), new HTTPResponse(Status.OK, new Headers().add("Vary", "Accept-Language")));
         Assert.assertEquals("en", key1.getVary().getVaryHeaders().get("Accept-Language"));
     }
 
     @Test
     public void keyAddAuthorizationAsVary() {
         System.setProperty("Vary.authorization", "true");
-        Key key1 = Key.create(new HTTPRequest(URI.create("foo")).challenge(new UsernamePasswordChallenge("balle", "meh")), new HTTPResponse(null, Status.OK, new Headers().add("Vary", "Accept-Language")));
+        Key key1 = Key.create(new HTTPRequest(URI.create("foo")).challenge(new UsernamePasswordChallenge("balle", "meh")), new HTTPResponse(Status.OK, new Headers().add("Vary", "Accept-Language")));
         Assert.assertEquals("balle", key1.getVary().getVaryHeaders().get(HeaderConstants.AUTHORIZATION));
         System.setProperty("Vary.authorization", "");
     }

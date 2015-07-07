@@ -12,7 +12,7 @@ public class SerializableCacheItemTest {
     @Test
     public void makeSureWeCanDeserializeOurSelf() {
         SerializableCacheItem clone = (SerializableCacheItem) SerializationUtils.clone(
-                new SerializableCacheItem(new DefaultCacheItem(new HTTPResponse(null, Status.NOT_MODIFIED, new Headers())))
+                new SerializableCacheItem(new DefaultCacheItem(new HTTPResponse(Status.NOT_MODIFIED, new Headers())))
         );
         Assert.assertNotNull(clone);
     }
@@ -20,7 +20,7 @@ public class SerializableCacheItemTest {
     @Test
     public void makeSureWeCanDeserializeOurSelfABitMoreComplex() {
         SerializableCacheItem clone = (SerializableCacheItem) SerializationUtils.clone(
-                new SerializableCacheItem(new DefaultCacheItem(new HTTPResponse(null, Status.NOT_MODIFIED, new Headers().add("Foo", "bar").add("Bar", "foo").add("FOO", "kgld"))))
+                new SerializableCacheItem(new DefaultCacheItem(new HTTPResponse(Status.NOT_MODIFIED, new Headers().add("Foo", "bar").add("Bar", "foo").add("FOO", "kgld"))))
         );
         Assert.assertNotNull(clone);
     }
