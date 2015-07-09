@@ -20,7 +20,6 @@ import org.codehaus.httpcache4j.auth.DefaultAuthenticator;
 import org.codehaus.httpcache4j.auth.DefaultProxyAuthenticator;
 import org.codehaus.httpcache4j.payload.DelegatingInputStream;
 import org.codehaus.httpcache4j.payload.Payload;
-import org.codehaus.httpcache4j.util.Base64;
 import org.codehaus.httpcache4j.util.IOUtils;
 
 import javax.net.ssl.HttpsURLConnection;

@@ -3,7 +3,7 @@ package org.codehaus.httpcache4j.auth;
 import java.nio.charset.Charset;
 
 import org.codehaus.httpcache4j.UsernamePasswordChallenge;
-import org.codehaus.httpcache4j.util.Base64;
+import java.util.Base64;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -13,7 +13,7 @@ public class BasicAuthentication {
 
     public static String getHeaderValue(UsernamePasswordChallenge challenge) {
         String basicString = challenge.getIdentifier() + ":" + new String(challenge.getPassword());
-        return "Basic " + Base64.encodeBytes(basicString.getBytes(UTF_8));
+        return "Basic " + Base64.getEncoder().encodeToString(basicString.getBytes(UTF_8));
     }
     
 }
