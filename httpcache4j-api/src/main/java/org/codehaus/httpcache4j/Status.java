@@ -116,7 +116,7 @@ public final class Status implements Comparable<Status> {
                 }
             }
         }
-        Map<Integer, Status> map = new TreeMap<>(Integer::compare);
+        Map<Integer, Status> map = new TreeMap<>(Comparator.naturalOrder());
         for (Status s: statuses) {
             map.put(s.getCode(), s);
         }
