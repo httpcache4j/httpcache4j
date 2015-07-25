@@ -104,7 +104,7 @@ public class HTTPCache {
 
     private HTTPResponse doRequest(HTTPRequest request, final boolean force) {
         if (request.getMethod() == HTTPMethod.HEAD && isTranslateHEADToGET()) {
-            request = request.method(HTTPMethod.GET);
+            request = request.withMethod(HTTPMethod.GET);
         }
         HTTPResponse response;
         if (force) {
@@ -121,14 +121,15 @@ public class HTTPCache {
         final CacheItem item = storage.get(request);
         if (item != null) {
             statistics.hit();
-            if (item.isStale(requestTime)) {
+            final HTTPResponse cachedResponse = item.getResponse();
+            boolean mustRevalidate = cachedResponse.getHeaders().getCacheControl().orElse(CacheControl.empty()).isMustRevalidate();
+            if (mustRevalidate || item.isStale(requestTime)) {
                 //If the cached value is stale, execute the request and try to cache it.
-                HTTPResponse staleResponse = item.getResponse();
                 //If the payload has been deleted for some reason, we want to do a unconditional GET
-                HTTPRequest conditionalRequest = maybePrepareConditionalResponse(request, staleResponse);
+                HTTPRequest conditionalRequest = maybePrepareConditionalResponse(request, cachedResponse);
                 response = handleStaleResponse(conditionalRequest, request, item, requestTime);
             } else {
-                response = helper.rewriteResponse(request, item.getResponse(), item.getAge(requestTime));
+                response = helper.rewriteResponse(request, cachedResponse, item.getAge(requestTime));
             }
         } else {
             statistics.miss();

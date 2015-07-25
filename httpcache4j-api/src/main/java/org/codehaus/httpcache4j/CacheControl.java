@@ -85,6 +85,10 @@ public final class CacheControl {
         return new Header(HeaderConstants.CACHE_CONTROL, new Directives(directives));
     }
 
+    public static CacheControl empty() {
+        return new CacheControl(new Directives());
+    }
+
     /**
      * Mutable builder.
      */

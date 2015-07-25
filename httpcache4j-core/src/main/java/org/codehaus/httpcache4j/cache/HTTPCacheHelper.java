@@ -48,12 +48,14 @@ class HTTPCacheHelper {
 
         /**
          * 200, 203, 206, 300, 301 or 410
+         * We do not handle ranges, so we dont support 206.
          */
-        cacheableStatuses = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(Status.OK,
-                                       Status.NON_AUTHORITATIVE_INFORMATION,
-                                       Status.MULTIPLE_CHOICES,
-                                       Status.MOVED_PERMANENTLY,
-                                       Status.GONE
+        cacheableStatuses = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+                Status.OK,
+                Status.NON_AUTHORITATIVE_INFORMATION,
+                Status.MULTIPLE_CHOICES,
+                Status.MOVED_PERMANENTLY,
+                Status.GONE
         )));
     }
 

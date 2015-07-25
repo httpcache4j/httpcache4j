@@ -118,6 +118,15 @@ public class HTTPCacheHelperTest {
         Assert.assertFalse(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
     }
 
+    @Test
+    public void makesureWeAreRemovingUncachableHeaders() {
+        Headers headers = new Headers().add("Connection", "close").add("Transfer-Encoding", "compress");
+
+        Headers modified = helper.removeUnmodifiableHeaders(headers);
+
+        Assert.assertEquals(new Headers(), modified);
+    }
+
     private LocalDateTime createDateTime(int seconds) {
         return LocalDateTime.of(2009, 4, 22, 10, 10, seconds, 0);
     }
