@@ -207,11 +207,11 @@ public class MemoryCacheStorage implements CacheStorage {
         }
     }
     protected final void withVoidWriteLock(Runnable block) {
-        read.lock();
+        write.lock();
         try {
             block.run();
         } finally {
-            read.unlock();
+            write.unlock();
         }
     }
 
