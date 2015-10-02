@@ -79,5 +79,6 @@
     <module>resolvers-commons-httpclient</module>
     <module>resolvers-httpcomponents-httpclient</module>
     <module>resolvers-ning-async</module>
+    <module>resolvers-okhttp</module>
   </modules>
 </project>
