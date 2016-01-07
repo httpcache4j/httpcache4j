@@ -143,9 +143,12 @@ public class FilePersistentCacheStorage implements CacheStorage {
 
     synchronized Optional<Pair<Key, CacheItem>> getItem(HTTPRequest request) {
         File uri = fileManager.resolve(request.getNormalizedURI());
-        DirectoryStream<Path> paths = getMetadata(uri);
-        Stream<Path> stream = StreamSupport.stream(paths.spliterator(), false);
-        return stream.map(f -> readItem(f.toFile())).filter(p -> p != null && p.getKey().getVary().matches(request)).findFirst();
+        if (uri.exists()) {
+            DirectoryStream<Path> paths = getMetadata(uri);
+            Stream<Path> stream = StreamSupport.stream(paths.spliterator(), false);
+            return stream.map(f -> readItem(f.toFile())).filter(p -> p != null && p.getKey().getVary().matches(request)).findFirst();
+        }
+        return Optional.empty();
     }
 
     @Override
