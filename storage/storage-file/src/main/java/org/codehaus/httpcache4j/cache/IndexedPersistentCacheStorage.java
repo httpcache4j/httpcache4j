@@ -15,6 +15,11 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
+ * <p>...some description here...</p>
+ *
+ * <p>Note: you must explicitly add google guava as a dependency to
+ * be able to use this CacheStorage implementation.</p>
+ *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 @Beta
