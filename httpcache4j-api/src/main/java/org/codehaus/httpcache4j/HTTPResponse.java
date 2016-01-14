@@ -19,6 +19,7 @@ package org.codehaus.httpcache4j;
 import org.codehaus.httpcache4j.annotation.Internal;
 import org.codehaus.httpcache4j.payload.InputStreamPayload;
 import org.codehaus.httpcache4j.payload.Payload;
+import org.codehaus.httpcache4j.util.ThrowableFunction;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +38,7 @@ import static org.codehaus.httpcache4j.HeaderConstants.X_CACHE;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public final class HTTPResponse {
-    
+
     private final StatusLine statusLine;
     private final Optional<Payload> payload;
     private final Headers headers;
@@ -100,14 +101,14 @@ public final class HTTPResponse {
     }
 
     //TODO: consider removing this
-    public <A> Optional<A> transform(final Function<Payload, A> f) {
+    public <A> Optional<A> transform(final ThrowableFunction<Payload, A, IOException> f) {
         if (hasPayload()) {
             return payload.flatMap(p -> lift(p, f));
         }
         return Optional.empty();
     }
 
-    private <A> Optional<A> lift(Payload p, Function<Payload, A> f) {
+    private <A> Optional<A> lift(Payload p, ThrowableFunction<Payload, A, IOException> f) {
         try(InputStream is = p.getInputStream()) {
             InputStreamPayload isp = new InputStreamPayload(is, p.getMimeType(), p.length());
             return Optional.ofNullable(f.apply(isp));

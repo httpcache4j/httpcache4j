@@ -82,4 +82,18 @@ public class HTTPResponseTest {
         assertTrue(result.isPresent());
         assertEquals("Hello", result.get());
     }
+
+    @Test
+    public void transformWithouthavingtoDealWithException() {
+        HTTPResponse response = new HTTPResponse(Optional.of(new StringPayload("Hello", MIMEType.valueOf("text/plain"))), Status.OK, new Headers());
+        Optional<String> result = response.transform(payload -> {
+            assertEquals(MIMEType.valueOf("text/plain"), payload.getMimeType());
+            try(BufferedReader reader = new BufferedReader(new InputStreamReader(payload.getInputStream()))) {
+                return reader.lines().collect(Collectors.joining("\n"));
+            }
+        });
+
+        assertTrue(result.isPresent());
+        assertEquals("Hello", result.get());
+    }
 }
