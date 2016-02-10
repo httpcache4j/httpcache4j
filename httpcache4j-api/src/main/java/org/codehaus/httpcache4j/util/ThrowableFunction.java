@@ -6,20 +6,22 @@ import java.util.function.Function;
 public interface ThrowableFunction<A, B, E extends Exception> {
     B apply(A input) throws E;
 
+    @SuppressWarnings("unchecked")
+    static <T extends Throwable> T sneakyRethrow(Throwable t) throws T {
+        throw (T) t;
+    }
+
     default Function<A, B> toFunction() {
         return a -> {
             try {
                 return this.apply(a);
             } catch (Exception e) {
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException)e;
-                }
-                throw new RuntimeException(e);
+                throw ThrowableFunction.<Error>sneakyRethrow(e);
             }
         };
     }
 
-    static <A, B> ThrowableFunction<A, B, RuntimeException> lift(Function<A, B> f) {
-        return f::apply;
+    static <A, B, E extends Exception> Function<A, B> lift(ThrowableFunction<A, B, E> f) {
+        return f.toFunction();
     }
 }
