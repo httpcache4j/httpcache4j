@@ -20,6 +20,10 @@ import java.util.stream.Stream;
  * <p>Note: you must explicitly add google guava as a dependency to
  * be able to use this CacheStorage implementation.</p>
  *
+ * @deprecated Will be moved outside of core and most likely be replaced by caffiene.
+ * This is hightly inefficient due to the full cache scan that needs to happen when
+ * invalidating. This is easily fixed, but should probably be done in the new repo.
+ *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 @Beta
