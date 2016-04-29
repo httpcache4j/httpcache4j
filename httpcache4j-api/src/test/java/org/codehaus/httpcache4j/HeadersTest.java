@@ -115,6 +115,17 @@ public class HeadersTest {
     }
 
     @Test
+    public void containsHeaders() {
+        Headers h = new Headers().add("Foo", "bar");
+        assertTrue("did not contain", h.contains("FOO"));
+        assertTrue("did not contain", h.contains("foo"));
+        assertTrue("did not contain", h.contains("Foo"));
+        assertTrue("did not contain", h.contains("FoO"));
+        assertTrue("did not contain", h.contains("fOO"));
+        assertFalse("did contain", h.contains("f00"));
+    }
+
+    @Test
     public void storeAndParseHeaders() {
         MutableHeaders headers = new MutableHeaders();
         headers.add("Content-Type", "text/plain");
