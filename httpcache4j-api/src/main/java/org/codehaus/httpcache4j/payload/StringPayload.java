@@ -1,7 +1,9 @@
 package org.codehaus.httpcache4j.payload;
 
 import org.codehaus.httpcache4j.MIMEType;
+import org.codehaus.httpcache4j.util.IOUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
@@ -24,6 +26,16 @@ public final class StringPayload implements Payload, Serializable {
         this.delegate = new ByteArrayPayload(value.getBytes(charset), mimeType);
         this.value = value;
         this.charset = charset;
+    }
+
+    public static StringPayload fromInputStream(InputStream is, MIMEType mime, Charset charset) throws IOException {
+        try(InputStream i = is) {
+            return new StringPayload(new String(IOUtils.toByteArray(i), charset), mime, charset);
+        }
+    }
+
+    public static StringPayload fromInputStream(InputStream is, MIMEType mime) throws IOException {
+        return fromInputStream(is, mime, StandardCharsets.UTF_8);
     }
 
     public String getValue() {
