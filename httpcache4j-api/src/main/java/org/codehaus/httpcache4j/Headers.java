@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 
 /**
@@ -44,6 +45,20 @@ public final class Headers implements Streamable<Header> {
 
     public Headers(final Headers headers) {
         this(headers.copyMap());
+    }
+
+    public Headers(final Iterable<Header> headers) {
+        this(toMap(headers));
+    }
+
+    private static HeaderHashMap toMap(Iterable<Header> headers) {
+        HeaderHashMap map = new HeaderHashMap();
+        for (Header h : headers) {
+            List<String> list = map.getOrDefault(h.getName(), new ArrayList<>());
+            list.add(h.getValue());
+            map.put(h.getName(), list);
+        }
+        return map;
     }
 
     public Headers(final Map<String, List<String>> headers) {
