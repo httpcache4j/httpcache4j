@@ -132,7 +132,7 @@ public abstract class AbstractCacheIntegrationTest {
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).orElse(null));
 
         assertEquals(1, storage.size());
-        response = cache.execute(new HTTPRequest(uri, HTTPMethod.PUT));
+        response = cache.execute(new HTTPRequest(uri, HTTPMethod.PUT).withPayload(new StringPayload("test", MIMEType.valueOf("text/plain"))));
         assertEquals(0, storage.size());
         assertEquals(Status.NO_CONTENT, response.getStatus());
         assertNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).orElse(null));
@@ -151,7 +151,7 @@ public abstract class AbstractCacheIntegrationTest {
         assertEquals(Status.UNAUTHORIZED, response.getStatus());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
         response.consume();
-        HTTPRequest request = new HTTPRequest(uri).challenge(new UsernamePasswordChallenge("u", "p"));
+        HTTPRequest request = new HTTPRequest(uri).withChallenge(new UsernamePasswordChallenge("u", "p"));
         response = cache.execute(request);
         assertEquals(Status.OK, response.getStatus());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
@@ -164,7 +164,7 @@ public abstract class AbstractCacheIntegrationTest {
         HTTPResponse response = doRequest(uri, HTTPMethod.PUT);
         assertEquals(Status.UNAUTHORIZED, response.getStatus());
         response.consume();
-        HTTPRequest request = new HTTPRequest(uri, HTTPMethod.PUT).challenge(new UsernamePasswordChallenge("u", "p"))
+        HTTPRequest request = new HTTPRequest(uri, HTTPMethod.PUT).withPayload(new StringPayload("test", MIMEType.valueOf("text/plain"))).withChallenge(new UsernamePasswordChallenge("u", "p"))
                 .withPayload(new ByteArrayPayload(new FileInputStream(new File("pom.xml")), MIMEType.valueOf("application/xml")));
         response = cache.execute(request);
         assertEquals(Status.NO_CONTENT, response.getStatus());
@@ -305,8 +305,11 @@ public abstract class AbstractCacheIntegrationTest {
         return doRequest(uri, HTTPMethod.GET);
     }
 
-    private HTTPResponse doRequest(URI uri, HTTPMethod pMethod) {
-        HTTPRequest request = new HTTPRequest(uri, pMethod);
+    private HTTPResponse doRequest(URI uri, HTTPMethod method) {
+        HTTPRequest request = new HTTPRequest(uri, method);
+        if (method.canHavePayload()) {
+            request = request.withPayload(new StringPayload("test", MIMEType.valueOf("text/plain")));
+        }
         HTTPResponse response = cache.execute(request);
         assertNotNull(response);
         assertFalse(response.getStatus().equals(Status.INTERNAL_SERVER_ERROR));

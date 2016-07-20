@@ -1,6 +1,6 @@
 package org.codehaus.httpcache4j.resolver;
 
-import com.squareup.okhttp.*;
+import okhttp3.*;
 import okio.BufferedSink;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.Headers;
@@ -13,36 +13,46 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class OKHttpResponseResolver extends AbstractResponseResolver {
     private final OkHttpClient client;
 
-    protected OKHttpResponseResolver(ResolverConfiguration configuration) {
+    public OKHttpResponseResolver(ResolverConfiguration config) {
+        this(config, builder -> {});
+    }
+
+    public OKHttpResponseResolver(ResolverConfiguration configuration, Consumer<OkHttpClient.Builder> configF) {
         super(configuration);
-        client = new OkHttpClient();
-        client.setAuthenticator(new NullAuthenticator());
-        client.setFollowRedirects(false);
-        client.setFollowSslRedirects(false);
-        client.setCache(null);
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.authenticator(new NullAuthenticator());
+        builder.followRedirects(false);
+        builder.followSslRedirects(false);
+        builder.cache(null);
         ConnectionConfiguration connConfig = configuration.getConnectionConfiguration();
-        client.setConnectionPool(new ConnectionPool(
-                connConfig.getMaxConnections().orElse(ConnectionPool.getDefault().getConnectionCount()),
-                (5 * 60 * 1000) // 5 minutes
-                ));
-        connConfig.getConnectionRequestTimeout().ifPresent(i -> client.setReadTimeout(i, TimeUnit.MILLISECONDS));
-        connConfig.getSocketTimeout().ifPresent(i -> client.setConnectTimeout(i, TimeUnit.MILLISECONDS));
+        builder.connectionPool(new ConnectionPool(
+                connConfig.getMaxConnections().orElse(new ConnectionPool().connectionCount()),
+                (5 * 60 * 1000), // 5 minutes,
+                TimeUnit.MILLISECONDS
+        ));
+        connConfig.getConnectionRequestTimeout().ifPresent(i -> builder.readTimeout(i, TimeUnit.MILLISECONDS));
+        connConfig.getSocketTimeout().ifPresent(i -> builder.connectTimeout(i, TimeUnit.MILLISECONDS));
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.setMaxRequests(connConfig.getMaxConnections().orElse(dispatcher.getMaxRequests()));
         dispatcher.setMaxRequestsPerHost(connConfig.getDefaultConnectionsPerHost().orElse(dispatcher.getMaxRequestsPerHost()));
-        client.setDispatcher(dispatcher);
+        builder.dispatcher(dispatcher);
 
         if (connConfig.getTimeout().isPresent()) {
-            client.setConnectTimeout(connConfig.getTimeout().get(), TimeUnit.MILLISECONDS);
+            builder.connectTimeout(connConfig.getTimeout().get(), TimeUnit.MILLISECONDS);
         }
         HTTPHost proxyHost = configuration.getProxyAuthenticator().getConfiguration().getHost();
         if (proxyHost != null) {
-            client.setProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost.getHost(), proxyHost.getPort())));
+            builder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost.getHost(), proxyHost.getPort())));
         }
+
+        configF.accept(builder);
+
+        this.client = builder.build();
     }
 
     @Override
@@ -78,7 +88,7 @@ public class OKHttpResponseResolver extends AbstractResponseResolver {
 
     @Override
     public void shutdown() {
-        client.getDispatcher().getExecutorService().shutdown();
+        client.dispatcher().executorService().shutdown();
     }
 
     public OkHttpClient getClient() {
@@ -117,21 +127,13 @@ public class OKHttpResponseResolver extends AbstractResponseResolver {
 
         @Override
         public InputStream getInputStream() {
-            try {
-                available = false;
-                return delegate.byteStream();
-            } catch (IOException e) {
-                throw new HTTPException(e);
-            }
+            available = false;
+            return delegate.byteStream();
         }
 
         @Override
         public long length() {
-            try {
-                return delegate.contentLength();
-            } catch (IOException e) {
-                throw new HTTPException(e);
-            }
+            return delegate.contentLength();
         }
 
         @Override
@@ -141,13 +143,9 @@ public class OKHttpResponseResolver extends AbstractResponseResolver {
     }
 
     private static class NullAuthenticator implements Authenticator {
-        @Override
-        public Request authenticate(Proxy proxy, Response response) throws IOException {
-            return null;
-        }
 
         @Override
-        public Request authenticateProxy(Proxy proxy, Response response) throws IOException {
+        public Request authenticate(Route route, Response response) throws IOException {
             return null;
         }
     }

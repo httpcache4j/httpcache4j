@@ -18,6 +18,7 @@ package org.codehaus.httpcache4j;
 import org.codehaus.httpcache4j.cache.CacheStorage;
 import org.codehaus.httpcache4j.cache.MemoryCacheStorage;
 import org.codehaus.httpcache4j.resolver.JavaNetResponseResolver;
+import org.codehaus.httpcache4j.resolver.OKHttpResponseResolver;
 import org.codehaus.httpcache4j.resolver.ResolverConfiguration;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 
@@ -31,6 +32,6 @@ public class MemoryOKHttpCacheIntegrationTest extends AbstractCacheIntegrationTe
 
     @Override
     protected ResponseResolver createReponseResolver() {
-        return new JavaNetResponseResolver(new ResolverConfiguration());
+        return new OKHttpResponseResolver(new ResolverConfiguration());
     }
 }
