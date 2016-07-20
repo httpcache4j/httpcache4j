@@ -33,12 +33,4 @@ public final class IOUtils {
         copy(is, bos);
         return bos.toByteArray();
     }
-
-    public static <A extends Closeable, B> B borrow(A is, Function<A, B> f) {
-        try(A p = is) {
-            return f.apply(p);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }
