@@ -120,7 +120,9 @@ public final class HTTPResponse {
     public void consume() {
         payload.ifPresent(p -> {
             try(InputStream is = p.getInputStream()) {
-                is.close();
+                if (null != is) {
+                    is.close();
+                }
             } catch (IOException ignored){}
         });
     }

@@ -16,12 +16,17 @@
 
 package org.codehaus.httpcache4j;
 
+import org.codehaus.httpcache4j.payload.InputStreamPayload;
+import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.StringPayload;
 import org.junit.Test;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -95,5 +100,29 @@ public class HTTPResponseTest {
 
         assertTrue(result.isPresent());
         assertEquals("Hello", result.get());
+    }
+
+    @Test
+    public void nullCheckOnPayloadInputStreamClose(){
+        String exampleResponseText = "text";
+        Payload payload = new InputStreamPayload(new ByteArrayInputStream(exampleResponseText.getBytes(StandardCharsets.UTF_8)), MIMEType.valueOf("text/plain"));
+        HTTPResponse response = new HTTPResponse(Optional.of(payload), Status.OK, new Headers());
+        Optional<String>  expectedResponse = response.transform(input ->  {
+            InputStream is = input.getInputStream();
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                return reader.lines().collect(Collectors.joining("\n"));
+            } finally {
+                is.close();
+            }
+        });
+        try {
+            response.consume();
+        } catch (Exception e){
+            fail("Failed to consume response " + e);
+        }
+
+        assertEquals(exampleResponseText, expectedResponse.orElse("failed"));
+
     }
 }
