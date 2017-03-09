@@ -159,6 +159,14 @@ public class VaryTest {
         assertTrue("Did not match request", new Vary(map).matches(request));
     }
 
+    @Test
+    public void All() {
+        Vary STAR = Vary.ALL;
+
+        HTTPRequest baseRequest = new HTTPRequest(URI.create("http://foo.com"));
+        assertFalse("STAR matched request", STAR.matches(baseRequest));
+        assertFalse("STAR matched request", STAR.matches(baseRequest.addHeader("Accept", "application/xml")));
+    }
 
 
     @Test
