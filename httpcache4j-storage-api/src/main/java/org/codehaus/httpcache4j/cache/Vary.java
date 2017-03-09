@@ -110,7 +110,12 @@ public final class Vary {
                 }
             }
         }
-        return true;
+        List<Preference> preferences = new ArrayList<>();
+        preferences.addAll(headers.getAccept());
+        preferences.addAll(headers.getAcceptCharset());
+        preferences.addAll(headers.getAcceptLanguage());
+
+        return !(varyHeaders.isEmpty() && !preferences.isEmpty());
     }
 
     @Override
