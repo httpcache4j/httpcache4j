@@ -18,10 +18,6 @@ public final class BearerAuthenticatorStrategy implements AuthenticatorStrategy 
     }
 
     public HTTPRequest prepare(HTTPRequest request, AuthScheme scheme) {
-        String uriScheme = request.getRequestURI().getScheme();
-        if (!"https".equals(uriScheme)) {
-            throw new IllegalStateException("Bearer token MUST be sent over a secure connection. the URIs scheme was " + uriScheme);
-        }
         HTTPRequest req = request;
         Challenge challenge = request.getChallenge().orElse(null);
         if (challenge instanceof BearerTokenChallenge) {
