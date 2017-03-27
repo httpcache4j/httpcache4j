@@ -37,6 +37,7 @@ import org.codehaus.httpcache4j.preference.Preference;
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
 public final class Vary {
+    public static final Vary ALL = new Vary(Collections.singletonMap("ALL", "true"));
     private final Map<String, String> varyHeaders;
 
     /**
@@ -94,6 +95,7 @@ public final class Vary {
      */
     //todo: cleanup this
     public boolean matches(final HTTPRequest request) {
+        if (varyHeaders.containsKey("ALL")) return false;
         Headers headers = request.getAllHeaders();
 
         for (Map.Entry<String, String> varyEntry : varyHeaders.entrySet()) {
@@ -110,7 +112,12 @@ public final class Vary {
                 }
             }
         }
-        return true;
+        List<Preference> preferences = new ArrayList<>();
+        preferences.addAll(headers.getAccept());
+        preferences.addAll(headers.getAcceptCharset());
+        preferences.addAll(headers.getAcceptLanguage());
+
+        return !(varyHeaders.isEmpty() && !preferences.isEmpty());
     }
 
     @Override

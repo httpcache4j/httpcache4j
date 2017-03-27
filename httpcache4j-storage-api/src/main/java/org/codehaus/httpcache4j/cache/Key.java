@@ -57,12 +57,14 @@ public final class Key implements Serializable {
         Optional<String> varyHeader = responseHeaders.getFirstHeaderValue(VARY);
         Map<String, String> resolvedVaryHeaders = new HashMap<String, String>();
         if (varyHeader.isPresent()) {
-            String[] varies = varyHeader.get().split(",");
+            String varyValue = varyHeader.get();
+            if (varyValue.equals("*")) {
+                return Vary.ALL;
+            }
+            String[] varies = varyValue.split(",");
             for (String vary : varies) {
                 Optional<String> value = requestHeaders.getFirstHeaderValue(vary);
-                if (value.isPresent()) {
-                    resolvedVaryHeaders.put(vary, value.get());
-                }
+                value.ifPresent(s -> resolvedVaryHeaders.put(vary, s));
             }
         }
         if (request.getChallenge().isPresent() && Boolean.getBoolean("Vary.authorization")) {

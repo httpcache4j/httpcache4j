@@ -146,6 +146,29 @@ public class VaryTest {
         assertTrue("Wrong accept header", vary.matches(request));
     }
 
+
+    @Test
+    public void noVaryThenVary() {
+        final Vary empty = new Vary();
+        assertTrue("Empty vary was not empty", empty.isEmpty());
+        HashMap<String, String> map = new HashMap<>();
+        map.put("Accept", "application/xml");
+
+        HTTPRequest request = new HTTPRequest(URI.create("http://foo.com")).addHeader("Accept", "application/xml");
+        assertFalse("Empty matched Accept", empty.matches(request));
+        assertTrue("Did not match request", new Vary(map).matches(request));
+    }
+
+    @Test
+    public void All() {
+        Vary STAR = Vary.ALL;
+
+        HTTPRequest baseRequest = new HTTPRequest(URI.create("http://foo.com"));
+        assertFalse("STAR matched request", STAR.matches(baseRequest));
+        assertFalse("STAR matched request", STAR.matches(baseRequest.addHeader("Accept", "application/xml")));
+    }
+
+
     @Test
     public void testVaryFileResolve() {
         FileManager resolver = new FileManager(TestUtil.getTestFile("target"));
