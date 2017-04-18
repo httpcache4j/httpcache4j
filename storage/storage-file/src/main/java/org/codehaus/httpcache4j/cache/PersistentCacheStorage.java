@@ -21,8 +21,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 
 import org.codehaus.httpcache4j.HTTPResponse;
@@ -39,7 +39,7 @@ import org.codehaus.httpcache4j.util.SerializationUtils;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public class PersistentCacheStorage extends MemoryCacheStorage implements Serializable, MemoryCache.KeyListener {
+public class PersistentCacheStorage extends MemoryCacheStorage implements MemoryCache.KeyListener {
 
 
     private static final long serialVersionUID = 2551525125071085301L;
@@ -54,6 +54,10 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 
     public PersistentCacheStorage(File storageDirectory) {
         this(1000, storageDirectory, "persistent.ser");
+    }
+
+    public PersistentCacheStorage(final int capacity, final File storageDirectory) {
+        this(capacity, storageDirectory, "persistent.ser");
     }
 
     public PersistentCacheStorage(final int capacity, final File storageDirectory, final String name) {
@@ -88,14 +92,17 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 
     @Override
     protected HTTPResponse putImpl(Key key, HTTPResponse response) {
-        if (response.hasPayload() && response.getPayload().get() instanceof FilePayload) {
-            final FilePayload payload = (FilePayload)response.getPayload().get();
-            try {
-                response = response.withPayload(createRealPayload(key, payload));
-            } catch (IOException ignore) {
+        HTTPResponse resolvedResponse = response.getPayload().flatMap(p -> {
+            if (persistablePayload(p)) {
+                try {
+                    return Optional.of(response.withPayload(createRealPayload(key, (FilePayload)p)));
+                } catch (IOException ignore) {}
             }
-        }
-        HTTPResponse res = super.putImpl(key, response);
+            return Optional.empty();
+
+        }).orElse(response);
+
+        HTTPResponse res = super.putImpl(key, resolvedResponse);
         if (serializationPolicy.shouldWePersist(modCount++, lastSerialization)) {
             lastSerialization = System.currentTimeMillis();
             saveCacheToDisk();
@@ -104,8 +111,13 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
     }
 
     @Override
-    protected CacheItem createCacheItem(HTTPResponse pCacheableResponse) {
-        return new SerializableCacheItem(new DefaultCacheItem(pCacheableResponse));
+    protected boolean persistablePayload(Payload payload) {
+        return payload instanceof FilePayload;
+    }
+
+    @Override
+    protected CacheItem createCacheItem(HTTPResponse response) {
+        return new SerializableCacheItem(new DefaultCacheItem(response));
     }
 
     @Override
@@ -151,12 +163,14 @@ public class PersistentCacheStorage extends MemoryCacheStorage implements Serial
 
     private void saveCacheToDisk() {
         withReadLock(() -> {
+            cache.setKeyListener(null);
             try(FileOutputStream outputStream = new FileOutputStream(serializationFile)) {
                 SerializationUtils.serialize(cache, outputStream);
             }
             catch (Exception e) {
                 //Ignored, we create a new one.
             }
+            cache.setKeyListener(this);
             return null;
         });
     }

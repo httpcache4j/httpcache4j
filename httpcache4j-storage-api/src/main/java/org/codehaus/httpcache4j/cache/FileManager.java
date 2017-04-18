@@ -15,11 +15,7 @@
 
 package org.codehaus.httpcache4j.cache;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -51,7 +47,7 @@ public final class FileManager implements Serializable {
         if (!file.getParentFile().exists()) {
             ensureDirectoryExists(file.getParentFile());
         }
-        try (InputStream is = stream; FileOutputStream to = new FileOutputStream(file)) {
+        try (InputStream is = stream; OutputStream to = Files.newOutputStream(file.toPath())) {
             IOUtils.copy(is, to);
         }
         if (file.length() == 0) {
@@ -89,7 +85,11 @@ public final class FileManager implements Serializable {
     public synchronized void remove(Key key) {
         File resolved = resolve(key);
         if (resolved.delete() && directoryIsEmpty(resolved.getParentFile())) {
-            resolved.getParentFile().delete();
+            try {
+                Files.deleteIfExists(resolved.getParentFile().toPath());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -97,7 +97,11 @@ public final class FileManager implements Serializable {
         File resolved = resolve(uri);
         deleteDirectory(resolved);
         if (directoryIsEmpty(resolved.getParentFile())) {
-            resolved.getParentFile().delete();
+            try {
+                Files.deleteIfExists(resolved.getParentFile().toPath());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

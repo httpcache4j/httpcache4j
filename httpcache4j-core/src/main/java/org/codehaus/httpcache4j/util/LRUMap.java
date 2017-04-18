@@ -7,7 +7,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class LRUMap<K, V> extends LinkedHashMap<K, V> {
     private final int capacity;
-    private transient CopyOnWriteArrayList<ModificationListener<K, V>> listeners = new CopyOnWriteArrayList<ModificationListener<K, V>>();
+    private transient CopyOnWriteArrayList<ModificationListener<K, V>> listeners = new CopyOnWriteArrayList<>();
 
     public LRUMap(final int capacity) {
         super(capacity);
@@ -34,11 +34,14 @@ public class LRUMap<K, V> extends LinkedHashMap<K, V> {
         return capacity;
     }
 
-    public void addListener(ModificationListener<K, V> listener) {
+    public synchronized void addListener(ModificationListener<K, V> listener) {
+        if (listeners == null) {
+            listeners = new CopyOnWriteArrayList<>();
+        }
         listeners.add(listener);
     }
 
-    public void removeListener(ModificationListener<K, V> listener) {
+    public synchronized void removeListener(ModificationListener<K, V> listener) {
         listeners.remove(listener);
     }
 
@@ -46,7 +49,7 @@ public class LRUMap<K, V> extends LinkedHashMap<K, V> {
         return listeners;
     }
 
-    public void removeListeners() {
+    public synchronized void removeListeners() {
         listeners.clear();
     }
 

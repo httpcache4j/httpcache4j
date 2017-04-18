@@ -18,18 +18,17 @@ package org.codehaus.httpcache4j.cache;
 
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
-import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.payload.ByteArrayPayload;
-import org.codehaus.httpcache4j.util.IOUtils;
-import org.codehaus.httpcache4j.util.MemoryCache;
+import org.codehaus.httpcache4j.payload.Payload;
 import org.codehaus.httpcache4j.util.LRUMap;
+import org.codehaus.httpcache4j.util.MemoryCache;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.Lock;
-import java.io.InputStream;
-import java.io.IOException;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
 /**
@@ -57,47 +56,51 @@ public class MemoryCacheStorage implements CacheStorage {
     }
 
     private HTTPResponse rewriteResponse(Key key, HTTPResponse response) {
-        if (response.hasPayload()) {
-            Payload payload = response.getPayload().get();
-            try(InputStream stream = payload.getInputStream()) {
-                return response.withPayload(createPayload(key, payload, stream));
-            } catch (IOException ignore) {
+        return response.getPayload().map(p -> {
+            if (!persistablePayload(p)) {
+                try(InputStream stream = p.getInputStream()) {
+                    return response.withPayload(createPayload(key, p, stream));
+                } catch (IOException ignore) {
+                }
             }
-        }
-        else {
             return response;
-        }
-        throw new IllegalArgumentException("Unable to cache response");
+        }).orElse(response.withPayload(null));
+    }
+
+    protected boolean persistablePayload(Payload payload) {
+        return payload instanceof ByteArrayPayload;
     }
 
     public final HTTPResponse insert(final HTTPRequest request, final HTTPResponse response) {
         Key key = Key.create(request, response);
-        HTTPResponse cacheableResponse = rewriteResponse(key, response);
         return withWriteLock(() -> {
+            HTTPResponse cacheableResponse = rewriteResponse(key, response);
             invalidate(key);
             return putImpl(key, cacheableResponse);
         });
     }
 
-    protected HTTPResponse putImpl(final Key pKey, final HTTPResponse pCacheableResponse) {
-        CacheItem item = createCacheItem(pCacheableResponse);
-        LRUMap<Vary, CacheItem> varyCacheItemMap = cache.get(pKey.getURI());
+    protected HTTPResponse putImpl(final Key key, final HTTPResponse response) {
+        CacheItem item = createCacheItem(response);
+        LRUMap<Vary, CacheItem> varyCacheItemMap = cache.get(key.getURI());
         if (varyCacheItemMap == null) {
             varyCacheItemMap = new LRUMap<>(varyCapacity);
-            cache.put(pKey.getURI(), varyCacheItemMap);
+            cache.put(key.getURI(), varyCacheItemMap);
         }
-        varyCacheItemMap.put(pKey.getVary(), item);
-        return pCacheableResponse;
+        varyCacheItemMap.put(key.getVary(), item);
+        return response;
     }
 
-    protected CacheItem createCacheItem(HTTPResponse pCacheableResponse) {
-        return new DefaultCacheItem(pCacheableResponse);
+    protected CacheItem createCacheItem(HTTPResponse response) {
+        return new DefaultCacheItem(response);
     }
 
     public final HTTPResponse update(final HTTPRequest request, final HTTPResponse response) {
+        Key key = Key.create(request, response);
+
         return withWriteLock(() -> {
-            Key key = Key.create(request, response);
-            return putImpl(key, response);
+            HTTPResponse cacheableResponse = rewriteResponse(key, response);
+            return putImpl(key, cacheableResponse);
         });
     }
 

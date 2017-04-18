@@ -26,6 +26,7 @@ import org.junit.Test;
 import java.io.File;
 import java.net.URI;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.Assert.*;
 
@@ -36,7 +37,7 @@ public class PersistentCacheStorageTest extends CacheStorageAbstractTest {
 
     @Override
     protected CacheStorage createCacheStorage() {
-        return new PersistentCacheStorage(TestUtil.getTestFile("target/persistent"));
+        return new PersistentCacheStorage(TestUtil.getTestFile("target/persistent/" + UUID.randomUUID().toString()));
     }
 
     @Test

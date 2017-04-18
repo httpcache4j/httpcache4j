@@ -37,7 +37,6 @@ import java.util.stream.StreamSupport;
 /**
  * Completely file-persistent storage, also for metadata.
  *
- * TODO: This will be greatly improved by Java 7 NIO 2
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
@@ -135,10 +134,7 @@ public class FilePersistentCacheStorage implements CacheStorage {
     @Override
     public synchronized CacheItem get(HTTPRequest request) {
         Optional<Pair<Key, CacheItem>> item = getItem(request);
-        if (item.isPresent()) {
-            return item.get().getValue();
-        }
-        return null;
+        return item.map(Pair::getValue).orElse(null);
     }
 
     synchronized Optional<Pair<Key, CacheItem>> getItem(HTTPRequest request) {

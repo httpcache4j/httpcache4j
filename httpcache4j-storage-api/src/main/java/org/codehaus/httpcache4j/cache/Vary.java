@@ -36,7 +36,7 @@ import org.codehaus.httpcache4j.preference.Preference;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public final class Vary {
+public final class Vary implements Serializable {
     public static final Vary ALL = new Vary(Collections.singletonMap("ALL", "true"));
     private final Map<String, String> varyHeaders;
 

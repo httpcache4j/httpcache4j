@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.UUID;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
@@ -63,7 +64,7 @@ public class ConcurrentPersistentCacheStorageTest extends ConcurrentCacheStorage
     }
 
     protected CacheStorage createCacheStorage() {
-        File storage = TestUtil.getTestFile("target/persistent/concurrent");
+        File storage = TestUtil.getTestFile("target/persistent/concurrent/" + UUID.randomUUID().toString());
         return new PersistentCacheStorage(storage);
     }
 

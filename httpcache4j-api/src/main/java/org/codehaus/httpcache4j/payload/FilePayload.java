@@ -20,6 +20,7 @@ import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.Objects;
 
 /**
@@ -35,7 +36,7 @@ public class FilePayload implements Payload, Serializable {
      * Constructs a File payload
      *
      * @param file the file to use, may not be {@code null}.
-     * @param mimeType the mime type of the file, may not be {@code null}. 
+     * @param mimeType the mime type of the file, may not be {@code null}.
      */
     public FilePayload(final File file, final MIMEType mimeType) {
         this.file = Objects.requireNonNull(file, "File may not be null");
@@ -49,9 +50,9 @@ public class FilePayload implements Payload, Serializable {
     public InputStream getInputStream() {
         if (isAvailable()) {
             try {
-                return new FileInputStream(file);
+                return Files.newInputStream(file.toPath());
             }
-            catch (FileNotFoundException e) {
+            catch (IOException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
         }
