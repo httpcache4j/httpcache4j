@@ -34,11 +34,6 @@
       <artifactId>httpcache4j-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>org.codehaus.httpcache4j</groupId>
       <artifactId>httpcache4j-storage-api</artifactId>
       <classifier>tests</classifier>

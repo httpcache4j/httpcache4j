@@ -34,11 +34,13 @@ public abstract class AbstractHTTPWriter {
     protected void writeBody(PrintStream writer, Optional<Payload> payload) {
         payload.ifPresent(p -> {
             writer.print("\r\n");
-            try (InputStream stream = p.getInputStream()) {
-                IOUtils.copy(stream, writer);
-                writer.print("\r\n");
-            } catch (IOException e) {
-                throw new HTTPException("Unable to write the body of the response", e);
+            if (p.isAvailable()) {
+                try (InputStream stream = p.getInputStream()) {
+                    IOUtils.copy(stream, writer);
+                    writer.print("\r\n");
+                } catch (IOException e) {
+                    throw new HTTPException("Unable to write the body of the response", e);
+                }
             }
         });
     }
