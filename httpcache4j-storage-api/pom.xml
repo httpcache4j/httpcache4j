@@ -32,11 +32,6 @@
       <groupId>org.codehaus.httpcache4j</groupId>
       <artifactId>httpcache4j-api</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
 </project>
