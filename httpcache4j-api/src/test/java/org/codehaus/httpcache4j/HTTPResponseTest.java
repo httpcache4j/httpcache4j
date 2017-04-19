@@ -74,14 +74,7 @@ public class HTTPResponseTest {
         HTTPResponse response = new HTTPResponse(Optional.of(new StringPayload("Hello", MIMEType.valueOf("text/plain"))), Status.OK, new Headers());
         Optional<String> result = response.transform(payload -> {
             assertEquals(MIMEType.valueOf("text/plain"), payload.getMimeType());
-            try(BufferedReader reader = new BufferedReader(new InputStreamReader(payload.getInputStream()))) {
-                return reader.lines().collect(Collectors.joining("\n"));
-
-            }
-            catch (IOException e) {
-                fail("Exception raised when parsing string");
-                throw new RuntimeException(e);
-            }
+            return Optional.of(payload.string());
         });
 
         assertTrue(result.isPresent());
@@ -93,9 +86,7 @@ public class HTTPResponseTest {
         HTTPResponse response = new HTTPResponse(Optional.of(new StringPayload("Hello", MIMEType.valueOf("text/plain"))), Status.OK, new Headers());
         Optional<String> result = response.transform(payload -> {
             assertEquals(MIMEType.valueOf("text/plain"), payload.getMimeType());
-            try(BufferedReader reader = new BufferedReader(new InputStreamReader(payload.getInputStream()))) {
-                return reader.lines().collect(Collectors.joining("\n"));
-            }
+            return Optional.of(payload.string());
         });
 
         assertTrue(result.isPresent());
@@ -107,15 +98,7 @@ public class HTTPResponseTest {
         String exampleResponseText = "text";
         Payload payload = new InputStreamPayload(new ByteArrayInputStream(exampleResponseText.getBytes(StandardCharsets.UTF_8)), MIMEType.valueOf("text/plain"));
         HTTPResponse response = new HTTPResponse(Optional.of(payload), Status.OK, new Headers());
-        Optional<String>  expectedResponse = response.transform(input ->  {
-            InputStream is = input.getInputStream();
-            try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                return reader.lines().collect(Collectors.joining("\n"));
-            } finally {
-                is.close();
-            }
-        });
+        Optional<String>  expectedResponse = response.transform(input -> Optional.of(input.string()));
         try {
             response.consume();
         } catch (Exception e){

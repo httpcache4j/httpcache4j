@@ -125,7 +125,9 @@ public class OKHttpResponseResolver extends AbstractResponseResolver {
 
         @Override
         public void writeTo(BufferedSink bufferedSink) throws IOException {
-            IOUtils.copy(payload.getInputStream(), bufferedSink.outputStream());
+            try(Payload p = payload) {
+                IOUtils.copy(p.getInputStream(), bufferedSink.outputStream());
+            }
         }
     }
 
@@ -156,6 +158,11 @@ public class OKHttpResponseResolver extends AbstractResponseResolver {
         @Override
         public boolean isAvailable() {
             return available;
+        }
+
+        @Override
+        public void close() throws IOException {
+            delegate.close();
         }
     }
 

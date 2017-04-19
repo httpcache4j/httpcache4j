@@ -16,13 +16,16 @@
 
 package org.codehaus.httpcache4j.payload;
 
-import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.MIMEType;
+import org.codehaus.httpcache4j.util.IOUtils;
+import org.codehaus.httpcache4j.util.ThrowableFunction;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import java.util.function.Function;
 
 /**
  * Represents a HTTP payload. may be either a {@link org.codehaus.httpcache4j.HTTPRequest request} payload
@@ -30,14 +33,14 @@ import java.util.function.Function;
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public interface Payload {
+public interface Payload extends Closeable {
 
     /**
      * Return the mime-type of the payload.
      *
      * @return the mime-type
      */
-    public MIMEType getMimeType();
+    MIMEType getMimeType();
 
     /**
      * Returns the input stream of the payload. This stream MUST be closed when you are done with it.
@@ -45,7 +48,7 @@ public interface Payload {
      * @return the inputstream of the payload, may return {@code null} if the payload is not available.
      *
      */
-    public InputStream getInputStream();
+    InputStream getInputStream();
 
 
     /**
@@ -55,20 +58,28 @@ public interface Payload {
      *
      * @return -1 if the length cannot be calculated or set. Otherwise the expected length of the stream.
      */
-    public long length();
+    long length();
 
     /**
      * Returns {@code true} if the payload is available, IE. If the stream can be read from.
      *
      * @return {@code true} if the payload is available. {@code false} if not.
      */
-    public boolean isAvailable();
+    boolean isAvailable();
 
-    public default <A> Optional<A> transform(final Function<InputStream, A> f) {
+    default <A> Optional<A> transform(final ThrowableFunction<InputStream, Optional<A>, IOException> f) {
         try(InputStream is = getInputStream()) {
-            return Optional.ofNullable(f.apply(is));
+            return f.apply(is);
         } catch (IOException e) {
-            throw new HTTPException(e);
+            return Optional.empty();
         }
+    }
+
+    default String string() {
+        return string(StandardCharsets.UTF_8);
+    }
+
+    default String string(Charset charset) {
+        return transform(is -> Optional.of(new String(IOUtils.toByteArray(is), charset))).orElse("");
     }
 }

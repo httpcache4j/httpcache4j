@@ -53,7 +53,7 @@ public class FilePayload implements Payload, Serializable {
                 return Files.newInputStream(file.toPath());
             }
             catch (IOException e) {
-                throw new RuntimeException(e.getMessage(), e);
+                throw new HTTPException(e.getMessage(), e);
             }
         }
         throw new HTTPException(String.format("File %s cannot be read.", file.getAbsolutePath()));
@@ -69,5 +69,9 @@ public class FilePayload implements Payload, Serializable {
 
     public File getFile() {
         return file;
+    }
+
+    @Override
+    public void close() throws IOException {
     }
 }

@@ -57,4 +57,8 @@ public final class ClosedInputStreamPayload implements Payload, Serializable{
     public boolean isAvailable() {
         return true;
     }
+
+    @Override
+    public void close() throws IOException {
+    }
 }

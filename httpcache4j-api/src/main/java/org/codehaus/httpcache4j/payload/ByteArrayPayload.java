@@ -63,4 +63,8 @@ public final class ByteArrayPayload implements Payload, Serializable {
     public boolean isAvailable() {
         return bytes != null && bytes.length > 0;
     }
+
+    @Override
+    public void close() throws IOException {
+    }
 }

@@ -65,4 +65,8 @@ public final class StringPayload implements Payload, Serializable {
     public boolean isAvailable() {
         return delegate.isAvailable();
     }
+
+    @Override
+    public void close() throws IOException {
+    }
 }

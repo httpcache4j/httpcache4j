@@ -100,29 +100,14 @@ public final class HTTPResponse {
         return cached;
     }
 
-    //TODO: consider removing this
-    public <A> Optional<A> transform(final ThrowableFunction<Payload, A, IOException> f) {
-        if (hasPayload()) {
-            return payload.flatMap(p -> lift(p, f));
-        }
-        return Optional.empty();
-    }
-
-    private <A> Optional<A> lift(Payload p, ThrowableFunction<Payload, A, IOException> f) {
-        try(InputStream is = p.getInputStream()) {
-            InputStreamPayload isp = new InputStreamPayload(is, p.getMimeType(), p.length());
-            return Optional.ofNullable(f.apply(isp));
-        } catch (IOException e) {
-            throw new HTTPException(e);
-        }
+    public <A> Optional<A> transform(final ThrowableFunction<Payload, Optional<A>, IOException> f) {
+        return payload.flatMap(p -> p.transform(is -> f.apply(new InputStreamPayload(is, p.getMimeType(), p.length()))));
     }
 
     public void consume() {
         payload.ifPresent(p -> {
-            try(InputStream is = p.getInputStream()) {
-                if (null != is) {
-                    is.close();
-                }
+            try {
+               p.close();
             } catch (IOException ignored){}
         });
     }

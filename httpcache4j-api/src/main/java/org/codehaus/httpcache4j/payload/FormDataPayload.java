@@ -20,6 +20,7 @@ import org.codehaus.httpcache4j.uri.QueryParam;
 import org.codehaus.httpcache4j.uri.QueryParams;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -69,5 +70,9 @@ public final class FormDataPayload implements Payload {
 
     public long length() {
         return value.length();
+    }
+
+    @Override
+    public void close() throws IOException {
     }
 }

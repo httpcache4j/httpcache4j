@@ -20,6 +20,7 @@ import org.codehaus.httpcache4j.MIMEType;
 
 import org.codehaus.httpcache4j.util.AvailableInputStream;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
@@ -27,7 +28,7 @@ import java.util.Objects;
  * Represents a payload that is backed by a one-shot inputstream.
  * The stream may be an arbitrary stream type. If you start
  * reading from the stream, the available flag will be set to false, and the
- * next invocation of  
+ * next invocation of
  */
 public final class InputStreamPayload implements Payload {
     private final AvailableInputStream stream;
@@ -71,5 +72,10 @@ public final class InputStreamPayload implements Payload {
 
     public long length() {
         return length;
+    }
+
+    @Override
+    public void close() throws IOException {
+        stream.close();
     }
 }
