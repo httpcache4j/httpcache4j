@@ -15,7 +15,6 @@
 
 package org.codehaus.httpcache4j.resolver;
 
-import org.apache.http.annotation.NotThreadSafe;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
@@ -56,7 +55,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     public HTTPClientResponseResolver(CloseableHttpClient httpClient, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
         this(httpClient, new ResolverConfiguration(proxyAuthenticator, authenticator, new ConnectionConfiguration()));
     }
-    
+
     public HTTPClientResponseResolver(CloseableHttpClient httpClient, ProxyConfiguration proxyConfiguration) {
         this(httpClient, new DefaultProxyAuthenticator(proxyConfiguration), new DefaultAuthenticator());
     }
@@ -182,7 +181,6 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         }
     }
 
-    @NotThreadSafe
     private static class Method extends HttpRequestBase {
 
         private HTTPMethod method;
@@ -200,7 +198,6 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
 
     }
 
-    @NotThreadSafe
     private static class MethodWithBody extends HttpEntityEnclosingRequestBase {
 
         private HTTPMethod method;

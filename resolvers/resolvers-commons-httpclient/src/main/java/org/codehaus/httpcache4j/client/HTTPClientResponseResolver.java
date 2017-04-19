@@ -42,14 +42,14 @@ import java.util.Optional;
 
 /**
  * An implementation of the ResponseResolver using the Commons HTTPClient (http://hc.apache.org/httpclient-3.x/)
- *
+ * You should rather be using {@code resolvers-httpcomponents-httpclient} instead
  *
  * If you need to use SSL, please follow the guide here.
  * http://hc.apache.org/httpclient-3.x/sslguide.html
  * Note that his disables the built in authentication mechanism.
  *
- * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
+@Deprecated
 public class HTTPClientResponseResolver extends AbstractResponseResolver {
     private final HttpClient client;
 
@@ -61,14 +61,14 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
             this.client.getHostConfiguration().setProxy(proxyHost.getHost(), proxyHost.getPort());
         }
         HttpClientParams params = client.getParams();
-        if(params==null) { 
+        if(params==null) {
         	params = new HttpClientParams();
         	client.setParams(params);
         }
         configureConnections(client, configuration);
         params.setAuthenticationPreemptive(false);
         client.setState(new HttpState());
-        params.setParameter(HttpClientParams.USER_AGENT, getConfiguration().getUserAgent());        
+        params.setParameter(HttpClientParams.USER_AGENT, getConfiguration().getUserAgent());
     }
 
     private void configureConnections(HttpClient client, ResolverConfiguration configuration) {
