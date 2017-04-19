@@ -30,6 +30,9 @@ import java.net.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author <a href="mailto:erlend@codehaus.org">Erlend Hamnaberg</a>
@@ -37,7 +40,9 @@ import java.util.Optional;
  */
 public class JavaNetResponseResolver extends AbstractResponseResolver {
 
-    public JavaNetResponseResolver(ResolverConfiguration configuration) {
+    protected final ExecutorService executor;
+
+    public JavaNetResponseResolver(ResolverConfiguration configuration, ExecutorService executor) {
         super(configuration);
         if (configuration.getConnectionConfiguration().getMaxConnections().isPresent()) {
             throw new UnsupportedOperationException("Single Connection only resolver");
@@ -48,6 +53,11 @@ public class JavaNetResponseResolver extends AbstractResponseResolver {
         if (!configuration.getConnectionConfiguration().getConnectionsPerHost().isEmpty()) {
             throw new UnsupportedOperationException("This Resolver does not support connections per host");
         }
+        this.executor = executor;
+    }
+
+    public JavaNetResponseResolver(ResolverConfiguration configuration) {
+        this(configuration, defaultExecutor());
     }
 
     public JavaNetResponseResolver(ConnectionConfiguration connectionConfiguration) {
@@ -55,24 +65,29 @@ public class JavaNetResponseResolver extends AbstractResponseResolver {
     }
 
     @Override
-    protected HTTPResponse resolveImpl(HTTPRequest request) throws IOException {
-        URL url = request.getNormalizedURI().toURL();
-        URLConnection openConnection = url.openConnection();
-        if (openConnection instanceof HttpsURLConnection) {
-            HttpsURLConnection connection = (HttpsURLConnection) openConnection;
-            doRequest(request, connection);
-            return convertResponse(connection);
-        }
-        else if (openConnection instanceof HttpURLConnection) {
-            HttpURLConnection connection = (HttpURLConnection) openConnection;
-            doRequest(request, connection);
-            return convertResponse(connection);
-        }
+    protected CompletableFuture<HTTPResponse> resolveImpl(HTTPRequest request) {
+        CompletableFuture<HTTPResponse> promise = new CompletableFuture<>();
+        executor.execute(() -> {
+            try {
+                URL url = request.getNormalizedURI().toURL();
+                URLConnection openConnection = url.openConnection();
+                if (openConnection instanceof HttpURLConnection) {
+                    HttpURLConnection connection = (HttpURLConnection) openConnection;
+                    doRequest(request, connection);
+                    promise.complete(convertResponse(connection));
+                } else {
+                    throw new HTTPException("This resolver only supports HTTP");
+                }
+            } catch (IOException e) {
+                promise.completeExceptionally(e);
+            }
+        });
 
-        throw new HTTPException("This resolver only supports HTTP");
+        return promise;
     }
 
-    public void shutdown() {        
+    public void shutdown() {
+        executor.shutdown();
     }
 
     private void doRequest(HTTPRequest request, HttpURLConnection connection) throws IOException {

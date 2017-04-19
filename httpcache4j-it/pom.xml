@@ -35,11 +35,6 @@
     </dependency>
     <dependency>
       <groupId>org.codehaus.httpcache4j.resolvers</groupId>
-      <artifactId>resolvers-commons-httpclient</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.httpcache4j.resolvers</groupId>
       <artifactId>resolvers-httpcomponents-httpclient</artifactId>
       <scope>test</scope>
     </dependency>

@@ -84,7 +84,7 @@ public abstract class AbstractCacheIntegrationTest {
     @Before
     public void before() {
         storage = createStorage();
-        cache = new HTTPCache(storage, createReponseResolver());
+        cache = new HTTPCache(storage, createReponseResolver(), 3);
         HTTPRequest req = new HTTPRequest(baseRequestURI.resolve(TEST_FILE), HTTPMethod.PUT);
         req = req.payload(new FilePayload(new File("pom.xml"), MIMEType.valueOf("application/xml")));
         cache.execute(req);
@@ -244,7 +244,7 @@ public abstract class AbstractCacheIntegrationTest {
     }
 
     /**
-     * Tests that requests come from the cache, but that the 
+     * Tests that requests come from the cache, but that the
      * response isn't specified that the cache is used when the response
      * is generated from the server
      */
@@ -272,27 +272,27 @@ public abstract class AbstractCacheIntegrationTest {
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
         assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).get().contains("HIT"));
         response.consume();
-        
+
         // sleep here.  The response should come from the server
         try {
         	Thread.sleep(12000);
         } catch (Exception e) {}
         response = get(uri);
         LocalDateTime nonCacheDate = response.getHeaders().getDate().orElse(null);
-        
+
         assertEquals(Status.OK, response.getStatus());
         assertFalse(originalDate.equals(nonCacheDate));
         assertFalse(response.isCached());
         assertNotNull(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE));
         assertTrue(response.getHeaders().getFirstHeaderValue(HeaderConstants.X_CACHE).get().contains("MISS"));
         response.consume();
-        
+
         try {
         	Thread.sleep(2000);
         } catch (Exception e) {}
         response = get(uri);
         LocalDateTime shouldBeAboveNonCacheDate = response.getHeaders().getDate().orElse(null);
-        
+
         assertEquals(Status.OK, response.getStatus());
         assertTrue(nonCacheDate.equals(shouldBeAboveNonCacheDate));
         assertTrue(response.isCached());

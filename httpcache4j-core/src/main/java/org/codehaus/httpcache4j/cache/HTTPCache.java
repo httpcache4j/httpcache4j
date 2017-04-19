@@ -19,31 +19,48 @@ package org.codehaus.httpcache4j.cache;
 import org.codehaus.httpcache4j.*;
 import org.codehaus.httpcache4j.resolver.ResponseResolver;
 import org.codehaus.httpcache4j.uri.URIBuilder;
+import org.codehaus.httpcache4j.util.NamedThreadFactory;
 import org.codehaus.httpcache4j.util.OptionalUtils;
 
-import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
+
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 /**
  * The main HTTPCache class.
  *
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  */
-public class HTTPCache {
+public final class HTTPCache implements AutoCloseable {
     private final HTTPCacheHelper helper;
     private final CacheStatistics statistics = new CacheStatistics();
     private final CacheStorage storage;
     private final ResponseResolver resolver;
     private final Mutex<URI> mutex = new Mutex<>();
+    private final ExecutorService executor;
     private boolean translateHEADToGET = false;
 
     public HTTPCache(CacheStorage storage, ResponseResolver resolver) {
+        this(storage, resolver, 4);
+    }
+
+    public HTTPCache(CacheStorage storage, ResponseResolver resolver, int nThreads) {
+        this(storage, resolver, Executors.newFixedThreadPool(nThreads, new NamedThreadFactory("HttpCache4j", true)));
+    }
+
+    public HTTPCache(CacheStorage storage, ResponseResolver resolver, ExecutorService executor) {
         this.storage = Objects.requireNonNull(storage, "Cache storage may not be null");
         this.resolver = Objects.requireNonNull(resolver, "Resolver may not be null");
-        helper = new HTTPCacheHelper(CacheHeaderBuilder.getBuilder());
+        this.helper = new HTTPCacheHelper(CacheHeaderBuilder.getBuilder());
+        this.executor = executor;
     }
 
     public void clear() {
@@ -63,50 +80,74 @@ public class HTTPCache {
     }
 
     public HTTPResponse execute(final HTTPRequest request) {
+        return executeAsync(request).join();
+    }
+
+    public CompletableFuture<HTTPResponse> executeAsync(final HTTPRequest request) {
         return execute(request, helper.isEndToEndReloadRequest(request));
     }
 
     public HTTPResponse executeRefresh(final HTTPRequest request) {
+        return executeRefreshAsync(request).join();
+    }
+
+    public CompletableFuture<HTTPResponse> executeRefreshAsync(final HTTPRequest request) {
         return execute(request, true);
     }
 
     public void shutdown() {
+        executor.shutdown();
         storage.shutdown();
         resolver.shutdown();
     }
 
-    private HTTPResponse execute(final HTTPRequest request, boolean force) {
-        HTTPResponse response;
-        if (!helper.isCacheableRequest(request)) {
-            response = unconditionalResolve(request);
-        } else {
-            //request is cacheable
-            boolean shouldUnlock = true;
-            try {
-                force = force || request.getMethod() == HTTPMethod.OPTIONS || request.getMethod() == HTTPMethod.TRACE;
-                if (mutex.acquire(request.getNormalizedURI())) {
-                    response = doRequest(request, force || (OptionalUtils.exists(request.getHeaders().getCacheControl(), CacheControl::isNoStore)));
-                } else {
-                    response = new HTTPResponse(null, Status.BAD_GATEWAY, new Headers());
-                    shouldUnlock = false;
-                }
-            } finally {
-                if (shouldUnlock) {
-                    mutex.release(request.getNormalizedURI());
-                }
-            }
-        }
-        if (response == null) {
-            throw new HTTPException("No response produced");
-        }
-        return response;
+    @Override
+    public void close() throws Exception {
+        shutdown();
     }
 
-    private HTTPResponse doRequest(HTTPRequest request, final boolean force) {
+    private CompletableFuture<HTTPResponse> execute(final HTTPRequest request, boolean force) {
+        if (!helper.isCacheableRequest(request)) {
+            return unconditionalResolve(request);
+        } else {
+            final CompletableFuture<HTTPResponse> res = new CompletableFuture<>();
+            //request is cacheable
+            executor.execute(() -> {
+                boolean shouldUnlock = true;
+                try {
+                    CompletableFuture<HTTPResponse> future;
+                    boolean forces = force || request.getMethod() == HTTPMethod.OPTIONS || request.getMethod() == HTTPMethod.TRACE;
+                    if (mutex.acquire(request.getNormalizedURI())) {
+                        future = doRequest(request, forces || (OptionalUtils.exists(request.getHeaders().getCacheControl(), CacheControl::isNoStore)));
+                    } else {
+                        future = completedFuture(new HTTPResponse(null, Status.BAD_GATEWAY, new Headers()));
+                        shouldUnlock = false;
+                    }
+
+                    future.whenComplete((response, ex) -> {
+                        if (ex != null) {
+                            res.completeExceptionally(ex);
+                        } else {
+                            res.complete(response);
+                        }
+                    });
+                } finally {
+                    if (shouldUnlock) {
+                        mutex.release(request.getNormalizedURI());
+                    }
+                }
+
+            });
+
+            return res;
+        }
+    }
+
+    private CompletableFuture<HTTPResponse> doRequest(HTTPRequest request, final boolean force) {
         if (request.getMethod() == HTTPMethod.HEAD && isTranslateHEADToGET()) {
             request = request.withMethod(HTTPMethod.GET);
         }
-        HTTPResponse response;
+        CompletableFuture<HTTPResponse> response;
         if (force) {
             response = unconditionalResolve(request);
         } else {
@@ -115,9 +156,9 @@ public class HTTPCache {
         return response;
     }
 
-    private HTTPResponse getFromStorage(HTTPRequest request) {
+    private CompletableFuture<HTTPResponse> getFromStorage(HTTPRequest request) {
         final LocalDateTime requestTime = LocalDateTime.now();
-        HTTPResponse response;
+        CompletableFuture<HTTPResponse> response;
         final CacheItem item = storage.get(request);
         if (item != null) {
             statistics.hit();
@@ -129,7 +170,7 @@ public class HTTPCache {
                 HTTPRequest conditionalRequest = maybePrepareConditionalResponse(request, cachedResponse);
                 response = handleStaleResponse(conditionalRequest, request, item, requestTime);
             } else {
-                response = helper.rewriteResponse(request, cachedResponse, item.getAge(requestTime));
+                response = completedFuture(helper.rewriteResponse(request, cachedResponse, item.getAge(requestTime)));
             }
         } else {
             statistics.miss();
@@ -138,13 +179,12 @@ public class HTTPCache {
         return response;
     }
 
-    private HTTPResponse handleStaleResponse(HTTPRequest conditionalRequest, HTTPRequest originalRequest, CacheItem item, LocalDateTime requestTime) {
+    private CompletableFuture<HTTPResponse> handleStaleResponse(HTTPRequest conditionalRequest, HTTPRequest originalRequest, CacheItem item, LocalDateTime requestTime) {
         long age = item.getAge(LocalDateTime.now());
         if (!helper.allowStale(item, originalRequest, requestTime)) {
-            HTTPResponse response = executeImpl(conditionalRequest, item);
-            return helper.rewriteResponse(originalRequest, response, age);
+            return executeImpl(conditionalRequest, item).thenApply(res -> helper.rewriteResponse(originalRequest, res, age));
         }
-        return helper.rewriteStaleResponse(originalRequest, item.getResponse(), age);
+        return completedFuture(helper.rewriteStaleResponse(originalRequest, item.getResponse(), age));
     }
 
     private HTTPRequest maybePrepareConditionalResponse(HTTPRequest request, HTTPResponse staleResponse) {
@@ -154,58 +194,65 @@ public class HTTPCache {
         return request.headers(request.getHeaders().withConditionals(new Conditionals()));
     }
 
-    private HTTPResponse unconditionalResolve(final HTTPRequest request) {
-        return helper.rewriteResponse(request, executeImpl(request, null), -1);
+    private CompletableFuture<HTTPResponse> unconditionalResolve(final HTTPRequest request) {
+        return executeImpl(request, null).thenApply(res -> helper.rewriteResponse(request, res, -1));
     }
 
-    private HTTPResponse executeImpl(final HTTPRequest request, final CacheItem item) {
-        HTTPResponse response = null;
-        HTTPResponse resolvedResponse = null;
-        try {
-            resolvedResponse = resolver.resolve(request);
-        } catch (IOException e) {
-            //No cached item found, we throw an exception.
-            if (item == null) {
-                throw new HTTPException(e);
-            } else {
-                Headers headers = helper.warn(item.getResponse().getHeaders(), e);
-                response = item.getResponse().withHeaders(headers);
-            }
-        }
-        if (resolvedResponse != null) {
-            boolean updated = false;
+    private CompletableFuture<HTTPResponse> executeImpl(final HTTPRequest request, final CacheItem item) {
+        CompletableFuture<HTTPResponse> resolvedResponse = resolver.resolve(request);
 
-            if (isInvalidating(request, resolvedResponse, item)) {
-                response = resolvedResponse;
-                URI requestUri = request.getNormalizedURI();
-                storage.invalidate(requestUri);
-                updated = true;
-
-                if (!request.getMethod().isSafe()) {
-                    // http://tools.ietf.org/html/rfc2616#section-13.10
-                    invalidateIfSameHostAsRequest(resolvedResponse.getHeaders().getLocation(), requestUri);
-                    invalidateIfSameHostAsRequest(resolvedResponse.getHeaders().getContentLocation(), requestUri);
+        return resolvedResponse.thenCompose(resolved -> handleResolved(request, item, resolved)).handle((res, ex) -> {
+            if (ex != null) {
+                if (item == null) {
+                    throw new HTTPException(ex);
+                } else {
+                    Headers headers = helper.warn(item.getResponse().getHeaders(), ex);
+                    return item.getResponse().withHeaders(headers);
                 }
-            }
-            else if (helper.isCacheableResponse(resolvedResponse) && helper.shouldBeStored(resolvedResponse)) {
-                response = storage.insert(request, resolvedResponse);
-                updated = true;
-
             } else {
-                //Response could not be cached
-                response = resolvedResponse;
+                return res;
             }
+        });
+    }
+
+    private CompletableFuture<HTTPResponse> handleResolved(HTTPRequest request, CacheItem item, HTTPResponse resolved) {
+        final CompletableFuture<HTTPResponse> responseFuture = new CompletableFuture<>();
+
+        boolean updated = false;
+
+        if (isInvalidating(request, resolved, item)) {
+            responseFuture.complete(resolved);
+            URI requestUri = request.getNormalizedURI();
+            storage.invalidate(requestUri);
+            updated = true;
+
+            if (!request.getMethod().isSafe()) {
+                // http://tools.ietf.org/html/rfc2616#section-13.10
+                invalidateIfSameHostAsRequest(resolved.getHeaders().getLocation(), requestUri);
+                invalidateIfSameHostAsRequest(resolved.getHeaders().getContentLocation(), requestUri);
+            }
+        } else if (helper.isCacheableResponse(resolved) && helper.shouldBeStored(resolved)) {
+            responseFuture.complete(storage.insert(request, resolved));
+            updated = true;
+
+        } else {
+            //Response could not be cached
+            responseFuture.complete(resolved);
+        }
+        final boolean theUpdate = updated;
+
+        return responseFuture.thenApply(response -> {
             if (item != null) {
                 //from http://tools.ietf.org/html/rfc2616#section-13.5.3
-                if (resolvedResponse.getStatus() == Status.NOT_MODIFIED || resolvedResponse.getStatus() == Status.PARTIAL_CONTENT) {
-                    response = updateHeadersFromResolved(request, item, resolvedResponse);
-                } else if (updated) {
+                if (resolved.getStatus() == Status.NOT_MODIFIED || resolved.getStatus() == Status.PARTIAL_CONTENT) {
+                    return updateHeadersFromResolved(request, item, resolved);
+                } else if (theUpdate) {
                     Headers newHeaders = response.getHeaders().add(CacheHeaderBuilder.getBuilder().createMISSXCacheHeader());
-                    response = response.withHeaders(newHeaders);
+                    return response.withHeaders(newHeaders);
                 }
             }
-        }
-        return response;
+            return response;
+        });
     }
 
     //http://tools.ietf.org/html/rfc2616#section-9.4

@@ -20,6 +20,7 @@ import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * The basic interface to resolve a response with the originating server.
@@ -29,16 +30,19 @@ import java.io.IOException;
  *
  * @since 1.0
  */
-public interface ResponseResolver {
+public interface ResponseResolver extends AutoCloseable {
     /**
      * Resolves the given request into a response.
      *
      * @param request the request to resolve.
      *
      * @return the raw response from the server.
-     * @throws java.io.IOException if an IOException occurs e.g: java.net.ConnectException.
      */
-    HTTPResponse resolve(HTTPRequest request) throws IOException;
+    CompletableFuture<HTTPResponse> resolve(HTTPRequest request);
+
+    default HTTPResponse resolveSync(HTTPRequest request) {
+        return resolve(request).join();
+    }
 
     void shutdown();
 }

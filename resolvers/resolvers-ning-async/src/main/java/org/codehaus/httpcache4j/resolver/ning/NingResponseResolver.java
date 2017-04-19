@@ -16,8 +16,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -85,8 +84,8 @@ public class NingResponseResolver extends AbstractResponseResolver {
     }
 
     @Override
-    protected HTTPResponse resolveImpl(HTTPRequest request) throws IOException {
-        Future<Response> responseFuture = execute(request);
+    protected CompletableFuture<HTTPResponse> resolveImpl(HTTPRequest request) {
+        CompletableFuture<Response> responseFuture = execute(request);
         return translate(responseFuture);
     }
 
@@ -98,24 +97,17 @@ public class NingResponseResolver extends AbstractResponseResolver {
         }
     }
 
-    private HTTPResponse translate(Future<Response> responseFuture) throws IOException {
-        try {
-            Response response = responseFuture.get();
+    private CompletableFuture<HTTPResponse> translate(CompletableFuture<Response> responseFuture) {
+        return responseFuture.thenApply(response -> {
             StatusLine line = new StatusLine(Status.valueOf(response.getStatusCode()), response.getStatusText());
             HttpHeaders headers = response.getHeaders();
             Optional<InputStream> stream = Optional.ofNullable(response.getResponseBodyAsStream());
             List<Header> headerList = StreamSupport.stream(headers.spliterator(), false).map(e -> new Header(e.getKey(), e.getValue())).collect(Collectors.toList());
             return ResponseCreator.createResponse(line, new Headers(headerList), stream);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException e) {
-            throw new HTTPException(e.getCause());
-        }
-
-        throw new HTTPException("Not possible to get response");
+        });
     }
 
-    private Future<Response> execute(final HTTPRequest request) throws IOException {
+    private CompletableFuture<Response> execute(final HTTPRequest request) {
         BoundRequestBuilder builder = builder(request.getNormalizedURI(), request.getMethod());
         if (request.getMethod().canHavePayload()) {
             request.getPayload().ifPresent(p -> {
@@ -129,7 +121,7 @@ public class NingResponseResolver extends AbstractResponseResolver {
         for (Header header : request.getAllHeaders()) {
             builder.addHeader(header.getName(), header.getValue());
         }
-        return builder.execute();
+        return builder.execute().toCompletableFuture();
     }
 
     private BoundRequestBuilder builder(URI uri, HTTPMethod method) {

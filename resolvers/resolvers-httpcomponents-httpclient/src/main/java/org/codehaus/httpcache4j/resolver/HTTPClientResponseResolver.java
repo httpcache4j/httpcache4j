@@ -32,12 +32,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 public class HTTPClientResponseResolver extends AbstractResponseResolver {
+    protected final ExecutorService executor;
     private final CloseableHttpClient httpClient;
 
 
@@ -47,13 +50,14 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
      * Sets the user agent with the configured user agent.
      *
      */
-    public HTTPClientResponseResolver(CloseableHttpClient httpClient, ResolverConfiguration configuration) {
+    public HTTPClientResponseResolver(CloseableHttpClient httpClient, ResolverConfiguration configuration, ExecutorService executor) {
         super(configuration);
         this.httpClient = httpClient;
+        this.executor = executor;
     }
 
     public HTTPClientResponseResolver(CloseableHttpClient httpClient, ProxyAuthenticator proxyAuthenticator, Authenticator authenticator) {
-        this(httpClient, new ResolverConfiguration(proxyAuthenticator, authenticator, new ConnectionConfiguration()));
+        this(httpClient, new ResolverConfiguration(proxyAuthenticator, authenticator, new ConnectionConfiguration()), defaultExecutor());
     }
 
     public HTTPClientResponseResolver(CloseableHttpClient httpClient, ProxyConfiguration proxyConfiguration) {
@@ -75,7 +79,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     public static HTTPClientResponseResolver createMultithreadedInstance(ResolverConfiguration configuration) {
         HttpClientBuilder builder = HttpClientBuilder.create();
         CloseableHttpClient client = new HttpClientFactory().configure(builder, configuration);
-        return new HTTPClientResponseResolver(client, configuration);
+        return new HTTPClientResponseResolver(client, configuration, defaultExecutor());
     }
 
     public final CloseableHttpClient getHttpClient() {
@@ -83,10 +87,20 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
     }
 
     @Override
-    protected HTTPResponse resolveImpl(HTTPRequest request) throws IOException {
-        HttpUriRequest realRequest = convertRequest(request);
-        HttpResponse response = httpClient.execute(realRequest);
-        return convertResponse(realRequest, response);
+    protected CompletableFuture<HTTPResponse> resolveImpl(HTTPRequest request) {
+        CompletableFuture<HTTPResponse> promise = new CompletableFuture<>();
+        executor.execute(() -> {
+            HttpUriRequest realRequest = convertRequest(request);
+            HttpResponse response = null;
+            try {
+                response = httpClient.execute(realRequest);
+            } catch (IOException e) {
+                promise.completeExceptionally(e);
+            }
+            promise.complete(convertResponse(realRequest, response));
+        });
+
+        return promise;
     }
 
     public void shutdown() {
@@ -97,6 +111,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
                 throw new HTTPException(e);
             }
         }
+        executor.shutdown();
     }
 
     private HttpUriRequest convertRequest(HTTPRequest request) {
@@ -125,7 +140,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         }
     }
 
-    private HTTPResponse convertResponse(HttpUriRequest request, HttpResponse response) throws IOException {
+    private HTTPResponse convertResponse(HttpUriRequest request, HttpResponse response) {
         Headers headers = new Headers();
         org.apache.http.Header[] realHeaders = response.getAllHeaders();
         for (org.apache.http.Header header : realHeaders) {
@@ -141,7 +156,7 @@ public class HTTPClientResponseResolver extends AbstractResponseResolver {
         return ResponseCreator.createResponse(line, headers, stream);
     }
 
-    private Optional<InputStream> getStream(HttpUriRequest realRequest, HttpResponse response) throws IOException {
+    private Optional<InputStream> getStream(HttpUriRequest realRequest, HttpResponse response) {
         Optional<HttpEntity> entity = Optional.ofNullable(response.getEntity());
         try {
             return entity.map(HttpEntityInputStream::new);

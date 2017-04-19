@@ -65,7 +65,7 @@ class HTTPCacheHelper {
         this.cacheHeaderBuilder = cacheHeaderBuilder;
     }
 
-    Headers warn(Headers headers, IOException e) {
+    Headers warn(Headers headers, Throwable e) {
         headers = headers.add(Warning.STALE_WARNING.toHeader());
         if (e instanceof SocketException) {
             headers = headers.add(Warning.DISCONNECT_OPERATION_WARNING.toHeader());

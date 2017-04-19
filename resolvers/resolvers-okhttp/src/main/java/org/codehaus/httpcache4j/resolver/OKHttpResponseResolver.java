@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -19,7 +20,8 @@ public class OKHttpResponseResolver extends AbstractResponseResolver {
     private final OkHttpClient client;
 
     public OKHttpResponseResolver(ResolverConfiguration config) {
-        this(config, builder -> {});
+        this(config, builder -> {
+        });
     }
 
     public OKHttpResponseResolver(ResolverConfiguration configuration, Consumer<OkHttpClient.Builder> configF) {
@@ -56,10 +58,24 @@ public class OKHttpResponseResolver extends AbstractResponseResolver {
     }
 
     @Override
-    protected HTTPResponse resolveImpl(HTTPRequest request) throws IOException {
+    protected CompletableFuture<HTTPResponse> resolveImpl(HTTPRequest request) {
+        CompletableFuture<HTTPResponse> promise = new CompletableFuture<>();
         final Request req = transformRequest(request);
-        Response response = client.newCall(req).execute();
-        return transformResponse(response);
+        Call call = client.newCall(req);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                if (e != null) {
+                    promise.completeExceptionally(e);
+                }
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                promise.complete(transformResponse(response));
+            }
+        });
+        return promise;
     }
 
     private Request transformRequest(HTTPRequest request) {
@@ -112,6 +128,7 @@ public class OKHttpResponseResolver extends AbstractResponseResolver {
             IOUtils.copy(payload.getInputStream(), bufferedSink.outputStream());
         }
     }
+
     private static class PayloadResponseBody implements Payload {
         private final ResponseBody delegate;
         private boolean available;

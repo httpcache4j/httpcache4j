@@ -15,7 +15,6 @@
 
 package org.codehaus.httpcache4j.resolver;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -60,7 +59,7 @@ public class HTTPClientResponseResolverTest {
         when(mockedResponse.getAllHeaders()).thenReturn(new org.apache.http.Header[0]);
         when(mockedResponse.getStatusLine()).thenReturn(new BasicStatusLine(new HttpVersion(1, 1),200, "OK"));
         when(client.execute(Mockito.<HttpUriRequest>anyObject())).thenReturn(mockedResponse);
-        HTTPResponse response = resolver.resolve(new HTTPRequest(URI.create("http://www.vg.no")));
+        HTTPResponse response = resolver.resolveSync(new HTTPRequest(URI.create("http://www.vg.no")));
         assertNotNull("Response was null", response);
         assertEquals("Wrong header size", 0, response.getHeaders().size());
         assertFalse("Response did have payload", response.hasPayload());
@@ -74,7 +73,7 @@ public class HTTPClientResponseResolverTest {
         when(mockedResponse.getStatusLine()).thenReturn(new BasicStatusLine(new HttpVersion(1, 1),200, "OK"));
         when(mockedResponse.getEntity()).thenReturn(new InputStreamEntity(new NullInputStream(1), 1));
         when(client.execute(Mockito.<HttpUriRequest>anyObject())).thenReturn(mockedResponse);
-        HTTPResponse response = resolver.resolve(new HTTPRequest(URI.create("http://www.vg.no")));
+        HTTPResponse response = resolver.resolveSync(new HTTPRequest(URI.create("http://www.vg.no")));
         assertNotNull("Response was null", response);
         assertEquals("Wrong header size", 1, response.getHeaders().size());
         assertTrue("Response did not have payload", response.hasPayload());
@@ -88,7 +87,7 @@ public class HTTPClientResponseResolverTest {
         when(mockedResponse.getStatusLine()).thenReturn(new BasicStatusLine(new HttpVersion(1, 1), 200, "OK"));
         when(mockedResponse.getEntity()).thenReturn(null);
         when(client.execute(Mockito.<HttpUriRequest>anyObject())).thenReturn(mockedResponse);
-        HTTPResponse response = resolver.resolve(new HTTPRequest(URI.create("http://www.vg.no"), HTTPMethod.PUT));
+        HTTPResponse response = resolver.resolveSync(new HTTPRequest(URI.create("http://www.vg.no"), HTTPMethod.PUT));
         assertNotNull("Response was null", response);
         assertEquals("Wrong header size", 1, response.getHeaders().size());
         assertFalse("Response did have payload", response.hasPayload());

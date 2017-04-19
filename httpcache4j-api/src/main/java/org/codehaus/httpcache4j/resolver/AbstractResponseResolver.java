@@ -21,8 +21,10 @@ import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Status;
 import org.codehaus.httpcache4j.auth.*;
 
-import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Implementors should implement this instead of using the ResponseResolver interface directly.
@@ -48,12 +50,11 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
         return configuration;
     }
 
-    public final HTTPResponse resolve(HTTPRequest request) throws IOException {
+    public final CompletableFuture<HTTPResponse> resolve(HTTPRequest request) {
         return resolveAuthenticated(request);
     }
 
-    private HTTPResponse resolveAuthenticated(final HTTPRequest request) throws IOException {
-        HTTPResponse convertedResponse;
+    private CompletableFuture<HTTPResponse> resolveAuthenticated(final HTTPRequest request) {
         HTTPRequest req = request;
         if (getAuthenticator().canAuthenticatePreemptively(request)) {
             req = getAuthenticator().preparePreemptiveAuthentication(request);
@@ -61,60 +62,66 @@ public abstract class AbstractResponseResolver implements ResponseResolver {
         if (getProxyAuthenticator().canAuthenticatePreemptively()) {
             req = getProxyAuthenticator().preparePreemptiveAuthentication(req);
         }
-        convertedResponse = resolveImpl(req);
+        HTTPRequest finalReq = req;
+        return resolveImpl(req).thenCompose(convertedResponse -> {
+            if (convertedResponse.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) {
+                return resolveProxy(finalReq, convertedResponse);
+            }
+            if (convertedResponse.getStatus() == Status.UNAUTHORIZED) {
+                return resolveUnauthorized(finalReq, convertedResponse);
+            }
+            return CompletableFuture.completedFuture(convertedResponse);
+        });
 
-        if (convertedResponse.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) {
-            return resolveProxy(req, convertedResponse);
-        }
-        if (convertedResponse.getStatus() == Status.UNAUTHORIZED) {
-            return resolveUnauthorized(req, convertedResponse);
-        }
-        return convertedResponse;
+
     }
 
-    protected HTTPResponse resolveProxy(final HTTPRequest request, final HTTPResponse response) throws IOException {
+    protected CompletableFuture<HTTPResponse> resolveProxy(final HTTPRequest request, final HTTPResponse response) {
         HTTPRequest req = getProxyAuthenticator().prepareAuthentication(request, response);
         if (req != request) {
             response.consume();
 
-            HTTPResponse newResponse = null;
-            try {
-                newResponse = resolveImpl(req);
-                return newResponse;
-            } finally {
-                if (newResponse != null) {
-                    if (newResponse.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
-                        getProxyAuthenticator().afterFailedAuthentication(newResponse.getHeaders());
+            return resolveImpl(req).thenApply(res -> {
+                if (res != null) {
+                    if (res.getStatus() == Status.PROXY_AUTHENTICATION_REQUIRED) { //We failed
+                        getProxyAuthenticator().afterFailedAuthentication(res.getHeaders());
                     } else {
-                        getProxyAuthenticator().afterSuccessfulAuthentication(newResponse.getHeaders());
+                        getProxyAuthenticator().afterSuccessfulAuthentication(res.getHeaders());
                     }
                 }
-            }
+                return res;
+            });
         }
-        return response;
+        return CompletableFuture.completedFuture(response);
     }
 
-    protected HTTPResponse resolveUnauthorized(final HTTPRequest request, final HTTPResponse response) throws IOException {
+    protected CompletableFuture<HTTPResponse> resolveUnauthorized(final HTTPRequest request, final HTTPResponse response) {
         HTTPRequest req = getAuthenticator().prepareAuthentication(request, response);
         if (req != request) {
             response.consume();
 
-            HTTPResponse newResponse = null;
-            try {
-                newResponse = resolveImpl(req);
-                return newResponse;
-            } finally {
-                if (newResponse != null) {
-                    if (newResponse.getStatus() == Status.UNAUTHORIZED) { //We failed
-                        getAuthenticator().afterFailedAuthentication(req, newResponse.getHeaders());
+            return resolveImpl(req).thenApply(res -> {
+                if (res != null) {
+                    if (res.getStatus() == Status.UNAUTHORIZED) { //We failed
+                        getAuthenticator().afterFailedAuthentication(req, res.getHeaders());
                     } else {
-                        getAuthenticator().afterSuccessfulAuthentication(req, newResponse.getHeaders());
+                        getAuthenticator().afterSuccessfulAuthentication(req, res.getHeaders());
                     }
                 }
-            }
+                return res;
+            });
         }
-        return response;
+        return CompletableFuture.completedFuture(response);
     }
 
-    protected abstract HTTPResponse resolveImpl(HTTPRequest request) throws IOException;
+    protected static ExecutorService defaultExecutor() {
+        return Executors.newFixedThreadPool(4);
+    }
+
+    protected abstract CompletableFuture<HTTPResponse> resolveImpl(HTTPRequest request);
+
+    @Override
+    public final void close() throws Exception {
+        shutdown();
+    }
 }
