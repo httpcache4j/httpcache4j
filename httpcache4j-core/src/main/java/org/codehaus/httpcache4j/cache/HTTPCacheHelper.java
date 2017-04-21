@@ -129,7 +129,7 @@ class HTTPCacheHelper {
     boolean isCacheableRequest(HTTPRequest request) {
         if (request.getMethod().isCacheable()) {
             Optional<CacheControl> cc = request.getCacheControl();
-            return OptionalUtils.forall(cc, c -> c.isNoCache() || !c.isNoStore());
+            return OptionalUtils.forall(cc, c -> !c.isNoCache() || !c.isNoStore());
         }
         return false;
     }
