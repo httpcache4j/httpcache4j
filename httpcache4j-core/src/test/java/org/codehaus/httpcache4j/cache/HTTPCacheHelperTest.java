@@ -21,13 +21,27 @@ import org.codehaus.httpcache4j.*;
 
 import java.time.LocalDateTime;
 
+import static junit.framework.TestCase.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
  * @version $Revision: #5 $ $Date: 2008/09/15 $
  */
 public class HTTPCacheHelperTest {
     private final HTTPCacheHelper helper = new HTTPCacheHelper(CacheHeaderBuilder.getBuilder());
-    
+
+
+    @Test
+    public void cacheableRequest() {
+        assertTrue(helper.isCacheableRequest(new HTTPRequest("fooo")));
+        assertTrue(helper.isCacheableRequest(new HTTPRequest("fooo").withCacheControl(CacheControl.empty())));
+        assertFalse(helper.isCacheableRequest(new HTTPRequest("fooo", HTTPMethod.POST)));
+        assertFalse(helper.isCacheableRequest(new HTTPRequest("fooo").withCacheControl(new CacheControl.Builder().noStore().noCache().build())));
+        assertFalse(helper.isCacheableRequest(new HTTPRequest("fooo").withCacheControl(new CacheControl.Builder().noCache().build())));
+        assertFalse(helper.isCacheableRequest(new HTTPRequest("fooo").withCacheControl(new CacheControl.Builder().noStore().build())));
+    }
+
     @Test
     public void testCacheableResponses() {
         Headers headers = new Headers();
@@ -51,11 +65,11 @@ public class HTTPCacheHelperTest {
     }
 
     private void assertCacheableHeaders(Headers headers) {
-        Assert.assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(Status.OK, headers)));
-        Assert.assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(Status.NON_AUTHORITATIVE_INFORMATION, headers)));
-        Assert.assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(Status.MULTIPLE_CHOICES, headers)));
-        Assert.assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(Status.MOVED_PERMANENTLY, headers)));
-        Assert.assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(Status.GONE, headers)));
+        assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(Status.OK, headers)));
+        assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(Status.NON_AUTHORITATIVE_INFORMATION, headers)));
+        assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(Status.MULTIPLE_CHOICES, headers)));
+        assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(Status.MOVED_PERMANENTLY, headers)));
+        assertTrue("Response was not cacheable", helper.isCacheableResponse(new HTTPResponse(Status.GONE, headers)));
     }
 
     @Test
@@ -73,25 +87,25 @@ public class HTTPCacheHelperTest {
         Headers headers = new Headers();
         headers = headers.add(HeaderUtils.toHttpDate("date", createDateTime(10)));
         headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.EXPIRES, createDateTime(11)));
-        Assert.assertTrue(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
+        assertTrue(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
     }
 
     @Test
     public void responseWithETagShouldBeStored() {
         Headers headers = new Headers().add("etag", new Tag("foo").format());
-        Assert.assertTrue(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
+        assertTrue(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
     }
 
     @Test
     public void responseWithLastModifiedShouldBeStored() {
         Headers headers = new Headers().add(HeaderUtils.toHttpDate(HeaderConstants.LAST_MODIFIED, createDateTime(11)));
-        Assert.assertTrue(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
+        assertTrue(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
     }
 
     @Test
     public void responseWithMaxAgeShouldBeStored() {
         Headers headers = new Headers().add(HeaderConstants.CACHE_CONTROL, "max-age=10");
-        Assert.assertTrue(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
+        assertTrue(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
     }
 
     @Test
@@ -102,7 +116,7 @@ public class HTTPCacheHelperTest {
         headers = headers.add(HeaderUtils.toHttpDate(HeaderConstants.LAST_MODIFIED, createDateTime(9)));
         headers = headers.add(HeaderConstants.CACHE_CONTROL, "max-age=10");
         headers = headers.add("etag", new Tag("foo").format());
-        Assert.assertTrue(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
+        assertTrue(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
     }
 
     @Test

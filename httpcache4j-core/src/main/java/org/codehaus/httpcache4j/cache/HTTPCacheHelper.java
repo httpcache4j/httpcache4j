@@ -129,7 +129,7 @@ class HTTPCacheHelper {
     boolean isCacheableRequest(HTTPRequest request) {
         if (request.getMethod().isCacheable()) {
             Optional<CacheControl> cc = request.getCacheControl();
-            return OptionalUtils.forall(cc, c -> !c.isNoCache() || !c.isNoStore());
+            return OptionalUtils.forall(cc, c -> !c.isNoCache() && !c.isNoStore());
         }
         return false;
     }
@@ -174,7 +174,7 @@ class HTTPCacheHelper {
                         headers = headers.set(HeaderConstants.AGE, String.valueOf(age));
                     }
                 }
-            }            
+            }
         }
         if (request.getMethod() == HTTPMethod.GET) {
             List<Tag> noneMatch = request.getHeaders().getConditionals().getNoneMatch();
