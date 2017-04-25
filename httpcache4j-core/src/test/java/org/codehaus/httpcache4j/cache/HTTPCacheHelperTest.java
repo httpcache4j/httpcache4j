@@ -16,13 +16,11 @@
 package org.codehaus.httpcache4j.cache;
 
 import org.junit.Test;
-import org.junit.Assert;
 import org.codehaus.httpcache4j.*;
 
 import java.time.LocalDateTime;
 
-import static junit.framework.TestCase.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:hamnis@codehaus.org">Erlend Hamnaberg</a>
@@ -77,9 +75,9 @@ public class HTTPCacheHelperTest {
         Headers headers = new Headers();
         headers = headers.add(HeaderUtils.toHttpDate("date", createDateTime(10)));
         headers = headers.add(HeaderConstants.CACHE_CONTROL, "private, max-age=39");
-        Assert.assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(Status.NOT_MODIFIED, headers)));
-        Assert.assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(Status.ACCEPTED, headers)));
-        Assert.assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(Status.CREATED, headers)));
+        assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(Status.NOT_MODIFIED, headers)));
+        assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(Status.ACCEPTED, headers)));
+        assertFalse("Response was cacheable", helper.isCacheableResponse(new HTTPResponse(Status.CREATED, headers)));
     }
 
     @Test
@@ -122,14 +120,14 @@ public class HTTPCacheHelperTest {
     @Test
     public void responseWithNotHeadersShouldNotBeStored() {
         Headers headers = new Headers();
-        Assert.assertFalse(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
+        assertFalse(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
     }
 
     @Test
     public void responseWithOnlyDateShouldNotBeStored() {
         Headers headers = new Headers();
         headers = headers.add(HeaderUtils.toHttpDate("date", createDateTime(10)));
-        Assert.assertFalse(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
+        assertFalse(helper.shouldBeStored(new HTTPResponse(Status.OK, headers)));
     }
 
     @Test
@@ -138,7 +136,7 @@ public class HTTPCacheHelperTest {
 
         Headers modified = helper.removeUnmodifiableHeaders(headers);
 
-        Assert.assertEquals(new Headers(), modified);
+        assertEquals(new Headers(), modified);
     }
 
     private LocalDateTime createDateTime(int seconds) {
