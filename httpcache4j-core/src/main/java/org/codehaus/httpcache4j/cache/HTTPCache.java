@@ -26,11 +26,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.function.Function;
+import java.util.concurrent.*;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
@@ -79,19 +75,34 @@ public final class HTTPCache implements AutoCloseable {
         return statistics;
     }
 
-    public HTTPResponse execute(final HTTPRequest request) {
-        return executeAsync(request).join();
+    public HTTPResponse executeSync(final HTTPRequest request) {
+        return execute(request).join();
     }
 
-    public CompletableFuture<HTTPResponse> executeAsync(final HTTPRequest request) {
+    public CompletableFuture<HTTPResponse> execute(final HTTPRequest request) {
         return execute(request, helper.isEndToEndReloadRequest(request));
     }
 
-    public HTTPResponse executeRefresh(final HTTPRequest request) {
-        return executeRefreshAsync(request).join();
+    public HTTPResponse executeRefreshSync(final HTTPRequest request) {
+        return executeRefresh(request).join();
     }
 
-    public CompletableFuture<HTTPResponse> executeRefreshAsync(final HTTPRequest request) {
+    public HTTPResponse executeRefreshSync(final HTTPRequest request, long delay, TimeUnit unit) {
+        try {
+            return executeRefresh(request).get(delay, unit);
+        } catch (InterruptedException | TimeoutException e) {
+            throw new HTTPException(e);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof HTTPException) {
+                throw (HTTPException)cause;
+            } else {
+                throw new HTTPException(cause);
+            }
+        }
+    }
+
+    public CompletableFuture<HTTPResponse> executeRefresh(final HTTPRequest request) {
         return execute(request, true);
     }
 

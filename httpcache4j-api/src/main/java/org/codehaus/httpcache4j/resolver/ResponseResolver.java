@@ -16,11 +16,15 @@
 
 package org.codehaus.httpcache4j.resolver;
 
+import org.codehaus.httpcache4j.HTTPException;
 import org.codehaus.httpcache4j.HTTPRequest;
 import org.codehaus.httpcache4j.HTTPResponse;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * The basic interface to resolve a response with the originating server.
@@ -42,6 +46,21 @@ public interface ResponseResolver extends AutoCloseable {
 
     default HTTPResponse resolveSync(HTTPRequest request) {
         return resolve(request).join();
+    }
+
+    default HTTPResponse resolveSync(HTTPRequest request, long timeout, TimeUnit unit) {
+        try {
+            return resolve(request).get(timeout, unit);
+        } catch (InterruptedException | TimeoutException e) {
+            throw new HTTPException(e);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof HTTPException) {
+                throw (HTTPException)cause;
+            } else {
+                throw new HTTPException(cause);
+            }
+        }
     }
 
     void shutdown();
