@@ -38,7 +38,7 @@ public class HTTPRequestTest {
         Assert.assertNotSame("Request objects were the same", request, request2);
         request = request.addIfNoneMatch(Tag.ALL);
         Assert.assertNotSame("Request objects were the same", request, request2);
-        request2 = request.challenge(new UsernamePasswordChallenge("foo", "bar"));
+        request2 = request.withChallenge(new UsernamePasswordChallenge("foo", "bar"));
         Assert.assertNotSame("Request objects were the same", request, request2);
     }
 
@@ -60,7 +60,7 @@ public class HTTPRequestTest {
         headers = headers.add("Content-Type", mimeType);
         HTTPRequest request = new HTTPRequest(URI.create("http://example.com/"), HTTPMethod.POST);
         request = request.headers(headers);
-        request = request.payload(new InputStreamPayload(new NullInputStream(10), new MIMEType(mimeType)));
+        request = request.withPayload(new InputStreamPayload(new NullInputStream(10), MIMEType.valueOf(mimeType)));
         Headers all = request.getAllHeaders();
         assertEquals(1, all.getHeaders("Content-Type").size());
     }
@@ -69,7 +69,7 @@ public class HTTPRequestTest {
     public void testISEWhenSettingPayloadOnGETRequest() {
         HTTPRequest request = new HTTPRequest(REQUEST_URI);
         try {
-            request.payload(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM));
+            request.withPayload(new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM));
         } catch (IllegalStateException e) {
             Assert.assertTrue(e.getMessage().contains("GET"));
             throw e;
@@ -80,8 +80,8 @@ public class HTTPRequestTest {
     public void testSettingPayloadOnPUTAndPOSTRequestIsOK() {
         HTTPRequest request = new HTTPRequest(REQUEST_URI, HTTPMethod.POST);
         Payload payload = new ClosedInputStreamPayload(MIMEType.APPLICATION_OCTET_STREAM);
-        request.payload(payload);
+        request.withPayload(payload);
         request = new HTTPRequest(REQUEST_URI, HTTPMethod.PUT);
-        request.payload(payload);
+        request.withPayload(payload);
     }
 }

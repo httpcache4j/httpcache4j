@@ -16,12 +16,7 @@
 
 package org.codehaus.httpcache4j;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
-import org.junit.matchers.JUnitMatchers;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -61,10 +56,10 @@ public class MIMETypeTest {
     public void testValidMimeTypeWithParametersAndLotsofWhitespaceBetweenParamaters() {
         MIMEType type = MIMEType.valueOf("foo/bar;charset=UTF-8            \n;    random=true");
         assertEquals("Wrong number of parameters", 2, type.getParameters().size());
-        Parameter param = type.getParameters().get(1);
+        Parameter param = type.getParameters().get(0);
         assertEquals("Wrong parameter name", "charset", param.getName());
         assertEquals("Wrong parameter value", "UTF-8", param.getValue());
-        param = type.getParameters().get(0);
+        param = type.getParameters().get(1);
         assertEquals("Wrong parameter name", "random", param.getName());
         assertEquals("Wrong parameter value", "true", param.getValue());
         MIMEType newType = MIMEType.valueOf("foo", "bar").addParameter("random", "true").addParameter("charset", "UTF-8");
@@ -103,21 +98,5 @@ public class MIMETypeTest {
         assertFalse("jpeg type included ALL type ", jpegType.includes(type));
         type = MIMEType.valueOf("video/*");
         assertFalse("jpeg type included ALL video type ", jpegType.includes(type));
-    }
-
-    @Test
-    public void fromFileName() {
-        //System.setProperty("javax.activation.debug", "true");
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("file.png", "image/png");
-        map.put("file.jpg", "image/jpeg");
-        map.put("file.xml", "application/xml");
-        map.put("file.json", "application/json");
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            MIMEType first = MIMEType.fromFileName(entry.getKey());
-            MIMEType other = MIMEType.valueOf(entry.getValue());
-            assertThat("No match", first, CoreMatchers.equalTo(other));
-            assertThat("No inclusion of itself", true, CoreMatchers.is(first.includes(other)));
-        }
     }
 }

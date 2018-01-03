@@ -31,7 +31,7 @@ import java.util.Objects;
  * @version $Revision: $
  */
 public final class FormDataPayload implements Payload {
-    private final MIMEType mimeType = new MIMEType("application/x-www-form-urlencoded");
+    private final MIMEType mimeType = MIMEType.valueOf("application/x-www-form-urlencoded");
     private final String value;
 
     public FormDataPayload(Map<String, List<String>> parameters) {

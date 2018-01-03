@@ -16,11 +16,10 @@
 
 package org.codehaus.httpcache4j;
 
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParameterList;
-import javax.activation.MimeTypeParseException;
-import javax.activation.MimetypesFileTypeMap;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Media type used in representations and preferences.
@@ -31,26 +30,18 @@ public final class MIMEType {
     public static final MIMEType ALL = new MIMEType("*", "*");
     public static final MIMEType APPLICATION_OCTET_STREAM = new MIMEType("application", "octet-stream");
 
-    private final MimeType mimeType;
-
-    public MIMEType(String MIMEType) {
-        MimeType mimeType;
-        try {
-            mimeType = new MimeType(MIMEType);
-        } catch (MimeTypeParseException e) {
-            throw new IllegalArgumentException(e);
-        }
-        this.mimeType = mimeType;
-    }
+    private final String type;
+    private final String subType;
+    private final Map<String, String> parameters;
 
     public MIMEType(String primaryType, String subType) {
-        MimeType mimeType;
-        try {
-            mimeType = new MimeType(primaryType, subType);
-        } catch (MimeTypeParseException e) {
-            throw new IllegalArgumentException(e);
-        }
-        this.mimeType = mimeType;
+        this(primaryType, subType, Collections.emptyMap());
+    }
+
+    private MIMEType(String primaryType, String subType, Map<String, String> parameters) {
+        this.type = primaryType;
+        this.subType = subType;
+        this.parameters = parameters;
     }
 
     /**
@@ -61,21 +52,21 @@ public final class MIMEType {
      * @return returns a new instance with the parameter set
      */
     public MIMEType addParameter(String name, String value) {
-        MIMEType mt = new MIMEType(toString());
-        mt.mimeType.setParameter(name, value);
-        return mt;
+        Map<String, String> copy = new LinkedHashMap<>(this.parameters);
+        copy.put(name, value);
+        return new MIMEType(type, subType, copy);
     }
 
     public String getSubType() {
-        return mimeType.getSubType();
+        return subType;
     }
 
     public String getPrimaryType() {
-        return mimeType.getPrimaryType();
+        return type;
     }
 
     public String getCharset() {
-        return getParameter("charset");
+        return parameters.get("charset");
     }
 
     @Override
@@ -117,9 +108,7 @@ public final class MIMEType {
     }
 
     private boolean parametersEquals(MIMEType other) {
-        Map<String, String> otherParameterList = convertParams(other.mimeType.getParameters());
-        Map<String, String> parameterList = convertParams(mimeType.getParameters());
-        return parameterList.equals(otherParameterList);
+        return this.parameters.equals(other.parameters);
     }
 
     public boolean includes(MIMEType mimeType) {
@@ -136,13 +125,12 @@ public final class MIMEType {
     }
 
     public String getParameter(String name) {
-        return mimeType.getParameter(name);
+        return parameters.get(name);
     }
 
     public List<Parameter> getParameters() {
         List<Parameter> list = new ArrayList<Parameter>();
-        Map<String, String> map = convertParams(mimeType.getParameters());
-        for (Map.Entry<String, String> entry : map.entrySet()) {
+        for (Map.Entry<String, String> entry : parameters.entrySet()) {
             list.add(new Parameter(entry.getKey(), entry.getValue()));
         }
         return Collections.unmodifiableList(list);
@@ -150,26 +138,41 @@ public final class MIMEType {
 
     @Override
     public String toString() {
-        return mimeType.toString();
+        String base = String.format("%s/%s", type, subType);
+        return base + parameters.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(";", ";", ""));
     }
-
-    private Map<String, String> convertParams(MimeTypeParameterList list) {
-        Map<String, String> map = new HashMap<String, String>();
-        Enumeration names = list.getNames();
-        while (names.hasMoreElements()) {
-            String name = (String) names.nextElement();
-            map.put(name, list.get(name));
-        }
-        return map;
-    }
-
 
     public static MIMEType valueOf(final String MIMEType) {
-        return new MIMEType(MIMEType);
+        Pattern pattern = Pattern.compile("([\\w-*]+)/([\\w-*]+);?(.*)?", Pattern.MULTILINE | Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(MIMEType);
+        if (matcher.matches()) {
+            Map<String, String> map = new LinkedHashMap<>();
+            String type = matcher.group(1);
+            String subtype = matcher.group(2);
+            if (matcher.groupCount() == 3) {
+                String params = matcher.group(3);
+                parseParams(params, map);
+            }
+            return new MIMEType(type, subtype, Collections.unmodifiableMap(map));
+        } else {
+            throw new IllegalArgumentException("Not a valid MIMEType");
+        }
     }
 
-    public static MIMEType fromFileName(String filename) {
-        return valueOf(MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(filename));
+    private static void parseParams(String params, Map<String, String> map) {
+        Pattern equalPattern = Pattern.compile("(.*)=(.*)", Pattern.MULTILINE | Pattern.DOTALL);
+        Scanner scanner = new Scanner(params).useDelimiter(";");
+        while (scanner.hasNext()) {
+            String next = scanner.next();
+            Matcher matcher = equalPattern.matcher(next);
+            if (matcher.matches()) {
+                String name = matcher.group(1).trim();
+                String value = matcher.group(2).trim();
+                map.put(name, value);
+            } else {
+                throw new IllegalArgumentException(next + "was not a valid formatted parameter");
+            }
+        }
     }
 
     public static MIMEType valueOf(final String primaryType, final String subType) {
