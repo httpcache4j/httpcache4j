@@ -28,6 +28,10 @@ public class MIMETypeTest {
         MIMEType type = MIMEType.valueOf("foo/bar");
         MIMEType newType = MIMEType.valueOf("foo", "bar");
         assertEquals(type, newType);
+        type = MIMEType.valueOf("application/vnd.collection+json");
+        newType = MIMEType.valueOf("application", "vnd.collection+json");
+        assertEquals(type, newType);
+
     }
 
     @Test

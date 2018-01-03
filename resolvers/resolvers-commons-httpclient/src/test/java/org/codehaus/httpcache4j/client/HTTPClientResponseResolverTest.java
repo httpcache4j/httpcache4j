@@ -56,7 +56,7 @@ public class HTTPClientResponseResolverTest {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.GET);
         final HttpMethod method = mock(GetMethod.class);
         HTTPClientResponseResolver resolver = createResponseResolver(method, Status.valueOf(200), new Header[0]);
-        
+
         HTTPResponse response = resolver.resolve(request);
         assertNotNull("Response was null", response);
         assertEquals(200, response.getStatus().getCode());
@@ -76,7 +76,7 @@ public class HTTPClientResponseResolverTest {
     @Test
     public void testResolvePOSTWithNoHeaders() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.POST);
-        request = request.withPayload(new ClosedInputStreamPayload(new MIMEType("text/plain")));
+        request = request.withPayload(new ClosedInputStreamPayload(MIMEType.valueOf("text/plain")));
         final HttpMethod method = mock(PostMethod.class);
         HTTPClientResponseResolver resolver = createResponseResolver(method, Status.valueOf(201), new Header[0]);
 
@@ -89,7 +89,7 @@ public class HTTPClientResponseResolverTest {
     @Test
     public void testResolvePUTWithNoHeaders() throws IOException {
         HTTPRequest request = new HTTPRequest(URI.create("http://dummy/uri/123"), HTTPMethod.PUT);
-        request = request.withPayload(new ClosedInputStreamPayload(new MIMEType("text/plain")));
+        request = request.withPayload(new ClosedInputStreamPayload(MIMEType.valueOf("text/plain")));
         final HttpMethod method = mock(PostMethod.class);
         HTTPClientResponseResolver resolver = createResponseResolver(method, Status.valueOf(200), new Header[0]);
 
@@ -122,5 +122,5 @@ public class HTTPClientResponseResolverTest {
         protected HttpMethod getMethod(final HTTPMethod method, final URI requestURI) {
             return httpMethod;
         }
-    }       
+    }
 }

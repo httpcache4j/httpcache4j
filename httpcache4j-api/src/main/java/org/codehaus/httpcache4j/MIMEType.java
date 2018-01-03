@@ -143,7 +143,7 @@ public final class MIMEType {
     }
 
     public static MIMEType valueOf(final String MIMEType) {
-        Pattern pattern = Pattern.compile("([\\w-*]+)/([\\w-*]+);?(.*)?", Pattern.MULTILINE | Pattern.DOTALL);
+        Pattern pattern = Pattern.compile("([\\w-*]+)/([\\w-*+.]+);?(.*)?", Pattern.MULTILINE | Pattern.DOTALL);
         Matcher matcher = pattern.matcher(MIMEType);
         if (matcher.matches()) {
             Map<String, String> map = new LinkedHashMap<>();
