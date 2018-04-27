@@ -76,7 +76,7 @@ public class SerializableCacheItem implements Serializable, CacheItem {
         Headers headers = Headers.parse(object.getProperty("headers"));
         Optional<Payload> p = Optional.empty();
         if (object.containsKey("file")) {
-            p = Optional.of(new FilePayload(new File(object.getProperty("file")), headers.getContentType().get()));
+            p = Optional.of(new FilePayload(new File(object.getProperty("file")), headers.getContentType().orElse(MIMEType.APPLICATION_OCTET_STREAM)));
         }
         return new DefaultCacheItem(new HTTPResponse(p, status, headers), time.get());
     }
