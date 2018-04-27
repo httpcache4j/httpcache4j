@@ -1,5 +1,6 @@
 package org.codehaus.httpcache4j.cache;
 
+import java.util.Properties;
 import org.codehaus.httpcache4j.HTTPResponse;
 import org.codehaus.httpcache4j.Headers;
 import org.codehaus.httpcache4j.Status;
@@ -24,5 +25,13 @@ public class SerializableCacheItemTest {
         );
         Assert.assertNotNull(clone);
     }
+
+    @Test
+    public void paseCacheItemWithoutContentType() {
+    	Properties properties = new Properties();
+    	properties.setProperty("cache-time", "Mon, 12 May 2014 20:06:46 GMT");
+    	CacheItem item = SerializableCacheItem.parse(properties);
+        Assert.assertNotNull(item);
+    }     
 
 }
