@@ -63,20 +63,8 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-<!--
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit-dep</artifactId>
-      <version>4.5</version>
-      <scope>test</scope>
-    </dependency>
-
-  </dependencies>
--->
 
   <modules>
-    <module>resolvers-commons-httpclient</module>
     <module>resolvers-httpcomponents-httpclient</module>
     <module>resolvers-ning-async</module>
     <module>resolvers-okhttp</module>

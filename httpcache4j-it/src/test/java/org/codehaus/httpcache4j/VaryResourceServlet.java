@@ -21,8 +21,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.http.HttpHeaders;
-
 /**
  * @author imyousuf
  */
@@ -34,7 +32,7 @@ public class VaryResourceServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String acceptHeader = request.getHeader(HttpHeaders.ACCEPT);
+        String acceptHeader = request.getHeader("Accept");
         System.out.println("Server: Request! " + ++count + " - " + request.getRequestURI() + " @ Accept: " + acceptHeader);
         if (acceptHeader.startsWith("text/xml")) {
             writeTextXml(request, response);
@@ -59,10 +57,10 @@ public class VaryResourceServlet extends HttpServlet {
 
     protected void commonWrites(HttpServletResponse response, String output) throws IOException {
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader(HttpHeaders.CACHE_CONTROL, "max-age=30000");
+        response.setHeader("Cache-Control", "max-age=30000");
         Date date = new Date();
-        response.setHeader(HttpHeaders.VARY, HttpHeaders.ACCEPT);
-        response.setDateHeader(HttpHeaders.DATE, date.getTime());
+        response.setHeader("Vary", "Accept");
+        response.setDateHeader("Date", date.getTime());
         response.getWriter().write(output);
         response.getWriter().close();
     }
